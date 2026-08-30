@@ -1,0 +1,94 @@
+name: SunnyAI Automation Hub
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Video/topic to process'
+        required: true
+        type: string
+      mode:
+        description: 'Pipeline mode'
+        required: true
+        default: 'prepare'
+        type: choice
+        options:
+          - prepare
+          - render
+          - publish
+      privacy:
+        description: 'YouTube visibility when publishing'
+        required: true
+        default: 'private'
+        type: choice
+        options:
+          - private
+          - unlisted
+          - public
+      upload:
+        description: 'Allow YouTube publishing step'
+        required: true
+        default: false
+        type: boolean
+  repository_dispatch:
+    types: [sunnyai_job]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: sunnyai-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  automation:
+    name: SunnyAI job
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TOPIC: ${{ inputs.topic || github.event.client_payload.topic || 'unspecified' }}
+      MODE: ${{ inputs.mode || github.event.client_payload.mode || 'prepare' }}
+      PRIVACY: ${{ inputs.privacy || github.event.client_payload.privacy || 'private' }}
+      UPLOAD: ${{ inputs.upload || github.event.client_payload.upload || 'false' }}
+    steps:
+      - name: Checkout SunnyAI
+        uses: actions/checkout@v4
+
+      - name: Prepare workspace
+        run: |
+          set -e
+          mkdir -p workspace/output workspace/logs
+          printf '%s\n' \
+            "topic=$TOPIC" \
+            "mode=$MODE" \
+            "privacy=$PRIVACY" \
+            "upload=$UPLOAD" \
+            "repo=${GITHUB_REPOSITORY}" \
+            "run=${GITHUB_RUN_ID}" \
+            "sha=${GITHUB_SHA}" > workspace/job.env
+          cat workspace/job.env
+
+      - name: Install media tools
+        run: |
+          ffmpeg -version | head -1
+          python3 --version
+
+      - name: Run SunnyAI pipeline when present
+        run: |
+          set -e
+          if [ -f automation/run.sh ]; then
+            chmod +x automation/run.sh
+            TOPIC="$TOPIC" MODE="$MODE" PRIVACY="$PRIVACY" UPLOAD="$UPLOAD" ./automation/run.sh
+          else
+            echo "No automation/run.sh yet; hub is initialized and waiting for the pipeline." | tee workspace/logs/pipeline.txt
+          fi
+
+      - name: Upload generated output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunnyai-run-${{ github.run_id }}
+          path: workspace/
+          if-no-files-found: warn
+          retention-days: 7
