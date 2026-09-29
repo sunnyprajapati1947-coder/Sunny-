@@ -96,10 +96,10 @@ def _validate_public_url(url: str) -> str:
 
 
 def _clean_text(value: str) -> str:
-    value = re.sub(r"(?is)<(script|style|noscript|svg|canvas).*?</\\1>", " ", value)
+    value = re.sub(r"(?is)<(script|style|noscript|svg|canvas).*?</\1>", " ", value)
     value = re.sub(r"(?s)<[^>]+>", " ", value)
     value = html.unescape(value)
-    return re.sub(r"\\s+", " ", value).strip()
+    return re.sub(r"\s+", " ", value).strip()
 
 
 def _search_html(query: str, max_results: int, timeout: float) -> list[SearchResult]:
