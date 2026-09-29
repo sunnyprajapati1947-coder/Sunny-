@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "github" / "local_ai_agent"
@@ -11,7 +12,7 @@ if str(ROOT) not in sys.path:
 if str(SOURCE) not in sys.path:
     sys.path.insert(0, str(SOURCE))
 
-from tools.web import WebToolError, _validate_public_url, build_web_tools
+from tools.web import SearchResult, WebToolError, _validate_public_url, build_web_tools, research
 
 
 class WebToolsTest(unittest.TestCase):
@@ -24,6 +25,28 @@ class WebToolsTest(unittest.TestCase):
         self.assertEqual(fetch_tool.parameters["required"], ["url"])
         self.assertEqual(research_tool.parameters["required"], ["query"])
         self.assertEqual(research_tool.parameters["properties"]["fetch_results"]["maximum"], 3)
+
+    def test_research_keeps_result_order_with_bounded_fetches(self):
+        results = [
+            SearchResult("One", "https://example.com/1", "first"),
+            SearchResult("Two", "https://example.com/2", "second"),
+            SearchResult("Three", "https://example.com/3", "third"),
+        ]
+
+        def fake_fetch(url, *, timeout_seconds, max_bytes):
+            return f"CONTENT:{url}"
+
+        with patch("tools.web.search", return_value=results) as search_mock:
+            with patch("tools.web.fetch_page", side_effect=fake_fetch) as fetch_mock:
+                payload = research("test", max_results=3, fetch_results=3)
+
+        search_mock.assert_called_once()
+        self.assertEqual(fetch_mock.call_count, 3)
+        self.assertEqual(
+            [item["title"] for item in payload["documents"]],
+            ["One", "Two", "Three"],
+        )
+        self.assertEqual(payload["documents"][1]["content"], "CONTENT:https://example.com/2")
 
     def test_web_blocks_local_or_unsafe_urls(self):
         urls = [
