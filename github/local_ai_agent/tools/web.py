@@ -235,7 +235,18 @@ def research(
         timeout_seconds=timeout_seconds,
     )
 
-    selected = results[: max(0, min(int(fetch_results), 3))]
+    # Deduplicate canonical URLs before fetching so repeated search hits
+    # never waste network time on Android.
+    selected: list[SearchResult] = []
+    seen_urls: set[str] = set()
+    fetch_limit = max(0, min(int(fetch_results), 3))
+    for item in results:
+        if item.url in seen_urls:
+            continue
+        seen_urls.add(item.url)
+        selected.append(item)
+        if len(selected) >= fetch_limit:
+            break
 
     def fetch_one(item: SearchResult) -> dict:
         try:
