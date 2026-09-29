@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from core.tool_registry import NovaTool, NovaToolRegistry
+from github.local_ai_agent.tools.web import build_web_tools
+
 from core.termux_tools import (
     battery_status,
     device_volume,
@@ -19,6 +21,30 @@ def build_registry() -> NovaToolRegistry:
     """
 
     registry = NovaToolRegistry()
+    web_search, web_fetch = build_web_tools(
+        timeout=10.0,
+        max_bytes=120_000,
+    )
+
+    registry.register(
+        NovaTool(
+            name=web_search.name,
+            category=web_search.category,
+            description=web_search.description,
+            run=web_search.run,
+            parameters=web_search.parameters,
+        )
+    )
+    registry.register(
+        NovaTool(
+            name=web_fetch.name,
+            category=web_fetch.category,
+            description=web_fetch.description,
+            run=web_fetch.run,
+            parameters=web_fetch.parameters,
+        )
+    )
+
 
     def github_agent_status():
         return {
