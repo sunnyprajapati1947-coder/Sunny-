@@ -25,6 +25,7 @@ ALLOWED_SCHEMES = ("http", "https")
 MAX_URL_LENGTH = 2000
 DEFAULT_TIMEOUT = 10.0
 DEFAULT_MAX_BYTES = 120_000
+DEFAULT_MAX_TEXT_CHARS = 30_000
 DEFAULT_RESULTS = 5
 MAX_RESULTS = 8
 SEARCH_URL = "https://html.duckduckgo.com/html/"
@@ -241,6 +242,10 @@ def fetch_page(
         return f"HTTP {response.status_code}; non-text content ({content_type or 'unknown'}), {len(raw)} bytes."
 
     body = _clean_text(raw.decode("utf-8", errors="replace"))
+    text_truncated = len(body) > DEFAULT_MAX_TEXT_CHARS
+    if text_truncated:
+        body = body[:DEFAULT_MAX_TEXT_CHARS].rstrip()
+        body += f" [text truncated at {DEFAULT_MAX_TEXT_CHARS:,} chars]"
     if truncated:
         body += f" [truncated at {max_bytes:,} bytes]"
     return f"HTTP {response.status_code} {response.url}\\n{body}"
