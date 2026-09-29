@@ -10,6 +10,7 @@ import html
 import ipaddress
 import re
 import socket
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
@@ -234,8 +235,9 @@ def research(
         timeout_seconds=timeout_seconds,
     )
 
-    documents = []
-    for item in results[: max(0, min(int(fetch_results), 3))]:
+    selected = results[: max(0, min(int(fetch_results), 3))]
+
+    def fetch_one(item: SearchResult) -> dict:
         try:
             content = fetch_page(
                 item.url,
@@ -244,13 +246,23 @@ def research(
             )
         except WebToolError as exc:
             content = f"FETCH_ERROR: {exc}"
-
-        documents.append({
+        return {
             "title": item.title,
             "url": item.url,
             "snippet": item.snippet,
             "content": content,
-        })
+        }
+
+    # Keep concurrency bounded for Android while reducing total network wait.
+    documents = [None] * len(selected)
+    if selected:
+        with ThreadPoolExecutor(max_workers=min(3, len(selected))) as pool:
+            futures = {
+                pool.submit(fetch_one, item): index
+                for index, item in enumerate(selected)
+            }
+            for future in as_completed(futures):
+                documents[futures[future]] = future.result()
 
     return {
         "success": True,
@@ -273,7 +285,7 @@ def build_web_tools(
     *,
     timeout: float = DEFAULT_TIMEOUT,
     max_bytes: int = DEFAULT_MAX_BYTES,
-) -> tuple[Tool, Tool]:
+) -> tuple[Tool, Tool, Tool]:
     """Build search and page-fetch tools for the existing registry."""
 
     search_tool = Tool(
