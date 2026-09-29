@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
 if str(SOURCE) not in sys.path:
     sys.path.insert(0, str(SOURCE))
 
-from tools.web import DEFAULT_MAX_TEXT_CHARS, SearchResult, WebToolError, _clean_text, _validate_public_url, build_web_tools, research, search
+from tools.web import DEFAULT_MAX_TEXT_CHARS, RESEARCH_MAX_TEXT_CHARS, SearchResult, WebToolError, _clean_text, _validate_public_url, build_web_tools, research, search
 
 
 class WebToolsTest(unittest.TestCase):
@@ -47,6 +47,38 @@ class WebToolsTest(unittest.TestCase):
             ["One", "Two", "Three"],
         )
         self.assertEqual(payload["documents"][1]["content"], "CONTENT:https://example.com/2")
+
+    def test_research_bounds_context_per_document(self):
+        results = [SearchResult("One", "https://example.com/1", "first")]
+
+        with patch("tools.web.search", return_value=results):
+            with patch(
+                "tools.web.fetch_page",
+                return_value="x" * (RESEARCH_MAX_TEXT_CHARS + 500),
+            ):
+                payload = research("test", max_results=1, fetch_results=1)
+
+        content = payload["documents"][0]["content"]
+        self.assertLessEqual(len(content), RESEARCH_MAX_TEXT_CHARS + 100)
+        self.assertIn("research context truncated", content)
+
+    def test_research_isolates_unexpected_fetch_failure(self):
+        results = [
+            SearchResult("One", "https://example.com/1", "first"),
+            SearchResult("Two", "https://example.com/2", "second"),
+        ]
+
+        def fail(url, *, timeout_seconds, max_bytes):
+            if url.endswith("/1"):
+                raise RuntimeError("boom")
+            return "OK"
+
+        with patch("tools.web.search", return_value=results):
+            with patch("tools.web.fetch_page", side_effect=fail):
+                payload = research("test", max_results=2, fetch_results=2)
+
+        self.assertIn("unexpected fetch failure", payload["documents"][0]["content"])
+        self.assertEqual(payload["documents"][1]["content"], "OK")
 
     def test_search_reuses_short_ttl_cache(self):
         results = [SearchResult("One", "https://example.com/1", "first")]
