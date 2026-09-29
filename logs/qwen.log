@@ -1,0 +1,19 @@
+0.00.001.630 I srv  llama_server: initializing ...
+0.00.013.083 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.015.652 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.018.392 I srv    load_model: loading model '/data/data/com.termux/files/home/models/Qwen3.5-4B-Q4_0.gguf'
+0.31.437.464 I cmn          init: llama threadpool init, n_threads = 6
+0.31.460.858 W kleidiai: no kernel for tensor type q6_K, not accelerated by KleidiAI (kernels available for Q4_0 and Q8_0)
+0.50.666.801 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 2048, kv_unified = 'false'
+0.50.735.946 I srv  llama_server: model loaded
+0.50.736.019 I srv  llama_server: listening on http://127.0.0.1:8080
+0.50.736.023 W srv  llama_server: notice: server default port will be changed to :9931 in a future release (ref: https://github.com/ggml-org/llama.cpp/pull/26508)
+2.24.286.795 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = -1
+2.24.290.199 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+2.50.728.987 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    275, progress = 0.93, t =  26.44 s / 10.40 tokens per second
+2.57.570.366 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    291, progress = 0.99, t =  33.28 s / 8.74 tokens per second
+3.01.204.898 I slot print_timing: id  0 | task 0 | prompt eval time =   35531.42 ms /   295 tokens (  120.45 ms per token,     8.30 tokens per second)
+3.01.205.817 I slot print_timing: id  0 | task 0 |        eval time =    1378.51 ms /     5 tokens (  344.63 ms per token,     2.90 tokens per second)
+3.01.205.843 I slot print_timing: id  0 | task 0 |       total time =   36909.93 ms /   300 tokens
+3.01.205.846 I slot print_timing: id  0 | task 0 |    graphs reused =          4
+3.01.215.801 I slot      release: id  0 | task 0 | stop processing: n_tokens = 299, truncated = 0

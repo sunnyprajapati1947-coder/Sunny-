@@ -1,0 +1,67 @@
+{
+  "nova-f8902ed56f": {
+    "task_id": "nova-f8902ed56f",
+    "description": "Task A",
+    "status": "COMPLETED",
+    "current_step": 1,
+    "completed_steps": [
+      "step-1"
+    ],
+    "attempts": 0,
+    "checkpoint": {
+      "verified": true
+    },
+    "error": "",
+    "next_task_id": "nova-9319bf4335",
+    "created_at": 1790682298.3689992,
+    "updated_at": 1790682298.3717422
+  },
+  "nova-9319bf4335": {
+    "task_id": "nova-9319bf4335",
+    "description": "Task B",
+    "status": "COMPLETED",
+    "current_step": 0,
+    "completed_steps": [],
+    "attempts": 2,
+    "checkpoint": {
+      "success": true,
+      "result": "Task B completed"
+    },
+    "error": "",
+    "next_task_id": null,
+    "created_at": 1790682298.3699713,
+    "updated_at": 1790682365.8240283
+  },
+  "nova-1ae5219b11": {
+    "task_id": "nova-1ae5219b11",
+    "description": "Task A",
+    "status": "COMPLETED",
+    "current_step": 0,
+    "completed_steps": [],
+    "attempts": 1,
+    "checkpoint": {
+      "success": true,
+      "result": "Task A completed"
+    },
+    "error": "",
+    "next_task_id": null,
+    "created_at": 1790682365.8220322,
+    "updated_at": 1790682365.8248777
+  },
+  "nova-3669dd5087": {
+    "task_id": "nova-3669dd5087",
+    "description": "Task B",
+    "status": "COMPLETED",
+    "current_step": 0,
+    "completed_steps": [],
+    "attempts": 1,
+    "checkpoint": {
+      "success": true,
+      "result": "Task B completed"
+    },
+    "error": "",
+    "next_task_id": null,
+    "created_at": 1790682365.8228319,
+    "updated_at": 1790682365.8256955
+  }
+}
