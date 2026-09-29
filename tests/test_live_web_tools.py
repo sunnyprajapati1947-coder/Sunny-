@@ -18,11 +18,15 @@ names = registry.names()
 
 assert "web_search" in names
 assert "web_fetch" in names
+assert "web_research" in names
 
 search_schema = registry.get("web_search").parameter_schema()
 fetch_schema = registry.get("web_fetch").parameter_schema()
+research_schema = registry.get("web_research").parameter_schema()
 
 assert search_schema["required"] == ["query"]
 assert fetch_schema["required"] == ["url"]
+assert research_schema["required"] == ["query"]
+assert research_schema["properties"]["fetch_results"]["maximum"] == 3
 
 print("NOVA LIVE WEB TOOLS: PASS")
