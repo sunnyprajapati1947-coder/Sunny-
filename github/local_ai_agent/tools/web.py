@@ -10,6 +10,8 @@ import html
 import ipaddress
 import re
 import socket
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from urllib.parse import parse_qs, unquote, urljoin, urlparse
@@ -26,6 +28,9 @@ DEFAULT_MAX_BYTES = 120_000
 DEFAULT_RESULTS = 5
 MAX_RESULTS = 8
 SEARCH_URL = "https://html.duckduckgo.com/html/"
+SEARCH_CACHE_TTL = 8.0
+_SEARCH_CACHE: dict[tuple[str, int], tuple[float, tuple[SearchResult, ...]]] = {}
+_SEARCH_CACHE_LOCK = threading.Lock()
 
 
 @dataclass(frozen=True)
@@ -160,9 +165,30 @@ def _search_html(query: str, max_results: int, timeout: float) -> list[SearchRes
 
 
 def search(query: str, *, max_results: int = DEFAULT_RESULTS, timeout_seconds: float = DEFAULT_TIMEOUT) -> list[SearchResult]:
-    """Search the public web without an API key."""
+    """Search the public web without an API key.
+
+    A tiny TTL cache absorbs repeated planner/tool lookups without turning
+    current-web research into a long-lived cache.
+    """
+    if not isinstance(query, str) or not query.strip():
+        raise WebToolError("query must be a non-empty string.")
+    bounded_results = max(1, min(int(max_results), MAX_RESULTS))
+    key = (query.strip().casefold(), bounded_results)
+    now = time.monotonic()
+
+    with _SEARCH_CACHE_LOCK:
+        cached = _SEARCH_CACHE.get(key)
+        if cached and now - cached[0] < SEARCH_CACHE_TTL:
+            return list(cached[1])
+
     try:
-        return _search_html(query, max_results, timeout_seconds)
+        fresh = _search_html(query, bounded_results, timeout_seconds)
+        with _SEARCH_CACHE_LOCK:
+            _SEARCH_CACHE[key] = (time.monotonic(), tuple(fresh))
+            if len(_SEARCH_CACHE) > 32:
+                oldest = min(_SEARCH_CACHE.items(), key=lambda item: item[1][0])[0]
+                _SEARCH_CACHE.pop(oldest, None)
+        return fresh
     except requests.Timeout:
         raise WebToolError(f"Search timed out after {timeout_seconds:g}s.") from None
     except requests.RequestException as exc:
