@@ -48,6 +48,26 @@ class WebToolsTest(unittest.TestCase):
         )
         self.assertEqual(payload["documents"][1]["content"], "CONTENT:https://example.com/2")
 
+    def test_research_deduplicates_fetch_urls(self):
+        results = [
+            SearchResult("One", "https://example.com/same", "first"),
+            SearchResult("Duplicate", "https://example.com/same", "duplicate"),
+            SearchResult("Two", "https://example.com/two", "second"),
+        ]
+
+        def fake_fetch(url, *, timeout_seconds, max_bytes):
+            return f"CONTENT:{url}"
+
+        with patch("tools.web.search", return_value=results):
+            with patch("tools.web.fetch_page", side_effect=fake_fetch) as fetch_mock:
+                payload = research("test", max_results=3, fetch_results=3)
+
+        self.assertEqual(fetch_mock.call_count, 2)
+        self.assertEqual(
+            [item["title"] for item in payload["documents"]],
+            ["One", "Two"],
+        )
+
     def test_web_blocks_local_or_unsafe_urls(self):
         urls = [
             "http://127.0.0.1:8080/health",
