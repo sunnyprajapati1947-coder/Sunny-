@@ -48,6 +48,16 @@ class WebToolsTest(unittest.TestCase):
         )
         self.assertEqual(payload["documents"][1]["content"], "CONTENT:https://example.com/2")
 
+    def test_search_reuses_short_ttl_cache(self):
+        results = [SearchResult("One", "https://example.com/1", "first")]
+
+        with patch("tools.web._search_html", return_value=results) as search_mock:
+            first = __import__("tools.web", fromlist=["search"]).search("  Nova cache test  ", max_results=1)
+            second = __import__("tools.web", fromlist=["search"]).search("nova cache test", max_results=1)
+
+        self.assertEqual(first, second)
+        search_mock.assert_called_once()
+
     def test_research_deduplicates_fetch_urls(self):
         results = [
             SearchResult("One", "https://example.com/same", "first"),
