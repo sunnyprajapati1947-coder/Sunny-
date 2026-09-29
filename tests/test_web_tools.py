@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
 if str(SOURCE) not in sys.path:
     sys.path.insert(0, str(SOURCE))
 
-from tools.web import SearchResult, WebToolError, _validate_public_url, build_web_tools, research, search
+from tools.web import DEFAULT_MAX_TEXT_CHARS, SearchResult, WebToolError, _clean_text, _validate_public_url, build_web_tools, research, search
 
 
 class WebToolsTest(unittest.TestCase):
@@ -77,6 +77,30 @@ class WebToolsTest(unittest.TestCase):
             [item["title"] for item in payload["documents"]],
             ["One", "Two"],
         )
+
+    def test_page_text_is_bounded_for_local_context(self):
+        long_html = "<html><body>" + ("word " * (DEFAULT_MAX_TEXT_CHARS // 5 + 100)) + "</body></html>"
+
+        with patch("tools.web.requests.get") as get_mock:
+            response = get_mock.return_value
+            response.is_redirect = False
+            response.status_code = 200
+            response.headers = {"Content-Type": "text/html"}
+            response.url = "https://example.com/"
+            class Raw:
+                def read(self, amount, decode_content=True):
+                    return long_html.encode("utf-8")
+            response.raw = Raw()
+            response.__enter__.return_value = response
+            response.__exit__.return_value = False
+            from tools.web import fetch_page
+            content = fetch_page("https://example.com/")
+
+        self.assertLessEqual(
+            len(_clean_text(content)),
+            DEFAULT_MAX_TEXT_CHARS + 100,
+        )
+        self.assertIn("text truncated", content)
 
     def test_web_blocks_local_or_unsafe_urls(self):
         urls = [
