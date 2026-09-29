@@ -12,6 +12,7 @@ from tools.ocr_tool import OcrClient
 from tools.python_tool import build_python_file_tool, build_python_tool
 from tools.git_tool import build_git_tools
 from tools.http_tool import build_http_tool
+from tools.web import build_web_tools
 from tools.shell_tool import build_shell_tool
 
 
@@ -40,6 +41,13 @@ def build_default_registry(config: Config) -> tuple[ToolRegistry, list[DisabledT
         registry.register(tool)
 
     disabled: list[DisabledTool] = []
+    web_search_tool, web_fetch_tool = build_web_tools(
+        timeout=10.0,
+        max_bytes=120_000,
+    )
+    registry.register(web_search_tool)
+    registry.register(web_fetch_tool)
+
 
     if config.file_writes_enabled:
         for tool in workspace.write_tools():
