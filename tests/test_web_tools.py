@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
 if str(SOURCE) not in sys.path:
     sys.path.insert(0, str(SOURCE))
 
-from tools.web import SearchResult, WebToolError, _validate_public_url, build_web_tools, research
+from tools.web import SearchResult, WebToolError, _validate_public_url, build_web_tools, research, search
 
 
 class WebToolsTest(unittest.TestCase):
@@ -52,8 +52,8 @@ class WebToolsTest(unittest.TestCase):
         results = [SearchResult("One", "https://example.com/1", "first")]
 
         with patch("tools.web._search_html", return_value=results) as search_mock:
-            first = __import__("tools.web", fromlist=["search"]).search("  Nova cache test  ", max_results=1)
-            second = __import__("tools.web", fromlist=["search"]).search("nova cache test", max_results=1)
+            first = search("  Nova cache test  ", max_results=1)
+            second = search("nova cache test", max_results=1)
 
         self.assertEqual(first, second)
         search_mock.assert_called_once()
