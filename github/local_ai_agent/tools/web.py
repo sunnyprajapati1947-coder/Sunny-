@@ -26,6 +26,7 @@ MAX_URL_LENGTH = 2000
 DEFAULT_TIMEOUT = 10.0
 DEFAULT_MAX_BYTES = 120_000
 DEFAULT_MAX_TEXT_CHARS = 30_000
+RESEARCH_MAX_TEXT_CHARS = 12_000
 DEFAULT_RESULTS = 5
 MAX_RESULTS = 8
 SEARCH_URL = "https://html.duckduckgo.com/html/"
@@ -286,8 +287,15 @@ def research(
                 timeout_seconds=timeout_seconds,
                 max_bytes=max_bytes,
             )
+            if len(content) > RESEARCH_MAX_TEXT_CHARS:
+                content = (
+                    content[:RESEARCH_MAX_TEXT_CHARS].rstrip()
+                    + f" [research context truncated at {RESEARCH_MAX_TEXT_CHARS:,} chars]"
+                )
         except WebToolError as exc:
             content = f"FETCH_ERROR: {exc}"
+        except Exception as exc:
+            content = f"FETCH_ERROR: unexpected fetch failure: {type(exc).__name__}"
         return {
             "title": item.title,
             "url": item.url,
@@ -304,7 +312,17 @@ def research(
                 for index, item in enumerate(selected)
             }
             for future in as_completed(futures):
-                documents[futures[future]] = future.result()
+                index = futures[future]
+                try:
+                    documents[index] = future.result()
+                except Exception as exc:
+                    item = selected[index]
+                    documents[index] = {
+                        "title": item.title,
+                        "url": item.url,
+                        "snippet": item.snippet,
+                        "content": f"FETCH_ERROR: unexpected worker failure: {type(exc).__name__}",
+                    }
 
     return {
         "success": True,
