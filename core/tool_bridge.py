@@ -21,7 +21,7 @@ def build_registry() -> NovaToolRegistry:
     """
 
     registry = NovaToolRegistry()
-    web_search, web_fetch = build_web_tools(
+    web_search, web_fetch, web_research = build_web_tools(
         timeout=10.0,
         max_bytes=120_000,
     )
@@ -42,6 +42,15 @@ def build_registry() -> NovaToolRegistry:
             description=web_fetch.description,
             run=web_fetch.run,
             parameters=web_fetch.parameters,
+        )
+    )
+    registry.register(
+        NovaTool(
+            name=web_research.name,
+            category=web_research.category,
+            description=web_research.description,
+            run=web_research.run,
+            parameters=web_research.parameters,
         )
     )
 
