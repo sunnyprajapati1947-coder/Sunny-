@@ -16,11 +16,14 @@ from tools.web import WebToolError, _validate_public_url, build_web_tools
 
 class WebToolsTest(unittest.TestCase):
     def test_web_tools_have_expected_names_and_schemas(self):
-        search_tool, fetch_tool = build_web_tools()
+        search_tool, fetch_tool, research_tool = build_web_tools()
         self.assertEqual(search_tool.name, "web_search")
         self.assertEqual(fetch_tool.name, "web_fetch")
+        self.assertEqual(research_tool.name, "web_research")
         self.assertEqual(search_tool.parameters["required"], ["query"])
         self.assertEqual(fetch_tool.parameters["required"], ["url"])
+        self.assertEqual(research_tool.parameters["required"], ["query"])
+        self.assertEqual(research_tool.parameters["properties"]["fetch_results"]["maximum"], 3)
 
     def test_web_blocks_local_or_unsafe_urls(self):
         urls = [
