@@ -107,6 +107,27 @@ class NovaToolRouter:
                 score += 5
                 reasons.append("exact tool")
 
+            # Prefer one focused web capability when the user's intent is
+            # clear. Fewer exposed schemas reduce model choice overhead.
+            if tool.name == "web_research" and any(
+                self._match(text, word)
+                for word in ("latest", "current", "news", "research", "compare", "what happened")
+            ):
+                score += 4
+                reasons.append("research intent")
+            elif tool.name == "web_fetch" and any(
+                self._match(text, word)
+                for word in ("open", "fetch", "read this", "this url", "this website")
+            ):
+                score += 4
+                reasons.append("fetch intent")
+            elif tool.name == "web_search" and any(
+                self._match(text, word)
+                for word in ("search", "find", "look up", "google")
+            ):
+                score += 4
+                reasons.append("search intent")
+
             if score >= self.min_score:
                 ranked.append(
                     ToolRoute(
