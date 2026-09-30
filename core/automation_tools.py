@@ -184,8 +184,11 @@ def render_project(project_path: str) -> dict[str, Any]:
     filters = [
         "drawbox=x='mod(t*120,w)':y='h*0.08':w=260:h='h*0.84':color=white@0.05:t=fill",
         "drawbox=x='mod(w-t*85,w)':y='h*0.78':w=420:h=6:color=white@0.35:t=fill",
-        "drawtext=text='" + title + "':x=(w-text_w)/2:y=h*0.17:fontsize=48:fontcolor=white:"
+        "drawtext=text='" + title + "':x=(w-text_w)/2:y=h*0.15:fontsize=44:fontcolor=white:"
         "enable='between(t,0," + str(scene_len) + ")'",
+        "drawtext=text='" + _clean(metadata.get("hook", ""), 70).replace("\\", " ").replace("'", r"\'") + "':"
+        "x=(w-text_w)/2:y=h*0.29:fontsize=30:fontcolor=white:"
+        "enable='between(t,0," + str(min(scene_len, 3.5)) + ")'",
     ]
     for index, scene in enumerate(scenes):
         safe = scene.replace("\\", " ").replace("'", r"\'")
