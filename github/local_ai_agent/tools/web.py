@@ -175,7 +175,8 @@ def search(query: str, *, max_results: int = DEFAULT_RESULTS, timeout_seconds: f
     if not isinstance(query, str) or not query.strip():
         raise WebToolError("query must be a non-empty string.")
     bounded_results = max(1, min(int(max_results), MAX_RESULTS))
-    key = (query.strip().casefold(), bounded_results)
+    normalized_query = " ".join(query.split()).casefold()
+    key = (normalized_query, bounded_results)
     now = time.monotonic()
 
     with _SEARCH_CACHE_LOCK:
