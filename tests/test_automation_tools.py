@@ -26,6 +26,25 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertFalse(result["metadata"]["qwen_used"])
                 self.assertTrue((Path(result["project"]) / "metadata.json").is_file())
 
+    def test_research_evidence_reaches_qwen_prompt(self):
+        captured = []
+        def fake_qwen(prompt, timeout=45.0):
+            captured.append(prompt)
+            return None
+        research = {
+            "success": True,
+            "enabled": True,
+            "sources": [{"title": "Source", "url": "https://example.com", "snippet": "current fact"}],
+            "documents": [{"title": "Source", "url": "https://example.com", "content": "Detailed evidence"}],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(automation_tools, "ROOT", Path(tmp) / "youtube"), patch.object(automation_tools, "PROJECTS", Path(tmp) / "youtube" / "projects"), patch.object(automation_tools, "_qwen", side_effect=fake_qwen):
+                result = automation_tools.create_project("Evidence topic", research=research)
+                self.assertTrue(result["success"])
+        self.assertEqual(len(captured), 1)
+        self.assertIn("current fact", captured[0])
+        self.assertIn("Detailed evidence", captured[0])
+
     def test_audio_skips_without_tts(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "project"
