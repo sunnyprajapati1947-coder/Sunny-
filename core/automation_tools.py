@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 from urllib.request import Request, urlopen
 
+from core.fast_router import ask as fast_router_ask
+
 ROOT = Path(os.getenv("NOVA_YOUTUBE_ROOT", str(Path.home() / "Nova" / "youtube"))).expanduser()
 PROJECTS = ROOT / "projects"
 HISTORY = ROOT / "history.jsonl"
@@ -386,7 +388,8 @@ def discover_niche() -> dict[str, Any]:
         "Do not claim guaranteed virality. Return exactly three lines: "
         "NICHE:, REASON:, TOPIC:. Keep TOPIC concrete and specific.\n\n" + signal_text
     )
-    generated = _qwen(prompt, timeout=45.0)
+    routed = fast_router_ask(prompt, timeout=12.0)
+    generated = routed.get("answer") if routed.get("success") else _qwen(prompt, timeout=45.0)
     selected = packs[0]["niche"]
     reason = "Fallback selection because local Qwen was unavailable."
     topic = f"Latest developments in {selected}"
