@@ -73,7 +73,7 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertIn(str(root / "voiceover.wav"), args)
                 self.assertIn("-shortest", args)
                 self.assertTrue(result["metadata"]["audio_muxed"])
-                self.assertEqual(result["metadata"]["visual_mode"], "motion_cards_v2")
+                self.assertEqual(result["metadata"]["visual_mode"], "cinematic_motion_cards")
                 self.assertTrue(result["metadata"]["packaging"]["hook_first"])
                 self.assertGreaterEqual(result["metadata"]["scene_count"], 1)
 
