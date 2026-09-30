@@ -82,10 +82,11 @@ class AutomationToolsTests(unittest.TestCase):
             self.assertEqual(len(result["sources"]), 1)
 
     def test_pipeline_uses_existing_stages(self):
-        with patch.object(automation_tools, "research_topic", return_value={"success": True, "sources": [], "documents": []}), patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}):
+        with patch.object(automation_tools, "research_topic", return_value={"success": True, "sources": [], "documents": []}), patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}), patch.object(automation_tools, "queue_project", return_value={"success": True, "queue": {"id": "q1", "status": "queued"}}):
             result = automation_tools.run_pipeline("Test topic")
             self.assertTrue(result["success"])
             self.assertEqual(result["video"], "/tmp/video.mp4")
+            self.assertEqual(result["queue"]["status"], "queued")
 
     def test_queue_project(self):
         with tempfile.TemporaryDirectory() as tmp:
