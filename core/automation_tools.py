@@ -150,6 +150,33 @@ def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -
     rendered = render_project(project)
     thumbnail = render_thumbnail(project)
     return {"success": True, "project": project, "metadata": rendered["metadata"], "video": rendered["video"], "audio": audio, "thumbnail": thumbnail}
+def queue_project(project_path: str, privacy: str = "private") -> dict[str, Any]:
+    """Send a rendered project into Nova's persistent YouTube queue without publishing."""
+    from core.youtube_queue import queue_add
+
+    project = Path(project_path).expanduser().resolve()
+    metadata_path = project / "metadata.json"
+    if not metadata_path.is_file():
+        raise FileNotFoundError(f"metadata.json not found: {metadata_path}")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    video = Path(str(metadata.get("video", project / "video.mp4"))).expanduser()
+    if not video.is_file():
+        raise FileNotFoundError(f"rendered video not found: {video}")
+    result = queue_add(
+        str(video),
+        str(metadata.get("title", metadata.get("topic", "Nova video"))),
+        str(metadata.get("description", "")),
+        list(metadata.get("tags", [])),
+        privacy,
+    )
+    metadata["queue_id"] = result["item"]["id"]
+    metadata["queue_status"] = "queued"
+    metadata["status"] = "queued"
+    metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+    _record({"event": "project_queued", "project": str(project), "queue_id": result["item"]["id"]})
+    return {"success": True, "project": str(project), "queue": result["item"]}
+
+
 def history(limit: int = 20) -> dict[str, Any]:
     if not HISTORY.is_file(): return {"success": True, "items": []}
     lines = HISTORY.read_text(encoding="utf-8").splitlines()[-max(1, min(int(limit), 50)):]
