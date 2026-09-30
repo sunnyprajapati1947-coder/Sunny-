@@ -276,6 +276,7 @@ def build_registry() -> NovaToolRegistry:
     )
 
     from core.automation_tools import autonomous_run, discover_niche, history as automation_history, queue_project, render_audio, render_thumbnail, run_pipeline
+    from repair.self_heal import self_heal_once
 
     registry.register(
         NovaTool(
