@@ -275,7 +275,7 @@ def build_registry() -> NovaToolRegistry:
         )
     )
 
-    from core.automation_tools import history as automation_history, render_audio, render_thumbnail, run_pipeline
+    from core.automation_tools import history as automation_history, queue_project, render_audio, render_thumbnail, run_pipeline
 
     registry.register(
         NovaTool(
@@ -295,6 +295,24 @@ def build_registry() -> NovaToolRegistry:
             },
         )
     )
+    registry.register(
+        NovaTool(
+            name="nova_automation_queue",
+            category="youtube",
+            description="Queue a completed local Nova video for YouTube upload without publishing it.",
+            run=queue_project,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "project_path": {"type": "string"},
+                    "privacy": {"type": "string", "enum": ["private", "unlisted", "public"]},
+                },
+                "required": ["project_path"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
     registry.register(
         NovaTool(
             name="nova_automation_audio",
