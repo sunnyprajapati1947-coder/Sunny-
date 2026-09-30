@@ -32,6 +32,18 @@ def _qwen(prompt: str, timeout: float = 45.0) -> str | None:
 def _clean(value: str, limit: int) -> str:
     return " ".join(str(value).replace("\n", " ").split())[:limit]
 
+def _choose_visual_style(topic: str) -> str:
+    text = str(topic).lower()
+    if any(k in text for k in ("game", "gaming", "minecraft", "gta", "free fire")):
+        return "gaming"
+    if any(k in text for k in ("history", "war", "ancient", "documentary", "event")):
+        return "documentary"
+    if any(k in text for k in ("cartoon", "animation", "funny", "kids", "comic")):
+        return "cartoon"
+    if any(k in text for k in ("science", "space", "ai", "technology", "future", "film", "cinematic")):
+        return "cinematic"
+    return "minimal"
+
 def research_topic(topic: str) -> dict[str, Any]:
     """Collect a bounded current-web evidence pack for a video topic."""
     if not RESEARCH_ENABLED:
@@ -92,7 +104,9 @@ def create_project(topic: str, aspect: str = "16:9", duration_seconds: int = 20,
     metadata = {"topic": topic.strip(), "title": title, "hook": hook, "description": description, "tags": tags,
                 "research": {"success": evidence.get("success", True), "enabled": evidence.get("enabled", False), "sources": evidence.get("sources", [])},
                 "script": script, "aspect": aspect, "duration_seconds": duration,
-                "qwen_used": generated is not None, "model": QWEN_MODEL, "status": "planned"}
+                "qwen_used": generated is not None, "model": QWEN_MODEL, "status": "planned",
+                "visual_style": _choose_visual_style(topic.strip()),
+                "visual_styles_supported": ["cinematic", "documentary", "cartoon", "gaming", "minimal"]}
     (project / "metadata.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
     _record({"event": "project_created", "project": str(project), "topic": topic.strip()})
     return {"success": True, "project": str(project), "metadata": metadata}
@@ -192,9 +206,20 @@ def render_project(project_path: str) -> dict[str, Any]:
     scene_count = max(1, len(scenes))
     scene_len = duration / scene_count
 
+    style = str(metadata.get("visual_style", "cinematic")).lower()
+    backgrounds = {
+        "cinematic": "0x101827",
+        "documentary": "0x202020",
+        "cartoon": "0x18304a",
+        "gaming": "0x17122b",
+        "minimal": "0x111111",
+    }
+    bg = backgrounds.get(style, backgrounds["cinematic"])
     filters = [
-        "drawbox=x='mod(t*120,w)':y='h*0.08':w=260:h='h*0.84':color=white@0.05:t=fill",
-        "drawbox=x='mod(w-t*85,w)':y='h*0.78':w=420:h=6:color=white@0.35:t=fill",
+        "drawbox=x=0:y=0:w=w:h=h:color=" + bg + ":t=fill",
+        "drawbox=x='mod(t*120,w)':y='h*0.08':w=260:h='h*0.84':color=white@0.08:t=fill",
+        "drawbox=x='mod(w-t*85,w)':y='h*0.78':w=420:h=6:color=white@0.45:t=fill",
+        "drawbox=x='mod(t*55,w)':y='h*0.34':w=180:h='h*0.32':color=white@0.035:t=fill",
         "drawtext=text='" + title + "':x=(w-text_w)/2:y=h*0.15:fontsize=44:fontcolor=white:"
         "enable='between(t,0," + str(scene_len) + ")'",
         "drawtext=text='" + _clean(metadata.get("hook", ""), 70).replace("\\", " ").replace("'", r"\'") + "':"
@@ -214,7 +239,7 @@ def render_project(project_path: str) -> dict[str, Any]:
     audio = project / "voiceover.wav"
     command = [
         ffmpeg, "-y", "-f", "lavfi", "-i",
-        f"color=c=black:s={width}x{height}:d={duration}:r=30",
+        f"color=c={bg}:s={width}x{height}:d={duration}:r=30",
     ]
     if audio.is_file():
         command += [
@@ -232,6 +257,7 @@ def render_project(project_path: str) -> dict[str, Any]:
     subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     metadata["status"], metadata["video"] = "rendered", str(video)
     metadata["visual_mode"] = "cinematic_motion_cards"
+    metadata["visual_style"] = style
     metadata["visual_styles_supported"] = ["cinematic", "documentary", "cartoon", "gaming", "minimal"]
     metadata["packaging"] = {"hook_first": True, "thumbnail_elements": 3, "retention_script": True}
     metadata["scene_count"] = scene_count
