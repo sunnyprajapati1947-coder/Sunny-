@@ -83,6 +83,10 @@ jobs:
         run: |
           python3 -m unittest tests/test_automation_tools.py
 
+      - name: Nova YouTube smoke tests
+        run: |
+          python3 -m unittest tests/test_youtube_tools.py
+
       - name: Run SunnyAI pipeline when present
         run: |
           set -e
