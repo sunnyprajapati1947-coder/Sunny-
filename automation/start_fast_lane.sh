@@ -9,14 +9,13 @@ if [ -z "$LLAMA_SERVER" ]; then
   done
 fi
 FAST_PORT="${NOVA_FAST_QWEN_PORT:-8081}"
-FAST_HF="${NOVA_FAST_QWEN_HF:-Qwen/Qwen3-0.6B-GGUF:Q4_K_M}"
-FAST_MODEL="${NOVA_FAST_QWEN_MODEL:-Qwen3-0.6B-Q4_K_M}"
 FAST_MODEL_PATH="${NOVA_FAST_QWEN_MODEL_PATH:-}"
 if [ -z "$FAST_MODEL_PATH" ]; then
-  for candidate in "$HOME/models/Qwen3-0.6B-Q4_K_M.gguf" "$HOME/models/qwen3-0.6b-q4_k_m.gguf"; do
+  for candidate in "$HOME/models/Qwen3-0.6B-Q4_K_M.gguf" "$HOME/models/qwen3-0.6b-q4_k_m.gguf" "$HOME/models/qwen3.5-4b-instruct-Q4_K_M.gguf" "$HOME/models/Qwen3.5-4B-Q4_0.gguf"; do
     if [ -f "$candidate" ]; then FAST_MODEL_PATH="$candidate"; break; fi
   done
 fi
+FAST_MODEL="${NOVA_FAST_QWEN_MODEL:-NovaLocal}"
 LOG="$ROOT/workspace/logs/fast_lane.log"
 PIDFILE="$ROOT/workspace/fast-lane.pid"
 
@@ -49,8 +48,8 @@ if [ -n "$FAST_MODEL_PATH" ] && [ -f "$FAST_MODEL_PATH" ]; then
   CMD+=( -m "$FAST_MODEL_PATH" )
   echo "Nova fast lane using local model: $FAST_MODEL_PATH"
 else
-  CMD+=( -hf "$FAST_HF" )
-  echo "Nova fast lane using Hugging Face model: $FAST_HF"
+  echo "Nova fast lane: no local model found; refusing network model download" >&2
+  exit 1
 fi
 nohup "${CMD[@]}" >>"$LOG" 2>&1 &
 
