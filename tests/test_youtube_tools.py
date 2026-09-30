@@ -19,6 +19,8 @@ from core.youtube_tools import (
     youtube_status,
 )
 
+from core.youtube_queue import queue_add, queue_get, queue_list
+
 
 class YouTubeToolsTest(unittest.TestCase):
     def test_status_does_not_require_oauth(self):
@@ -39,6 +41,19 @@ class YouTubeToolsTest(unittest.TestCase):
     def test_upload_rejects_missing_video_before_oauth(self):
         with self.assertRaises(FileNotFoundError):
             upload_video("/definitely/missing/video.mp4", "Test")
+
+
+    def test_queue_round_trip(self):
+        with tempfile.TemporaryDirectory() as td:
+            with patch.dict(os.environ, {"NOVA_YOUTUBE_ROOT": td}):
+                added = queue_add("/tmp/test.mp4", "Queued test", tags=["nova"])
+                self.assertTrue(added["success"])
+                item_id = added["item"]["id"]
+                fetched = queue_get(item_id)
+                self.assertEqual(fetched["item"]["status"], "queued")
+                listed = queue_list()
+                self.assertEqual(listed["count"], 1)
+                self.assertEqual(listed["items"][0]["id"], item_id)
 
     def test_channel_status_uses_authenticated_service(self):
         class Channels:
