@@ -1,18 +1,21 @@
 name: SunnyAI Automation Hub
 
 on:
+  schedule:
+    - cron: '30 12 * * *'
   workflow_dispatch:
     inputs:
       topic:
-        description: 'Video/topic to process'
-        required: true
+        description: 'Optional fixed topic; leave empty for autonomous niche discovery'
+        required: false
         type: string
       mode:
         description: 'Pipeline mode'
-        required: true
-        default: 'prepare'
+        required: false
+        default: 'auto'
         type: choice
         options:
+          - auto
           - prepare
           - render
           - publish
@@ -47,8 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      TOPIC: ${{ inputs.topic || github.event.client_payload.topic || 'unspecified' }}
-      MODE: ${{ inputs.mode || github.event.client_payload.mode || 'prepare' }}
+      TOPIC: ${{ inputs.topic || github.event.client_payload.topic || '' }}
+      MODE: ${{ inputs.mode || github.event.client_payload.mode || (github.event_name == 'schedule' && 'auto' || 'prepare') }}
       PRIVACY: ${{ inputs.privacy || github.event.client_payload.privacy || 'private' }}
       UPLOAD: ${{ inputs.upload || github.event.client_payload.upload || 'false' }}
     steps:
