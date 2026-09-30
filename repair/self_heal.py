@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -11,6 +12,7 @@ from urllib.request import urlopen
 
 ROOT = Path(os.getenv("NOVA_ROOT", str(Path.home() / "Nova"))).expanduser()
 STATE = ROOT / "workspace" / "self_heal.json"
+PID_FILE = ROOT / "workspace" / "qwen-self-heal.pid"
 LOG = ROOT / "workspace" / "logs" / "self_heal.log"
 QWEN_URL = os.getenv("NOVA_QWEN_URL", "http://127.0.0.1:8080/v1/chat/completions")
 MAX_RESTARTS = max(0, int(os.getenv("NOVA_SELF_HEAL_MAX_RESTARTS", "3")))
@@ -57,6 +59,48 @@ def _find_server() -> str | None:
     return shutil.which("llama-server")
 
 
+def _read_managed_pid() -> int | None:
+    try:
+        pid = int(PID_FILE.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return None
+    if pid <= 0:
+        return None
+    return pid
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def _stop_managed_server() -> None:
+    pid = _read_managed_pid()
+    if pid is None:
+        return
+    if not _pid_alive(pid):
+        PID_FILE.unlink(missing_ok=True)
+        return
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except OSError:
+        PID_FILE.unlink(missing_ok=True)
+        return
+    for _ in range(20):
+        if not _pid_alive(pid):
+            PID_FILE.unlink(missing_ok=True)
+            return
+        time.sleep(0.1)
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except OSError:
+        pass
+    PID_FILE.unlink(missing_ok=True)
+
+
 def restart_qwen() -> bool:
     server = _find_server()
     model = os.getenv("NOVA_QWEN_MODEL_PATH", str(Path.home() / "models" / "Qwen3.5-4B-Q4_0.gguf"))
@@ -64,19 +108,23 @@ def restart_qwen() -> bool:
         _write({"event": "restart_skipped", "reason": "llama-server or model missing"})
         return False
 
-    # Stop only the configured local llama-server; never kill unrelated processes.
-    subprocess.run(["pkill", "-f", "llama-server"], check=False,
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # Only stop the llama-server instance previously started and owned by Nova.
+    # If no managed PID exists, leave unrelated llama-server processes untouched.
+    _stop_managed_server()
+
     log_path = ROOT / "workspace" / "logs" / "qwen-self-heal.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("ab") as log:
-        subprocess.Popen(
+        process = subprocess.Popen(
             [server, "-m", model, "--host", "127.0.0.1", "--port", "8080",
              "-c", os.getenv("NOVA_QWEN_CONTEXT", "2048"),
              "-t", os.getenv("NOVA_QWEN_THREADS", "6"),
              "--parallel", "1"],
             stdout=log, stderr=log, start_new_session=True,
         )
+    PID_FILE.parent.mkdir(parents=True, exist_ok=True)
+    PID_FILE.write_text(str(process.pid), encoding="utf-8")
+    _write({"event": "server_started", "pid": process.pid})
     for _ in range(20):
         time.sleep(1)
         if qwen_healthy():
