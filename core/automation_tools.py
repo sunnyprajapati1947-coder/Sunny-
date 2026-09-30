@@ -177,7 +177,8 @@ def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -
     audio = render_audio(project)
     rendered = render_project(project)
     thumbnail = render_thumbnail(project)
-    return {"success": True, "project": project, "metadata": rendered["metadata"], "video": rendered["video"], "audio": audio, "thumbnail": thumbnail}
+    queued = queue_project(project, privacy="private")
+    return {"success": True, "project": project, "metadata": rendered["metadata"], "video": rendered["video"], "audio": audio, "thumbnail": thumbnail, "queue": queued["queue"]}
 def queue_project(project_path: str, privacy: str = "private") -> dict[str, Any]:
     """Send a rendered project into Nova's persistent YouTube queue without publishing."""
     from core.youtube_queue import queue_add
