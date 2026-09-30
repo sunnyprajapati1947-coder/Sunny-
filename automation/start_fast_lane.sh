@@ -10,6 +10,13 @@ if [ -z "$LLAMA_SERVER" ]; then
 fi
 FAST_PORT="${NOVA_FAST_QWEN_PORT:-8081}"
 FAST_HF="${NOVA_FAST_QWEN_HF:-Qwen/Qwen3-0.6B-GGUF:Q4_K_M}"
+FAST_MODEL="${NOVA_FAST_QWEN_MODEL:-Qwen3-0.6B-Q4_K_M}"
+FAST_MODEL_PATH="${NOVA_FAST_QWEN_MODEL_PATH:-}"
+if [ -z "$FAST_MODEL_PATH" ]; then
+  for candidate in "$HOME/models/Qwen3-0.6B-Q4_K_M.gguf" "$HOME/models/qwen3-0.6b-q4_k_m.gguf"; do
+    if [ -f "$candidate" ]; then FAST_MODEL_PATH="$candidate"; break; fi
+  done
+fi
 LOG="$ROOT/workspace/logs/fast_lane.log"
 PIDFILE="$ROOT/workspace/fast-lane.pid"
 
@@ -23,22 +30,29 @@ fi
 if [ -f "$PIDFILE" ]; then
   pid="$(cat "$PIDFILE" 2>/dev/null || true)"
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-    echo "Nova fast lane already running (PID $pid)"
-    exit 0
+    echo "Nova fast lane already running (PID $pid); waiting for API..."
+    for _ in $(seq 1 90); do
+      if curl -fsS --max-time 1 "http://127.0.0.1:$FAST_PORT/v1/models" >/dev/null 2>&1; then
+        echo "Nova fast lane READY on 127.0.0.1:$FAST_PORT"
+        exit 0
+      fi
+      sleep 1
+    done
+    echo "Nova fast lane process exists but API is not ready; see $LOG" >&2
+    exit 1
   fi
   rm -f "$PIDFILE"
 fi
 
-nohup "$LLAMA_SERVER" \
-  --host 127.0.0.1 \
-  --port "$FAST_PORT" \
-  -hf "$FAST_HF" \
-  -c 2048 \
-  -t 6 \
-  -tb 6 \
-  --parallel 1 \
-  --reasoning off \
-  >>"$LOG" 2>&1 &
+CMD=( "$LLAMA_SERVER" --host 127.0.0.1 --port "$FAST_PORT" -c 2048 -t 6 -tb 6 --parallel 1 --reasoning off --alias "$FAST_MODEL" )
+if [ -n "$FAST_MODEL_PATH" ] && [ -f "$FAST_MODEL_PATH" ]; then
+  CMD+=( -m "$FAST_MODEL_PATH" )
+  echo "Nova fast lane using local model: $FAST_MODEL_PATH"
+else
+  CMD+=( -hf "$FAST_HF" )
+  echo "Nova fast lane using Hugging Face model: $FAST_HF"
+fi
+nohup "${CMD[@]}" >>"$LOG" 2>&1 &
 
 echo $! > "$PIDFILE"
 echo "Nova fast lane starting on 127.0.0.1:$FAST_PORT"
