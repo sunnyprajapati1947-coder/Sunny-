@@ -103,8 +103,14 @@ def _stop_managed_server() -> None:
 
 def restart_qwen() -> bool:
     server = _find_server()
-    model = os.getenv("NOVA_QWEN_MODEL_PATH", str(Path.home() / "models" / "Qwen3.5-4B-Q4_0.gguf"))
-    if not server or not Path(model).is_file():
+    configured_model = os.getenv("NOVA_QWEN_MODEL_PATH", str(Path.home() / "models" / "Qwen3.5-4B-Q4_0.gguf"))
+    model_candidates = [
+        Path(configured_model).expanduser(),
+        Path.home() / "models" / "qwen3.5-4b-instruct-Q4_K_M.gguf",
+        Path.home() / "models" / "Qwen3.5-4B-Q4_0.gguf",
+    ]
+    model = next((str(p) for p in model_candidates if p.is_file()), None)
+    if not server or not model:
         _write({"event": "restart_skipped", "reason": "llama-server or model missing"})
         return False
 
