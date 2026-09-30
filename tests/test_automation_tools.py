@@ -2,7 +2,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -34,6 +34,24 @@ class AutomationToolsTests(unittest.TestCase):
                 result = automation_tools.render_audio(str(root))
                 self.assertFalse(result["success"])
                 self.assertTrue(result["skipped"])
+
+    def test_render_project_muxes_existing_voiceover(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "project"
+            root.mkdir()
+            (root / "metadata.json").write_text(json.dumps({
+                "title": "Test", "script": "hello", "aspect": "16:9",
+                "duration_seconds": 5
+            }), encoding="utf-8")
+            (root / "voiceover.wav").write_bytes(b"wav")
+            fake = MagicMock()
+            with patch.object(automation_tools.shutil, "which", return_value="/usr/bin/ffmpeg"), patch.object(automation_tools.subprocess, "run", fake):
+                result = automation_tools.render_project(str(root))
+                args = fake.call_args.args[0]
+                self.assertIn("-i", args)
+                self.assertIn(str(root / "voiceover.wav"), args)
+                self.assertIn("-shortest", args)
+                self.assertTrue(result["metadata"]["audio_muxed"])
 
     def test_pipeline_uses_existing_stages(self):
         with patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}):
