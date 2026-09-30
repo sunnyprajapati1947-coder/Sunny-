@@ -129,9 +129,15 @@ def render_project(project_path: str) -> dict[str, Any]:
     title = _clean(metadata.get("title", "Nova"), 70).replace("\\", " ").replace("'", r"\'")
     script = _clean(metadata.get("script", ""), 220).replace("\\", " ").replace("'", r"\'")
     draw = f"drawtext=text='{title}':x=(w-text_w)/2:y=h*0.22:fontsize=48:fontcolor=white," + f"drawtext=text='{script}':x=(w-text_w)/2:y=h*0.48:fontsize=24:fontcolor=white:enable='between(t,0,60)'"
-    subprocess.run([ffmpeg, "-y", "-f", "lavfi", "-i", f"color=c=black:s={width}x{height}:d={duration}",
-                    "-vf", draw, "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(video)],
-                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    audio = project / "voiceover.wav"
+    command = [ffmpeg, "-y", "-f", "lavfi", "-i", f"color=c=black:s={width}x{height}:d={duration}"]
+    if audio.is_file():
+        command += ["-i", str(audio), "-map", "0:v:0", "-map", "1:a:0", "-c:a", "aac", "-shortest"]
+        metadata["audio_muxed"] = True
+    else:
+        metadata["audio_muxed"] = False
+    command += ["-vf", draw, "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(video)]
+    subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     metadata["status"], metadata["video"] = "rendered", str(video)
     metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
     _record({"event": "project_rendered", "project": str(project), "video": str(video)})
