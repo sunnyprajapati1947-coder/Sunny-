@@ -54,8 +54,16 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertIn("-shortest", args)
                 self.assertTrue(result["metadata"]["audio_muxed"])
 
+    def test_research_topic(self):
+        fake = {"results": [{"title": "Source", "url": "https://example.com", "snippet": "fact"}],
+                "documents": [{"title": "Source", "url": "https://example.com", "content": "fact"}]}
+        with patch("github.local_ai_agent.tools.web.research", return_value=fake):
+            result = automation_tools.research_topic("test topic")
+            self.assertTrue(result["success"])
+            self.assertEqual(len(result["sources"]), 1)
+
     def test_pipeline_uses_existing_stages(self):
-        with patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}):
+        with patch.object(automation_tools, "research_topic", return_value={"success": True, "sources": [], "documents": []}), patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}):
             result = automation_tools.run_pipeline("Test topic")
             self.assertTrue(result["success"])
             self.assertEqual(result["video"], "/tmp/video.mp4")
