@@ -90,6 +90,15 @@ class WebToolsTest(unittest.TestCase):
         self.assertEqual(first, second)
         search_mock.assert_called_once()
 
+    def test_search_cache_normalizes_whitespace_and_case(self):
+        first = SearchResult("title", "https://example.com/", "snippet")
+        with patch("tools.web._search_html", return_value=[first]) as search_mock:
+            search("  Nova   WEB  ", max_results=2)
+            search("nova web", max_results=2)
+
+        search_mock.assert_called_once_with("  Nova   WEB  ", 2, DEFAULT_TIMEOUT)
+
+
     def test_research_deduplicates_fetch_urls(self):
         results = [
             SearchResult("One", "https://example.com/same", "first"),
