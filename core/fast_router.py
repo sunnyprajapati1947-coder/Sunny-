@@ -29,6 +29,18 @@ def _complexity(text: str) -> int:
 def route(text: str) -> str:
     return "fast" if _complexity(text) <= 2 else "deep"
 
+def _served_model(url: str, fallback: str, timeout: float = 2.0) -> str:
+    base = url.rsplit("/chat/completions", 1)[0]
+    try:
+        with urlopen(base + "/models", timeout=timeout) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        models = data.get("data") or []
+        if models and models[0].get("id"):
+            return str(models[0]["id"])
+    except Exception:
+        pass
+    return fallback
+
 def _call(url: str, model: str, prompt: str, timeout: float) -> str | None:
     payload = json.dumps({
         "model": model,
@@ -50,14 +62,14 @@ def _call(url: str, model: str, prompt: str, timeout: float) -> str | None:
 def ask(prompt: str, timeout: float = 12.0) -> dict:
     lane = route(prompt)
     if lane == "fast":
-        answer = _call(FAST_URL, FAST_MODEL, prompt, timeout)
+        answer = _call(FAST_URL, _served_model(FAST_URL, FAST_MODEL), prompt, timeout)
         if answer is not None:
             used = "fast"
         else:
-            answer = _call(DEEP_URL, DEEP_MODEL, prompt, min(45.0, timeout + 20.0))
+            answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0))
             used = "deep_fallback"
     else:
-        answer = _call(DEEP_URL, DEEP_MODEL, prompt, min(45.0, timeout + 20.0))
+        answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0))
         used = "deep"
     return {"success": answer is not None, "lane": used, "answer": answer}
 
