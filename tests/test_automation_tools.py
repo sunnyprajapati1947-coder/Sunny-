@@ -44,6 +44,7 @@ class AutomationToolsTests(unittest.TestCase):
         self.assertEqual(len(captured), 1)
         self.assertIn("current fact", captured[0])
         self.assertIn("Detailed evidence", captured[0])
+        self.assertIn("HOOK:", captured[0])
 
     def test_audio_skips_without_tts(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -72,7 +73,8 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertIn(str(root / "voiceover.wav"), args)
                 self.assertIn("-shortest", args)
                 self.assertTrue(result["metadata"]["audio_muxed"])
-                self.assertEqual(result["metadata"]["visual_mode"], "motion_cards")
+                self.assertEqual(result["metadata"]["visual_mode"], "motion_cards_v2")
+                self.assertTrue(result["metadata"]["packaging"]["hook_first"])
                 self.assertGreaterEqual(result["metadata"]["scene_count"], 1)
 
     def test_research_topic(self):
