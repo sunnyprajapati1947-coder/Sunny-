@@ -1,6 +1,7 @@
 """Local-first Nova automation pipeline tools."""
 from __future__ import annotations
 import json, os, shutil, subprocess, time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 from urllib.request import Request, urlopen
@@ -357,11 +358,23 @@ def discover_niche() -> dict[str, Any]:
         "business and money concepts explained",
         "history mysteries and forgotten events",
     ]
-    packs = []
-    for niche in candidates:
+    def collect(niche: str) -> dict[str, Any]:
         evidence = research_topic(f"trending YouTube topics India {niche} latest news September 2026")
-        packs.append({"niche": niche, "source_count": len(evidence.get("sources", [])),
-                      "sources": evidence.get("sources", [])[:3], "documents": evidence.get("documents", [])[:2]})
+        return {"niche": niche, "source_count": len(evidence.get("sources", [])),
+                "sources": evidence.get("sources", [])[:3], "documents": evidence.get("documents", [])[:2]}
+
+    # Keep concurrency bounded for Android/Termux while avoiding a slow serial scan.
+    packs_by_niche: dict[str, dict[str, Any]] = {}
+    with ThreadPoolExecutor(max_workers=min(3, len(candidates))) as pool:
+        futures = {pool.submit(collect, niche): niche for niche in candidates}
+        for future in as_completed(futures):
+            niche = futures[future]
+            try:
+                packs_by_niche[niche] = future.result()
+            except Exception as exc:
+                packs_by_niche[niche] = {"niche": niche, "source_count": 0,
+                                         "sources": [], "documents": [], "error": type(exc).__name__}
+    packs = [packs_by_niche[niche] for niche in candidates]
     signal_text = "\n\n".join(
         f"NICHE: {p['niche']}\n" + "\n".join(
             f"- {s.get('title', '')}: {s.get('snippet', '')}" for s in p["sources"]
