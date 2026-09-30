@@ -60,6 +60,26 @@ class AutomationToolsTests(unittest.TestCase):
             self.assertTrue(result["success"])
             self.assertEqual(result["video"], "/tmp/video.mp4")
 
+    def test_queue_project(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            project.mkdir()
+            video = project / "video.mp4"
+            video.write_bytes(b"video")
+            (project / "metadata.json").write_text(json.dumps({
+                "title": "Queued title",
+                "description": "Description",
+                "tags": ["nova", "test"],
+                "video": str(video),
+            }), encoding="utf-8")
+            with patch("core.youtube_queue._queue_file", return_value=Path(tmp) / "queue.json"):
+                result = automation_tools.queue_project(str(project))
+                self.assertTrue(result["success"])
+                self.assertEqual(result["queue"]["status"], "queued")
+                metadata = json.loads((project / "metadata.json").read_text(encoding="utf-8"))
+                self.assertEqual(metadata["status"], "queued")
+                self.assertEqual(metadata["queue_id"], result["queue"]["id"])
+
     def test_history_empty(self):
         with tempfile.TemporaryDirectory() as tmp:
             with patch.object(automation_tools, "HISTORY", Path(tmp) / "history.jsonl"):
