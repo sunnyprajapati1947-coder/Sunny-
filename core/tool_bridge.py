@@ -145,6 +145,7 @@ def build_registry() -> NovaToolRegistry:
         )
     )
     from core.youtube_tools import channel_status, prepare_video, upload_video, youtube_status
+    from core.youtube_queue import queue_add, queue_get, queue_list, queue_upload
 
     registry.register(
         NovaTool(
@@ -202,6 +203,73 @@ def build_registry() -> NovaToolRegistry:
                     "category_id": {"type": "string"},
                 },
                 "required": ["video_path", "title"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="youtube_queue_add",
+            category="youtube",
+            description="Add a prepared video to Nova's persistent local YouTube upload queue.",
+            run=queue_add,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "video_path": {"type": "string"},
+                    "title": {"type": "string"},
+                    "description": {"type": "string"},
+                    "tags": {"type": "array"},
+                    "privacy": {"type": "string", "enum": ["private", "unlisted", "public"]},
+                    "category_id": {"type": "string"},
+                },
+                "required": ["video_path", "title"],
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="youtube_queue_list",
+            category="youtube",
+            description="List Nova's persistent YouTube upload queue.",
+            run=queue_list,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "status": {"type": "string"},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 100},
+                },
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="youtube_queue_get",
+            category="youtube",
+            description="Get one YouTube upload queue item by ID.",
+            run=queue_get,
+            parameters={
+                "type": "object",
+                "properties": {"item_id": {"type": "string"}},
+                "required": ["item_id"],
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="youtube_queue_upload",
+            category="youtube",
+            description="Upload one queued YouTube video using OAuth; human approval is required.",
+            run=queue_upload,
+            high_impact=True,
+            parameters={
+                "type": "object",
+                "properties": {"item_id": {"type": "string"}},
+                "required": ["item_id"],
                 "additionalProperties": False,
             },
         )
