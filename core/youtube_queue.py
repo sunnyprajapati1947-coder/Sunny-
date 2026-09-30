@@ -72,6 +72,14 @@ def queue_add(
         "updated_at": _now(),
     }
     items = _load()
+    resolved_path = str(Path(video_path).expanduser().resolve())
+    for existing in items:
+        if (
+            str(Path(existing.get("video_path", "")).expanduser().resolve()) == resolved_path
+            and existing.get("status") in {"queued", "uploading", "uploaded"}
+        ):
+            return {"success": True, "already_queued": True, "item": existing, "queue_file": str(_queue_file())}
+    item["video_path"] = resolved_path
     items.append(item)
     _save(items)
     return {"success": True, "item": item, "queue_file": str(_queue_file())}
