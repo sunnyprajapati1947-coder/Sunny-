@@ -58,7 +58,7 @@ echo $! > "$PIDFILE"
 echo "Nova fast lane starting on 127.0.0.1:$FAST_PORT"
 
 # Give llama-server a short startup window and fail loudly if the API never becomes ready.
-for _ in $(seq 1 30); do
+for _ in $(seq 1 120); do
   if curl -fsS --max-time 1 "http://127.0.0.1:$FAST_PORT/v1/models" >/dev/null 2>&1; then
     echo "Nova fast lane READY on 127.0.0.1:$FAST_PORT"
     exit 0
