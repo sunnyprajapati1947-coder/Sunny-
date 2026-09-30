@@ -113,6 +113,79 @@ def create_project(topic: str, aspect: str = "16:9", duration_seconds: int = 20,
     return {"success": True, "project": str(project), "metadata": metadata}
 
 
+def validate_project(project_path: str) -> dict[str, Any]:
+    """Validate a project before rendering/queueing."""
+    project = Path(project_path).expanduser().resolve()
+    metadata_path = project / "metadata.json"
+    if not metadata_path.is_file():
+        return {"success": False, "score": 0, "issues": ["metadata.json missing"]}
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"success": False, "score": 0, "issues": [f"invalid metadata: {type(exc).__name__}"]}
+
+    issues: list[str] = []
+    score = 100
+    title = str(metadata.get("title", "")).strip()
+    hook = str(metadata.get("hook", "")).strip()
+    description = str(metadata.get("description", "")).strip()
+    script = str(metadata.get("script", "")).strip()
+    tags = metadata.get("tags", [])
+    sources = metadata.get("research", {}).get("sources", [])
+    if not title or len(title) > 90: issues.append("title_missing_or_too_long")
+    if len(hook) < 12: issues.append("hook_too_short")
+    if not description: issues.append("description_missing")
+    words = script.split()
+    if len(words) < 45: issues.append("script_too_short")
+    if len(words) > 230: issues.append("script_too_long")
+    if not isinstance(tags, list) or not tags: issues.append("tags_missing")
+    if not sources: issues.append("no_research_sources")
+    generic = ("hello guys", "welcome back", "did you know")
+    if any(x in script.lower() for x in generic): issues.append("generic_opening")
+    score -= min(80, len(issues) * 15)
+    return {"success": score >= 70, "score": score, "issues": issues,
+            "project": str(project), "sources": len(sources), "script_words": len(words)}
+
+
+def repair_project_content(project_path: str, validation: dict[str, Any]) -> dict[str, Any]:
+    """Use local Qwen for one bounded content repair pass, then revalidate."""
+    project = Path(project_path).expanduser().resolve()
+    metadata_path = project / "metadata.json"
+    if not metadata_path.is_file():
+        return {"success": False, "reason": "metadata.json missing"}
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    prompt = (
+        "Repair this YouTube package for quality. Keep factual claims grounded in the supplied research. "
+        "Return exactly five labeled lines: TITLE:, HOOK:, DESCRIPTION:, TAGS:, SCRIPT:. "
+        "Use a curiosity-first hook, no generic greeting, short spoken sentences, 120-170 words. "
+        "Preserve the topic and do not invent sources.\n"
+        f"TOPIC: {metadata.get('topic','')}\nTITLE: {metadata.get('title','')}\nHOOK: {metadata.get('hook','')}\n"
+        f"DESCRIPTION: {metadata.get('description','')}\nTAGS: {', '.join(metadata.get('tags',[]))}\n"
+        f"SCRIPT: {metadata.get('script','')}\nISSUES: {', '.join(validation.get('issues',[]))}\n"
+        f"EVIDENCE: {json.dumps(metadata.get('research',{}).get('sources',[])[:5], ensure_ascii=False)}"
+    )
+    generated = _qwen(prompt, timeout=45.0)
+    if not generated:
+        return {"success": False, "reason": "local Qwen unavailable"}
+    fields, current = {}, None
+    for line in generated.splitlines():
+        if ":" in line:
+            key, value = line.split(":", 1); current = key.strip().upper(); fields[current] = value.strip()
+        elif current:
+            fields[current] = fields.get(current, "") + " " + line.strip()
+    metadata["title"] = _clean(fields.get("TITLE", metadata.get("title","")), 90)
+    metadata["hook"] = _clean(fields.get("HOOK", metadata.get("hook","")), 120)
+    metadata["description"] = _clean(fields.get("DESCRIPTION", metadata.get("description","")), 700)
+    metadata["tags"] = [x.strip() for x in fields.get("TAGS", "").split(",") if x.strip()][:15] or metadata.get("tags", [])
+    metadata["script"] = _clean(fields.get("SCRIPT", metadata.get("script","")), 1200)
+    metadata["auto_repaired"] = True
+    metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+    (project / "script.txt").write_text(metadata["script"] + "\n", encoding="utf-8")
+    result = validate_project(str(project))
+    result["repaired"] = True
+    return result
+
+
 def _tts_command() -> str | None:
     for command in ("espeak-ng", "espeak"):
         if shutil.which(command):
@@ -331,11 +404,18 @@ def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -
     research = research_topic(topic)
     planned = create_project(topic, aspect, duration_seconds, research=research)
     project = planned["project"]
+    validation = validate_project(project)
+    repair_result = None
+    if not validation["success"]:
+        repair_result = repair_project_content(project, validation)
+        validation = repair_result
+    if not validation["success"]:
+        raise RuntimeError(f"content quality gate failed: {validation.get('issues', validation.get('reason', 'unknown'))}")
     audio = render_audio(project)
     rendered = render_project(project)
     thumbnail = render_thumbnail(project)
     queued = queue_project(project, privacy="private")
-    return {"success": True, "project": project, "metadata": rendered["metadata"], "video": rendered["video"], "audio": audio, "thumbnail": thumbnail, "queue": queued["queue"]}
+    return {"success": True, "project": project, "metadata": rendered["metadata"], "video": rendered["video"], "audio": audio, "thumbnail": thumbnail, "quality": validation, "repair": repair_result, "queue": queued["queue"]}
 def queue_project(project_path: str, privacy: str = "private") -> dict[str, Any]:
     """Send a rendered project into Nova's persistent YouTube queue without publishing."""
     from core.youtube_queue import queue_add
