@@ -72,6 +72,8 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertIn(str(root / "voiceover.wav"), args)
                 self.assertIn("-shortest", args)
                 self.assertTrue(result["metadata"]["audio_muxed"])
+                self.assertEqual(result["metadata"]["visual_mode"], "motion_cards")
+                self.assertGreaterEqual(result["metadata"]["scene_count"], 1)
 
     def test_research_topic(self):
         fake = {"results": [{"title": "Source", "url": "https://example.com", "snippet": "fact"}],
