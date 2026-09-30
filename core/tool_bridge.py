@@ -207,5 +207,38 @@ def build_registry() -> NovaToolRegistry:
         )
     )
 
+    from core.automation_tools import history as automation_history, run_pipeline
+
+    registry.register(
+        NovaTool(
+            name="nova_automation_run",
+            category="youtube",
+            description="Run Nova's local-first content pipeline: generate a topic package with local Qwen when available and render an MP4 with FFmpeg. Never publishes.",
+            run=run_pipeline,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "topic": {"type": "string"},
+                    "aspect": {"type": "string", "enum": ["16:9", "9:16"]},
+                    "duration_seconds": {"type": "integer", "minimum": 5, "maximum": 60},
+                },
+                "required": ["topic"],
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="nova_automation_history",
+            category="youtube",
+            description="Read recent Nova automation project history.",
+            run=automation_history,
+            parameters={
+                "type": "object",
+                "properties": {"limit": {"type": "integer", "minimum": 1, "maximum": 50}},
+                "additionalProperties": False,
+            },
+        )
+    )
 
     return registry
