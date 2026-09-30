@@ -2,7 +2,12 @@
 set -u
 
 ROOT="$HOME/Nova"
-LLAMA_SERVER="${NOVA_LLAMA_SERVER:-$HOME/llama.cpp/build-fast/bin/llama-server}"
+LLAMA_SERVER="${NOVA_LLAMA_SERVER:-}"
+if [ -z "$LLAMA_SERVER" ]; then
+  for candidate in "$HOME/llama.cpp/build-fast/bin/llama-server" "$HOME/llama.cpp/build/bin/llama-server"; do
+    if [ -x "$candidate" ]; then LLAMA_SERVER="$candidate"; break; fi
+  done
+fi
 FAST_PORT="${NOVA_FAST_QWEN_PORT:-8081}"
 FAST_HF="${NOVA_FAST_QWEN_HF:-Qwen/Qwen3-0.6B-GGUF:Q4_K_M}"
 LOG="$ROOT/workspace/logs/fast_lane.log"
