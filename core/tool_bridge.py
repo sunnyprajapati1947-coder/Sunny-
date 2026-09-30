@@ -207,7 +207,7 @@ def build_registry() -> NovaToolRegistry:
         )
     )
 
-    from core.automation_tools import history as automation_history, run_pipeline
+    from core.automation_tools import history as automation_history, render_audio, render_thumbnail, run_pipeline
 
     registry.register(
         NovaTool(
@@ -227,6 +227,35 @@ def build_registry() -> NovaToolRegistry:
             },
         )
     )
+    registry.register(
+        NovaTool(
+            name="nova_automation_audio",
+            category="youtube",
+            description="Render a local WAV voiceover when espeak-ng or espeak is available.",
+            run=render_audio,
+            parameters={
+                "type": "object",
+                "properties": {"project_path": {"type": "string"}},
+                "required": ["project_path"],
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="nova_automation_thumbnail",
+            category="youtube",
+            description="Render a local 1280x720 JPEG thumbnail from project metadata with FFmpeg.",
+            run=render_thumbnail,
+            parameters={
+                "type": "object",
+                "properties": {"project_path": {"type": "string"}},
+                "required": ["project_path"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
     registry.register(
         NovaTool(
             name="nova_automation_history",
