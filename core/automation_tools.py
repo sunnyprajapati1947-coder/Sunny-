@@ -163,7 +163,8 @@ def render_project(project_path: str) -> dict[str, Any]:
     return {"success": True, "project": str(project), "video": str(video), "metadata": metadata}
 
 def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -> dict[str, Any]:
-    research = research_topic(topic)\n    planned = create_project(topic, aspect, duration_seconds, research=research)
+    research = research_topic(topic)
+    planned = create_project(topic, aspect, duration_seconds, research=research)
     project = planned["project"]
     audio = render_audio(project)
     rendered = render_project(project)
