@@ -83,6 +83,21 @@ class AutomationToolsTests(unittest.TestCase):
             self.assertTrue(result["success"])
             self.assertEqual(len(result["sources"]), 1)
 
+    def test_discover_niche_uses_current_signals(self):
+        fake_research = {
+            "success": True,
+            "enabled": True,
+            "sources": [{"title": "Trend", "url": "https://example.com", "snippet": "fresh signal"}],
+            "documents": [],
+        }
+        with patch.object(automation_tools, "research_topic", return_value=fake_research), \
+             patch.object(automation_tools, "_qwen", return_value="NICHE: AI\nREASON: fresh\nTOPIC: New AI breakthrough"):
+            result = automation_tools.discover_niche()
+        self.assertTrue(result["success"])
+        self.assertEqual(result["niche"], "AI")
+        self.assertEqual(result["topic"], "New AI breakthrough")
+        self.assertTrue(result["model_used"])
+
     def test_pipeline_uses_existing_stages(self):
         with patch.object(automation_tools, "research_topic", return_value={"success": True, "sources": [], "documents": []}), patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}), patch.object(automation_tools, "queue_project", return_value={"success": True, "queue": {"id": "q1", "status": "queued"}}):
             result = automation_tools.run_pipeline("Test topic")
