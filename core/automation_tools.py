@@ -79,7 +79,8 @@ def create_project(topic: str, aspect: str = "16:9", duration_seconds: int = 20,
         tags = [x.strip() for x in fields.get("TAGS", "").split(",") if x.strip()][:15] or tags
         script = _clean(fields.get("SCRIPT", script), 1200)
     (project / "script.txt").write_text(script + "\n", encoding="utf-8")
-    metadata = {"topic": topic.strip(), "title": title, "description": description, "tags": tags,\n                "research": {"success": evidence.get("success", True), "enabled": evidence.get("enabled", False), "sources": evidence.get("sources", [])},
+    metadata = {"topic": topic.strip(), "title": title, "description": description, "tags": tags,
+                "research": {"success": evidence.get("success", True), "enabled": evidence.get("enabled", False), "sources": evidence.get("sources", [])},
                 "script": script, "aspect": aspect, "duration_seconds": duration,
                 "qwen_used": generated is not None, "model": QWEN_MODEL, "status": "planned"}
     (project / "metadata.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
