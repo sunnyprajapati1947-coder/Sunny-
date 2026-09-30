@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
 import requests
 
-from tools.base import Tool, ToolError
+from .base import Tool, ToolError
 
 
 ALLOWED_SCHEMES = ("http", "https")
