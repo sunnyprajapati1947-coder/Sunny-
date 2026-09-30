@@ -25,6 +25,22 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertFalse(result["metadata"]["qwen_used"])
                 self.assertTrue((Path(result["project"]) / "metadata.json").is_file())
 
+    def test_audio_skips_without_tts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "project"
+            root.mkdir()
+            (root / "metadata.json").write_text("{\"script\": \"hello\"}", encoding="utf-8")
+            with patch.object(automation_tools, "_tts_command", return_value=None):
+                result = automation_tools.render_audio(str(root))
+                self.assertFalse(result["success"])
+                self.assertTrue(result["skipped"])
+
+    def test_pipeline_uses_existing_stages(self):
+        with patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}):
+            result = automation_tools.run_pipeline("Test topic")
+            self.assertTrue(result["success"])
+            self.assertEqual(result["video"], "/tmp/video.mp4")
+
     def test_history_empty(self):
         with tempfile.TemporaryDirectory() as tmp:
             with patch.object(automation_tools, "HISTORY", Path(tmp) / "history.jsonl"):
