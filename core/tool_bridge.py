@@ -275,7 +275,33 @@ def build_registry() -> NovaToolRegistry:
         )
     )
 
-    from core.automation_tools import history as automation_history, queue_project, render_audio, render_thumbnail, run_pipeline
+    from core.automation_tools import autonomous_run, discover_niche, history as automation_history, queue_project, render_audio, render_thumbnail, run_pipeline
+
+    registry.register(
+        NovaTool(
+            name="nova_automation_autonomous",
+            category="youtube",
+            description="Discover a current YouTube opportunity from fresh web signals, choose a niche/topic with local Qwen, then run the existing render and private-queue pipeline.",
+            run=autonomous_run,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "aspect": {"type": "string", "enum": ["16:9", "9:16"]},
+                    "duration_seconds": {"type": "integer", "minimum": 5, "maximum": 60},
+                },
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="nova_youtube_discover_niche",
+            category="youtube",
+            description="Research current public-web signals and select one repeatable YouTube niche/topic without claiming guaranteed virality.",
+            run=discover_niche,
+            parameters={"type": "object", "properties": {}, "additionalProperties": False},
+        )
+    )
 
     registry.register(
         NovaTool(
