@@ -1,0 +1,5 @@
+# Nova local YouTube OAuth secrets and generated media
+youtube/client_secret.json
+youtube/token.json
+youtube/projects/
+youtube/*.json
