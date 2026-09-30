@@ -229,6 +229,61 @@ def render_project(project_path: str) -> dict[str, Any]:
         "scene_count": scene_count,
     })
     return {"success": True, "project": str(project), "video": str(video), "metadata": metadata}
+
+def discover_niche() -> dict[str, Any]:
+    """Select a high-opportunity YouTube niche from fresh public-web signals."""
+    candidates = [
+        "AI tools and practical AI breakthroughs",
+        "technology explained and future gadgets",
+        "science mysteries and surprising facts",
+        "cybersecurity and digital safety",
+        "space discoveries and astronomy",
+        "business and money concepts explained",
+        "history mysteries and forgotten events",
+    ]
+    packs = []
+    for niche in candidates:
+        evidence = research_topic(f"trending YouTube topics India {niche} latest news September 2026")
+        packs.append({"niche": niche, "source_count": len(evidence.get("sources", [])),
+                      "sources": evidence.get("sources", [])[:3], "documents": evidence.get("documents", [])[:2]})
+    signal_text = "\n\n".join(
+        f"NICHE: {p['niche']}\n" + "\n".join(
+            f"- {s.get('title', '')}: {s.get('snippet', '')}" for s in p["sources"]
+        ) for p in packs
+    )
+    prompt = (
+        "Choose ONE YouTube niche with the strongest current content opportunity. "
+        "Use freshness, audience relevance, repeatability and clear video angles. "
+        "Do not claim guaranteed virality. Return exactly three lines: "
+        "NICHE:, REASON:, TOPIC:. Keep TOPIC concrete and specific.\n\n" + signal_text
+    )
+    generated = _qwen(prompt, timeout=45.0)
+    selected = packs[0]["niche"]
+    reason = "Fallback selection because local Qwen was unavailable."
+    topic = f"Latest developments in {selected}"
+    if generated:
+        fields, current = {}, None
+        for line in generated.splitlines():
+            if ":" in line:
+                key, value = line.split(":", 1); current = key.strip().upper(); fields[current] = value.strip()
+            elif current:
+                fields[current] = fields.get(current, "") + " " + line.strip()
+        selected = _clean(fields.get("NICHE", selected), 120)
+        reason = _clean(fields.get("REASON", reason), 500)
+        topic = _clean(fields.get("TOPIC", topic), 180)
+    result = {"success": True, "niche": selected, "reason": reason, "topic": topic,
+              "signals": packs, "model_used": generated is not None}
+    _record({"event": "niche_discovered", "niche": selected, "topic": topic})
+    return result
+
+
+def autonomous_run(aspect: str = "9:16", duration_seconds: int = 30) -> dict[str, Any]:
+    """Discover a current content opportunity and run the existing pipeline."""
+    decision = discover_niche()
+    pipeline = run_pipeline(decision["topic"], aspect, duration_seconds)
+    pipeline["niche_decision"] = {"niche": decision["niche"], "reason": decision["reason"], "topic": decision["topic"]}
+    return pipeline
+
 def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -> dict[str, Any]:
     research = research_topic(topic)
     planned = create_project(topic, aspect, duration_seconds, research=research)
