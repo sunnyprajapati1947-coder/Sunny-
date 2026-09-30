@@ -144,5 +144,68 @@ def build_registry() -> NovaToolRegistry:
             },
         )
     )
+    from core.youtube_tools import channel_status, prepare_video, upload_video, youtube_status
+
+    registry.register(
+        NovaTool(
+            name="youtube_status",
+            category="youtube",
+            description="Check Nova's local YouTube automation and OAuth readiness.",
+            run=youtube_status,
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="youtube_channel_status",
+            category="youtube",
+            description="Check the authenticated YouTube channel; never creates a channel.",
+            run=channel_status,
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="youtube_prepare_video",
+            category="youtube",
+            description="Create a lightweight local video project and YouTube metadata package on Android.",
+            run=prepare_video,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "topic": {"type": "string"},
+                    "title": {"type": "string"},
+                    "description": {"type": "string"},
+                    "tags": {"type": "array"},
+                    "privacy": {"type": "string", "enum": ["private", "unlisted", "public"]},
+                    "aspect": {"type": "string", "enum": ["16:9", "9:16"]},
+                    "duration_seconds": {"type": "integer", "minimum": 2, "maximum": 60},
+                },
+                "required": ["topic"],
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="youtube_upload_video",
+            category="youtube",
+            description="Upload one prepared local video to YouTube using OAuth. Uploading requires human approval.",
+            run=upload_video,
+            high_impact=True,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "video_path": {"type": "string"},
+                    "title": {"type": "string"},
+                    "description": {"type": "string"},
+                    "tags": {"type": "array"},
+                    "privacy": {"type": "string", "enum": ["private", "unlisted", "public"]},
+                    "category_id": {"type": "string"},
+                },
+                "required": ["video_path", "title"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
 
     return registry
