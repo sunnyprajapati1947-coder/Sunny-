@@ -1,0 +1,6 @@
+# Optional dependencies for Nova's YouTube OAuth uploader.
+# No YouTube API key is required for uploads; OAuth user consent is required.
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+google-auth
