@@ -143,33 +143,92 @@ def render_thumbnail(project_path: str) -> dict[str, Any]:
     _record({"event": "thumbnail_rendered", "project": str(project), "thumbnail": str(thumbnail)})
     return {"success": True, "project": str(project), "thumbnail": str(thumbnail)}
 
+def _scene_chunks(text: str, count: int = 3, limit: int = 96) -> list[str]:
+    words = str(text or "").split()
+    if not words:
+        return [""]
+    chunks: list[str] = []
+    current = ""
+    for word in words:
+        candidate = (current + " " + word).strip()
+        if current and len(candidate) > limit:
+            chunks.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        chunks.append(current)
+    return chunks[:max(1, count)]
+
+
 def render_project(project_path: str) -> dict[str, Any]:
+    """Render a lightweight motion-card video with timed script scenes and optional voiceover."""
     project = Path(project_path).expanduser().resolve()
     metadata_path = project / "metadata.json"
-    if not metadata_path.is_file(): raise FileNotFoundError(f"metadata.json not found: {metadata_path}")
+    if not metadata_path.is_file():
+        raise FileNotFoundError(f"metadata.json not found: {metadata_path}")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     ffmpeg = shutil.which("ffmpeg")
-    if not ffmpeg: raise RuntimeError("ffmpeg is required")
+    if not ffmpeg:
+        raise RuntimeError("ffmpeg is required")
+
     width, height = (1280, 720) if metadata.get("aspect") == "16:9" else (720, 1280)
     duration = int(metadata.get("duration_seconds", 20))
+    duration = max(5, min(duration, 60))
     video = project / "video.mp4"
     title = _clean(metadata.get("title", "Nova"), 70).replace("\\", " ").replace("'", r"\'")
-    script = _clean(metadata.get("script", ""), 220).replace("\\", " ").replace("'", r"\'")
-    draw = f"drawtext=text='{title}':x=(w-text_w)/2:y=h*0.22:fontsize=48:fontcolor=white," + f"drawtext=text='{script}':x=(w-text_w)/2:y=h*0.48:fontsize=24:fontcolor=white:enable='between(t,0,60)'"
+    scenes = _scene_chunks(metadata.get("script", ""), 3, 92)
+    scene_count = max(1, len(scenes))
+    scene_len = duration / scene_count
+
+    filters = [
+        "drawbox=x='mod(t*120,w)':y='h*0.08':w=260:h='h*0.84':color=white@0.05:t=fill",
+        "drawbox=x='mod(w-t*85,w)':y='h*0.78':w=420:h=6:color=white@0.35:t=fill",
+        "drawtext=text='" + title + "':x=(w-text_w)/2:y=h*0.17:fontsize=48:fontcolor=white:"
+        "enable='between(t,0," + str(scene_len) + ")'",
+    ]
+    for index, scene in enumerate(scenes):
+        safe = scene.replace("\\", " ").replace("'", r"\'")
+        begin = round(index * scene_len, 3)
+        finish = round(duration if index == scene_count - 1 else (index + 1) * scene_len, 3)
+        filters.append(
+            "drawtext=text='" + safe + "':x=(w-text_w)/2:y=h*0.48:fontsize=26:fontcolor=white:"
+            "line_spacing=8:enable='between(t," + str(begin) + "," + str(finish) + ")'"
+        )
+    draw = ",".join(filters)
+
     audio = project / "voiceover.wav"
-    command = [ffmpeg, "-y", "-f", "lavfi", "-i", f"color=c=black:s={width}x{height}:d={duration}"]
+    command = [
+        ffmpeg, "-y", "-f", "lavfi", "-i",
+        f"color=c=black:s={width}x{height}:d={duration}:r=30",
+    ]
     if audio.is_file():
-        command += ["-i", str(audio), "-map", "0:v:0", "-map", "1:a:0", "-c:a", "aac", "-shortest"]
+        command += [
+            "-i", str(audio), "-map", "0:v:0", "-map", "1:a:0",
+            "-c:a", "aac", "-shortest",
+        ]
         metadata["audio_muxed"] = True
     else:
         metadata["audio_muxed"] = False
-    command += ["-vf", draw, "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(video)]
+
+    command += [
+        "-vf", draw, "-r", "30", "-c:v", "libx264",
+        "-pix_fmt", "yuv420p", str(video),
+    ]
     subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     metadata["status"], metadata["video"] = "rendered", str(video)
+    metadata["visual_mode"] = "motion_cards"
+    metadata["scene_count"] = scene_count
+    metadata["scene_duration_seconds"] = round(scene_len, 2)
     metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
-    _record({"event": "project_rendered", "project": str(project), "video": str(video)})
+    _record({
+        "event": "project_rendered",
+        "project": str(project),
+        "video": str(video),
+        "visual_mode": "motion_cards",
+        "scene_count": scene_count,
+    })
     return {"success": True, "project": str(project), "video": str(video), "metadata": metadata}
-
 def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -> dict[str, Any]:
     research = research_topic(topic)
     planned = create_project(topic, aspect, duration_seconds, research=research)
