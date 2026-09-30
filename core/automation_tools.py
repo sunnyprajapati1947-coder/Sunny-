@@ -72,6 +72,7 @@ def create_project(topic: str, aspect: str = "16:9", duration_seconds: int = 20,
         "Keep title under 90 chars, description under 700 chars, tags comma-separated, script around 100-150 words."
     )
     title = _clean(topic, 90)
+    hook = _clean(f"The surprising truth about {topic.strip()}", 120)
     description = f"An informative Nova video about {topic.strip()}."
     tags = [x.strip() for x in topic.split() if x.strip()][:8]
     script = topic.strip() + ". This video explains the key facts clearly and briefly."
@@ -83,11 +84,12 @@ def create_project(topic: str, aspect: str = "16:9", duration_seconds: int = 20,
             elif current:
                 fields[current] = fields.get(current, "") + " " + line.strip()
         title = _clean(fields.get("TITLE", title), 90)
+        hook = _clean(fields.get("HOOK", hook), 120)
         description = _clean(fields.get("DESCRIPTION", description), 700)
         tags = [x.strip() for x in fields.get("TAGS", "").split(",") if x.strip()][:15] or tags
         script = _clean(fields.get("SCRIPT", script), 1200)
     (project / "script.txt").write_text(script + "\n", encoding="utf-8")
-    metadata = {"topic": topic.strip(), "title": title, "description": description, "tags": tags,
+    metadata = {"topic": topic.strip(), "title": title, "hook": hook, "description": description, "tags": tags,
                 "research": {"success": evidence.get("success", True), "enabled": evidence.get("enabled", False), "sources": evidence.get("sources", [])},
                 "script": script, "aspect": aspect, "duration_seconds": duration,
                 "qwen_used": generated is not None, "model": QWEN_MODEL, "status": "planned"}
@@ -135,8 +137,17 @@ def render_thumbnail(project_path: str) -> dict[str, Any]:
     if not ffmpeg:
         raise RuntimeError("ffmpeg is required")
     title = _clean(metadata.get("title", "Nova"), 55).replace("\\", " ").replace("'", r"\'")
+    hook = _clean(metadata.get("hook", ""), 42).replace("\\", " ").replace("'", r"\'")
     thumbnail = project / "thumbnail.jpg"
-    draw = "drawtext=text='" + title + "':x=(w-text_w)/2:y=(h-text_h)/2:fontsize=58:fontcolor=white"
+    draw = ",".join([
+        "drawbox=x=0:y=0:w=1280:h=720:color=black:t=fill",
+        "drawbox=x=0:y=0:w=1280:h=720:color=0x111827@0.95:t=fill",
+        "drawbox=x=70:y=70:w=18:h=580:color=white@0.85:t=fill",
+        "drawbox=x=110:y=485:w=1060:h=5:color=white@0.45:t=fill",
+        "drawbox=x=110:y=525:w=760:h=72:color=black@0.65:t=fill",
+        "drawtext=text='" + title + "':x=110:y=170:fontsize=62:fontcolor=white:borderw=2:bordercolor=black@0.7",
+        "drawtext=text='" + hook + "':x=140:y=548:fontsize=27:fontcolor=white:borderw=1:bordercolor=black@0.8",
+    ])
     subprocess.run([ffmpeg, "-y", "-f", "lavfi", "-i", "color=c=black:s=1280x720", "-frames:v", "1", "-vf", draw, "-q:v", "3", str(thumbnail)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     metadata["thumbnail"] = str(thumbnail)
     metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -220,7 +231,9 @@ def render_project(project_path: str) -> dict[str, Any]:
     ]
     subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     metadata["status"], metadata["video"] = "rendered", str(video)
-    metadata["visual_mode"] = "motion_cards"
+    metadata["visual_mode"] = "cinematic_motion_cards"
+    metadata["visual_styles_supported"] = ["cinematic", "documentary", "cartoon", "gaming", "minimal"]
+    metadata["packaging"] = {"hook_first": True, "thumbnail_elements": 3, "retention_script": True}
     metadata["scene_count"] = scene_count
     metadata["scene_duration_seconds"] = round(scene_len, 2)
     metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -228,7 +241,7 @@ def render_project(project_path: str) -> dict[str, Any]:
         "event": "project_rendered",
         "project": str(project),
         "video": str(video),
-        "visual_mode": "motion_cards",
+        "visual_mode": "cinematic_motion_cards",
         "scene_count": scene_count,
     })
     return {"success": True, "project": str(project), "video": str(video), "metadata": metadata}
