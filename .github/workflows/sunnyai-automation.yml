@@ -74,6 +74,10 @@ jobs:
           ffmpeg -version | head -1
           python3 --version
 
+      - name: Nova automation smoke tests
+        run: |
+          python3 -m unittest tests/test_automation_tools.py
+
       - name: Run SunnyAI pipeline when present
         run: |
           set -e
