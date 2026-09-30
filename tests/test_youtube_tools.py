@@ -55,6 +55,17 @@ class YouTubeToolsTest(unittest.TestCase):
                 self.assertEqual(listed["count"], 1)
                 self.assertEqual(listed["items"][0]["id"], item_id)
 
+    def test_queue_add_is_idempotent_for_same_video(self):
+        with tempfile.TemporaryDirectory() as td:
+            video = Path(td) / "video.mp4"
+            video.write_bytes(b"fake")
+            with patch.dict(os.environ, {"NOVA_YOUTUBE_ROOT": td}):
+                first = queue_add(str(video), "Test")
+                second = queue_add(str(video), "Test")
+            self.assertTrue(first["success"])
+            self.assertTrue(second["already_queued"])
+            self.assertEqual(first["item"]["id"], second["item"]["id"])
+
     def test_channel_status_uses_authenticated_service(self):
         class Channels:
             def list(self, **kwargs):
