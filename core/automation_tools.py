@@ -68,6 +68,54 @@ def create_project(topic: str, aspect: str = "16:9", duration_seconds: int = 20)
     _record({"event": "project_created", "project": str(project), "topic": topic.strip()})
     return {"success": True, "project": str(project), "metadata": metadata}
 
+
+def _tts_command() -> str | None:
+    for command in ("espeak-ng", "espeak"):
+        if shutil.which(command):
+            return command
+    return None
+
+
+def render_audio(project_path: str) -> dict[str, Any]:
+    project = Path(project_path).expanduser().resolve()
+    metadata_path = project / "metadata.json"
+    if not metadata_path.is_file():
+        raise FileNotFoundError(f"metadata.json not found: {metadata_path}")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    command = _tts_command()
+    if not command:
+        return {"success": False, "skipped": True, "reason": "espeak-ng/espeak not installed"}
+    script = str(metadata.get("script", "")).strip()
+    if not script:
+        return {"success": False, "skipped": True, "reason": "script is empty"}
+    audio = project / "voiceover.wav"
+    subprocess.run([command, "-w", str(audio), script], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    metadata["voiceover"] = str(audio)
+    metadata["voiceover_engine"] = command
+    metadata["status"] = "audio_rendered"
+    metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+    _record({"event": "voiceover_rendered", "project": str(project), "audio": str(audio), "engine": command})
+    return {"success": True, "project": str(project), "audio": str(audio), "engine": command}
+
+
+def render_thumbnail(project_path: str) -> dict[str, Any]:
+    project = Path(project_path).expanduser().resolve()
+    metadata_path = project / "metadata.json"
+    if not metadata_path.is_file():
+        raise FileNotFoundError(f"metadata.json not found: {metadata_path}")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise RuntimeError("ffmpeg is required")
+    title = _clean(metadata.get("title", "Nova"), 55).replace("\\", " ").replace("'", r"\'")
+    thumbnail = project / "thumbnail.jpg"
+    draw = "drawtext=text='" + title + "':x=(w-text_w)/2:y=(h-text_h)/2:fontsize=58:fontcolor=white"
+    subprocess.run([ffmpeg, "-y", "-f", "lavfi", "-i", "color=c=black:s=1280x720", "-frames:v", "1", "-vf", draw, "-q:v", "3", str(thumbnail)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    metadata["thumbnail"] = str(thumbnail)
+    metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+    _record({"event": "thumbnail_rendered", "project": str(project), "thumbnail": str(thumbnail)})
+    return {"success": True, "project": str(project), "thumbnail": str(thumbnail)}
+
 def render_project(project_path: str) -> dict[str, Any]:
     project = Path(project_path).expanduser().resolve()
     metadata_path = project / "metadata.json"
@@ -91,8 +139,11 @@ def render_project(project_path: str) -> dict[str, Any]:
 
 def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -> dict[str, Any]:
     planned = create_project(topic, aspect, duration_seconds)
-    return render_project(planned["project"])
-
+    project = planned["project"]
+    audio = render_audio(project)
+    rendered = render_project(project)
+    thumbnail = render_thumbnail(project)
+    return {"success": True, "project": project, "metadata": rendered["metadata"], "video": rendered["video"], "audio": audio, "thumbnail": thumbnail}
 def history(limit: int = 20) -> dict[str, Any]:
     if not HISTORY.is_file(): return {"success": True, "items": []}
     lines = HISTORY.read_text(encoding="utf-8").splitlines()[-max(1, min(int(limit), 50)):]
