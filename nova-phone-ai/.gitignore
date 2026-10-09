@@ -1,0 +1,16 @@
+# Python caches and local data. Nothing here is ever committed.
+__pycache__/
+*.pyc
+*.db
+*.db-shm
+*.db-wal
+*.log
+secrets.env
+.env
+*.gguf
+*.tar.gz
+backups/
+run/
+logs/
+workspace/
+.nova-scratch/

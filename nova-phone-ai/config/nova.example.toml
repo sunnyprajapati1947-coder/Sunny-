@@ -1,0 +1,47 @@
+# Nova Phone AI configuration. Copy to $NOVA_HOME/nova.toml (install-termux.sh does this).
+# Never put API keys in this file. Keys go in $NOVA_HOME/secrets.env (chmod 600).
+
+# Where Nova stores its database, logs, backups and default workspace.
+# workspace = "~/.nova-phone/workspace"   # the only folder file-writing tools may touch
+
+# Daemon poll interval (seconds) for resuming unfinished tasks.
+daemon_interval = 30
+voice_tts = false
+
+[llm]
+# Your existing llama.cpp server (OpenAI-compatible). Do not change if it already works.
+base_url = "http://127.0.0.1:8081/v1"
+model = "Qwen3.5-0.8B-Q4_0"
+# Used only by doctor/start to check the file exists. Nova never modifies it.
+model_path = "~/NovaAI/models/Qwen3.5-0.8B-Q4_0.gguf"
+timeout = 180
+max_tokens = 384
+temperature = 0.3
+disable_thinking = true
+context_chars = 5000
+
+[online]
+# Optional, OFF by default. When enabled and a key exists, Nova can fall back to this
+# OpenAI-compatible endpoint if the local model is offline. Prompts leave your phone.
+enabled = false
+base_url = "https://api.groq.com/openai/v1"
+model = "llama-3.1-8b-instant"
+api_key_name = "NOVA_ONLINE_API_KEY"
+
+[agent]
+max_steps = 6
+max_plan_steps = 6
+max_step_retries = 2
+max_format_errors = 2
+allow_code_exec_in_daemon = false
+
+[web]
+# Optional self-hosted SearXNG. Empty = use keyless Wikipedia search.
+searxng_url = ""
+wikipedia_api = "https://en.wikipedia.org/w/api.php"   # use https://hi.wikipedia.org/w/api.php for Hindi results
+allow_private_hosts = false
+
+[update]
+remote = "origin"
+branch = "arena/c4b8873b-sunny"
+trusted_remotes = ["https://github.com/sunnyprajapati1947-coder/Sunny-.git"]

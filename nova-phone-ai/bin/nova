@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Launcher: runs the Nova CLI from this project folder (works through symlinks).
+DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+export PYTHONPATH="$DIR${PYTHONPATH:+:$PYTHONPATH}"
+exec "${NOVA_PYTHON:-python3}" -m nova "$@"
