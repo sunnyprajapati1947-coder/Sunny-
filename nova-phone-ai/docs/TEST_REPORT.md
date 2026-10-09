@@ -12,6 +12,8 @@ environment (reason given).
   everything that needs the device is NOT TESTED.
 - Command: `python3 -m unittest discover -s tests -t .` with `NOVA_LLAMA_SERVER_BIN` and `NOVA_TINY_GGUF` set →
   **89 tests, OK, 0 skipped** (last run).
+- Clean-environment run (`env -i`, empty HOME, no global git identity, no GitHub token, no llama env vars, mimicking CI):
+  **89 tests, OK, 1 skipped** (the real-llama test, which needs a llama.cpp build).
 
 ## Results by feature
 
@@ -61,10 +63,10 @@ environment (reason given).
 | Online fallback | disabled by default; used only when local fails; key sent only as Bearer | PASS | `test_online_lane_not_used_unless_enabled_and_keyed`, `test_fallback_to_online_*` (mock server) |
 | Online fallback | live provider call with a real key | NOT TESTED | no key supplied; provider hosts are not in this sandbox's allow-list |
 | Secrets | key values never printed by config/doctor | PASS | `test_tools_and_config_hide_secrets`, `test_doctor_never_prints_secret_values` |
-| Update | check against trusted remote | PASS (refusal path) | live: refused cleanly because the branch is not yet on GitHub; re-check after push |
+| Update | `nova update check` against the real trusted GitHub remote | PASS | live: fetched `arena/c4b8873b-sunny`, reported behind 0, fast-forward true, exit 0 |
 | Update | fast-forward apply after candidate tests, backup, rollback | PASS | `test_good_update_applies_with_backup_and_rolls_back` (real git repos) |
 | Update | failing candidate leaves installation unchanged | PASS | `test_candidate_that_fails_tests_never_touches_install` |
-| Update | untrusted remote, dirty tree, non-fast-forward refused | PASS | `test_untrusted_remote_is_refused`, `test_local_changes_block_update`, `test_apply_requires_explicit_confirmation` |
+| Update | untrusted remote, dirty tree, non-fast-forward refused | PASS | `test_untrusted_remote_is_refused`, `test_update_check_refuses_untrusted_remote` (CLI wiring), `test_local_changes_block_update`, `test_apply_requires_explicit_confirmation` |
 | Python version | Python 3.11.2 | PASS | this sandbox |
 | Python version | Python 3.13 | NOT TESTED locally | 3.13 could not be downloaded in the sandbox. A GitHub Actions matrix (3.11, 3.13) is configured in `.github/workflows/nova-phone-ai-tests.yml`; see the CI result. |
 | Existing projects | `~/NovaAI` and `/root/OpenJarvis` preserved | PASS by design | no code path writes outside Nova's own folders; `/root/OpenJarvis` was not readable in this sandbox |

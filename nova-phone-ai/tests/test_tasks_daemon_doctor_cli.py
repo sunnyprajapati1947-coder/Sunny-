@@ -247,11 +247,18 @@ class CliTests(unittest.TestCase):
         self.assertNotIn("abcdefgh-very-secret-1", out)
         self.assertIn("(hidden)", out)
 
-    def test_update_check_refuses_untrusted_or_non_repo(self):
+    @unittest.skipIf(os.environ.get("NOVA_CANDIDATE_TEST") == "1",
+                     "update candidates are copies without .git; the trust logic is covered in test_update")
+    def test_update_check_refuses_untrusted_remote(self):
+        # The real checkout's origin is trusted by default, so force an untrusted list here.
         home = Path(tempfile.mkdtemp()) / "nh4"
+        home.mkdir(parents=True)
+        (home / "nova.toml").write_text(
+            '[update]\ntrusted_remotes = ["https://example.invalid/not-trusted.git"]\n', encoding="utf-8")
         code, out = self.run_cli("update", "check", home=home)
         self.assertEqual(code, 1)
         self.assertIn("update refused", out)
+        self.assertIn("not in update.trusted_remotes", out)
 
     def test_doctor_exit_code_reflects_fail(self):
         home = Path(tempfile.mkdtemp()) / "nh5"
