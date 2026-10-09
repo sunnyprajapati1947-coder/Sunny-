@@ -79,17 +79,32 @@
 | 24 | `jarvis memory` CLI available | **PASS** | commands: `clear, index, list, search, stats, trust` (quarantined-fact trust model included) |
 | 25 | Official memory + sessions + continuation tests | **193 PASS / 40 FAIL / 30 skip** | **Sare 40 failures `openjarvis_rust` missing ki wajah se** (`MemoryBackendUnavailable`, `ModuleNotFoundError: No module named 'openjarvis_rust'`) — sandbox me rustc nahi hai. Phone par Rust extension pehle built hai → ye tests wahan pass hone chahiye. `RUST_AVAILABLE: False` sirf sandbox ka state hai. |
 | 26 | Restart-recovery / task resume real test | **NOT TESTED (phone)** | phone par `jarvis memory list` + session restart ke saath Phase 4 complete hoga |
+| 27 | **Full official tools test-suite** (`tests/tools`, 922 tests) | **904 PASS / 3 FAIL / 15 skip** | 3 failures diagnose kiye (neeche) — koi bhi hamare changes se nahi aaya |
+
+**3 tool-test failures ka exact reason (Rule 8 diagnosis):**
+
+1. `test_web_search.py::test_execute_tavily_error` + `test_execute_import_error` — ye tests Tavily fail karne par **DuckDuckGo fallback ke live success** ko assert karte hain; sandbox me fallback bhi network-blocked hai (`ConnectError` to mojeek/ddg). Internet wali machine par ye pass honge. **OpenJarvis bug nahi.**
+2. `test_browser.py::test_execute_navigation_error` — test `Navigation error` message expect karta hai, par SSRF guard pehle hi fail-close kar deta hai: `SSRF blocked: Could not resolve host (blocked, fail-closed)`. Security guard test-expectation se pehle trigger ho gaya (upstream test brittleness). Setup ko affect nahi karta.
 
 ---
 
 ## 4. Phone par exactly kya karna hai (copy-paste)
 
-`openjarvis-setup/` folder ko phone par rakh lo (git clone ya manual copy), phir **Debian proot ke andar**:
+**Files ab GitHub par hain:** PR [Sunny-#1](https://github.com/sunnyprajapati1947-coder/Sunny-/pull/1) (branch `arena/d101c5dd-sunny`). Phone par lene ke liye:
 
 ```bash
-cd /root          # jahan openjarvis-setup folder rakha ho
+cd /root
+git clone -b arena/d101c5dd-sunny https://github.com/sunnyprajapati1947-coder/Sunny-.git sunny-setup
+# ya agar Sunny- pehle se hai: git fetch origin arena/d101c5dd-sunny && git checkout origin/arena/d101c5dd-sunny -- openjarvis-setup/
+```
+
+`openjarvis-setup/` folder ko phone par rakh lo, phir **Debian proot ke andar**:
+
+```bash
+cd /root/sunny-setup     # ya jahan openjarvis-setup folder ho
 bash openjarvis-setup/gemini-fix.sh
 bash openjarvis-setup/gemini-test.sh
+bash openjarvis-setup/jarvis-status.sh   # daily health check (Phase 5)
 ```
 
 - `gemini-fix.sh` key sirf **hidden input** se maangega (chat me kabhi paste mat karo). Har changed file ka backup `*.bak-<timestamp>` banega.
@@ -140,7 +155,7 @@ Expected: `RUST_AVAILABLE: True` (tumhare phone par Rust build pehle successful 
 
 - **Phase 3 (partially done):** calculator/file/code/shell tools sandbox me verified; baaki web search/fetch phone par (`gemini-test.sh` ke baad simple tool commands).
 - **Phase 4 (partially done):** memory CLI + memory tools + official tests verified (Rust note upar); restart-recovery test phone par pending.
-- **Phase 5:** `jarvis-start` daily workflow, model switching (local `qwen3.5:2b` ↔ `gemini-3-flash`), logs.
+- **Phase 5 (start ho gaya):** `openjarvis-setup/jarvis-status.sh` daily health-check script ready (local server, key, Rust, doctor, memory, quick commands). Model switching commands report me hain.
 - **Phase 6 (optional):** voice (`jarvis chat --voice`), Termux:API, self-update (`jarvis self-update`).
 
 **Rule 12 reminder:** existing Nova project (`Sunny-` repo) untouched — sirf ye `openjarvis-setup/` add hua hai.
