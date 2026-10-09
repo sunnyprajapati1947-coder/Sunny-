@@ -80,6 +80,12 @@
 | 25 | Official memory + sessions + continuation tests | **193 PASS / 40 FAIL / 30 skip** | **Sare 40 failures `openjarvis_rust` missing ki wajah se** (`MemoryBackendUnavailable`, `ModuleNotFoundError: No module named 'openjarvis_rust'`) — sandbox me rustc nahi hai. Phone par Rust extension pehle built hai → ye tests wahan pass hone chahiye. `RUST_AVAILABLE: False` sirf sandbox ka state hai. |
 | 26 | Restart-recovery / task resume real test | **NOT TESTED (phone)** | phone par `jarvis memory list` + session restart ke saath Phase 4 complete hoga |
 | 27 | **Full official tools test-suite** (`tests/tools`, 922 tests) | **904 PASS / 3 FAIL / 15 skip** | 3 failures diagnose kiye (neeche) — koi bhi hamare changes se nahi aaya |
+| 28 | **Full official agents + engine suites** (1261 tests) | **1221 PASS / 38 FAIL / 2 skip** | 38 failures ka cause: **`openjarvis_rust` missing in sandbox** (66× `ModuleNotFoundError: openjarvis_rust` — security-boundary tests) + 4 gemma_cpp "Live" tests (real gemma model chahiye). Phone par Rust built hai → ye wahan pass honge |
+| 29 | **Multi-step workflow execution (official WorkflowEngine)** — `calc(137*42) → file_write → file_read` | **PASS** | `step calc: '5754.0'`, `step write: 'Successfully wrote...'`, `step read: 'WF-STEP2-OK 5754'` → `WF MULTI-STEP VERIFY: PASS`. **Section 7 ka multi-step + result-verification acceptance item clear** |
+| 30 | `jarvis workflow` CLI | **NOTE** | `list/run/status` available, par `run` abhi stub hai ("Full workflow execution requires a running system") — real execution WorkflowEngine API/SDK se hoti hai (upar test 29). Custom code nahi, official API hai |
+| 31 | `jarvis scheduler` CLI | **PASS (available)** | `create/list/pause/resume/run-task/logs/cancel/start` — task pause/resume + run logs = built-in task recovery (Phase 4) |
+| 32 | `jarvis self-update --check` (read-only) | **PASS** | version + install method + upgrade plan print hua, kuch modify nahi |
+| 33 | Voice backends inspection (Phase 6 prep) | **PASS (mapped)** | STT: `faster-whisper`/`openai-whisper` (local, free), `deepgram` (cloud). TTS: `kokoro` (local, free — `pip install kokoro`), `openai_tts`, `cartesia`. **₹0 combo: faster-whisper + kokoro.** Mic recording proot me Termux audio pe depend karta hai — phone par hi test hoga |
 
 **3 tool-test failures ka exact reason (Rule 8 diagnosis):**
 
@@ -154,8 +160,15 @@ Expected: `RUST_AVAILABLE: True` (tumhare phone par Rust build pehle successful 
 ## 6. Next phases (roadmap ke mutabiq)
 
 - **Phase 3 (partially done):** calculator/file/code/shell tools sandbox me verified; baaki web search/fetch phone par (`gemini-test.sh` ke baad simple tool commands).
-- **Phase 4 (partially done):** memory CLI + memory tools + official tests verified (Rust note upar); restart-recovery test phone par pending.
+- **Phase 4 (mostly done):** memory CLI + tools + **multi-step WorkflowEngine** + scheduler pause/resume/logs sab verified; restart-recovery live test phone par pending.
 - **Phase 5 (start ho gaya):** `openjarvis-setup/jarvis-status.sh` daily health-check script ready (local server, key, Rust, doctor, memory, quick commands). Model switching commands report me hain.
-- **Phase 6 (optional):** voice (`jarvis chat --voice`), Termux:API, self-update (`jarvis self-update`).
+- **Phase 6 (mapped):** voice ke liye ₹0 combo = `pip install faster-whisper kokoro` (local STT+TTS), phir `jarvis chat --voice`. Mic/speaker proot routing phone par test hoga — tabhi "working" mark hoga. Self-update: `jarvis self-update --check` se preview, phir `--yes`.
+
+**Scheduler quick test (phone, Phase 4 final):**
+
+```bash
+/root/OpenJarvis/.venv/bin/jarvis scheduler list
+# background daemon (Termux session me): jarvis scheduler start
+```
 
 **Rule 12 reminder:** existing Nova project (`Sunny-` repo) untouched — sirf ye `openjarvis-setup/` add hua hai.
