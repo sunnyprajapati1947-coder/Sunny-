@@ -57,6 +57,31 @@
 
 ---
 
+## 3b. Phase 3 — Core tools verification (sandbox, is session me)
+
+| # | Test | Status | Real output / reason |
+|---|---|---|---|
+| 16 | `code_interpreter`: `print(6*7)` | **PASS** | `42` |
+| 17 | `code_interpreter` sandbox guard (`import os` blocked) | **PASS** | `Blocked by code validation: import of 'os' is not allowed` — security design sahi kaam kar raha hai |
+| 18 | `shell_exec` bina approval | **PASS (safe-by-design)** | `Tool 'shell_exec' requires confirmation but no confirmation callback is available` — shell ke liye approval gate mandatory hai (correct behavior) |
+| 19 | `shell_exec` approval ke saath (`echo NOVA-SHELL-OK && uname -m`) | **PASS** | `NOVA-SHELL-OK` / `x86_64` |
+| 20 | `http_request` GET https://github.com | **FAIL — sandbox TLS** | `[SSL: CERTIFICATE_VERIFY_FAILED]` — sandbox ka TLS-interception CA Python certifi bundle me nahi; phone par aisa proxy nahi hai |
+| 21 | `http_request` GET https://example.com | **FAIL — sandbox network-blocked** | `TLS/SSL connection has been closed (EOF)` — allowlist sirf github/pypi |
+| 22 | `web_search` (keyless You.com → DDG fallback chain) | **FAIL — sandbox network-blocked** | engine chain trigger hui, sab TLS EOF; phone par pehle PASS |
+
+**Note:** tools ke *code paths* (dispatch, approval gate, sandboxing, error handling) sab verified hain; sirf outbound network sandbox me blocked hai. Phone par web_search/web_fetch re-verify karna hai (Phase 3 continuation).
+
+## 3c. Phase 4 — Memory / task persistence (sandbox, is session me)
+
+| # | Test | Status | Real output / reason |
+|---|---|---|---|
+| 23 | `memory_manage` add + read roundtrip | **PASS** | `Added: ...` then read-back me `gemini-3-flash ... recommended` entry verified |
+| 24 | `jarvis memory` CLI available | **PASS** | commands: `clear, index, list, search, stats, trust` (quarantined-fact trust model included) |
+| 25 | Official memory + sessions + continuation tests | **193 PASS / 40 FAIL / 30 skip** | **Sare 40 failures `openjarvis_rust` missing ki wajah se** (`MemoryBackendUnavailable`, `ModuleNotFoundError: No module named 'openjarvis_rust'`) — sandbox me rustc nahi hai. Phone par Rust extension pehle built hai → ye tests wahan pass hone chahiye. `RUST_AVAILABLE: False` sirf sandbox ka state hai. |
+| 26 | Restart-recovery / task resume real test | **NOT TESTED (phone)** | phone par `jarvis memory list` + session restart ke saath Phase 4 complete hoga |
+
+---
+
 ## 4. Phone par exactly kya karna hai (copy-paste)
 
 `openjarvis-setup/` folder ko phone par rakh lo (git clone ya manual copy), phir **Debian proot ke andar**:
@@ -74,6 +99,30 @@ bash openjarvis-setup/gemini-test.sh
   - Step D: `PONG`
   - Step E: final answer `5754`
 
+**Gemini ke baad Phase 3/4 ke phone checks** (same session me, output save karna):
+
+```bash
+# Phase 3: web search real test (keyless You.com engine)
+/root/OpenJarvis/.venv/bin/jarvis ask -e cloud -m gemini-3-flash -a orchestrator --tools web_search "Search the web: what is OpenJarvis AI? Summarize in 2 lines."
+
+# Phase 3: file task verify
+/root/OpenJarvis/.venv/bin/jarvis ask -m qwen3.5:2b -a orchestrator --tools file_write,file_read "Create /tmp/nova_task_test.txt with content HELLO-NOVA, then read it back and show me the content."
+
+# Phase 4: memory persistence + restart recovery
+/root/OpenJarvis/.venv/bin/jarvis memory stats
+/root/OpenJarvis/.venv/bin/jarvis memory list
+# phir OpenJarvis restart karo (start-jarvis.sh dobara) aur:
+/root/OpenJarvis/.venv/bin/jarvis memory list   # entries restore honi chahiye
+```
+
+**Rust extension check** (Phase 4 ke 40 sandbox-failures phone par yahan verify honge):
+
+```bash
+/root/OpenJarvis/.venv/bin/python -c "from openjarvis._rust_bridge import RUST_AVAILABLE; print('RUST_AVAILABLE:', RUST_AVAILABLE)"
+```
+
+Expected: `RUST_AVAILABLE: True` (tumhare phone par Rust build pehle successful tha).
+
 ---
 
 ## 5. Agar koi test FAIL ho to diagnosis map
@@ -87,10 +136,10 @@ bash openjarvis-setup/gemini-test.sh
 
 ---
 
-## 6. Next phases (roadmap ke mutabiq, abhi start nahi)
+## 6. Next phases (roadmap ke mutabiq)
 
-- **Phase 3:** web fetch, shell/code execution, multi-step orchestrator test — phone par `gemini-test.sh` ke baad.
-- **Phase 4:** memory/persistence (`jarvis memory`, sessions) inspect + restart-recovery test.
+- **Phase 3 (partially done):** calculator/file/code/shell tools sandbox me verified; baaki web search/fetch phone par (`gemini-test.sh` ke baad simple tool commands).
+- **Phase 4 (partially done):** memory CLI + memory tools + official tests verified (Rust note upar); restart-recovery test phone par pending.
 - **Phase 5:** `jarvis-start` daily workflow, model switching (local `qwen3.5:2b` ↔ `gemini-3-flash`), logs.
 - **Phase 6 (optional):** voice (`jarvis chat --voice`), Termux:API, self-update (`jarvis self-update`).
 
