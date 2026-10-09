@@ -68,7 +68,7 @@ environment (reason given).
 | Update | failing candidate leaves installation unchanged | PASS | `test_candidate_that_fails_tests_never_touches_install` |
 | Update | untrusted remote, dirty tree, non-fast-forward refused | PASS | `test_untrusted_remote_is_refused`, `test_update_check_refuses_untrusted_remote` (CLI wiring), `test_local_changes_block_update`, `test_apply_requires_explicit_confirmation` |
 | Python version | Python 3.11.2 | PASS | this sandbox |
-| Python version | Python 3.13 | NOT TESTED locally | 3.13 could not be downloaded in the sandbox. A GitHub Actions matrix (3.11, 3.13) is configured in `.github/workflows/nova-phone-ai-tests.yml`; see the CI result. |
+| Python version | Python 3.13 | PASS on GitHub Actions; NOT TESTED on the phone (3.13.5) | GitHub Actions run 37959116977 at commit 742f88a: "Python 3.13" and "Python 3.11" both success. 3.13 could not be installed in the build sandbox. |
 | Existing projects | `~/NovaAI` and `/root/OpenJarvis` preserved | PASS by design | no code path writes outside Nova's own folders; `/root/OpenJarvis` was not readable in this sandbox |
 
 ## Known issues and limits
@@ -76,4 +76,6 @@ environment (reason given).
 - Small local models may not follow the JSON protocol well. Nova then fails the step with a clear message rather than inventing results.
 - Keyless web search depends on Wikipedia's API and internet access; it is rate-limited and not a full web search.
 - Pre-existing `Sunny-` repo tests (outside `nova-phone-ai/`) show 9 errors in this sandbox because `requests` is not installed. These are unrelated and were not changed.
-- The GitHub repository `sunnyprajapati1947-coder/Sunny-` is currently **public**.
+- The GitHub repository `sunnyprajapati1947-coder/Sunny-` is currently **public** (`isPrivate: false`).
+  A private `Nova-Phone-AI` repository was not created, because the project lives inside this public repo under the operator rule.
+- The default update branch in `config/nova.example.toml` is the session branch `arena/c4b8873b-sunny`. Switch it to `main` once this work is merged.
