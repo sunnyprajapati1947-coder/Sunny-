@@ -1,6 +1,6 @@
 # Nova Phone AI
 
-A private, tool-using personal assistant for **Termux on Android**. It talks Hinglish/English, uses your
+A local, tool-using personal assistant for **Termux on Android**. It talks Hinglish/English, uses your
 **existing local llama.cpp model**, and does real work: reads and writes files in a sandboxed workspace,
 searches and reads web pages, runs tests and approved commands, keeps memory, and resumes unfinished tasks
 after a restart.
