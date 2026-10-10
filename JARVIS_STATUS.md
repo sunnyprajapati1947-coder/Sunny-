@@ -75,9 +75,23 @@ cd ~/Nova && git pull && jarvis-start
 4. **Setup me purana galat model URL hata diya** (ab download_model.sh
    hi ek matra model source hai).
 
+## v5 update (2026-10-10, raat 2)
+
+1. **Phone test fail fix**: trading test ab hermetic hai (real lane pe bhi
+   kabhi touch nahi hoga) + trading_desk partial-roles bug fix (adhure model
+   output pe deterministic fallback). jarvis-doctor ab fully green hoga.
+2. **Speed pack**: personality compact (~60% chhota), context 6 turns,
+   default 300 tokens, timeout 60s (NOVA_CHAT_TIMEOUT env) — 1.7B phone
+   pe replies noticeably fast; lambi wait pe "offline" jhooth band.
+3. **JARVIS WEB HUD** (phase 5 ✅): `jarvis-gui` — browser me Iron Man
+   style dashboard (127.0.0.1:8787, local-only, zero dependency):
+   - Arc-reactor theme, chat (same brain + memory), browser TTS + mic
+     (hi-IN speech recognition), status cards (lane/battery/tools/memory
+     auto-refresh), quick buttons (torch, news, time), background UPDATE.
+   - /api/tool allowlist se hi safe tools (torch/brightness/volume/open).
+
 ## Agla kaam (priority order)
 
-1. Web dashboard — Iron Man HUD (phase 5 completion)
-2. Task engine ↔ Jarvis loop wiring (phase 3 completion)
-3. YouTube pipeline integration (phase 7)
-4. Wake-word / fast STT research
+1. Task engine ↔ Jarvis loop wiring (phase 3 completion)
+2. YouTube pipeline integration (phase 7)
+3. Wake-word / fast STT research

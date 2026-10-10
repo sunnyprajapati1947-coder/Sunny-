@@ -178,10 +178,12 @@ class JarvisIntentUpgradeTest(unittest.TestCase):
 class PersonalityTest(unittest.TestCase):
     def test_personality_has_examples_and_rules(self):
         self.assertIn("Hinglish", JARVIS_PERSONALITY)
-        self.assertIn("NEVER reply in pure English", JARVIS_PERSONALITY)
-        self.assertIn("EXAMPLES", JARVIS_PERSONALITY)
-        # Few-shot examples make small models obey.
-        self.assertGreaterEqual(JARVIS_PERSONALITY.count(":"), 4)
+        self.assertIn("pure English kabhi nahi", JARVIS_PERSONALITY)
+        self.assertIn("Example", JARVIS_PERSONALITY)
+        # Few-shot example makes small models obey.
+        self.assertIn("kaise ho", JARVIS_PERSONALITY)
+        # Compact: phone-side 1.7B pays for every prompt token.
+        self.assertLess(len(JARVIS_PERSONALITY), 700)
 
 
 class SpeechSweetnessTest(unittest.TestCase):

@@ -17,7 +17,7 @@ from typing import Any
 
 DEFAULT_HISTORY = Path.home() / "Nova" / "workspace" / "chat_history.json"
 MAX_TURNS = 60          # stored on disk
-CONTEXT_TURNS = 8       # replayed into the model (kept small for phone speed)
+CONTEXT_TURNS = 6       # replayed into the model (small = fast on phone)
 MAX_TURN_CHARS = 1200   # per-turn cap so a huge answer can't bloat context
 
 

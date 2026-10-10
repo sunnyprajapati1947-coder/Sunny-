@@ -45,7 +45,10 @@ class TradingDeskTest(unittest.TestCase):
         self.assertLess(stats["sma_20"], stats["sma_50"])
 
     def test_market_analyze_with_mocked_history(self):
-        with patch.object(td, "_fetch_history", return_value=synthetic_rows()):
+        # Hermetic: patch the local lane too - on a real phone the fast lane
+        # is often RUNNING, and the test must never hit it.
+        with patch.object(td, "_fetch_history", return_value=synthetic_rows()), \
+             patch("core.fast_router.ask", return_value={"success": False, "lane": "fast", "answer": None}):
             result = td.market_analyze("AAPL")
         self.assertTrue(result["success"])
         self.assertEqual(result["symbol"], "AAPL")
@@ -55,7 +58,7 @@ class TradingDeskTest(unittest.TestCase):
         self.assertIn("trader", result["roles"])
         self.assertIn("risk_manager", result["roles"])
         self.assertIn("Not financial advice", result["disclaimer"])
-        # Local lanes are offline in tests, so the deterministic read is used.
+        # Lanes are mocked offline in tests, so the deterministic read is used.
         self.assertEqual(result["lane"], "offline-deterministic")
 
     def test_market_analyze_rejects_bad_symbol(self):

@@ -11,6 +11,7 @@ git clone -b arena/648528ed-sunny https://github.com/sunnyprajapati1947-coder/Su
 bash ~/Nova/automation/setup_termux.sh
 python3 ~/Nova/jarvis.py --text   # type mode (works anywhere)
 python3 ~/Nova/jarvis.py          # voice mode (needs the Termux:API app)
+jarvis-gui                        # Iron Man style web HUD (browser me)
 ```
 
 ## The Jarvis loop

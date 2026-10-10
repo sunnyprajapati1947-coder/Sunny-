@@ -61,10 +61,11 @@ if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
   ln -sf "$REPO/automation/jarvis_start.sh" "$PREFIX_BIN/jarvis-start"
   ln -sf "$REPO/automation/jarvis_doctor.sh" "$PREFIX_BIN/jarvis-doctor"
   ln -sf "$REPO/automation/jarvis_update.sh" "$PREFIX_BIN/jarvis-update"
+  ln -sf "$REPO/automation/jarvis_gui.sh" "$PREFIX_BIN/jarvis-gui"
   printf '#!/data/data/com.termux/files/usr/bin/bash\nexec python3 %s/jarvis.py "$@"\n' "$REPO" > "$PREFIX_BIN/jarvis"
   chmod +x "$PREFIX_BIN/jarvis"
   echo
-  echo "Commands install ho gaye: jarvis-start, jarvis-doctor, jarvis-update, jarvis (kahin se bhi chalao)"
+  echo "Commands install ho gaye: jarvis-start, jarvis-doctor, jarvis-update, jarvis-gui, jarvis (kahin se bhi chalao)"
 fi
 
 echo

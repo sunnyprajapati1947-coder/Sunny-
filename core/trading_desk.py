@@ -220,12 +220,14 @@ def market_analyze(symbol: str) -> dict[str, Any]:
                 roles["trader"] = str(trader.get("answer") or "")[:600]
             if risk.get("success"):
                 roles["risk_manager"] = str(risk.get("answer") or "")[:600]
-            if {"analyst", "bull_researcher", "bear_researcher"} <= roles.keys():
-                lane = "local-qwen"
+        if {"analyst", "bull_researcher", "bear_researcher"} <= roles.keys():
+            lane = "local-qwen"
     except Exception:
         roles = {}
 
-    if not roles:
+    # Partial model output is worse than none: only keep it if ALL core
+    # roles answered, otherwise fall back to the deterministic read.
+    if not ({"analyst", "bull_researcher", "bear_researcher"} <= roles.keys()):
         offline = _offline_analysis(sym, stats)
         roles = offline["roles"]
         lane = offline["lane"]

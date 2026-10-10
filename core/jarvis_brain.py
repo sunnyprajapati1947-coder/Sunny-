@@ -428,14 +428,17 @@ def respond(text: str) -> dict[str, Any]:
     # 3) Human-like conversation on the local lane, with memory.
     # Voice speed: 1.7B on a phone is ~8-15 tokens/s, so cap tokens normally
     # and only allow a long generation when detail was explicitly requested.
+    # 60s timeout: phone load + thermals can make 1.7B slow; better late
+    # than the dishonest "offline" message.
     detail = bool(DETAIL_Q.search(text))
-    max_tokens = 800 if detail else 350
+    max_tokens = 800 if detail else 300
+    timeout = float(os.getenv("NOVA_CHAT_TIMEOUT", "60"))
     history = history_context(history_load())
     try:
         from core.fast_router import ask
         result = ask(
             text,
-            timeout=30.0,
+            timeout=timeout,
             history=history,
             system=JARVIS_PERSONALITY,
             temperature=0.7,
@@ -456,7 +459,7 @@ def respond(text: str) -> dict[str, Any]:
             from core.fast_router import ask
             retry = ask(
                 f"{text}\n(Dobara wahi jawab mat do. Naya, alag jawab do, Hinglish me.)",
-                timeout=30.0,
+                timeout=timeout,
                 history=history,
                 system=JARVIS_PERSONALITY,
                 temperature=0.9,
