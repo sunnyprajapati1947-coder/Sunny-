@@ -165,6 +165,16 @@ Important limits:
 - Some Android TTS engines may use the internet; that is engine-dependent, so keep `/voice off` if you don't want that.
 - `/say TEXT` remains a separate confirmed one-time speech action.
 
+If `/voice engines` or `/voice test` says **"Termux API command timed out"**, the Android Termux:API side is not answering. This is not a Hinglish/voice-setting bug:
+
+1. Install the **Termux:API** Android app from F-Droid (same source as Termux), then run `pkg install termux-api`.
+2. In a second Termux session run `timeout 20 termux-battery-status` and `timeout 20 termux-tts-engines`. Whichever one hangs shows the broken part.
+3. Type `/voice off` while fixing; spoken replies stop and chat keeps working.
+
+Type one `/` command per line and wait for its output. A voice command blocks chat until speech finishes, so pasting many commands at once can mix up the outputs.
+
+For Roman Hinglish replies, `/voice lang en-IN` is usually a better choice than `hi-IN`; `hi-IN` is for Devanagari replies.
+
 Settings are stored only in `~/.jarvis-personal/preferences.json` (private file). A corrupt file falls back to defaults (voice off, `Sunny ji`).
 
 **Honest capability note.** Default brain is a small 1.7B Q8 local model on the phone. It can be warm and organized in Hinglish, but it will not match large cloud models in knowledge or reasoning. Do not expect "unlimited" or futuristic abilities from this local model. A bigger local model is possible only after a separate RAM/storage test on your phone.

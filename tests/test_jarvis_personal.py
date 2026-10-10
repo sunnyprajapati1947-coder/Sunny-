@@ -385,5 +385,20 @@ class JarvisLanguageAndVoiceTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs["input_text"], "Namaste Sunny ji!")
 
 
+class JarvisTtsTimeoutHintTests(unittest.TestCase):
+    @patch("jarvis_personal.termux_tools._run", return_value={"success": False, "error": "Termux API command timed out"})
+    def test_engine_listing_timeout_gets_actionable_hint(self, run):
+        result = app.tts_engines()
+        self.assertFalse(result["success"])
+        self.assertIn("Termux:API", result["hint"])
+        self.assertIn("termux-tts-engines", result["hint"])
+
+    @patch("jarvis_personal.termux_tools._run", return_value={"success": False, "error": "Termux API command timed out"})
+    def test_speech_timeout_hint_and_no_hint_for_other_errors(self, run):
+        self.assertIn("hint", app.speak_with_voice({"pitch": 1.1, "rate": 0.95}, "Namaste"))
+        run.return_value = {"success": False, "error": "Command unavailable: termux-tts-speak"}
+        self.assertNotIn("hint", app.speak_with_voice({"pitch": 1.1, "rate": 0.95}, "Namaste"))
+
+
 if __name__ == "__main__":
     unittest.main()

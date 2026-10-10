@@ -291,11 +291,26 @@ def open_website(url: str) -> dict:
     return termux_tools._run(["termux-open-url", url], timeout=10)
 
 
+TTS_TIMEOUT_HINT = (
+    "Termux:API did not answer in time. Check: (1) the Termux:API Android app is installed from the same "
+    "source as Termux (F-Droid), (2) `pkg install termux-api` finished, (3) in a second Termux session run "
+    "`timeout 20 termux-tts-engines` and `timeout 20 termux-battery-status` to see which one hangs. "
+    "Use /voice off while fixing this."
+)
+
+
+def with_hint(result: dict) -> dict:
+    """Add an actionable hint when an Android/Termux:API call hangs; the call itself is unchanged."""
+    if not result.get("success") and "timed out" in str(result.get("error", "")).lower():
+        result["hint"] = TTS_TIMEOUT_HINT
+    return result
+
+
 def speak(text: str) -> dict:
     """Approval-gated /say path: one explicit line, text sent on stdin (never as a flag)."""
     if not text.strip() or len(text) > 600:
         raise ValueError("Speech text must be 1–600 characters.")
-    return termux_tools._run(["termux-tts-speak"], timeout=45, input_text=text)
+    return with_hint(termux_tools._run(["termux-tts-speak"], timeout=45, input_text=text))
 
 
 def speech_text(text: str) -> str:
@@ -321,11 +336,11 @@ def voice_command(voice: dict) -> list[str]:
 
 
 def speak_with_voice(voice: dict, text: str) -> dict:
-    return termux_tools._run(voice_command(voice), timeout=120, input_text=speech_text(text))
+    return with_hint(termux_tools._run(voice_command(voice), timeout=120, input_text=speech_text(text)))
 
 
 def tts_engines() -> dict:
-    return termux_tools._run(["termux-tts-engines"], timeout=15)
+    return with_hint(termux_tools._run(["termux-tts-engines"], timeout=15))
 
 
 class PersonalJarvis:
@@ -532,6 +547,8 @@ def main(argv=None) -> int:
                         spoken = app.speak_reply(result)
                         if not spoken.get("success"):
                             print("Voice not played:", redact_secrets(str(spoken.get("error", spoken.get("data", "unknown")))))
+                            if spoken.get("hint"):
+                                print("Hint:", spoken["hint"])
                 else:
                     print(json.dumps(result, indent=2, ensure_ascii=False))
             except (error.URLError, ValueError, OSError, json.JSONDecodeError) as exc:
