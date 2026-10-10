@@ -6,7 +6,7 @@ import subprocess
 from typing import Any
 
 
-def _run(command: list[str], timeout: int = 10) -> dict[str, Any]:
+def _run(command: list[str], timeout: int = 10, input_text: str | None = None) -> dict[str, Any]:
     if not command or shutil.which(command[0]) is None:
         return {
             "success": False,
@@ -19,6 +19,7 @@ def _run(command: list[str], timeout: int = 10) -> dict[str, Any]:
             capture_output=True,
             text=True,
             timeout=timeout,
+            input=input_text,
         )
 
         stdout = p.stdout.strip()

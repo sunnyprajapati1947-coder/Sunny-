@@ -121,6 +121,54 @@ Use the **actual token printed** after reviewing the exact action; the token lab
 
 Official plugin guide: https://github.com/termux/termux-api . App and plugin must be from a compatible signing source. Don't uninstall existing Termux or enable broad permissions blindly. Package alone is not proof that plugin/Android permissions work.
 
+## 3b. Hinglish, "Sunny ji" aur voice (owner-only settings)
+
+**Update the phone copy first** (after this commit is pushed):
+
+```bash
+cd "$HOME/Jarvis/jarvis-github" && git pull
+python jarvis_personal.py --chat
+```
+
+**Language rule.** Default reply Hinglish mein (Roman letters) hoga. Devanagari/Hindi sirf tab jab aap message mein saaf likhein, jaise `Hindi mein bolo` ya `in Hindi`. Sirf Devanagari mein likhna Hindi jawab ki request nahi maana jata. Model agar galti se Devanagari de de, to ek baar Hinglish mein dobara jawab maanga jata hai.
+
+**Address.** Default naam `Sunny ji` hai. Badalne ke liye:
+
+```text
+/call Sunny ji
+/prefs
+```
+
+Naam 1–30 characters ka ho sakta hai (letters, digits, space, `.`, `'`, `-`). Quotes, newline ya HTML/prompt-like text reject hota hai.
+
+**Voice (default OFF).** Jarvis ke replies bolne ke liye:
+
+```text
+/voice engines          # installed TTS engines list (read-only)
+/voice engine NAME      # optional; /voice engine default clears it
+/voice lang en-IN       # or hi-IN; /voice lang default clears it
+/voice pitch 1.1        # 0.5–2.0, default 1.1
+/voice rate 0.95        # 0.5–2.0, default 0.95
+/voice test             # ek sample line bolega
+/voice on               # ab har Jarvis reply bolega
+/voice off
+```
+
+Verified from the Termux:API source (`scripts/termux-tts-speak.in`): `termux-tts-speak` accepts only `-e engine`, `-l language`, `-n region`, `-v variant`, `-p pitch`, `-r rate`, `-s stream`. There is **no voice-name or gender option**. So a "sweet female voice" depends on which installed Android TTS engine and voice the phone uses for that language. Pitch only brightens the tone; it does not make a male voice female. Choose a female-sounding voice in Android/Google TTS settings first, then test with `/voice test`.
+
+Important limits:
+
+- Voice settings and the address are changed only by your typed `/` commands. Model text like "voice on karo" or `/call X` in a reply does nothing.
+- Voice replies do not use approval tokens. They only speak text that the model already produced. They are not a tool the model can call.
+- Each reply is spoken at most about 400 characters (cut at a word boundary); full text is still printed.
+- Speaking waits until the line finishes, so the chat pauses briefly.
+- Some Android TTS engines may use the internet; that is engine-dependent, so keep `/voice off` if you don't want that.
+- `/say TEXT` remains a separate confirmed one-time speech action.
+
+Settings are stored only in `~/.jarvis-personal/preferences.json` (private file). A corrupt file falls back to defaults (voice off, `Sunny ji`).
+
+**Honest capability note.** Default brain is a small 1.7B Q8 local model on the phone. It can be warm and organized in Hinglish, but it will not match large cloud models in knowledge or reasoning. Do not expect "unlimited" or futuristic abilities from this local model. A bigger local model is possible only after a separate RAM/storage test on your phone.
+
 ## 4. All ten GitHub sources in the starter
 
 `/sources` shows all ten roles, pins, requirements and license warnings. `/fetch SOURCE_ID` requests an approved, pinned **source-only** download (no installer/runtime/model execution). Example `/fetch public-apis`, then review and confirm its real token.
@@ -142,4 +190,4 @@ Official plugin guide: https://github.com/termux/termux-api . App and plugin mus
 
 ## Verification scope
 
-Starter tests use fake local-model responses and mocked phone/browser/source actions. They verify one-time approval, original-argument binding in the app, no model-text command execution, credential URL rejection, key-free loopback requests, private notes, stop switch and ten-source catalog. No actual phone hands/live model/inference/API plugin test has been completed by the coding agent. Next evidence is your successful model health/response and app/tool outputs.
+Starter tests use fake local-model responses and mocked phone/browser/source/TTS actions. They also verify Hinglish/Devanagari retry rules, `Sunny ji` address validation, voice-off default, validated voice settings, the verified `termux-tts-speak` flags, and that model text cannot change settings or trigger speech. They verify one-time approval, original-argument binding in the app, no model-text command execution, credential URL rejection, key-free loopback requests, private notes, stop switch and ten-source catalog. No actual phone hands/live model/inference/API plugin test has been completed by the coding agent. Next evidence is your successful model health/response and app/tool outputs.
