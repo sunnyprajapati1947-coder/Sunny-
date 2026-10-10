@@ -8,6 +8,7 @@ from core.termux_tools import (
     clipboard_get,
     clipboard_set,
     device_volume,
+    dial_number,
     notify,
     open_app,
     set_brightness,
@@ -15,6 +16,7 @@ from core.termux_tools import (
     toast,
     torch_light,
     vibrate,
+    whatsapp_chat,
 )
 
 
@@ -235,6 +237,40 @@ def build_registry() -> NovaToolRegistry:
                 "type": "object",
                 "properties": {"percent": {"type": "integer", "minimum": 1, "maximum": 100}},
                 "required": ["percent"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_whatsapp",
+            category="phone",
+            description="Open a WhatsApp chat with a pre-filled message (wa.me). Send button is always the owner's - no auto-send.",
+            run=whatsapp_chat,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "number": {"type": "string", "description": "Phone number with country code, e.g. 919876543210."},
+                    "text": {"type": "string", "description": "Optional message to pre-fill."},
+                },
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_dial",
+            category="phone",
+            description="Open the phone dialer with a number (tel:). The call button is always the owner's.",
+            run=dial_number,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "number": {"type": "string", "description": "Phone number with country code."},
+                },
+                "required": ["number"],
                 "additionalProperties": False,
             },
         )

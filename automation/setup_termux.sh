@@ -54,15 +54,17 @@ echo
 echo "== [5/5] GitHub sources =="
 python3 -m core.source_manifest
 
-# Install `jarvis` / `jarvis-start` / `jarvis-doctor` commands into PATH.
+# Install `jarvis` / `jarvis-start` / `jarvis-doctor` / `jarvis-update` commands into PATH.
+chmod +x "$REPO"/automation/*.sh 2>/dev/null || true
 PREFIX_BIN="/data/data/com.termux/files/usr/bin"
 if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
   ln -sf "$REPO/automation/jarvis_start.sh" "$PREFIX_BIN/jarvis-start"
   ln -sf "$REPO/automation/jarvis_doctor.sh" "$PREFIX_BIN/jarvis-doctor"
+  ln -sf "$REPO/automation/jarvis_update.sh" "$PREFIX_BIN/jarvis-update"
   printf '#!/data/data/com.termux/files/usr/bin/bash\nexec python3 %s/jarvis.py "$@"\n' "$REPO" > "$PREFIX_BIN/jarvis"
   chmod +x "$PREFIX_BIN/jarvis"
   echo
-  echo "Commands install ho gaye: jarvis-start, jarvis-doctor, jarvis (kahin se bhi chalao)"
+  echo "Commands install ho gaye: jarvis-start, jarvis-doctor, jarvis-update, jarvis (kahin se bhi chalao)"
 fi
 
 echo
@@ -73,13 +75,12 @@ echo "   Voice mode ke liye: Termux:API app install karo, phir:"
 echo "     python3 $REPO/jarvis.py"
 echo "2) Human-jaisi baat karne ke liye local model lane (one-time, see below):"
 echo
-echo "   Local model lane (one-time setup):"
+echo "   Local model lane (agar pehle se nahi bana):"
 echo "     pkg install -y git cmake clang"
 echo "     git clone https://github.com/ggml-org/llama.cpp ~/llama.cpp"
 echo "     cmake -S ~/llama.cpp -B ~/llama.cpp/build -DGGML_LLAMAFILE=OFF -DLLAMA_CURL=OFF"
 echo "     cmake --build ~/llama.cpp/build --target llama-server -j 4"
-echo "     mkdir -p ~/models"
-echo "     curl -L -o ~/models/Qwen3-0.6B-Q4_K_M.gguf 'https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q4_K_M.gguf'"
+echo "   Model download (verified URLs + size check):"
+echo "     bash $REPO/automation/download_model.sh 1.7b"
+echo "   Lane start:"
 echo "     bash $REPO/automation/start_fast_lane.sh"
-echo
-echo "   (If the model link 404s, browse huggingface.co/Qwen for the GGUF repo.)"

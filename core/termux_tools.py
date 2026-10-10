@@ -100,6 +100,18 @@ KNOWN_APPS: dict[str, tuple[str, str]] = {
 _APP_NAME_RE = re.compile(r"\b(" + "|".join(sorted(KNOWN_APPS, key=len, reverse=True)) + r")\b")
 
 
+def _open_uri(uri: str) -> bool:
+    """Open any URI on Android: /system/bin/am first, termux-open-url fallback."""
+    if Path(AM_BIN).exists():
+        done = subprocess.run(
+            [AM_BIN, "start", "-a", "android.intent.action.VIEW", "-d", uri],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+        if done.returncode == 0:
+            return True
+    return _run(["termux-open-url", uri]).get("success") is True
+
+
 def open_app(target: str) -> dict[str, Any]:
     """Open an app or website on the phone.
 
@@ -111,20 +123,15 @@ def open_app(target: str) -> dict[str, Any]:
     if not target:
         return {"success": False, "error": "Kya kholna hai? Naam bolo."}
 
-    def _open(uri: str) -> bool:
-        # `am` lives at /system/bin/am on Android - not on Termux's PATH.
-        if Path(AM_BIN).exists():
-            done = subprocess.run(
-                [AM_BIN, "start", "-a", "android.intent.action.VIEW", "-d", uri],
-                capture_output=True, text=True, timeout=10, check=False,
-            )
-            if done.returncode == 0:
-                return True
-        return _run(["termux-open-url", uri]).get("success") is True
+    # Direct URL in the request.
+    if target.startswith(("http://", "https://")):
+        if _open_uri(target):
+            return {"success": True, "opened": target, "mode": "url"}
+        return {"success": False, "error": "Open nahi ho paya."}
 
     # Direct URL in the request.
     if target.startswith(("http://", "https://")):
-        if _open(target):
+        if _open_uri(target):
             return {"success": True, "opened": target, "mode": "url"}
         return {"success": False, "error": "Open nahi ho paya."}
 
@@ -138,9 +145,9 @@ def open_app(target: str) -> dict[str, Any]:
         }
     name = m.group(0)
     scheme, web = KNOWN_APPS[name]
-    if _open(scheme):
+    if _open_uri(scheme):
         return {"success": True, "opened": name, "mode": "app"}
-    if _open(web):
+    if _open_uri(web):
         return {"success": True, "opened": name, "mode": "browser"}
     return {"success": False, "error": f"{name} open nahi ho paya."}
 
@@ -217,3 +224,50 @@ def set_brightness(percent: int) -> dict[str, Any]:
     if result.get("success"):
         return {"success": True, "brightness": percent}
     return {"success": False, "error": "Brightness set nahi hui — Termux:API check karo."}
+
+
+PHONE_NUMBER_RE = re.compile(r"(\+?\d[\d\s-]{7,14}\d)")
+
+
+def _clean_number(number: str) -> str:
+    return re.sub(r"\D", "", str(number or ""))
+
+
+def whatsapp_chat(number: str = "", text: str = "") -> dict[str, Any]:
+    """Open a WhatsApp chat (with a pre-filled message) for a number.
+
+    Uses the public wa.me link - works without any API. Without a number it
+    opens WhatsApp's share picker. Nothing is sent automatically; the send
+    button is always the owner's.
+    """
+    from urllib.parse import quote
+
+    digits = _clean_number(number)
+    if digits and not (8 <= len(digits) <= 15):
+        return {"success": False, "error": "Number 8-15 digits ka hona chahiye."}
+    message = str(text or "").strip()[:500]
+    if digits:
+        uri = f"https://wa.me/{digits}"
+    else:
+        uri = "https://wa.me/"
+    if message:
+        uri += f"?text={quote(message)}"
+    if _open_uri(uri):
+        return {
+            "success": True,
+            "opened": "whatsapp",
+            "number": digits or "picker",
+            "message_prefilled": bool(message),
+            "note": "Send button Boss ko dabana hai - auto-send nahi hota.",
+        }
+    return {"success": False, "error": "WhatsApp chat open nahi hui."}
+
+
+def dial_number(number: str) -> dict[str, Any]:
+    """Open the phone dialer with a number (call button user dabata hai)."""
+    digits = _clean_number(number)
+    if not (8 <= len(digits) <= 15):
+        return {"success": False, "error": "Sahi phone number bolo (8-15 digits)."}
+    if _open_uri(f"tel:{digits}"):
+        return {"success": True, "dialer": digits, "note": "Dialer khul gaya - call button Boss ke haath me hai."}
+    return {"success": False, "error": "Dialer open nahi hua."}

@@ -39,6 +39,9 @@ VOLUME_Q = re.compile(r"\b(volume|awaz|awaaz|sound|niki|neeche)\b.*\b(badhao|bad
 BRIGHTNESS_Q = re.compile(r"\b(brightness|roshni)\b", re.IGNORECASE)
 STUDY_Q = re.compile(r"\b(padhai|study|syllabus|exam|board|quiz|mock test|ncert|class ?10|dasvi|science|maths|ganit|vigyan|sst|social science)\b", re.IGNORECASE)
 DETAIL_Q = re.compile(r"\b(detail|detailed|explain|samjhao|lambi|pura|poora|list banao|points me|deep)\b", re.IGNORECASE)
+WHATSAPP_Q = re.compile(r"\bwhatsapp\b", re.IGNORECASE)
+CALL_Q = re.compile(r"\b(call karo|phone lagao|phone karo|dial karo|dial kar|missed call|call lagao)\b", re.IGNORECASE)
+UPDATE_Q = re.compile(r"(?:\b(update|upgrade|naya version)\b.*\b(jarvis|nova|repo|code|khud)\b)|(?:\b(jarvis|nova|repo)\b.*\b(update|upgrade)\b)", re.IGNORECASE)
 
 
 def _registry():
@@ -334,7 +337,73 @@ def _intents(text: str) -> str | None:
             pass
         return "Padhai mode ready hai Boss — subject bolo (science, maths, sst, hindi, english)."
 
+    # Self-update: Jarvis khud GitHub se naya code leta hai (safe + rollback).
+    if UPDATE_Q.search(text):
+        import subprocess as _sp
+        from pathlib import Path as _P
+        script = _P(__file__).resolve().parent.parent / "automation" / "jarvis_update.sh"
+        if not script.is_file():
+            return f"Update script nahi mila {OWNER_NAME}."
+        try:
+            done = _sp.run(
+                ["bash", str(script)], capture_output=True, text=True,
+                timeout=600, cwd=str(script.parent.parent), check=False,
+            )
+            output = (done.stdout or "") + (done.stderr or "")
+            lines = [l.strip() for l in output.splitlines() if l.strip()]
+            summary = " ".join(lines[-2:])[:350] if lines else "koi output nahi aaya"
+            status = "ho gaya" if done.returncode == 0 else "me dikkat aayi"
+            return f"Update check {status} {OWNER_NAME}. {summary}"
+        except Exception as exc:
+            return f"Update chala nahi {OWNER_NAME}: {exc}"
+
+    # WhatsApp: number + pre-filled message ke saath chat kholo (send button Boss ke haath me).
+    if WHATSAPP_Q.search(text):
+        from core.termux_tools import PHONE_NUMBER_RE
+        m = PHONE_NUMBER_RE.search(text)
+        number = m.group(0) if m else ""
+        msg = _extract_message(text)
+        try:
+            result = _unwrap(registry.execute(
+                "phone_whatsapp", {"number": number, "text": msg}))
+            if result.get("success"):
+                who = result.get("number") or "picker"
+                extra = "message likha hua ready hai" if result.get("message_prefilled") else "chat khuli hai"
+                return f"WhatsApp {who} ke liye khol di {OWNER_NAME}, {extra}. Send button tumhara hai."
+            return result.get("error", "WhatsApp khula nahi.")
+        except Exception:
+            return "WhatsApp kholne me dikkat aayi."
+
+    # Call: dialer kholega (call button Boss ke haath me).
+    if CALL_Q.search(text):
+        from core.termux_tools import PHONE_NUMBER_RE
+        m = PHONE_NUMBER_RE.search(text)
+        if not m:
+            return f"Number bolo {OWNER_NAME}, dialer khol deta hu."
+        try:
+            result = _unwrap(registry.execute("phone_dial", {"number": m.group(0)}))
+            if result.get("success"):
+                return f"Dialer me {result.get('dialer')} laga di {OWNER_NAME} - call button dabao."
+            return result.get("error", "Dialer nahi khula.")
+        except Exception:
+            return "Dialer kholne me dikkat aayi."
+
     return None
+
+
+def _extract_message(text: str) -> str:
+    """WhatsApp message nikaalo: '... bhejo ki <msg>' ya 'message <msg>'."""
+    m = re.search(r"\bki\b\s+(.+)$", text, re.IGNORECASE)
+    if m:
+        msg = m.group(1)
+    else:
+        m = re.search(r"\b(?:message|msg|bhejo|bhej|text)\b\s*(?:ki|:)?\s*(.+)$", text, re.IGNORECASE)
+        msg = m.group(1) if m else ""
+    # Number aur command words hatao.
+    from core.termux_tools import PHONE_NUMBER_RE
+    msg = PHONE_NUMBER_RE.sub(" ", msg)
+    msg = re.sub(r"\b(whatsapp|pe|par|ko|karo|kar|do|de|bhejo|bhej|message|msg|jarvis|nova|boss|wa)\b", " ", msg, flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", msg).strip(" ?.,-")[:400]
 
 
 def respond(text: str) -> dict[str, Any]:
