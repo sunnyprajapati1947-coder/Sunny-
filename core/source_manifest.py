@@ -2,14 +2,20 @@ from pathlib import Path
 
 ROOT = Path.home() / "Nova"
 REPO = Path(__file__).resolve().parent.parent
+
+# Vendored code that lives inside this repository.
 SOURCES = {
-    "hakim": ROOT / "github" / "local-ai-agent",
-    "mimir": ROOT / "github" / "mimir",
-    "android_agent": ROOT / "github" / "local-AI-Agent",
-    "termux_assistant": ROOT / "github" / "termux-assistant",
-    "llama_agent": ROOT / "github" / "llama-agent",
-    "nova_voice": ROOT / "github" / "nova-ai-assistant",
+    "local_ai_agent": REPO / "github" / "local_ai_agent",
 }
+
+# First-wave sources that were adapted concept-only (no vendored code).
+ADAPTED = (
+    "mimir",
+    "android_agent",
+    "termux_assistant",
+    "llama_agent",
+    "nova_voice",
+)
 
 # Second import wave: adapted (not vendored) sources. Each entry points at the
 # import plan plus the curated data/modules derived from that source.
@@ -35,3 +41,5 @@ def check():
 if __name__ == "__main__":
     for name, ok in check().items():
         print(f"{name}: {'OK' if ok else 'MISSING'}")
+    for name in ADAPTED:
+        print(f"{name}: ADAPTED (concepts only, not vendored)")
