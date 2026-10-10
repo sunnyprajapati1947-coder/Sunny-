@@ -130,5 +130,24 @@ class ConversationMemoryTests(unittest.TestCase):
         self.assertEqual([m["content"] for m in messages[2:]], ["EX", "H", "Q now"])
 
 
+class LiveInfoHonestyTests(unittest.TestCase):
+    def test_live_news_question_never_reaches_model_and_is_honest(self):
+        brain = Mock()
+        with TemporaryDirectory() as tmp:
+            personal = app.PersonalJarvis(Path(tmp) / "private", Path(tmp) / "sources", brain=brain)
+            try:
+                reply = personal.handle("Kya ha aaj ka latest news")
+            finally:
+                personal.close()
+        brain.ask.assert_not_called()
+        self.assertIn("Sunny ji", reply)
+        self.assertIn("live internet", reply)
+
+    def test_ordinary_questions_still_use_model(self):
+        self.assertIsNone(app.LIVE_INFO_RE.search("aaj ka plan bana do"))
+        self.assertIsNone(app.LIVE_INFO_RE.search("Namaste, tum kya kar sakte ho?"))
+        self.assertIsNotNone(app.LIVE_INFO_RE.search("mausam kaisa hai"))
+
+
 if __name__ == "__main__":
     unittest.main()

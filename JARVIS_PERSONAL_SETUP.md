@@ -212,6 +212,22 @@ Terminal mein ek link dikhega: `http://127.0.0.1:8787/?token=...`. Ye link **isi
 
 Browser page par abhi voice (speech) nahi hai; voice terminal mein hi chalta hai. Port busy ho to `--port 8788` jaise dusra port dein.
 
+### Jarvis page ka auto-restart, reminders aur limits
+
+- **Auto-restart (sirf Jarvis ka apna web process):**
+  ```bash
+  bash automation/jarvis_web_keepalive.sh
+  ```
+  Crash hone par 2s, 4s, 8s… ke gap se dobara chalta hai (max 60s). Restart hone par **naya token** banta hai, isliye naya link kholiye. Termux app ko Android band kar de to koi script bhi nahi chal sakti; isliye `termux-wake-lock` (agar available ho) use hota hai. Ye sirf wahi command chalata hai jo aap dekhte hain: koi download ya install nahi.
+- **Reminders:** page khula ho to upar banner aata hai jo overdue aur aaj ke tasks dikhata hai (har 5 minute mein check). Background push notification abhi nahi hai.
+- **Live information:** news, mausam, share/crypto price jaise sawalon ka jawab Jarvis fixed honest message se deta hai ("live access nahi hai"). Model inhe guess nahi karta.
+
+**Ye abhi jaan-boojhkar nahi hai (aur bina aapki alag permission ke nahi hoga):**
+
+- Phone par bina confirm kiye automatic kaam (SMS, call, payment, app install, settings badalna). Har action ke liye aapki confirmation chahiye.
+- Failed kaam ko kisi bhi online source se khud-ba-khud poora karna. Online research sirf ek alag, explicit permission ke baad, aur har query dikhakar hi.
+- "Sab kuch janne wala" Jarvis: local model galat bhi ho sakta hai. Jo sach nahi pata, wo use "nahi pata" hi bolna chahiye.
+
 ## 4. All ten GitHub sources in the starter
 
 `/sources` shows all ten roles, pins, requirements and license warnings. `/fetch SOURCE_ID` requests an approved, pinned **source-only** download (no installer/runtime/model execution). Example `/fetch public-apis`, then review and confirm its real token.

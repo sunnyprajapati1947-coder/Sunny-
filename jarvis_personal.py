@@ -221,6 +221,16 @@ def style_examples(address: str) -> list[dict]:
 
 HISTORY_TURNS = 3
 HISTORY_CHARS = 300
+# Live information needs internet/news access this starter does not have. A small
+# local model may invent "latest" facts, so these questions get a fixed honest answer.
+LIVE_INFO_RE = re.compile(
+    r"(?i)\b(news|khabar|khabre|weather|mausam|share price|stock price|bitcoin|crypto price|live score|breaking news)\b"
+)
+LIVE_INFO_REPLY = (
+    "{address}, mere paas abhi live internet aur news ka access nahi hai, isliye aaj ki latest khabar, "
+    "live mausam ya price main confirm nahi kar sakta. Kisi trusted news ya weather app par check karein. "
+    "Online research ka feature abhi band hai; use aap ki alag permission ke baad hi chalu kiya ja sakta hai."
+)
 
 
 def clean_address(value: str) -> str:
@@ -422,6 +432,12 @@ class PersonalJarvis:
         return result
 
     def converse(self, question: str) -> str:
+        if LIVE_INFO_RE.search(question):
+            reply = LIVE_INFO_REPLY.format(address=self.prefs.address)
+            self.history.append({"role": "user", "content": question[:HISTORY_CHARS]})
+            self.history.append({"role": "assistant", "content": reply[:HISTORY_CHARS]})
+            del self.history[: -2 * HISTORY_TURNS]
+            return reply
         explicit_hindi = bool(EXPLICIT_HINDI_RE.search(question))
         mode = "hindi" if explicit_hindi else "default"
         parts = [self.memory.context()]

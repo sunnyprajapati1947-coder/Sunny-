@@ -23,66 +23,175 @@ LOOPBACK_HOST = "127.0.0.1"
 
 PAGE = """<!doctype html>
 <html lang="hi"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070a14">
 <title>Jarvis</title>
 <style>
- :root { color-scheme: dark; }
- body { margin:0; font-family: system-ui, sans-serif; background:#0b0f19; color:#e6edf7; display:flex; flex-direction:column; height:100vh; }
- header { padding:12px 16px; border-bottom:1px solid #1f2a3d; font-weight:600; letter-spacing:.5px; }
- header span { color:#7aa2ff; }
- #log { flex:1; overflow-y:auto; padding:12px; }
- .msg { max-width:92%; padding:10px 12px; border-radius:12px; margin:6px 0; white-space:pre-wrap; word-wrap:break-word; }
- .you { margin-left:auto; background:#1e3a8a; }
- .jarvis { background:#141d2e; border:1px solid #1f2a3d; }
- .err { background:#4a1d1d; }
- form { display:flex; gap:8px; padding:10px; border-top:1px solid #1f2a3d; }
- input { flex:1; padding:12px; border-radius:10px; border:1px solid #2a3850; background:#0f1626; color:inherit; font-size:16px; }
- button { padding:12px 16px; border-radius:10px; border:0; background:#3b82f6; color:white; font-size:16px; }
- .quick { display:flex; gap:6px; padding:0 10px 10px; flex-wrap:wrap; }
- .quick button { background:#1f2a3d; font-size:13px; padding:8px 10px; }
+ :root { color-scheme: dark; --cyan:#22d3ee; --violet:#a78bfa; --ink:#e8eefc; --muted:#8a96b3; --glass:rgba(20,28,48,.72); --line:rgba(120,140,200,.18); }
+ * { box-sizing:border-box; }
+ html,body { height:100%; margin:0; }
+ body { font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color:var(--ink);
+   background: radial-gradient(1200px 600px at 10% -10%, #1b1450 0%, transparent 60%),
+               radial-gradient(900px 500px at 110% 10%, #053a4a 0%, transparent 55%), #070a14;
+   display:flex; flex-direction:column; overflow:hidden; }
+ header { display:flex; align-items:center; gap:12px; padding:14px 16px 10px; }
+ .orb { width:40px; height:40px; border-radius:50%; flex:0 0 40px;
+   background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--cyan));
+   box-shadow: 0 0 22px rgba(34,211,238,.55); animation: spin 6s linear infinite; position:relative; }
+ .orb::after { content:""; position:absolute; inset:6px; border-radius:50%; background:#070a14; }
+ .orb.busy { animation-duration: 1.2s; box-shadow: 0 0 34px rgba(167,139,250,.9); }
+ @keyframes spin { to { transform: rotate(360deg); } }
+ .title { font-weight:700; letter-spacing:.8px; font-size:17px; }
+ .title small { display:block; font-weight:500; letter-spacing:.2px; color:var(--muted); font-size:12px; margin-top:2px; }
+ .status { margin-left:auto; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+ .dot { width:8px; height:8px; border-radius:50%; background:#34d399; box-shadow:0 0 10px #34d399; }
+ .dot.off { background:#f87171; box-shadow:0 0 10px #f87171; }
+ #banner { display:none; margin:0 12px 6px; padding:10px 12px; border-radius:14px; border:1px solid rgba(251,191,36,.35);
+   background: linear-gradient(90deg, rgba(251,191,36,.14), rgba(251,191,36,.04)); color:#fde68a; font-size:14px; }
+ #log { flex:1; overflow-y:auto; padding:8px 12px 12px; scroll-behavior:smooth; }
+ .row { display:flex; margin:8px 0; animation: rise .3s ease-out; }
+ .row.you { justify-content:flex-end; }
+ @keyframes rise { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+ .bubble { max-width:88%; padding:11px 14px; border-radius:18px; line-height:1.5; font-size:15.5px; white-space:pre-wrap; word-wrap:break-word; }
+ .you .bubble { background: linear-gradient(135deg, #3b5bdb, #6d28d9); border-bottom-right-radius:6px; }
+ .jarvis .bubble { background: var(--glass); border:1px solid var(--line); border-bottom-left-radius:6px; backdrop-filter: blur(8px); }
+ .err .bubble { background:rgba(127,29,29,.55); border:1px solid rgba(248,113,113,.4); }
+ .label { font-size:11px; letter-spacing:.6px; color:var(--muted); margin:0 4px 3px; text-transform:uppercase; }
+ .card { background: var(--glass); border:1px solid var(--line); border-radius:16px; padding:12px; width:100%; max-width:560px; }
+ .card h4 { margin:0 0 8px; font-size:13px; letter-spacing:.6px; text-transform:uppercase; color:var(--cyan); font-weight:600; }
+ .task { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); }
+ .task:first-of-type { border-top:0; }
+ .task .t { flex:1; font-size:15px; }
+ .task .d { font-size:12px; color:var(--muted); }
+ .task.late .d { color:#fbbf24; }
+ .chip { border:1px solid var(--line); background:rgba(34,211,238,.08); color:var(--cyan); border-radius:999px; padding:6px 10px; font-size:12px; }
+ .empty { color:var(--muted); font-size:14px; }
+ .typing span { display:inline-block; width:7px; height:7px; margin:0 2px; border-radius:50%; background:var(--violet); animation: blink 1s infinite; }
+ .typing span:nth-child(2) { animation-delay:.15s; } .typing span:nth-child(3) { animation-delay:.3s; }
+ @keyframes blink { 0%,80%,100% { opacity:.2; } 40% { opacity:1; } }
+ pre { margin:0; white-space:pre-wrap; font-size:12.5px; color:#c7d2fe; }
+ .quick { display:flex; gap:8px; overflow-x:auto; padding:4px 12px 10px; }
+ .quick button { flex:0 0 auto; border:1px solid var(--line); background:rgba(167,139,250,.1); color:var(--violet);
+   border-radius:999px; padding:7px 13px; font-size:13px; }
+ form { display:flex; gap:8px; padding:10px 12px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:rgba(7,10,20,.85); }
+ input { flex:1; min-width:0; padding:13px 14px; border-radius:14px; border:1px solid var(--line); background:#0c1222; color:var(--ink); font-size:16px; outline:none; }
+ input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.15); }
+ form button { padding:0 18px; border-radius:14px; border:0; background: linear-gradient(135deg, var(--cyan), var(--violet)); color:#06101f; font-weight:700; font-size:15px; }
+ form button:disabled { opacity:.5; }
 </style></head>
 <body>
-<header>Jarvis <span>· Sunny ji</span></header>
+<header>
+ <div class="orb" id="orb"></div>
+ <div class="title">Jarvis<small>Sunny ji ke liye · sirf aapki permission se</small></div>
+ <div class="status"><span class="dot" id="dot"></span><span id="state">connecting</span></div>
+</header>
+<div id="banner"></div>
 <div id="log"></div>
 <div class="quick">
  <button onclick="send('/plan')">/plan</button>
- <button onclick="send('/tasks')">/tasks</button>
- <button onclick="send('/prefs')">/prefs</button>
- <button onclick="send('/stop')">/stop</button>
+ <button onclick="send('/tasks')">Tasks</button>
+ <button onclick="send('/prefs')">Settings</button>
+ <button onclick="send('/help')">Help</button>
+ <button onclick="send('/stop')">Stop tools</button>
 </div>
-<form id="f"><input id="q" autocomplete="off" placeholder="Jarvis se baat karein… (/help)"><button>Bhejo</button></form>
+<form id="f"><input id="q" autocomplete="off" placeholder="Jarvis se baat karein…"><button id="go">Bhejo</button></form>
 <script>
 const params = new URLSearchParams(location.search);
 if (params.get("token")) { sessionStorage.setItem("jarvisToken", params.get("token")); history.replaceState(null, "", "/"); }
 const token = sessionStorage.getItem("jarvisToken") || "";
-const log = document.getElementById("log");
-function add(text, cls) {
-  const d = document.createElement("div");
-  d.className = "msg " + cls;
-  d.textContent = text;
-  log.appendChild(d);
-  log.scrollTop = log.scrollHeight;
+const log = document.getElementById("log"), orb = document.getElementById("orb"), go = document.getElementById("go");
+const dot = document.getElementById("dot"), state = document.getElementById("state"), banner = document.getElementById("banner");
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+function scroll() { log.scrollTop = log.scrollHeight; }
+function row(kind, node) {
+  const r = el("div", "row " + kind);
+  const wrap = el("div", kind === "you" ? "" : "");
+  if (kind !== "you") wrap.appendChild(el("div", "label", kind === "err" ? "system" : "Jarvis"));
+  wrap.appendChild(node);
+  r.appendChild(wrap); log.appendChild(r); scroll(); return r;
+}
+function bubble(text, kind) { return row(kind, el("div", "bubble", text)); }
+function typing() { const b = el("div", "bubble"); const t = el("div", "typing"); t.append(el("span"), el("span"), el("span")); b.appendChild(t); return row("jarvis", b); }
+
+function taskCard(title, rows) {
+  const c = el("div", "card"); c.appendChild(el("h4", null, title));
+  if (!rows.length) { c.appendChild(el("div", "empty", "Abhi kuch nahi. Sab clear hai ✨")); return c; }
+  for (const t of rows) {
+    const line = el("div", "task" + (t.late ? " late" : ""));
+    const body = el("div", "t", t.title);
+    if (t.due) body.appendChild(el("div", "d", "⏰ " + t.due));
+    line.appendChild(body);
+    if (t.id !== undefined) { const b = el("button", "chip", "Done"); b.onclick = () => send("/task done " + t.id); line.appendChild(b); }
+    c.appendChild(line);
+  }
+  return c;
+}
+function render(data) {
+  if (data.error) return bubble(data.error, "err");
+  if (data.reply !== undefined) return bubble(data.reply, "jarvis");
+  const r = data.result || {};
+  if (r.success === false && r.error) return bubble(r.error + (r.hint ? "\\n\\n" + r.hint : ""), "err");
+  if (Array.isArray(r.tasks)) {
+    return row("jarvis", taskCard("Open tasks", r.tasks.map(t => ({id: t.id, title: t.title, due: t.due}))));
+  }
+  if (Array.isArray(r.overdue)) {
+    const c = el("div", "card"); c.appendChild(el("h4", null, "Plan · " + r.date));
+    const sections = [["Overdue", r.overdue, true], ["Aaj", r.today, false], ["Kabhi bhi", r.undated, false]];
+    for (const [name, list, late] of sections) {
+      if (!list.length) continue;
+      c.appendChild(el("div", "label", name));
+      for (const t of list) {
+        const line = el("div", "task" + (late ? " late" : ""));
+        const body = el("div", "t", t.title); if (t.due) body.appendChild(el("div", "d", "⏰ " + t.due));
+        const b = el("button", "chip", "Done"); b.onclick = () => send("/task done " + t.id);
+        line.appendChild(body); line.appendChild(b); c.appendChild(line);
+      }
+    }
+    if (!r.overdue.length && !r.today.length && !r.undated.length) c.appendChild(el("div", "empty", "Aaj ke liye sab clear hai ✨"));
+    return row("jarvis", c);
+  }
+  if (r.preferences) {
+    const p = r.preferences, c = el("div", "card"); c.appendChild(el("h4", null, "Settings"));
+    c.appendChild(el("div", "task", "Naam: " + p.address));
+    c.appendChild(el("div", "task", "Voice: " + (p.voice.enabled ? "on" : "off") + " · pitch " + p.voice.pitch + " · rate " + p.voice.rate));
+    return row("jarvis", c);
+  }
+  if (r.task_id !== undefined) return bubble("Task save ho gaya: " + r.title + (r.due ? " (⏰ " + r.due + ")" : ""), "jarvis");
+  if (r.done_task_id !== undefined) return bubble("Task #" + r.done_task_id + " complete ✔", "jarvis");
+  if (r.changed) return bubble("Setting update: " + r.changed, "jarvis");
+  const c = el("div", "card"); c.appendChild(el("h4", null, "Result")); const pre = el("pre", null, JSON.stringify(r, null, 2)); c.appendChild(pre);
+  return row("jarvis", c);
+}
+function setBusy(b) { orb.classList.toggle("busy", b); go.disabled = b; }
+async function call(line) {
+  const r = await fetch("/api/command", { method: "POST",
+    headers: {"Content-Type": "application/json", "X-Jarvis-Token": token}, body: JSON.stringify({line}) });
+  const data = await r.json().catch(() => ({error: "Bad response from Jarvis."}));
+  if (!r.ok && data.error === undefined) data.error = "HTTP " + r.status;
+  return data;
 }
 async function send(line) {
-  add(line, "you");
+  bubble(line, "you");
+  const wait = typing(); setBusy(true);
+  try { const data = await call(line); wait.remove(); render(data); }
+  catch (e) { wait.remove(); bubble("Connection nahi ho paaya. Termux mein web server check karein.", "err"); }
+  finally { setBusy(false); refreshBanner(); }
+}
+async function refreshBanner() {
   try {
-    const r = await fetch("/api/command", {
-      method: "POST",
-      headers: {"Content-Type": "application/json", "X-Jarvis-Token": token},
-      body: JSON.stringify({line})
-    });
-    const data = await r.json();
-    if (!r.ok) { add(data.error || ("HTTP " + r.status), "err"); return; }
-    add(data.reply !== undefined ? data.reply : JSON.stringify(data.result, null, 2), "jarvis");
-  } catch (e) { add("Connection problem: " + e, "err"); }
+    const data = await call("/plan"); const r = data.result || {};
+    const due = [...(r.overdue || []), ...(r.today || [])];
+    if (due.length) { banner.style.display = "block"; banner.textContent = "⏰ Yaad dilaun: " + due.map(t => t.title).join(" · "); }
+    else banner.style.display = "none";
+  } catch (e) {}
 }
 document.getElementById("f").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const q = document.getElementById("q");
-  const line = q.value.trim();
-  if (line) { q.value = ""; send(line); }
+  e.preventDefault(); const q = document.getElementById("q"); const line = q.value.trim();
+  if (line && !go.disabled) { q.value = ""; send(line); }
 });
-add(token ? "Connected. /help for commands." : "Token missing: open the link printed in Termux.", token ? "jarvis" : "err");
+if (!token) { dot.classList.add("off"); state.textContent = "no token"; bubble("Token missing. Termux mein print hua link is phone ke browser mein kholiye.", "err"); }
+else { state.textContent = "online"; bubble("Namaste Sunny ji 👋 Main Jarvis hoon. Aaj kya plan karein? /help se commands dekh sakte hain.", "jarvis"); refreshBanner(); setInterval(refreshBanner, 5 * 60 * 1000); }
 </script></body></html>
 """
 
