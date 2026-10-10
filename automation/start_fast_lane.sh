@@ -45,8 +45,15 @@ fi
 
 CMD=( "$LLAMA_SERVER" --host 127.0.0.1 --port "$FAST_PORT" -c 2048 -t 6 -tb 6 --parallel 1 --reasoning off --alias "$FAST_MODEL" )
 if [ -n "$FAST_MODEL_PATH" ] && [ -f "$FAST_MODEL_PATH" ]; then
+  # A broken download (error page) is tiny - refuse it instead of crashing.
+  model_size=$(stat -c %s "$FAST_MODEL_PATH" 2>/dev/null || echo 0)
+  if [ "$model_size" -lt 104857600 ]; then
+    echo "Model file kharab lagta hai ($model_size bytes) - download dobara karo:" >&2
+    echo "  bash \"$(dirname \"$0\")\"/download_model.sh" >&2
+    exit 1
+  fi
   CMD+=( -m "$FAST_MODEL_PATH" )
-  echo "Nova fast lane using local model: $FAST_MODEL_PATH"
+  echo "Nova fast lane using local model: $FAST_MODEL_PATH ($(( model_size / 1024 / 1024 )) MB)"
 else
   echo "Nova fast lane: no local model found; refusing network model download" >&2
   exit 1
@@ -55,6 +62,7 @@ nohup "${CMD[@]}" >>"$LOG" 2>&1 &
 
 echo $! > "$PIDFILE"
 echo "Nova fast lane starting on 127.0.0.1:$FAST_PORT"
+echo "(Pehli baar model load hone me 1-2 min lag sakte hain — Ctrl+C MAT dabao, wait karo)"
 
 # Give llama-server a short startup window and fail loudly if the API never becomes ready.
 for _ in $(seq 1 120); do
