@@ -14,10 +14,12 @@ echo "== Nova Termux setup =="
 echo "Repo: $REPO"
 echo
 
-echo "== [1/5] Termux packages (git, python, curl) =="
+echo "== [1/5] Termux packages (git, python, curl, termux-api for voice) =="
 if command -v pkg >/dev/null 2>&1; then
   pkg update -y >/dev/null 2>&1 || true
-  pkg install -y git python curl || true
+  pkg install -y git python curl termux-api || true
+  echo "NOTE: Voice ke liye 'Termux:API' app bhi install karna (F-Droid/Play Store se)"
+  echo "      aur usse ek baar kholna hai. Tabhi bolna/sunna kaam karega."
 else
   echo "pkg not found - assuming a non-Termux system, skipping."
 fi
@@ -54,10 +56,11 @@ python3 -m core.source_manifest
 
 echo
 echo "== Done. Next steps =="
-echo "1) Try the new tools without any model (offline):"
-echo "     python3 -c \"from core.learning_hub import learning_find_books as f; print(f('python'))\""
-echo "2) For full chat, start the local model lane (one-time, see below), then:"
-echo "     python3 $REPO/nova_chat.py"
+echo "1) Jarvis voice assistant chalao (text mode me bhi chalega):"
+echo "     python3 $REPO/jarvis.py --text"
+echo "   Voice mode ke liye: Termux:API app install karo, phir:"
+echo "     python3 $REPO/jarvis.py"
+echo "2) Human-jaisi baat karne ke liye local model lane (one-time, see below):"
 echo
 echo "   Local model lane (one-time setup):"
 echo "     pkg install -y git cmake clang"

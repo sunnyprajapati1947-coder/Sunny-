@@ -1,7 +1,33 @@
-# SunnyAI — Nova
+# SunnyAI — Jarvis (Nova)
 
-Nova is a local-first personal AI assistant. Everything runs on the device
-(Termux/Android, Linux, macOS); the cloud is used only when truly necessary.
+Nova is a local-first personal AI assistant that runs entirely on your phone
+(Termux/Android) — it listens, thinks, and talks like a personal Jarvis.
+
+## Quick start (Termux)
+
+```bash
+pkg update -y && pkg install -y git curl termux-api
+git clone -b arena/648528ed-sunny https://github.com/sunnyprajapati1947-coder/Sunny-.git Nova
+bash ~/Nova/automation/setup_termux.sh
+python3 ~/Nova/jarvis.py --text   # type mode (works anywhere)
+python3 ~/Nova/jarvis.py          # voice mode (needs the Termux:API app)
+```
+
+## The Jarvis loop
+
+    suno (termux-speech-to-text)
+      -> socho (tools pehle: time/battery/weather/yaad-rakhna; phir local
+         Qwen model with Jarvis personality + rolling memory)
+      -> bolo (termux-tts-speak)
+
+- `jarvis.py` — voice-first entry point (`/status`, `/reset`, `/exit`)
+- `core/voice_interface.py` — speak + listen (graceful text fallback)
+- `core/jarvis_brain.py` — act-first intent router, then human-like chat
+- `core/conversation.py` — persistent rolling dialogue (last 12 turns replayed)
+- `core/identity.py` — name/owner + Hinglish personality (env-configurable)
+
+Voice needs the **Termux:API** app (F-Droid/Play) installed and opened once,
+plus `pkg install termux-api`. Without it Jarvis silently falls back to typing.
 
 ## Model lanes
 
