@@ -85,3 +85,75 @@ Ye abhi active features nahi hain.
 3. `echo "key length: ${#GEMINI_API_KEY}"` → lamba number aana chahiye.
 4. `bash automation/jarvis_web_keepalive.sh` → naya link browser mein kholiye.
 5. Chat mein `/ask-cloud ...` → Confirm dabayein. Jo result aaye wo yahan paste karein.
+
+---
+
+## Master spec: phase-wise status (2026-10-10)
+
+Ye section "PERSONAL JARVIS AI — COMPLETE MASTER INSTRUCTIONS" ke phases ko repo ke actual status se milata hai. Jo ✅ hai wahi test ya user ke phone output se verify hai.
+
+### Phase 1: Inspect, backup, repair OpenJarvis, startup/diagnostics
+
+- ✅ Environment inspection script: `automation/jarvis_inspect.sh` (read-only; API key sirf length dikhata hai). Sandbox par syntax aur output check ho chuka hai.
+- ⬜ Phone par script chalana: Termux mein ek baar, aur Ubuntu proot mein ek baar. Output user paste karega.
+- ⬜ Qwen generation error ka current status: purana `logs/qwen.log` mein Qwen3.5-4B Q4 par ek request poori hui dikhti hai (crash nahi). Lekin 1.7B Q8 ka load pehle fail hua tha (`JARVIS_OFFLINE_SETUP.md`). Naye Q8 model par reply test abhi nahi hua.
+- ✅ OpenJarvis base CLI (Ubuntu proot, Python 3.12.3, `/opt/jarvis-venv`): user ne `jarvis --version` aur `pip check` chalaye (README ke mutabiq).
+- ⬜ Backup: OpenJarvis aur `~/Jarvis/jarvis-github` ka backup (`automation/jarvis_inspect.sh` ke output ke baad).
+- ⬜ Startup launcher `jarvis-start`: abhi ye naam nahi bana. Abhi `jarvis_web_keepalive.sh` aur `jarvis_personal.py --chat/--web` hain.
+- ⚠️ Spec mein `/root/OpenJarvis` aur Python 3.13.5 likha hai. Repo ke latest docs ke mutabiq active setup Ubuntu proot ka `/opt/jarvis-venv` (Python 3.12.3) hai. Inspection output se final confirm hoga.
+
+### Phase 2: Local brain, Hinglish chat, model routing, web research
+
+- ✅ Hinglish chat, local brain fallback (8080 → 8081), live-info honesty.
+- ⬜ Model routing (task ke hisaab se model chunna): abhi sirf fallback hai, routing nahi.
+- ⬜ Online research (web search, page fetch, source save): abhi band hai. Ise alag permission ke saath banana hai.
+- ⬜ Model/RAM test: phone par 8081 backup brain ke liye RAM check.
+
+### Phase 3: Memory, task planning, execution, verification, recovery
+
+- ✅ Tasks (owner-typed), checkpoints ka base (`tasks/task_state.py`, `tasks/state.json`), notes memory.
+- ⬜ Searchable long-term memory, memory review/delete command, backup system.
+- ⬜ Retry limits, timeouts, auto-resume after restart: abhi pura nahi.
+
+### Phase 4: GitHub, private backups, coding tools, safe self-update
+
+- ✅ Session branch par code push ho raha hai (GitHub connection sandbox mein kaam karta hai).
+- ⬜ Private backup repository, update review aur rollback system: abhi nahi.
+- ⬜ Blindly unknown scripts execute na karne ka rule: design mein hai, pura enforce nahi hua.
+
+### Phase 5: Android/Termux features, dashboard, voice
+
+- ✅ Web dashboard (basic: chat, chips, status, reminders).
+- ⏸️ Termux:API (notification, clipboard, file ops): deferred. Pehle signature issue theek karna hai.
+- ⏸️ Voice input/TTS: deferred.
+
+### Phase 6: CBSE Class 10 study module, creative tools, read-only market research
+
+- ⬜ CBSE 2027 study module: abhi nahi bana. Pehle syllabus verify karna hoga (official CBSE site se).
+- ⬜ Market research (read-only, paper trading): abhi nahi. Real-money trade kabhi nahi.
+
+### Phase 7: YouTube automation, more modules
+
+- ⏸️ Abhi nahi. Core stable hone ke baad.
+
+## Recovery (agar terminal ya phone restart ho jaaye)
+
+1. Termux: `cd ~/Jarvis/jarvis-github && git pull`
+2. Key chahiye ho to: `read -rs GEMINI_API_KEY && export GEMINI_API_KEY` (cloud ke liye; sirf is session mein).
+3. Web UI: `bash automation/jarvis_web_keepalive.sh` (naya token print hoga).
+4. Health: `bash automation/jarvis_inspect.sh`
+5. Koi kaam adhura ho to `tasks/state.json` mein status dekhein. Jo status `COMPLETED` nahi, use "unfinished" maanein.
+6. Sandbox/GitHub branch: `arena/0ad0d18b-sunny`. Nayi kaam ki commit yahin.
+
+## Next command (phone)
+
+Termux mein:
+```
+cd ~/Jarvis/jarvis-github && git pull && bash automation/jarvis_inspect.sh
+```
+
+Ubuntu proot mein (wahi repo wali path, ya ek copy):
+```
+bash ~/Jarvis/jarvis-github/automation/jarvis_inspect.sh
+```
+Agar proot mein repo nahi hai, to sirf wo script copy karke chalayein. Dono outputs paste karein.
