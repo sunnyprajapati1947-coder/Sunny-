@@ -53,7 +53,7 @@ if [ -f "$DEST" ]; then
   fi
 fi
 
-echo "Qwen3-0.6B (Q4_K_M, ~397 MB) download kar raha hu..."
+echo "$MODEL_FILE download kar raha hu..."
 echo "WiFi pe karo; 5-15 min lagenge. Interruption mat karo."
 echo
 
