@@ -1,0 +1,1004 @@
+{
+  "source": "VoltAgent/awesome-agent-skills",
+  "source_url": "https://github.com/VoltAgent/awesome-agent-skills",
+  "license_note": "Curated link index of community skill packs; each skill lives in its own repo.",
+  "count": 166,
+  "skills": [
+    {
+      "name": "anthropics/docx",
+      "url": "https://officialskills.sh/anthropics/skills/docx",
+      "description": "Create, edit, and analyze Word documents",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/doc-coauthoring",
+      "url": "https://officialskills.sh/anthropics/skills/doc-coauthoring",
+      "description": "Collaborative document editing and co-authoring",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/pptx",
+      "url": "https://officialskills.sh/anthropics/skills/pptx",
+      "description": "Create, edit, and analyze PowerPoint presentations",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/xlsx",
+      "url": "https://officialskills.sh/anthropics/skills/xlsx",
+      "description": "Create, edit, and analyze Excel spreadsheets",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/pdf",
+      "url": "https://officialskills.sh/anthropics/skills/pdf",
+      "description": "Extract text, create PDFs, and handle forms",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/algorithmic-art",
+      "url": "https://officialskills.sh/anthropics/skills/algorithmic-art",
+      "description": "Create generative art using p5.js with seeded randomness",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/canvas-design",
+      "url": "https://officialskills.sh/anthropics/skills/canvas-design",
+      "description": "Design visual art in PNG and PDF formats",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/frontend-design",
+      "url": "https://officialskills.sh/anthropics/skills/frontend-design",
+      "description": "Frontend design and UI/UX development tools",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/slack-gif-creator",
+      "url": "https://officialskills.sh/anthropics/skills/slack-gif-creator",
+      "description": "Create animated GIFs optimized for Slack size constraints",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/theme-factory",
+      "url": "https://officialskills.sh/anthropics/skills/theme-factory",
+      "description": "Style artifacts with professional themes or generate custom themes",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/web-artifacts-builder",
+      "url": "https://officialskills.sh/anthropics/skills/web-artifacts-builder",
+      "description": "Build complex claude.ai HTML artifacts with React and Tailwind",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/mcp-builder",
+      "url": "https://officialskills.sh/anthropics/skills/mcp-builder",
+      "description": "Create MCP servers to integrate external APIs and services",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/webapp-testing",
+      "url": "https://officialskills.sh/anthropics/skills/webapp-testing",
+      "description": "Test local web applications using Playwright",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/brand-guidelines",
+      "url": "https://officialskills.sh/anthropics/skills/brand-guidelines",
+      "description": "Apply Anthropic's brand colors and typography to artifacts",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/internal-comms",
+      "url": "https://officialskills.sh/anthropics/skills/internal-comms",
+      "description": "Write status reports, newsletters, and FAQs",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/skill-creator",
+      "url": "https://officialskills.sh/anthropics/skills/skill-creator",
+      "description": "Guide for creating skills that extend Claude's capabilities",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "anthropics/template",
+      "url": "https://officialskills.sh/anthropics/skills/template",
+      "description": "Basic template for creating new skills",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "voltagent/create-voltagent",
+      "url": "https://officialskills.sh/voltagent/skills/create-voltagent",
+      "description": "Project setup guide with CLI and manual steps",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "voltagent/voltagent-best-practices",
+      "url": "https://officialskills.sh/voltagent/skills/voltagent-best-practices",
+      "description": "Architecture and usage patterns for agents, workflows, memory, and servers",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "voltagent/voltagent-core-reference",
+      "url": "https://officialskills.sh/voltagent/skills/voltagent-core-reference",
+      "description": "Reference for the VoltAgent class options and lifecycle methods",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "voltagent/voltagent-docs-bundle",
+      "url": "https://officialskills.sh/voltagent/skills/voltagent-docs-bundle",
+      "description": "Lookup embedded docs from @voltagent/core for version-matched documentation",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "serpapi/serpapi-web-search",
+      "url": "https://officialskills.sh/serpapi/skills/serpapi-web-search",
+      "description": "Structured search data via 130+ engines: pick the right engine, extract the right keys, recover from errors",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "serpapi/agent-usability-test",
+      "url": "https://officialskills.sh/serpapi/skills/agent-usability-test",
+      "description": "Test whether agents can discover and use your tool — the subject under test is the interface, not the agent",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "serpapi/serpapi-search-tools-python",
+      "url": "https://github.com/serpapi/serpapi-search-tools-python",
+      "description": "Real-time search tools for Python agents with native support for popular agent SDKs",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "serpapi/serpapi-cli",
+      "url": "https://github.com/serpapi/serpapi-cli",
+      "description": "SerpApi client for the command line, covering all 130+ engines",
+      "section": "Official Skills by"
+    },
+    {
+      "name": "microsoft/cloud-solution-architect",
+      "url": "https://officialskills.sh/microsoft/skills/cloud-solution-architect",
+      "description": "Design well-architected Azure cloud systems",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/continual-learning",
+      "url": "https://officialskills.sh/microsoft/skills/continual-learning",
+      "description": "Continual learning patterns for Azure AI",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/copilot-sdk",
+      "url": "https://officialskills.sh/microsoft/skills/copilot-sdk",
+      "description": "Build applications powered by GitHub Copilot SDK",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/entra-agent-id",
+      "url": "https://officialskills.sh/microsoft/skills/entra-agent-id",
+      "description": "Microsoft Entra Agent ID OAuth2 identities via Graph API",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/frontend-design-review",
+      "url": "https://officialskills.sh/microsoft/skills/frontend-design-review",
+      "description": "Review and create distinctive frontend interfaces",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/github-issue-creator",
+      "url": "https://officialskills.sh/microsoft/skills/github-issue-creator",
+      "description": "Structured GitHub issue reports from notes",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/mcp-builder",
+      "url": "https://officialskills.sh/microsoft/skills/mcp-builder",
+      "description": "MCP server creation guide for LLM tool integration",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/podcast-generation",
+      "url": "https://officialskills.sh/microsoft/skills/podcast-generation",
+      "description": "AI podcast audio with Azure OpenAI Realtime API",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/skill-creator",
+      "url": "https://officialskills.sh/microsoft/skills/skill-creator",
+      "description": "Guide for creating effective skills for AI coding agents",
+      "section": "Core Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-document-intelligence-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-document-intelligence-dotnet",
+      "description": "Document text, table, and data extraction",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-openai-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-openai-dotnet",
+      "description": "GPT-4, embeddings, DALL-E, and Whisper client",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-projects-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-projects-dotnet",
+      "description": "AI Foundry project management SDK",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-voicelive-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-voicelive-dotnet",
+      "description": "Real-time bidirectional voice AI",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-eventgrid-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventgrid-dotnet",
+      "description": "Event Grid topic and domain publishing",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-eventhub-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventhub-dotnet",
+      "description": "High-throughput event streaming",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-identity-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-identity-dotnet",
+      "description": "Microsoft Entra ID authentication",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-maps-search-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-maps-search-dotnet",
+      "description": "Geocoding, routing, and weather services",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-apicenter-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-apicenter-dotnet",
+      "description": "API inventory and governance",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-apimanagement-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-apimanagement-dotnet",
+      "description": "API Management provisioning via ARM",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-applicationinsights-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-applicationinsights-dotnet",
+      "description": "Application Insights resource management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-arizeaiobservabilityeval-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-arizeaiobservabilityeval-dotnet",
+      "description": "Arize AI observability management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-botservice-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-botservice-dotnet",
+      "description": "Bot Service provisioning via ARM",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-fabric-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-fabric-dotnet",
+      "description": "Microsoft Fabric capacity management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-mongodbatlas-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-mongodbatlas-dotnet",
+      "description": "MongoDB Atlas as ARM resources",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-weightsandbiases-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-weightsandbiases-dotnet",
+      "description": "Weights & Biases deployment management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-resource-manager-cosmosdb-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-resource-manager-cosmosdb-dotnet",
+      "description": "Cosmos DB resource provisioning",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-resource-manager-durabletask-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-resource-manager-durabletask-dotnet",
+      "description": "Durable Task Scheduler management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-resource-manager-mysql-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-resource-manager-mysql-dotnet",
+      "description": "MySQL Flexible Server management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-resource-manager-playwright-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-resource-manager-playwright-dotnet",
+      "description": "Playwright Testing workspace management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-resource-manager-postgresql-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-resource-manager-postgresql-dotnet",
+      "description": "PostgreSQL Flexible Server management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-resource-manager-redis-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-resource-manager-redis-dotnet",
+      "description": "Azure Cache for Redis provisioning",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-resource-manager-sql-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-resource-manager-sql-dotnet",
+      "description": "Azure SQL resource management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-search-documents-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-search-documents-dotnet",
+      "description": "Full-text, vector, and hybrid search",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-security-keyvault-keys-dotnet",
+      "url": "https://officialskills.sh/microsoft/skills/azure-security-keyvault-keys-dotnet",
+      "description": "Cryptographic key management",
+      "section": ".NET Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-anomalydetector-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-anomalydetector-java",
+      "description": "Anomaly detection applications",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-contentsafety-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-contentsafety-java",
+      "description": "Content moderation and safety",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-formrecognizer-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-formrecognizer-java",
+      "description": "Document analysis and form extraction",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-projects-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-projects-java",
+      "description": "AI Foundry project management",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-vision-imageanalysis-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-vision-imageanalysis-java",
+      "description": "Image captioning, OCR, and object detection",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-voicelive-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-voicelive-java",
+      "description": "Real-time bidirectional voice AI",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-appconfiguration-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-appconfiguration-java",
+      "description": "Centralized app configuration management",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-communication-callautomation-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-communication-callautomation-java",
+      "description": "Call automation with IVR and AI",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-communication-callingserver-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-communication-callingserver-java",
+      "description": "CallingServer legacy SDK",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-communication-chat-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-communication-chat-java",
+      "description": "Real-time chat with threads and receipts",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-communication-common-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-communication-common-java",
+      "description": "Communication Services common utilities",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-communication-sms-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-communication-sms-java",
+      "description": "SMS sending and delivery reports",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-compute-batch-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-compute-batch-java",
+      "description": "Large-scale parallel and HPC batch jobs",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-cosmos-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-cosmos-java",
+      "description": "Cosmos DB NoSQL with global distribution",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-data-tables-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-data-tables-java",
+      "description": "NoSQL key-value table storage",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-eventgrid-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventgrid-java",
+      "description": "Event-driven pub/sub messaging",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-eventhub-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventhub-java",
+      "description": "Real-time high-throughput streaming",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-identity-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-identity-java",
+      "description": "Microsoft Entra ID authentication",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-messaging-webpubsub-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-messaging-webpubsub-java",
+      "description": "Real-time WebSocket messaging",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-monitor-ingestion-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-monitor-ingestion-java",
+      "description": "Custom log ingestion to Azure Monitor",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-monitor-opentelemetry-exporter-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-monitor-opentelemetry-exporter-java",
+      "description": "OpenTelemetry export to Azure Monitor",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-monitor-query-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-monitor-query-java",
+      "description": "Query Azure Monitor logs and metrics",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-security-keyvault-keys-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-security-keyvault-keys-java",
+      "description": "Cryptographic key management",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-security-keyvault-secrets-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-security-keyvault-secrets-java",
+      "description": "Secret management for passwords and keys",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/azure-storage-blob-java",
+      "url": "https://officialskills.sh/microsoft/skills/azure-storage-blob-java",
+      "description": "Blob storage for file management",
+      "section": "Java Skills"
+    },
+    {
+      "name": "microsoft/agent-framework-azure-ai-py",
+      "url": "https://officialskills.sh/microsoft/skills/agent-framework-azure-ai-py",
+      "description": "Agent Framework for Azure AI Foundry",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/agents-v2-py",
+      "url": "https://officialskills.sh/microsoft/skills/agents-v2-py",
+      "description": "Foundry Agents SDK — container-based agents with custom images",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-contentsafety-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-contentsafety-py",
+      "description": "Harmful content detection",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-contentunderstanding-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-contentunderstanding-py",
+      "description": "Multimodal content extraction",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-ml-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-ml-py",
+      "description": "Azure ML workspace and job management",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-projects-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-projects-py",
+      "description": "AI Foundry project client and agents",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-textanalytics-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-textanalytics-py",
+      "description": "NLP: sentiment, entities, key phrases",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-transcription-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-transcription-py",
+      "description": "Speech-to-text transcription",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-translation-document-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-translation-document-py",
+      "description": "Batch document translation",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-translation-text-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-translation-text-py",
+      "description": "Real-time text translation",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-vision-imageanalysis-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-vision-imageanalysis-py",
+      "description": "Image captions, tags, OCR, objects",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-voicelive-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-voicelive-py",
+      "description": "Real-time bidirectional voice AI",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-appconfiguration-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-appconfiguration-py",
+      "description": "Feature flags and dynamic settings",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-containerregistry-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-containerregistry-py",
+      "description": "Container image and registry management",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-cosmos-db-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-cosmos-db-py",
+      "description": "Cosmos DB with Python/FastAPI patterns",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-cosmos-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-cosmos-py",
+      "description": "Cosmos DB NoSQL client library",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-data-tables-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-data-tables-py",
+      "description": "NoSQL key-value table storage",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-eventgrid-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventgrid-py",
+      "description": "Event-driven pub/sub routing",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-eventhub-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventhub-py",
+      "description": "High-throughput event streaming",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-identity-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-identity-py",
+      "description": "Microsoft Entra ID authentication",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-keyvault-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-keyvault-py",
+      "description": "Secrets, keys, and certificate management",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-messaging-webpubsubservice-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-messaging-webpubsubservice-py",
+      "description": "Real-time WebSocket messaging",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-apicenter-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-apicenter-py",
+      "description": "API inventory and governance",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-apimanagement-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-apimanagement-py",
+      "description": "API Management service administration",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-mgmt-botservice-py",
+      "url": "https://officialskills.sh/microsoft/skills/azure-mgmt-botservice-py",
+      "description": "Bot Service resource management",
+      "section": "Python Skills"
+    },
+    {
+      "name": "microsoft/azure-cosmos-rust",
+      "url": "https://officialskills.sh/microsoft/skills/azure-cosmos-rust",
+      "description": "Cosmos DB NoSQL client",
+      "section": "Rust Skills"
+    },
+    {
+      "name": "microsoft/azure-eventhub-rust",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventhub-rust",
+      "description": "Event Hubs streaming client",
+      "section": "Rust Skills"
+    },
+    {
+      "name": "microsoft/azure-identity-rust",
+      "url": "https://officialskills.sh/microsoft/skills/azure-identity-rust",
+      "description": "Microsoft Entra ID authentication",
+      "section": "Rust Skills"
+    },
+    {
+      "name": "microsoft/azure-keyvault-certificates-rust",
+      "url": "https://officialskills.sh/microsoft/skills/azure-keyvault-certificates-rust",
+      "description": "Key Vault certificate management",
+      "section": "Rust Skills"
+    },
+    {
+      "name": "microsoft/azure-keyvault-keys-rust",
+      "url": "https://officialskills.sh/microsoft/skills/azure-keyvault-keys-rust",
+      "description": "Key Vault cryptographic key management",
+      "section": "Rust Skills"
+    },
+    {
+      "name": "microsoft/azure-keyvault-secrets-rust",
+      "url": "https://officialskills.sh/microsoft/skills/azure-keyvault-secrets-rust",
+      "description": "Key Vault secret storage",
+      "section": "Rust Skills"
+    },
+    {
+      "name": "microsoft/azure-storage-blob-rust",
+      "url": "https://officialskills.sh/microsoft/skills/azure-storage-blob-rust",
+      "description": "Blob object storage client",
+      "section": "Rust Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-contentsafety-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-contentsafety-ts",
+      "description": "Content safety for text and images",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-document-intelligence-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-document-intelligence-ts",
+      "description": "Document text and table extraction",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-projects-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-projects-ts",
+      "description": "AI Foundry project client and agents",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-translation-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-translation-ts",
+      "description": "Text and document translation",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-ai-voicelive-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-ai-voicelive-ts",
+      "description": "Real-time bidirectional voice AI",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-appconfiguration-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-appconfiguration-ts",
+      "description": "App config, feature flags, dynamic refresh",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-cosmos-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-cosmos-ts",
+      "description": "Cosmos DB NoSQL CRUD and queries",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-eventhub-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-eventhub-ts",
+      "description": "High-throughput event streaming",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-identity-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-identity-ts",
+      "description": "Microsoft Entra ID authentication",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-keyvault-keys-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-keyvault-keys-ts",
+      "description": "Cryptographic key management",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-keyvault-secrets-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-keyvault-secrets-ts",
+      "description": "Secret storage and retrieval",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-microsoft-playwright-testing-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-microsoft-playwright-testing-ts",
+      "description": "Playwright tests at scale on Azure",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-monitor-opentelemetry-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-monitor-opentelemetry-ts",
+      "description": "Application Insights tracing and metrics",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-postgres-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-postgres-ts",
+      "description": "PostgreSQL Flexible Server connection",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-search-documents-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-search-documents-ts",
+      "description": "Vector/hybrid search with semantic ranking",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-servicebus-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-servicebus-ts",
+      "description": "Messaging with queues and topics",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-storage-blob-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-storage-blob-ts",
+      "description": "Blob upload, download, and management",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-storage-file-share-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-storage-file-share-ts",
+      "description": "SMB file share operations",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-storage-queue-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-storage-queue-ts",
+      "description": "Queue message operations",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/azure-web-pubsub-ts",
+      "url": "https://officialskills.sh/microsoft/skills/azure-web-pubsub-ts",
+      "description": "Real-time WebSocket pub/sub messaging",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/frontend-ui-dark-ts",
+      "url": "https://officialskills.sh/microsoft/skills/frontend-ui-dark-ts",
+      "description": "Dark-themed React with Tailwind and animations",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/m365-agents-ts",
+      "url": "https://officialskills.sh/microsoft/skills/m365-agents-ts",
+      "description": "M365, Teams, and Copilot Studio agents",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/react-flow-node-ts",
+      "url": "https://officialskills.sh/microsoft/skills/react-flow-node-ts",
+      "description": "React Flow node components with Zustand",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "microsoft/zustand-store-ts",
+      "url": "https://officialskills.sh/microsoft/skills/zustand-store-ts",
+      "description": "Zustand stores with middleware patterns",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "fal-ai-community/fal-3d",
+      "url": "https://officialskills.sh/fal-ai-community/skills/fal-3d",
+      "description": "Generate 3D models from text or images",
+      "section": "TypeScript Skills"
+    },
+    {
+      "name": "qdrant/skills",
+      "url": "https://github.com/qdrant/skills",
+      "description": "Agent skills for Qdrant vector search, covering scaling, performance optimization, search quality, monitoring, deployment, model migration, version upgrades, and SDK usage across Python, TypeScript, Rust, Go, .NET, and Java",
+      "section": "Community Skills"
+    },
+    {
+      "name": "BrianRWagner/ai-marketing-claude-code-skills",
+      "url": "https://github.com/BrianRWagner/ai-marketing-claude-code-skills",
+      "description": "17 marketing frameworks for cold outreach, homepage audit, social cards, and more",
+      "section": "Community Skills"
+    },
+    {
+      "name": "AgriciDaniel/claude-seo",
+      "url": "https://github.com/AgriciDaniel/claude-seo",
+      "description": "Universal SEO skill for comprehensive website analysis and optimization",
+      "section": "Community Skills"
+    },
+    {
+      "name": "wshuyi/x-article-publisher-skill",
+      "url": "https://github.com/wshuyi/x-article-publisher-skill",
+      "description": "Publish articles to X/Twitter",
+      "section": "Community Skills"
+    },
+    {
+      "name": "CosmoBlk/email-marketing-bible",
+      "url": "https://github.com/CosmoBlk/email-marketing-bible",
+      "description": "55K-word email marketing guide as an AI skill",
+      "section": "Community Skills"
+    },
+    {
+      "name": "smixs/creative-director-skill",
+      "url": "https://github.com/smixs/creative-director-skill",
+      "description": "AI creative director with recursive self-assessment: 20+ methodologies (SIT, TRIZ, Bisociation, SCAMPER, Synectics), 3-axis evaluation calibrated against Cannes/D&AD/HumanKind, 5-phase process from brief to presentation",
+      "section": "Community Skills"
+    },
+    {
+      "name": "Xquik-dev/x-twitter-scraper",
+      "url": "https://github.com/Xquik-dev/x-twitter-scraper",
+      "description": "Tweet search, profile tweets, follower export, media, posting, replies, MCP",
+      "section": "Community Skills"
+    },
+    {
+      "name": "Xquik-dev/tweetclaw",
+      "url": "https://github.com/Xquik-dev/tweetclaw",
+      "description": "Post tweets, replies, DMs; search, monitor, run giveaways",
+      "section": "Community Skills"
+    },
+    {
+      "name": "SHADOWPR0/beautiful_prose",
+      "url": "https://github.com/SHADOWPR0/beautiful_prose",
+      "description": "Hard-edged writing style contract for timeless, forceful English prose without AI tics",
+      "section": "Community Skills"
+    },
+    {
+      "name": "blader/humanizer",
+      "url": "https://github.com/blader/humanizer",
+      "description": "Remove signs of AI-generated writing from text, making it sound more natural and human",
+      "section": "Community Skills"
+    },
+    {
+      "name": "MohamedAbdallah-14/unslop",
+      "url": "https://github.com/MohamedAbdallah-14/unslop",
+      "description": "Removes named AI writing tells (tricolons, em-dash pileups, hedging stacks, sycophancy openers, stock vocab like \"delve\"/\"crucial\"). Split lint/rewrite modes for auditing your own text without auto-rewriting. Five intensity levels, MIT",
+      "section": "Community Skills"
+    },
+    {
+      "name": "Eronred/aso-skills",
+      "url": "https://github.com/Eronred/aso-skills",
+      "description": "30+ App Store Optimization skills for keyword research, metadata optimization, competitor analysis, creative optimization, and mobile growth strategies via Appeeky API",
+      "section": "Community Skills"
+    },
+    {
+      "name": "degausai/wonda",
+      "url": "https://github.com/degausai/wonda",
+      "description": "AI content creation: images, video, music, audio, editing, publishing",
+      "section": "Community Skills"
+    },
+    {
+      "name": "gitroomhq/postiz-agent",
+      "url": "https://github.com/gitroomhq/postiz-agent",
+      "description": "Schedule social media posts across 28+ platforms programmatically",
+      "section": "Community Skills"
+    },
+    {
+      "name": "taisly/agent",
+      "url": "https://github.com/taisly/agent",
+      "description": "Codex plugin, Agent Skill, CLI, and MCP server for publishing approved short-form videos to TikTok, Instagram Reels, YouTube Shorts, X, and Facebook through Taisly",
+      "section": "Community Skills"
+    },
+    {
+      "name": "indranilbanerjee/digital-marketing-pro",
+      "url": "https://github.com/indranilbanerjee/digital-marketing-pro",
+      "description": "150-skill engagement methodology — 12-Part Strategy Flow, 25 specialist agents, EU AI Act Article 50 ready (C2PA signing), 6-platform AEO/GEO incl. Google AI Mode",
+      "section": "Community Skills"
+    },
+    {
+      "name": "nowork-studio/notfair-plugin",
+      "url": "https://github.com/nowork-studio/notfair-plugin",
+      "description": "SEO, GEO, Google Ads, and Meta Ads skills with live data",
+      "section": "Community Skills"
+    },
+    {
+      "name": "aaron-he-zhu/aaron-marketing-skills",
+      "url": "https://github.com/aaron-he-zhu/aaron-marketing-skills",
+      "description": "69 marketing skills across SEO/GEO, influencer, paid ads, and email on one shared contract, with 5 benchmark-driven auditor gates (CORE-EEAT, CITE, C³, ROAS, SEND) and keyless data connectors",
+      "section": "Community Skills"
+    },
+    {
+      "name": "gooseworks-ai/goose-skills",
+      "url": "https://github.com/gooseworks-ai/goose-skills",
+      "description": "125 growth and GTM skills: ads, content, lead gen, SEO",
+      "section": "Community Skills"
+    },
+    {
+      "name": "sergebulaev/linkedin-skills",
+      "url": "https://github.com/sergebulaev/linkedin-skills",
+      "description": "LinkedIn marketing skills: viral hooks, comment drafting, algorithm audit, humanizer",
+      "section": "Community Skills"
+    },
+    {
+      "name": "Vladimir-Human/humanizer-ru",
+      "url": "https://github.com/Vladimir-Human/humanizer-ru",
+      "description": "Removes AI-writing markers from Russian text",
+      "section": "Community Skills"
+    },
+    {
+      "name": "Bomx/distribb-skill",
+      "url": "https://github.com/Bomx/distribb-skill",
+      "description": "SEO articles, keyword research, CMS publishing, high-DR backlink exchange",
+      "section": "Community Skills"
+    },
+    {
+      "name": "Citlyze/citlyze-skills",
+      "url": "https://github.com/citlyze/citlyze-skills",
+      "description": "AI search visibility skills from the Citlyze team: window-over-window visibility reports, citation gap analysis, prompt audits, and action plans via the Citlyze MCP server, plus a standalone AEO page audit that grades any URL without an account",
+      "section": "Community Skills"
+    },
+    {
+      "name": "AIDevGTM/gtm-cofounder",
+      "url": "https://github.com/AIDevGTM/gtm-cofounder",
+      "description": "18 go-to-market skills for solo technical founders: positioning, first users, launch, pricing, and founder-led sales; grounded in Adam Frankl and Jakub Czakon",
+      "section": "Community Skills"
+    },
+    {
+      "name": "mailtrap/mailtrap-skills",
+      "url": "https://github.com/mailtrap/mailtrap-skills",
+      "description": "Send emails via API/SMTP with sandbox testing",
+      "section": "Community Skills"
+    }
+  ]
+}

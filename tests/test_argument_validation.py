@@ -53,6 +53,7 @@ valid = registry.execute(
     },
 )
 assert valid["success"] is True
-assert valid["result"] == "hello"
+# Tool results are wrapped in Nova's untrusted-content envelope.
+assert valid["result"]["content"]["result"] == "hello"
 
 print("NOVA ARGUMENT VALIDATION: PASS")

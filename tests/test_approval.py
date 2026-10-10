@@ -53,7 +53,8 @@ with TemporaryDirectory() as tmp:
     )
 
     assert approved["success"] is True
-    assert approved["result"] == "Nova"
+    # Tool results are wrapped in Nova's untrusted-content envelope.
+    assert approved["result"]["content"]["result"] == "Nova"
 
     # Token must be one-time.
     reused = registry.execute(

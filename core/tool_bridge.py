@@ -383,4 +383,9 @@ def build_registry() -> NovaToolRegistry:
         )
     )
 
+    # Second import wave: new GitHub sources (see core/tool_bridge_new_sources.py).
+    from core.tool_bridge_new_sources import register_new_source_tools
+
+    register_new_source_tools(registry)
+
     return registry

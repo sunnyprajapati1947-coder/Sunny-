@@ -3,3 +3,10 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Test residue
+logs/audit.jsonl

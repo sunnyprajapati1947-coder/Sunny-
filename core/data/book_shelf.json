@@ -1,0 +1,1383 @@
+{
+  "source": "EbookFoundation/free-programming-books",
+  "source_url": "https://github.com/EbookFoundation/free-programming-books",
+  "license_note": "Curated link index; books are hosted by their own authors/publishers.",
+  "count": 243,
+  "subjects": [
+    {
+      "subject": "Algorithms & Data Structures",
+      "books": [
+        {
+          "title": "A Common-Sense Guide to Data Structures & Algorithms",
+          "url": "https://github.com/GauravWalia19/Free-Algorithms-Books/blob/main/Library/src/JAVASCRIPT/A-Common-Sense-Guide-to-Data-Structures-and-Algorithms-Level-Up-Your-Core-Programming-Skills.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A Field Guide To Genetic Programming",
+          "url": "https://web.archive.org/web/20191020195105/http://www0.cs.ucl.ac.uk/staff/W.Langdon/ftp/papers/poli08_fieldguide.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Algorithm Design",
+          "url": "https://archive.org/details/AlgorithmDesign1stEditionByJonKleinbergAndEvaTardos2005PDF",
+          "format": ""
+        },
+        {
+          "title": "Algorithmic Graph Theory",
+          "url": "https://code.google.com/p/graphbook/",
+          "format": "PDF"
+        },
+        {
+          "title": "Algorithmic Thinking",
+          "url": "https://labuladong.gitbook.io/algo-en",
+          "format": ""
+        },
+        {
+          "title": "Algorithms",
+          "url": "https://en.wikibooks.org/wiki/Algorithms",
+          "format": ""
+        },
+        {
+          "title": "Algorithms",
+          "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/Algorithms-JeffE.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Algorithms, 4th Edition",
+          "url": "https://algs4.cs.princeton.edu/home/",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Android",
+      "books": [
+        {
+          "title": "Android Notes for Professionals",
+          "url": "https://goalkicker.com/AndroidBook",
+          "format": "PDF"
+        },
+        {
+          "title": "Android Programming Succinctly, Syncfusion",
+          "url": "https://www.syncfusion.com/resources/techportal/ebooks/android",
+          "format": "[PDF](https://www.syncfusion.com/Account/Logon?ReturnUrl=%2fresources%2ftechportal%2febooks%2fandroid"
+        },
+        {
+          "title": "Android Tutorial",
+          "url": "https://www.tutorialspoint.com/android/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Codelabs for Advanced Android Development",
+          "url": "https://developer.android.com/courses/advanced-training/toc",
+          "format": ""
+        },
+        {
+          "title": "CodePath Android Cliffnotes",
+          "url": "https://github.com/codepath/android_guides/wiki",
+          "format": ""
+        },
+        {
+          "title": "Essential Android",
+          "url": "https://www.programming-books.io/essential/android/",
+          "format": ""
+        },
+        {
+          "title": "Expert Android and Eclipse development knowledge",
+          "url": "https://www.vogella.com/tutorials/android.html",
+          "format": ""
+        },
+        {
+          "title": "Google Android Developer Training",
+          "url": "https://developer.android.com/guide",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Artificial Intelligence",
+      "books": [
+        {
+          "title": "AI Agent Evaluation",
+          "url": "https://hallieren.github.io/ai-agent-evaluation/",
+          "format": "HTML, EPUB"
+        },
+        {
+          "title": "AI: From First Principles",
+          "url": "https://www.thequery.in/books/ai-from-first-principles",
+          "format": "HTML, EPUB"
+        },
+        {
+          "title": "AI Safety for Fleshy Humans",
+          "url": "https://aisafety.dance",
+          "format": " :construction: in process"
+        },
+        {
+          "title": "AiBook: A Human Survival Guide for When the AI Steals Your Girlfriend, Becomes Your Dog's Best Friend, and Has Your Wi-Fi Password (password1)",
+          "url": "https://cdn.shoemoney.com/aibook/AiBook.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Artificial Intelligence, 3rd Edition (1993)",
+          "url": "https://courses.csail.mit.edu/6.034f/ai3/rest.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Artificial Intelligence and the Future for Teaching and Learning",
+          "url": "https://www2.ed.gov/documents/ai-report/ai-report.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Artificial Intelligence for a Better Future: An Ecosystem Perspective on the Ethics of AI and Emerging Digital Technologies",
+          "url": "https://link.springer.com/book/10.1007/978-3-030-69978-9",
+          "format": "PDF, EPUB"
+        },
+        {
+          "title": "Artificial Intelligence: Foundations of Computational Agents (2010), 1st Edition",
+          "url": "https://artint.info/aifca1e.html",
+          "format": "HTML"
+        }
+      ]
+    },
+    {
+      "subject": "Bash",
+      "books": [
+        {
+          "title": "Advanced Bash-Scripting Guide",
+          "url": "https://tldp.org/LDP/abs/html/",
+          "format": "HTML"
+        },
+        {
+          "title": "Bash Guide for Beginners (2008)",
+          "url": "https://www.tldp.org/LDP/Bash-Beginners-Guide/html/",
+          "format": "HTML"
+        },
+        {
+          "title": "Bash Notes for Professionals",
+          "url": "https://goalkicker.com/BashBook/",
+          "format": "PDF"
+        },
+        {
+          "title": "BASH Programming (2000)",
+          "url": "https://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO.html",
+          "format": "HTML"
+        },
+        {
+          "title": "Bash Reference Manual",
+          "url": "http://www.gnu.org/software/bash/manual/bashref.html",
+          "format": "HTML"
+        },
+        {
+          "title": "Bash tutorial",
+          "url": "https://web.archive.org/web/20180328183806/http://gdrcorelec.ups-tlse.fr/files/bash.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "BashGuide",
+          "url": "https://mywiki.wooledge.org/BashGuide",
+          "format": "HTML"
+        },
+        {
+          "title": "Command line text processing with GNU Coreutils",
+          "url": "https://learnbyexample.github.io/cli_text_processing_coreutils/",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "C",
+      "books": [
+        {
+          "title": "256-Color VGA Programming in C",
+          "url": "http://www.brackeen.com/vga/",
+          "format": ""
+        },
+        {
+          "title": "A Tutorial on Pointers and Arrays in C",
+          "url": "https://web.archive.org/web/20180827131006/http://home.earthlink.net/~momotuk/pointers.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Algorithms Design (in C)",
+          "url": "https://www.ime.usp.br/~pf/algorithms/",
+          "format": "HTML"
+        },
+        {
+          "title": "Bare-metal programming for ARM",
+          "url": "https://github.com/umanovskis/baremetal-arm",
+          "format": "PDF"
+        },
+        {
+          "title": "Beej's Guide to C Programming",
+          "url": "https://beej.us/guide/bgc/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Beej's Guide to the GNU Debugger (GDB)",
+          "url": "https://beej.us/guide/bggdb/",
+          "format": "HTML"
+        },
+        {
+          "title": "Build Your Own Lisp",
+          "url": "http://www.buildyourownlisp.com",
+          "format": ""
+        },
+        {
+          "title": "Build Your Own Redis with C/C++",
+          "url": "https://build-your-own.org",
+          "format": "HTML"
+        }
+      ]
+    },
+    {
+      "subject": "C++",
+      "books": [
+        {
+          "title": "A Complete Guide to Standard C++ Algorithms",
+          "url": "https://github.com/HappyCerberus/book-cpp-algorithms",
+          "format": "PDF, LaTeX"
+        },
+        {
+          "title": "A Modular Structured Approach using C++",
+          "url": "https://open.umn.edu/opentextbooks/textbooks/144",
+          "format": "PDF"
+        },
+        {
+          "title": "An Introduction to the USA Computing Olympiad, C++ Edition",
+          "url": "https://darrenyao.com/usacobook/cpp.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "C++ Annotations",
+          "url": "https://fbb-git.gitlab.io/cppannotations/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "C++ Coding Standard",
+          "url": "https://possibility.com/Cpp/CppCodingStandard.html",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "C++ Core Guidelines",
+          "url": "https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md",
+          "format": ""
+        },
+        {
+          "title": "C++ For Programmers",
+          "url": "https://tfetimes.com/wp-content/uploads/2015/04/c-for-c-programmers.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "C++ Fundamentals for Robotics",
+          "url": "https://automaticaddison.com/cpp-fundamentals-for-robotics",
+          "format": "HTML"
+        }
+      ]
+    },
+    {
+      "subject": "Cloud Computing",
+      "books": [
+        {
+          "title": "AWS Well-Architected Framework",
+          "url": "https://docs.aws.amazon.com/wellarchitected/latest/framework",
+          "format": "PDF, HTML"
+        },
+        {
+          "title": "Azure for Architects, Third Edition",
+          "url": "https://azure.microsoft.com/en-us/resources/azure-for-architects/",
+          "format": "PDF"
+        },
+        {
+          "title": "Azure Functions Succinctly, Syncfusion",
+          "url": "https://www.syncfusion.com/ebooks/azure-functions-succinctly",
+          "format": "PDF, Kindle"
+        },
+        {
+          "title": "Building Serverless Applications with Google Cloud Run",
+          "url": "https://www.cockroachlabs.com/guides/oreilly-building-serverless-applications-with-google-cloud-run/",
+          "format": "PDF"
+        },
+        {
+          "title": "Cloud Computing for Science and Engineering",
+          "url": "https://cloud4scieng.org/chapters/",
+          "format": " :construction: in process"
+        },
+        {
+          "title": "Cloud Design Patterns",
+          "url": "https://docs.microsoft.com/en-us/azure/architecture/patterns/",
+          "format": ""
+        },
+        {
+          "title": "Designing Distributed Systems",
+          "url": "https://azure.microsoft.com/en-us/resources/designing-distributed-systems/",
+          "format": "account required"
+        },
+        {
+          "title": "Distributed Systems 4th edition",
+          "url": "https://www.distributed-systems.net/index.php/books/ds4/ds4-ebook/",
+          "format": "email address required"
+        }
+      ]
+    },
+    {
+      "subject": "Computer Science",
+      "books": [
+        {
+          "title": "A Data-Centric Introduction to Computing",
+          "url": "https://dcic-world.org",
+          "format": "HTML"
+        },
+        {
+          "title": "Computational Thinking",
+          "url": "https://www.cs.cmu.edu/~15110-s13/Wing06-ct.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Science Class XI",
+          "url": "https://cbseacademic.nic.in/web_material/doc/cs/1_Computer-Science-Python-Book-Class-XI.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Science Class XII",
+          "url": "https://cbseacademic.nic.in/web_material/doc/cs/2_Computer_Science_Python_ClassXII.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Science I",
+          "url": "https://cse.unl.edu/~cbourke/ComputerScienceOne.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Science II",
+          "url": "https://cse.unl.edu/~cbourke/ComputerScienceTwo.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "CS Principles: Big Ideas in Programming",
+          "url": "https://www.openbookproject.net/books/StudentCSP/",
+          "format": "HTML"
+        },
+        {
+          "title": "Introduction to Computer Science",
+          "url": "https://openstax.org/details/books/introduction-computer-science",
+          "format": "PDF, HTML"
+        }
+      ]
+    },
+    {
+      "subject": "Computer Vision",
+      "books": [
+        {
+          "title": "Computer Vision",
+          "url": "https://homepages.inf.ed.ac.uk/rbf/BOOKS/BANDB/bandb.htm",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Vision: Algorithms and Applications",
+          "url": "https://szeliski.org/Book/",
+          "format": ""
+        },
+        {
+          "title": "Computer Vision: Foundations and Applications",
+          "url": "http://vision.stanford.edu/teaching/cs131_fall1718/files/cs131-class-notes.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Vision: Models, Learning, and Inference",
+          "url": "http://www.computervisionmodels.com",
+          "format": ""
+        },
+        {
+          "title": "Programming Computer Vision with Python",
+          "url": "http://programmingcomputervision.com",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Dart",
+      "books": [
+        {
+          "title": "Essential Dart",
+          "url": "https://www.programming-books.io/essential/dart/",
+          "format": ""
+        },
+        {
+          "title": "Learning Dart",
+          "url": "https://riptutorial.com/Download/dart.pdf",
+          "format": "PDF"
+        }
+      ]
+    },
+    {
+      "subject": "Data Science",
+      "books": [
+        {
+          "title": "A Programmer's Guide to Data Mining",
+          "url": "http://guidetodatamining.com",
+          "format": "Draft"
+        },
+        {
+          "title": "Data Jujitsu: The Art of Turning Data into Product",
+          "url": "http://www.oreilly.com/data/free/data-jujitsu.csp",
+          "format": "email address *requested*, not required"
+        },
+        {
+          "title": "Data Mining Algorithms In R",
+          "url": "https://en.wikibooks.org/wiki/Data_Mining_Algorithms_In_R",
+          "format": ""
+        },
+        {
+          "title": "Data Mining Concepts and Techniques",
+          "url": "https://ia800702.us.archive.org/7/items/datamining_201811/DS-book%20u5.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Data Science at the Command Line",
+          "url": "https://datascienceatthecommandline.com/2e/",
+          "format": ""
+        },
+        {
+          "title": "Data Science with Python",
+          "url": "https://www.youtube.com/watch?v=LHBE6Q9XlzI",
+          "format": ""
+        },
+        {
+          "title": "Elements of Data Science",
+          "url": "https://allendowney.github.io/ElementsOfDataScience/README.html",
+          "format": ""
+        },
+        {
+          "title": "Feature Engineering and Selection: A Practical Approach for Predictive Models",
+          "url": "https://bookdown.org/max/FES/",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Database",
+      "books": [
+        {
+          "title": "Database Design – 2nd Edition",
+          "url": "https://opentextbc.ca/dbdesign01/",
+          "format": "HTML, PDF, EPUB, Kindle"
+        },
+        {
+          "title": "Database Design Succinctly",
+          "url": "https://www.syncfusion.com/succinctly-free-ebooks/database-design-succinctly",
+          "format": "HTML, PDF, EPUB, MOBI"
+        },
+        {
+          "title": "Database Explorations",
+          "url": "https://www.dcs.warwick.ac.uk/~hugh/TTM/Database-Explorations-revision-2.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Database Fundamentals",
+          "url": "https://public.dhe.ibm.com/software/dw/db2/express-c/wiki/Database_fundamentals.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Database Management Systems Solutions Manual Third Edition",
+          "url": "https://pages.cs.wisc.edu/~dbbook/openAccess/thirdEdition/solutions/ans3ed-oddonly.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Databases, Types, and The Relational Model: The Third Manifesto",
+          "url": "https://www.dcs.warwick.ac.uk/~hugh/TTM/DTATRM.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Foundations of Databases",
+          "url": "http://webdam.inria.fr/Alice/",
+          "format": ""
+        },
+        {
+          "title": "Readings in Database Systems, 5th Ed.",
+          "url": "http://www.redbook.io",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Flutter",
+      "books": [
+        {
+          "title": "Cookbook",
+          "url": "https://flutter.dev/docs/cookbook",
+          "format": ""
+        },
+        {
+          "title": "Flutter in Action",
+          "url": "https://livebook.manning.com/book/flutter-in-action/",
+          "format": "HTML"
+        },
+        {
+          "title": "Flutter Succinctly, Syncfusion",
+          "url": "https://www.syncfusion.com/ebooks/flutter-succinctly",
+          "format": "PDF, Kindle"
+        },
+        {
+          "title": "Flutter Tutorial",
+          "url": "https://www.tutorialspoint.com/flutter/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Flutter Tutorials Handbook",
+          "url": "https://kodestat.gitbook.io/flutter",
+          "format": ""
+        },
+        {
+          "title": "Flutter UI Succinctly, Syncfusion",
+          "url": "https://www.syncfusion.com/succinctly-free-ebooks/flutter-ui-succinctly",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Game Development",
+      "books": [
+        {
+          "title": "2D Game Development: From Zero To Hero",
+          "url": "https://github.com/Penaz91/2DGD_F0TH",
+          "format": "HTML, [PDF, EBPUB, Kindle...](https://therealpenaz91.itch.io/2dgd-f0th#download"
+        },
+        {
+          "title": "3D Math Primer for Graphics and Game Development",
+          "url": "https://gamemath.com/book/intro.html",
+          "format": "HTML"
+        },
+        {
+          "title": "AI Workflow for Game Designers",
+          "url": "https://github.com/eremes81/game-design-ai-practice-en",
+          "format": ""
+        },
+        {
+          "title": "Designing Virtual Worlds",
+          "url": "https://mud.co.uk/richard/DesigningVirtualWorlds.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Game AI Pro",
+          "url": "https://www.gameaipro.com",
+          "format": ""
+        },
+        {
+          "title": "Game Design with AGS",
+          "url": "https://ensadi.github.io/AGSBook/",
+          "format": ""
+        },
+        {
+          "title": "Game Programming Patterns",
+          "url": "https://gameprogrammingpatterns.com",
+          "format": ""
+        },
+        {
+          "title": "Level up your code with game programming patterns",
+          "url": "https://resources.unity.com/games/level-up-your-code-with-game-programming-patterns",
+          "format": "HTML & PDF"
+        }
+      ]
+    },
+    {
+      "subject": "Go",
+      "books": [
+        {
+          "title": "Build Web Application with Golang",
+          "url": "https://astaxie.gitbooks.io/build-web-application-with-golang/content/en/",
+          "format": "CC BY-SA"
+        },
+        {
+          "title": "Building Web Apps with Go",
+          "url": "https://codegangsta.gitbooks.io/building-web-apps-with-go/content/",
+          "format": ""
+        },
+        {
+          "title": "Darker Corners of Go",
+          "url": "https://rytisbiel.com/2021/03/06/darker-corners-of-go/",
+          "format": ""
+        },
+        {
+          "title": "Effective Go",
+          "url": "https://golang.org/doc/effective_go.html",
+          "format": ""
+        },
+        {
+          "title": "Essential Go",
+          "url": "https://www.programming-books.io/essential/go/",
+          "format": "CC BY-SA"
+        },
+        {
+          "title": "Essentials of Go Programming",
+          "url": "https://essentials-of-go-programming.readthedocs.io",
+          "format": "HTML"
+        },
+        {
+          "title": "Gin Web Framework",
+          "url": "https://chenyitian.gitbooks.io/gin-web-framework/content/",
+          "format": ""
+        },
+        {
+          "title": "Go 101",
+          "url": "https://go101.org/article/101.html",
+          "format": "https://twitter.com/TapirLiu"
+        }
+      ]
+    },
+    {
+      "subject": "HTML and CSS",
+      "books": [
+        {
+          "title": "A beginner's guide to HTML&CSS",
+          "url": "http://learn.shayhowe.com/html-css/",
+          "format": ""
+        },
+        {
+          "title": "A free guide to learn HTML and CSS",
+          "url": "http://marksheet.io",
+          "format": ""
+        },
+        {
+          "title": "Adaptive Web Design",
+          "url": "http://adaptivewebdesign.info/1st-edition/",
+          "format": ""
+        },
+        {
+          "title": "Airbnb CSS / Sass Styleguide",
+          "url": "https://github.com/airbnb/css",
+          "format": ""
+        },
+        {
+          "title": "Airbnb CSS-in-JavaScript Style Guide",
+          "url": "https://airbnb.io/javascript/css-in-javascript/",
+          "format": ""
+        },
+        {
+          "title": "An advanced guide to HTML&CSS",
+          "url": "http://learn.shayhowe.com/advanced-html-css/",
+          "format": ""
+        },
+        {
+          "title": "Atomic Design",
+          "url": "https://atomicdesign.bradfrost.com",
+          "format": ""
+        },
+        {
+          "title": "Canvassing",
+          "url": "https://web.archive.org/web/20160505010319/http://learnjs.io/canvassing/read/",
+          "format": " :card_file_box: archived"
+        }
+      ]
+    },
+    {
+      "subject": "Java",
+      "books": [
+        {
+          "title": "3D Programming in Java",
+          "url": "https://web.archive.org/web/20251124074959/https://www.mat.uniroma2.it/~picard/SMC/didattica/materiali_did/Java/Java_3D/Java_3D_Programming.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A Practical Introduction to Data Structures and Algorithm Analysis Third Edition (Java Version)",
+          "url": "https://people.cs.vt.edu/shaffer/Book/Java3e20100119.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "An Introduction to the USA Computing Olympiad, Java Edition",
+          "url": "https://darrenyao.com/usacobook/java.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Apache Jakarta Commons: Reusable Java Components",
+          "url": "http://ptgmedia.pearsoncmg.com/images/0131478303/downloads/Iverson_book.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Artificial Intelligence - Foundations of Computational Agents, Second Edition",
+          "url": "https://artint.info/2e/html/ArtInt2e.html",
+          "format": ""
+        },
+        {
+          "title": "Building Back-End Web Apps with Java, JPA and JSF",
+          "url": "https://web-engineering.info/tech/JavaJpaJsf/book/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Category wise tutorials - J2EE",
+          "url": "https://www.mkyong.com/all-tutorials-on-mkyong-com/",
+          "format": ""
+        },
+        {
+          "title": "Core Servlets and JavaServer Pages, 2nd Ed. (2003)",
+          "url": "https://web.archive.org/web/20210126062450/https://pdf.coreservlets.com/",
+          "format": " :card_file_box: archived"
+        }
+      ]
+    },
+    {
+      "subject": "JavaScript",
+      "books": [
+        {
+          "title": "30 Days of JavaScript",
+          "url": "https://github.com/Asabeneh/30-Days-Of-JavaScript",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Airbnb JavaScript Style Guide",
+          "url": "https://airbnb.io/javascript/",
+          "format": "HTML"
+        },
+        {
+          "title": "Basic JavaScript for the impatient programmer",
+          "url": "http://www.2ality.com/2013/06/basic-javascript.html",
+          "format": "HTML"
+        },
+        {
+          "title": "Bible of JS",
+          "url": "https://sheryians.com/download/bibleofjs_by_sheryians",
+          "format": "PDF"
+        },
+        {
+          "title": "Book of Modern Frontend Tooling",
+          "url": "https://github.com/tooling/book-of-modern-frontend-tooling",
+          "format": "HTML"
+        },
+        {
+          "title": "Building Front-End Web Apps with Plain JavaScript",
+          "url": "https://web-engineering.info/JsFrontendApp-Book",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Clean Code JavaScript",
+          "url": "https://github.com/ryanmcdermott/clean-code-javascript",
+          "format": "HTML"
+        },
+        {
+          "title": "Crockford's JavaScript",
+          "url": "http://www.crockford.com/javascript/",
+          "format": "HTML"
+        }
+      ]
+    },
+    {
+      "subject": "Kotlin",
+      "books": [
+        {
+          "title": "Essential Kotlin",
+          "url": "https://www.programming-books.io/essential/kotlin/",
+          "format": "CC BY-SA"
+        },
+        {
+          "title": "Kotlin Notes for Professionals",
+          "url": "https://goalkicker.com/KotlinBook/",
+          "format": "PDF"
+        },
+        {
+          "title": "Kotlin Official Documentation",
+          "url": "https://kotlinlang.org/docs/reference/",
+          "format": ""
+        },
+        {
+          "title": "Kotlin Quick Reference",
+          "url": "https://kotlin-quick-reference.com",
+          "format": "gitbook"
+        },
+        {
+          "title": "Learn Kotlin Programming",
+          "url": "https://www.programiz.com/kotlin-programming",
+          "format": ""
+        },
+        {
+          "title": "Learning Kotlin",
+          "url": "https://riptutorial.com/Download/kotlin.pdf",
+          "format": "PDF"
+        }
+      ]
+    },
+    {
+      "subject": "Machine Learning",
+      "books": [
+        {
+          "title": "A Brief Introduction to Machine Learning for Engineers",
+          "url": "https://arxiv.org/pdf/1709.02840.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A Brief Introduction to Neural Networks",
+          "url": "https://www.dkriesel.com/en/science/neural_networks",
+          "format": ""
+        },
+        {
+          "title": "A Comprehensive Guide to Machine Learning",
+          "url": "https://www.eecs189.org/static/resources/comprehensive-guide.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A Course in Machine Learning",
+          "url": "http://ciml.info/dl/v0_9/ciml-v0_9-all.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A First Encounter with Machine Learning",
+          "url": "https://web.archive.org/web/20210420163002/https://www.ics.uci.edu/~welling/teaching/ICS273Afall11/IntroMLBook.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A Selective Overview of Deep Learning",
+          "url": "https://arxiv.org/abs/1904.05526",
+          "format": "PDF"
+        },
+        {
+          "title": "Algorithms for Reinforcement Learning",
+          "url": "https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "An Introduction to Statistical Learning",
+          "url": "https://www.statlearning.com",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Mathematics",
+      "books": [
+        {
+          "title": "A Computational Logic (1979)",
+          "url": "https://www.cs.utexas.edu/users/boyer/acl.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A Cool Brisk Walk Through Discrete Mathematics",
+          "url": "http://stephendavies.org/brisk.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A First Course in Complex Analysis",
+          "url": "https://matthbeck.github.io/papers/complexorth.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "A Friendly Introduction to Mathematical Logic",
+          "url": "https://milneopentextbooks.org/a-friendly-introduction-to-mathematical-logic/",
+          "format": ""
+        },
+        {
+          "title": "A Gentle Introduction to the Art of Mathematics",
+          "url": "https://osj1961.github.io/giam/",
+          "format": ""
+        },
+        {
+          "title": "A Programmer's Introduction to Mathematics",
+          "url": "https://pimbook.org",
+          "format": ""
+        },
+        {
+          "title": "An Infinite Descent into Pure Mathematics",
+          "url": "https://infinitedescent.xyz/dl/infdesc.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "An Introduction to the Theory of Numbers",
+          "url": "http://www.trillia.com/moser-number.html",
+          "format": "PDF"
+        }
+      ]
+    },
+    {
+      "subject": "Networking",
+      "books": [
+        {
+          "title": "An Introduction to Computer Networks",
+          "url": "https://intronetworks.cs.luc.edu",
+          "format": "HTML, PDF, Kindle"
+        },
+        {
+          "title": "Beej's Guide to Network Programming - Using Internet Sockets",
+          "url": "https://beej.us/guide/bgnet/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Bits, Signals, and Packets: An Introduction to Digital Communications and Networks",
+          "url": "https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-02-introduction-to-eecs-ii-digital-communication-systems-fall-2012/readings/",
+          "format": ""
+        },
+        {
+          "title": "Code Connected vol.1",
+          "url": "https://hintjens.wdfiles.com/local--files/main%3Afiles/cc1pe.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Networking : Principles, Protocols and Practice",
+          "url": "https://www.computer-networking.info",
+          "format": "HTML, ePub, PDF, Kindle"
+        },
+        {
+          "title": "Computer Networks: A Systems Approach",
+          "url": "https://book.systemsapproach.org",
+          "format": "HTML, epub, mobi, PDF"
+        },
+        {
+          "title": "Distributed systems for fun and profit",
+          "url": "https://book.mixu.net/distsys/single-page.html",
+          "format": ""
+        },
+        {
+          "title": "High-Performance Browser Networking",
+          "url": "https://hpbn.co",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Operating Systems",
+      "books": [
+        {
+          "title": "A short introduction to operating systems (2001)",
+          "url": "https://markburgess.org/os/os.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Computer Science from the Bottom Up",
+          "url": "https://www.bottomupcs.com",
+          "format": "PDF"
+        },
+        {
+          "title": "Flexible Operating System Internals: The Design and Implementation of the Anykernel and Rump Kernels",
+          "url": "https://aaltodoc.aalto.fi/handle/123456789/6318",
+          "format": "PDF"
+        },
+        {
+          "title": "How to Make a Computer Operating System",
+          "url": "https://github.com/SamyPesse/How-to-Make-a-Computer-Operating-System",
+          "format": " :construction: in process"
+        },
+        {
+          "title": "How to write a simple operating system in assembly language",
+          "url": "https://mikeos.sourceforge.net/write-your-own-os.html",
+          "format": "HTML"
+        },
+        {
+          "title": "Linux Kernel in a Nutshell",
+          "url": "http://www.linuxtopia.org/online_books/linux_kernel/kernel_configuration",
+          "format": "HTML"
+        },
+        {
+          "title": "Making Servers Work: A Practical Guide to Linux System Administration",
+          "url": "https://www.digitalocean.com/community/books/sysadmin-ebook-making-servers-work",
+          "format": "PDF, EPUB"
+        },
+        {
+          "title": "Operating Systems: From 0 to 1",
+          "url": "https://github.com/tuhdo/os01/releases/tag/0.0.1",
+          "format": "PDF"
+        }
+      ]
+    },
+    {
+      "subject": "PHP",
+      "books": [
+        {
+          "title": "Clean Code PHP",
+          "url": "https://github.com/jupeter/clean-code-php",
+          "format": ""
+        },
+        {
+          "title": "Essential PHP",
+          "url": "https://www.programming-books.io/essential/php/",
+          "format": ""
+        },
+        {
+          "title": "PHP 5 Power Programming",
+          "url": "http://www.informit.com/content/images/013147149X/downloads/013147149X_book.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "PHP Apprentice",
+          "url": "https://phpapprentice.com",
+          "format": " :construction: in process"
+        },
+        {
+          "title": "PHP Best Practices",
+          "url": "https://phpbestpractices.org",
+          "format": ""
+        },
+        {
+          "title": "PHP Documentor - Documentation",
+          "url": "https://docs.phpdoc.org",
+          "format": ""
+        },
+        {
+          "title": "PHP Handbook",
+          "url": "https://thevalleyofcode.com/php/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "PHP Internals Book",
+          "url": "http://www.phpinternalsbook.com",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Professional Development",
+      "books": [
+        {
+          "title": "Clean Code Developer: An initiative for more professionalism in software development",
+          "url": "https://www.gitbook.com/book/ccd_school/clean-code-developer-com/details",
+          "format": " :construction: in process"
+        },
+        {
+          "title": "Confessions of an IT Manager",
+          "url": "https://assets.red-gate.com/community/books/confessions-of-an-it-manager-ebook.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Don't Just Roll the Dice",
+          "url": "https://assets.red-gate.com/community/books/DJRTD_eBook.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "How to Do What You Love & Earn What You’re Worth as a Programmer",
+          "url": "https://leanpub.com/dowhatyoulove/read",
+          "format": ""
+        },
+        {
+          "title": "How to Learn to Code & Get a Developer Job in 2023",
+          "url": "https://www.freecodecamp.org/news/learn-to-code-book",
+          "format": ""
+        },
+        {
+          "title": "How to Stand Out as a Software Engineer",
+          "url": "https://github.com/lvndry/how-to-stand-out-as-a-software-engineer/blob/main/how_to_stand_out_as_a_software_engineer.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Professional Software Development For Students",
+          "url": "https://mixmastamyk.bitbucket.io/pro_soft_dev/intro.html",
+          "format": ""
+        },
+        {
+          "title": "Software Engineering at Google",
+          "url": "https://abseil.io/resources/swe-book",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Programming",
+      "books": [
+        {
+          "title": "A Short Introduction to the Art of Programming (1971)",
+          "url": "https://www.cs.utexas.edu/users/EWD/transcriptions/EWD03xx/EWD316.html",
+          "format": "HTML"
+        },
+        {
+          "title": "Composing Programs",
+          "url": "https://composingprograms.com/3ed/",
+          "format": "HTML"
+        },
+        {
+          "title": "Design of a Programmer",
+          "url": "https://www.smashwords.com/books/view/639609",
+          "format": "PDF"
+        },
+        {
+          "title": "Introduction to Computer Science",
+          "url": "https://www.cse.iitd.ernet.in/~suban/CSL102/",
+          "format": ""
+        },
+        {
+          "title": "Introduction to Computing",
+          "url": "https://www.computingbook.org",
+          "format": ""
+        },
+        {
+          "title": "Principled Programming / Introduction to Coding in Any Imperative Language",
+          "url": "https://www.cs.cornell.edu/info/people/tt/Principled_Programming.html",
+          "format": ""
+        },
+        {
+          "title": "Programming and Programming Languages",
+          "url": "https://papl.cs.brown.edu/2019/",
+          "format": "PDF"
+        },
+        {
+          "title": "Programming Languages: Application and Interpretation (2nd Edition)",
+          "url": "https://cs.brown.edu/~sk/Publications/Books/ProgLangs/",
+          "format": "HTML, PDF"
+        }
+      ]
+    },
+    {
+      "subject": "Python",
+      "books": [
+        {
+          "title": "100 Page Python Intro",
+          "url": "https://learnbyexample.github.io/100_page_python_intro/",
+          "format": ""
+        },
+        {
+          "title": "20 Python Libraries You Aren't Using (But Should)",
+          "url": "https://www.oreilly.com/learning/20-python-libraries-you-arent-using-but-should",
+          "format": ""
+        },
+        {
+          "title": "A Beginner's Python Tutorial",
+          "url": "https://en.wikibooks.org/wiki/A_Beginner%27s_Python_Tutorial",
+          "format": ""
+        },
+        {
+          "title": "A Byte of Python",
+          "url": "https://python.swaroopch.com",
+          "format": "3.x"
+        },
+        {
+          "title": "A Guide to Python's Magic Methods",
+          "url": "https://github.com/RafeKettler/magicmethods",
+          "format": ""
+        },
+        {
+          "title": "A Practical Introduction to Python Programming",
+          "url": "https://www.brianheinold.net/python/",
+          "format": "HTML, PDF, Exercises sources"
+        },
+        {
+          "title": "A Whirlwind Tour of Python",
+          "url": "https://jakevdp.github.io/WhirlwindTourOfPython/",
+          "format": ""
+        },
+        {
+          "title": "AIPython: Python Code for understanding AI",
+          "url": "https://artint.info/AIPython/aipython/aipython.pdf",
+          "format": "PDF"
+        }
+      ]
+    },
+    {
+      "subject": "Ruby",
+      "books": [
+        {
+          "title": "A community-driven Ruby style guide",
+          "url": "https://github.com/bbatsov/ruby-style-guide",
+          "format": ""
+        },
+        {
+          "title": "Core Ruby Tools",
+          "url": "https://launchschool.com/books/core_ruby_tools",
+          "format": "HTML"
+        },
+        {
+          "title": "Developing Games With Ruby",
+          "url": "https://leanpub.com/developing-games-with-ruby/read",
+          "format": "HTML"
+        },
+        {
+          "title": "Essential Ruby",
+          "url": "https://www.programming-books.io/essential/ruby/",
+          "format": ""
+        },
+        {
+          "title": "I Love Ruby",
+          "url": "https://i-love-ruby.gitlab.io",
+          "format": ""
+        },
+        {
+          "title": "Introduction to Programming with Ruby",
+          "url": "https://launchschool.com/books/ruby",
+          "format": ""
+        },
+        {
+          "title": "Just Enough Ruby to Get By",
+          "url": "http://jasonkim.ca/projects/just_enough_ruby_to_get_by/",
+          "format": ""
+        },
+        {
+          "title": "Learn Ruby First",
+          "url": "https://essenceofchaos.gitbooks.io/learn-ruby-first/content/",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "Rust",
+      "books": [
+        {
+          "title": "A Gentle Introduction To Rust",
+          "url": "https://stevedonovan.github.io/rust-gentle-intro",
+          "format": "HTML"
+        },
+        {
+          "title": "Asynchronous Programming in Rust",
+          "url": "https://rust-lang.github.io/async-book",
+          "format": "HTML"
+        },
+        {
+          "title": "Easy Rust",
+          "url": "https://dhghomon.github.io/easy_rust/",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "Effective Rust",
+          "url": "https://www.lurklurk.org/effective-rust",
+          "format": "HTML, PDF"
+        },
+        {
+          "title": "From JavaScript to Rust ebook",
+          "url": "https://github.com/wasmflow/node-to-rust/raw/HEAD/from-javascript-to-rust.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Guide to Rustc Development",
+          "url": "https://rustc-dev-guide.rust-lang.org",
+          "format": "HTML"
+        },
+        {
+          "title": "High Assurance Rust",
+          "url": "https://highassurance.rs",
+          "format": "HTML"
+        },
+        {
+          "title": "Learn Rust in Y minutes",
+          "url": "https://learnxinyminutes.com/docs/rust/",
+          "format": "HTML"
+        }
+      ]
+    },
+    {
+      "subject": "Security & Privacy",
+      "books": [
+        {
+          "title": "A Graduate Course in Applied Cryptography",
+          "url": "https://toc.cryptobook.us",
+          "format": ""
+        },
+        {
+          "title": "Crypto 101 - Crypto for everyone",
+          "url": "https://www.crypto101.io",
+          "format": ""
+        },
+        {
+          "title": "Cryptography",
+          "url": "https://en.wikibooks.org/wiki/Cryptography",
+          "format": "HTML"
+        },
+        {
+          "title": "CryptoParty Handbook",
+          "url": "https://unglue.it/work/141611/",
+          "format": ""
+        },
+        {
+          "title": "Fuzzing Book",
+          "url": "https://www.fuzzingbook.org",
+          "format": "HTML"
+        },
+        {
+          "title": "Gray Hat Hacking: The Ethical Hacker's Handbook",
+          "url": "https://pages.cs.wisc.edu/~ace/media/gray-hat-hacking.pdf",
+          "format": "PDF"
+        },
+        {
+          "title": "Handbook of Applied Cryptography",
+          "url": "https://cacr.uwaterloo.ca/hac/index.html",
+          "format": ""
+        },
+        {
+          "title": "How HTTPS works",
+          "url": "https://howhttps.works",
+          "format": ""
+        }
+      ]
+    },
+    {
+      "subject": "TypeScript",
+      "books": [
+        {
+          "title": "Essential TypeScript",
+          "url": "https://www.programming-books.io/essential/typescript/",
+          "format": "HTML"
+        },
+        {
+          "title": "Learn TypeScript in Y Minutes",
+          "url": "https://learnxinyminutes.com/docs/typescript/",
+          "format": "HTML"
+        },
+        {
+          "title": "Tackling TypeScript: Upgrading from JavaScript",
+          "url": "https://exploringjs.com/tackling-ts/toc.html",
+          "format": "HTML"
+        },
+        {
+          "title": "The Concise TypeScript Book",
+          "url": "https://github.com/gibbok/typescript-book",
+          "format": "HTML, PDF, EPUB"
+        },
+        {
+          "title": "Total TypeScript: Essentials",
+          "url": "https://www.totaltypescript.com/books/total-typescript-essentials",
+          "format": "HTML"
+        },
+        {
+          "title": "TypeScript Accelerated",
+          "url": "https://accelerated.amimetic.co.uk",
+          "format": "HTML"
+        },
+        {
+          "title": "TypeScript Deep Dive",
+          "url": "https://basarat.gitbooks.io/typescript/",
+          "format": "HTML"
+        },
+        {
+          "title": "TypeScript for C# Programmers",
+          "url": "http://www.infoq.com/minibooks/typescript-c-sharp-programmers",
+          "format": "HTML"
+        }
+      ]
+    },
+    {
+      "subject": "Version Control Systems",
+      "books": [
+        {
+          "title": "A git Primer",
+          "url": "https://danielmiessler.com/study/git/",
+          "format": ""
+        },
+        {
+          "title": "A Visual Git Reference",
+          "url": "https://marklodato.github.io/visual-git-guide/index-en.html",
+          "format": ""
+        },
+        {
+          "title": "Conversational Git",
+          "url": "https://blog.anvard.org/conversational-git/",
+          "format": ""
+        },
+        {
+          "title": "get-git",
+          "url": "https://get-git.readthedocs.io/en/latest/",
+          "format": "HTML, PDF, EPUB"
+        },
+        {
+          "title": "git - the simple guide",
+          "url": "https://rogerdudler.github.io/git-guide/",
+          "format": "HTML"
+        },
+        {
+          "title": "Git cookbook",
+          "url": "https://git.seveas.net/about.html",
+          "format": "HTML"
+        },
+        {
+          "title": "Git for Computer Scientists",
+          "url": "https://eagain.net/articles/git-for-computer-scientists/",
+          "format": ""
+        },
+        {
+          "title": "Git From The Bottom Up",
+          "url": "https://jwiegley.github.io/git-from-the-bottom-up/",
+          "format": ""
+        }
+      ]
+    }
+  ]
+}
