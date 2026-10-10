@@ -16,8 +16,8 @@ import subprocess
 from typing import Any
 
 TTS_ENGINE = "default"
-TTS_PITCH = "1.0"
-TTS_RATE = "0.95"
+TTS_PITCH = "1.05"   # thoda sweet
+TTS_RATE = "0.9"     # thoda slow, natural
 SPEAK_TIMEOUT = 60.0
 LISTEN_TIMEOUT = 120.0
 
@@ -25,6 +25,11 @@ LISTEN_TIMEOUT = 120.0
 _STRIP_FOR_TTS = re.compile(r"[*_`#>\[\](){}|~^]|:(?:-?\)|-?\()|<[^>]+>")
 _MARKDOWN_LINK = re.compile(r"\[([^\]]*)\]\((https?://[^)]+)\)")
 _BARE_URL = re.compile(r"https?://\S+")
+# Emoji and misc symbols - most TTS engines choke on them or stay silent.
+_EMOJI = re.compile(
+    "[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0001F000-\U0001F0FF"
+    "\U00002190-\U000021FF\U00002B00-\U00002BFF\U0000FE0F\U0000200D]"
+)
 
 
 def _setting(name: str, default: str) -> str:
@@ -45,6 +50,7 @@ def clean_for_speech(text: str) -> str:
     text = _MARKDOWN_LINK.sub(r"\1", str(text or ""))  # [label](url) -> label
     text = _BARE_URL.sub("", text)                      # bare urls -> gone
     text = _STRIP_FOR_TTS.sub(" ", text)
+    text = _EMOJI.sub(" ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 

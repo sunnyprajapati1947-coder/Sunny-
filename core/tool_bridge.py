@@ -7,6 +7,7 @@ from core.termux_tools import (
     battery_status,
     device_volume,
     notify,
+    open_app,
     toast,
     vibrate,
 )
@@ -140,6 +141,23 @@ def build_registry() -> NovaToolRegistry:
                         "maximum": 3000,
                     },
                 },
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_open",
+            category="phone",
+            description="Open a whitelisted app (Instagram, YouTube, WhatsApp...) or an http(s) URL on the phone.",
+            run=open_app,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "target": {"type": "string", "description": "App name or URL, e.g. instagram"},
+                },
+                "required": ["target"],
                 "additionalProperties": False,
             },
         )

@@ -9,14 +9,36 @@
 # like success, and refuses to keep files smaller than 100 MB.
 set -u
 
-mkdir -p "$HOME/models"
-DEST="$HOME/models/Qwen3-0.6B-Q4_K_M.gguf"
-MIN_BYTES=$((100 * 1024 * 1024))   # 100 MB sanity floor (real file ~397 MB)
+SIZE="${1:-0.6b}"
+case "$SIZE" in
+  0.6b|small)
+    MODEL_FILE="Qwen3-0.6B-Q4_K_M.gguf"
+    MODEL_URL_PATH="unsloth/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q4_K_M.gguf"
+    MODEL_URL_PATH2="bartowski/Qwen_Qwen3-0.6B-GGUF/resolve/main/Qwen_Qwen3-0.6B-Q4_K_M.gguf"
+    echo "Model: Qwen3-0.6B (~397 MB) - fast, thoda robotic"
+    ;;
+  1.7b|big)
+    MODEL_FILE="Qwen3-1.7B-Q4_K_M.gguf"
+    MODEL_URL_PATH="unsloth/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q4_K_M.gguf"
+    MODEL_URL_PATH2="bartowski/Qwen_Qwen3-1.7B-GGUF/resolve/main/Qwen_Qwen3-1.7B-Q4_K_M.gguf"
+    echo "Model: Qwen3-1.7B (~1.1 GB) - zyada insaan jaisa baat karta hai"
+    ;;
+  *)
+    echo "Usage: bash download_model.sh [0.6b|1.7b]"
+    echo "  0.6b - chhota, fast (default)"
+    echo "  1.7b - bada, zyada natural baat-cheet"
+    exit 2
+    ;;
+esac
 
-# Verified mirrors of the same Qwen3-0.6B Q4_K_M quant.
+mkdir -p "$HOME/models"
+DEST="$HOME/models/$MODEL_FILE"
+MIN_BYTES=$((100 * 1024 * 1024))   # 100 MB sanity floor
+
+# Verified mirrors of the same quant.
 URLS=(
-  "https://huggingface.co/unsloth/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q4_K_M.gguf"
-  "https://huggingface.co/bartowski/Qwen_Qwen3-0.6B-GGUF/resolve/main/Qwen_Qwen3-0.6B-Q4_K_M.gguf"
+  "https://huggingface.co/$MODEL_URL_PATH"
+  "https://huggingface.co/$MODEL_URL_PATH2"
 )
 
 # A previously broken download leaves a tiny error page behind - remove it.
@@ -46,6 +68,7 @@ for url in "${URLS[@]}"; do
       echo
       echo "SUCCESS: $DEST ($(( size / 1024 / 1024 )) MB)"
       echo "Next: bash ~/Nova/automation/start_fast_lane.sh"
+      echo "Tip: 1.7b model ke liye - bash ~/Nova/automation/download_model.sh 1.7b"
       exit 0
     fi
     echo "Download incomplete ($size bytes) - next mirror try karta hu."

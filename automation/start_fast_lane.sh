@@ -11,7 +11,7 @@ fi
 FAST_PORT="${NOVA_FAST_QWEN_PORT:-8081}"
 FAST_MODEL_PATH="${NOVA_FAST_QWEN_MODEL_PATH:-}"
 if [ -z "$FAST_MODEL_PATH" ]; then
-  for candidate in "$HOME/models/Qwen3-0.6B-Q4_K_M.gguf" "$HOME/models/qwen3-0.6b-q4_k_m.gguf" "$HOME/models/qwen3.5-4b-instruct-Q4_K_M.gguf" "$HOME/models/Qwen3.5-4B-Q4_0.gguf"; do
+  for candidate in "$HOME/models/Qwen3-1.7B-Q4_K_M.gguf" "$HOME/models/Qwen3-0.6B-Q4_K_M.gguf" "$HOME/models/qwen3-0.6b-q4_k_m.gguf" "$HOME/models/qwen3.5-4b-instruct-Q4_K_M.gguf" "$HOME/models/Qwen3.5-4B-Q4_0.gguf"; do
     if [ -f "$candidate" ]; then FAST_MODEL_PATH="$candidate"; break; fi
   done
 fi

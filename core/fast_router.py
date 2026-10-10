@@ -48,6 +48,8 @@ def _call(
     timeout: float,
     history: list[dict[str, str]] | None = None,
     system: str | None = None,
+    temperature: float = 0.2,
+    max_tokens: int = 500,
 ) -> str | None:
     messages: list[dict[str, str]] = [
         {"role": "system", "content": system or "You are Nova's fast routing assistant. Be concise and factual."}
@@ -61,8 +63,8 @@ def _call(
     payload = json.dumps({
         "model": model,
         "messages": messages,
-        "temperature": 0.2,
-        "max_tokens": 500,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
     }).encode()
     try:
         req = Request(url, data=payload, headers={"Content-Type": "application/json"})
@@ -73,17 +75,24 @@ def _call(
         return None
 
 
-def ask(prompt: str, timeout: float = 12.0, history: list[dict[str, str]] | None = None, system: str | None = None) -> dict:
+def ask(
+    prompt: str,
+    timeout: float = 12.0,
+    history: list[dict[str, str]] | None = None,
+    system: str | None = None,
+    temperature: float = 0.2,
+    max_tokens: int = 500,
+) -> dict:
     lane = route(prompt)
     if lane == "fast":
-        answer = _call(FAST_URL, _served_model(FAST_URL, FAST_MODEL), prompt, timeout, history, system)
+        answer = _call(FAST_URL, _served_model(FAST_URL, FAST_MODEL), prompt, timeout, history, system, temperature, max_tokens)
         if answer is not None:
             used = "fast"
         else:
-            answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0), history, system)
+            answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0), history, system, temperature, max_tokens)
             used = "deep_fallback"
     else:
-        answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0), history, system)
+        answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0), history, system, temperature, max_tokens)
         used = "deep"
     return {"success": answer is not None, "lane": used, "answer": answer}
 

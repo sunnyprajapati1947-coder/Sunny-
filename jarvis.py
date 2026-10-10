@@ -95,6 +95,12 @@ def main(argv: list[str] | None = None) -> int:
     fast_ok, deep_ok = ensure_lanes()
     lane = "READY" if (fast_ok or deep_ok) else "OFFLINE"
     print(f"Thinking lane: {lane} (fast={'ON' if fast_ok else 'OFF'}, deep={'ON' if deep_ok else 'OFF'})")
+    # Wake lock: screen off ho tab bhi Jarvis zinda rahe.
+    import shutil as _shutil
+    if _shutil.which("termux-wake-lock"):
+        subprocess.run(["termux-wake-lock"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+        print("Wake lock ON (phone lock hone pe bhi sunta rahunga)")
     mem = summarize_load()
     print(f"Memory: {mem['turns_stored']} turns stored | Commands: /status, /reset, /exit")
 
