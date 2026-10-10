@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Any
 
 
@@ -111,9 +112,10 @@ def open_app(target: str) -> dict[str, Any]:
         return {"success": False, "error": "Kya kholna hai? Naam bolo."}
 
     def _open(uri: str) -> bool:
-        if shutil.which("am") is not None:
+        # `am` lives at /system/bin/am on Android - not on Termux's PATH.
+        if Path(AM_BIN).exists():
             done = subprocess.run(
-                ["am", "start", "-a", "android.intent.action.VIEW", "-d", uri],
+                [AM_BIN, "start", "-a", "android.intent.action.VIEW", "-d", uri],
                 capture_output=True, text=True, timeout=10, check=False,
             )
             if done.returncode == 0:
@@ -141,3 +143,77 @@ def open_app(target: str) -> dict[str, Any]:
     if _open(web):
         return {"success": True, "opened": name, "mode": "browser"}
     return {"success": False, "error": f"{name} open nahi ho paya."}
+
+
+def torch_light(on: bool = True) -> dict[str, Any]:
+    """Phone torch (flashlight) on/off. Needs Termux:API + camera permission."""
+    state = "on" if on else "off"
+    result = _run(["termux-torch", state])
+    if result.get("success"):
+        return {"success": True, "torch": state}
+    return {
+        "success": False,
+        "error": "Torch nahi chala — Termux app ko Camera permission do (Android Settings > Apps > Termux > Permissions).",
+    }
+
+
+def clipboard_get() -> dict[str, Any]:
+    """Read the phone clipboard."""
+    if shutil.which("termux-clipboard-get") is None:
+        return {"success": False, "error": "termux-clipboard-get unavailable."}
+    try:
+        done = subprocess.run(
+            ["termux-clipboard-get"], capture_output=True, text=True,
+            timeout=10, check=False,
+        )
+        text = (done.stdout or "").strip()
+        return {"success": done.returncode == 0, "text": text}
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        return {"success": False, "error": str(exc)}
+
+
+def clipboard_set(text: str) -> dict[str, Any]:
+    """Write to the phone clipboard."""
+    if shutil.which("termux-clipboard-set") is None:
+        return {"success": False, "error": "termux-clipboard-set unavailable."}
+    try:
+        done = subprocess.run(
+            ["termux-clipboard-set"], input=str(text or "")[:5000],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+        return {"success": done.returncode == 0, "copied": str(text or "")[:200]}
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        return {"success": False, "error": str(exc)}
+
+
+VOLUME_STREAMS = {"music", "ring", "notification", "alarm", "system"}
+
+# `am` lives at /system/bin/am on Android - not on Termux's PATH.
+AM_BIN = "/system/bin/am"
+
+
+def set_volume(volume: int, stream: str = "music") -> dict[str, Any]:
+    """Set a phone volume stream (0-100)."""
+    stream = str(stream or "music").strip().lower()
+    if stream not in VOLUME_STREAMS:
+        return {"success": False, "error": f"Stream must be one of: {', '.join(sorted(VOLUME_STREAMS))}."}
+    try:
+        volume = max(0, min(int(volume), 100))
+    except (TypeError, ValueError):
+        return {"success": False, "error": "Volume 0-100 me do."}
+    result = _run(["termux-volume", stream, str(volume)])
+    if result.get("success"):
+        return {"success": True, "stream": stream, "volume": volume}
+    return {"success": False, "error": "Volume set nahi hua — Termux:API check karo."}
+
+
+def set_brightness(percent: int) -> dict[str, Any]:
+    """Set screen brightness (0-100)."""
+    try:
+        percent = max(1, min(int(percent), 100))
+    except (TypeError, ValueError):
+        return {"success": False, "error": "Brightness 1-100 me do."}
+    result = _run(["termux-brightness", str(percent)])
+    if result.get("success"):
+        return {"success": True, "brightness": percent}
+    return {"success": False, "error": "Brightness set nahi hui — Termux:API check karo."}

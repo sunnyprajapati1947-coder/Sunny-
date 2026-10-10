@@ -33,6 +33,12 @@ REMEMBER_Q = re.compile(r"\b(remember|yad rakho|yaad rakho|yad rakh|yaad rakh|no
 RECALL_Q = re.compile(r"\b(what do you know|kya yaad|kya yad|mera data|my facts|recall)\b", re.IGNORECASE)
 NEWS_Q = re.compile(r"\b(news|khabar|khabrein|khabre|headlines|taaza|taza|kya chal raha)\b", re.IGNORECASE)
 OPEN_Q = re.compile(r"\b(open|kholo|khol do|kholna|khol de|launch|start karo|chalu karo|on karo)\b", re.IGNORECASE)
+TORCH_Q = re.compile(r"\b(torch|flash|flashlight|teer|light jala|light bujha)\b", re.IGNORECASE)
+CLIPBOARD_Q = re.compile(r"\b(clipboard|clip board|copy kiya|kya copy)\b", re.IGNORECASE)
+VOLUME_Q = re.compile(r"\b(volume|awaz|awaaz|sound|niki|neeche)\b.*\b(badhao|badha|karo|ghatao|kam|kam karo|high|low|full)\b|\bvolume (badhao|ghatao|karo)\b", re.IGNORECASE)
+BRIGHTNESS_Q = re.compile(r"\b(brightness|roshni)\b", re.IGNORECASE)
+STUDY_Q = re.compile(r"\b(padhai|study|syllabus|exam|board|quiz|mock test|ncert|class ?10|dasvi|science|maths|ganit|vigyan|sst|social science)\b", re.IGNORECASE)
+DETAIL_Q = re.compile(r"\b(detail|detailed|explain|samjhao|lambi|pura|poora|list banao|points me|deep)\b", re.IGNORECASE)
 
 
 def _registry():
@@ -93,6 +99,16 @@ def _smalltalk(text: str) -> str | None:
     if re.search(r"\b(kaun ho tum|who are you|tumhara naam|your name)\b", text, re.IGNORECASE):
         return f"Main {NOVA_NAME} hu — tumhara personal AI assistant, is phone ke andar chalta hu. Data kahin nahi jata."
     return None
+
+
+def _study_subject(text: str) -> str:
+    """Map a study request to a syllabus subject name ('' if none)."""
+    from core.study_assistant import SUBJECT_ALIASES
+    text = str(text or "").lower()
+    for alias, subject in SUBJECT_ALIASES.items():
+        if re.search(rf"\b{re.escape(alias)}\b", text):
+            return subject
+    return ""
 
 
 def _intents(text: str) -> str | None:
@@ -183,14 +199,33 @@ def _intents(text: str) -> str | None:
     if NEWS_Q.search(text):
         topic = re.sub(NEWS_Q, " ", text, count=1)
         topic = re.sub(r"\b(batao|bata|do|de|kya|hai|ki|ka|me|mein|aaj|today|latest)\b", " ", topic, flags=re.IGNORECASE).strip(" ?.,!")
-        query = f"latest news today {topic}".strip()
+        query = f"latest news today {topic}".strip() if topic else "top news headlines today India"
         try:
             result = _unwrap(registry.execute("web_search", {"query": query, "max_results": 5}))
             results = result.get("results") or []
-            if results:
+            # Prefer real headlines read from a news page over generic site titles.
+            headlines: list[str] = []
+            for item in results[:3]:
+                if "news" not in str(item.get("url", "")):
+                    continue
+                try:
+                    page = _unwrap(registry.execute("web_fetch", {"url": item["url"]}))
+                    body = str(page.get("text") or page.get("content") or "")
+                    for line in body.splitlines():
+                        line = line.strip()
+                        if 35 <= len(line) <= 140 and line.count(" ") >= 4 \
+                                and not line.lower().startswith(("http", "ad", "subscribe", "sign in", "log in")):
+                            headlines.append(line)
+                        if len(headlines) >= 3:
+                            break
+                except Exception:
+                    continue
+                if len(headlines) >= 3:
+                    break
+            if not headlines:
                 headlines = [r.get("title", "").strip() for r in results[:3] if r.get("title")]
-                # Titles can be long; keep each headline speakable.
-                headlines = [h[:110] for h in headlines]
+            headlines = [h[:120] for h in headlines if h]
+            if headlines:
                 return (
                     f"{OWNER_NAME}, aaj ki khabrein: Ek — {headlines[0]}. "
                     + (f"Do — {headlines[1]}. " if len(headlines) > 1 else "")
@@ -199,6 +234,105 @@ def _intents(text: str) -> str | None:
             return f"News nahi la paya {OWNER_NAME} — internet check karo."
         except Exception:
             return f"News lane me dikkat aayi {OWNER_NAME}."
+
+    # Torch (flashlight).
+    if TORCH_Q.search(text):
+        off = re.search(r"\b(off|bujha|band|band karo)\b", text, re.IGNORECASE)
+        try:
+            result = _unwrap(registry.execute("phone_torch", {"on": not off}))
+            if result.get("success"):
+                return f"Torch {'band' if off else 'on'} kar di {OWNER_NAME}."
+            return result.get("error", "Torch nahi chala.")
+        except Exception:
+            return "Torch nahi chala — Termux app ko Camera permission chahiye."
+
+    # Clipboard.
+    if CLIPBOARD_Q.search(text):
+        try:
+            result = _unwrap(registry.execute("phone_clipboard_get", {}))
+            if result.get("success"):
+                content = str(result.get("text") or "").strip()
+                if content:
+                    return f"Clipboard me ye hai {OWNER_NAME}: {content[:200]}"
+                return "Clipboard khali hai Boss."
+            return "Clipboard padh nahi paya."
+        except Exception:
+            return "Clipboard access nahi mila."
+
+    # Volume.
+    if VOLUME_Q.search(text):
+        stream = "music"
+        if re.search(r"\b(ringtone|ring|caller)\b", text, re.IGNORECASE):
+            stream = "ring"
+        if re.search(r"\b(full|max|100|poori|highest)\b", text, re.IGNORECASE):
+            level = 100
+        elif re.search(r"\b(kam|ghatao|low|neeche|niki|dhema|slow)\b", text, re.IGNORECASE):
+            level = 30
+        else:
+            level = 70
+        try:
+            result = _unwrap(registry.execute("phone_set_volume", {"volume": level, "stream": stream}))
+            if result.get("success"):
+                return f"{stream} volume {level} percent kar di {OWNER_NAME}."
+            return "Volume set nahi hua."
+        except Exception:
+            return "Volume control nahi mila."
+
+    # Brightness.
+    if BRIGHTNESS_Q.search(text):
+        if re.search(r"\b(kam|low|dhimi|dhema|neeche)\b", text, re.IGNORECASE):
+            level = 30
+        elif re.search(r"\b(full|poori|high|tez|max)\b", text, re.IGNORECASE):
+            level = 100
+        else:
+            level = 70
+        try:
+            result = _unwrap(registry.execute("phone_brightness", {"percent": level}))
+            if result.get("success"):
+                return f"Brightness {level} percent kar di {OWNER_NAME}."
+            return "Brightness set nahi hui."
+        except Exception:
+            return "Brightness control nahi mila."
+
+    # Study coach (CBSE Class 10, Board 2027).
+    if STUDY_Q.search(text):
+        subject = _study_subject(text)
+        if re.search(r"\b(quiz|mock|test|practice|mcq)\b", text, re.IGNORECASE) and subject:
+            try:
+                result = _unwrap(registry.execute("study_quiz", {"subject": subject, "count": 3}))
+                if result.get("success"):
+                    q1 = result["questions"][0]
+                    opts = ", ".join(f"{chr(65 + i)}) {o}" for i, o in enumerate(q1["options"]))
+                    return (
+                        f"{OWNER_NAME}, {subject} ka quiz shuru! Sawal 1: {q1['q']} "
+                        f"Options: {opts}. Jawab soch lo, phir 'answer batao' bolo."
+                    )
+            except Exception:
+                pass
+            return f"Quiz load nahi hua {OWNER_NAME}."
+        if subject:
+            try:
+                plan = _unwrap(registry.execute("study_plan", {"subject": subject}))
+                if plan.get("success"):
+                    chapters = plan["chapters"]
+                    total = len(chapters)
+                    first = chapters[0] if chapters else ""
+                    return (
+                        f"{OWNER_NAME}, {subject} me {total} chapters hain. "
+                        f"Pehla: {first}. Poora list aur tips chahiye to 'detail me syllabus batao' bolo. "
+                        "NCERT se hi 75+ aate hain, bahar ki book zaroori nahi."
+                    )
+            except Exception:
+                pass
+        try:
+            tips = _unwrap(registry.execute("study_tips", {"subject": subject}))
+            if tips.get("success"):
+                general = tips.get("general_tips") or tips.get("tips") or []
+                if general:
+                    return f"{OWNER_NAME}, padhai ke liye: " + " ".join(general[:3])
+        except Exception:
+            pass
+        return "Padhai mode ready hai Boss — subject bolo (science, maths, sst, hindi, english)."
 
     return None
 
@@ -223,16 +357,20 @@ def respond(text: str) -> dict[str, Any]:
         return {"success": True, "reply": worked, "via": "tool"}
 
     # 3) Human-like conversation on the local lane, with memory.
+    # Voice speed: 1.7B on a phone is ~8-15 tokens/s, so cap tokens normally
+    # and only allow a long generation when detail was explicitly requested.
+    detail = bool(DETAIL_Q.search(text))
+    max_tokens = 800 if detail else 350
     history = history_context(history_load())
     try:
         from core.fast_router import ask
         result = ask(
             text,
-            timeout=20.0,
+            timeout=30.0,
             history=history,
             system=JARVIS_PERSONALITY,
             temperature=0.7,
-            max_tokens=800,
+            max_tokens=max_tokens,
         )
     except Exception as exc:
         return {"success": False, "error": f"brain unavailable: {exc}"}
@@ -249,11 +387,11 @@ def respond(text: str) -> dict[str, Any]:
             from core.fast_router import ask
             retry = ask(
                 f"{text}\n(Dobara wahi jawab mat do. Naya, alag jawab do, Hinglish me.)",
-                timeout=20.0,
+                timeout=30.0,
                 history=history,
                 system=JARVIS_PERSONALITY,
                 temperature=0.9,
-                max_tokens=800,
+                max_tokens=max_tokens,
             )
             if retry.get("success") and str(retry.get("answer") or "").strip():
                 reply = str(retry["answer"]).strip()

@@ -54,6 +54,17 @@ echo
 echo "== [5/5] GitHub sources =="
 python3 -m core.source_manifest
 
+# Install `jarvis` / `jarvis-start` / `jarvis-doctor` commands into PATH.
+PREFIX_BIN="/data/data/com.termux/files/usr/bin"
+if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
+  ln -sf "$REPO/automation/jarvis_start.sh" "$PREFIX_BIN/jarvis-start"
+  ln -sf "$REPO/automation/jarvis_doctor.sh" "$PREFIX_BIN/jarvis-doctor"
+  printf '#!/data/data/com.termux/files/usr/bin/bash\nexec python3 %s/jarvis.py "$@"\n' "$REPO" > "$PREFIX_BIN/jarvis"
+  chmod +x "$PREFIX_BIN/jarvis"
+  echo
+  echo "Commands install ho gaye: jarvis-start, jarvis-doctor, jarvis (kahin se bhi chalao)"
+fi
+
 echo
 echo "== Done. Next steps =="
 echo "1) Jarvis voice assistant chalao (text mode me bhi chalega):"

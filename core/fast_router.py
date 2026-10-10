@@ -93,7 +93,12 @@ def ask(
             used = "deep_fallback"
     else:
         answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0), history, system, temperature, max_tokens)
-        used = "deep"
+        if answer is not None:
+            used = "deep"
+        else:
+            # Deep lane down -> answer on the fast lane instead of giving up.
+            answer = _call(FAST_URL, _served_model(FAST_URL, FAST_MODEL), prompt, timeout, history, system, temperature, max_tokens)
+            used = "fast_fallback"
     return {"success": answer is not None, "lane": used, "answer": answer}
 
 def remember(prompt: str, lane: str) -> None:

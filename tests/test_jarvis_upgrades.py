@@ -32,15 +32,29 @@ class OpenAppTest(unittest.TestCase):
         self.assertFalse(result["success"])
 
     def test_open_app_uses_am_start(self):
-        with patch("shutil.which", return_value="/usr/bin/am"), \
+        import tempfile
+        from pathlib import Path as P
+        # Simulate /system/bin/am with a real file so Path.exists() passes.
+        fake_am = P(tempfile.mkdtemp(prefix="nova_am_")) / "am"
+        fake_am.write_text("#!/bin/sh\n", encoding="utf-8")
+        with patch.object(tt, "AM_BIN", str(fake_am)), \
              patch("subprocess.run") as run:
             run.return_value.returncode = 0
             result = tt.open_app("instagram kholo")
         self.assertTrue(result["success"])
         self.assertEqual(result["opened"], "instagram")
         command = run.call_args[0][0]
-        self.assertEqual(command[0], "am")
+        self.assertEqual(command[0], str(fake_am))
         self.assertIn("instagram://app", command)
+
+    def test_open_app_am_missing_uses_termux_open_url(self):
+        with patch.object(tt, "AM_BIN", "/nonexistent/am"), \
+             patch.object(tt, "_run") as run_mock:
+            run_mock.return_value = {"success": True}
+            result = tt.open_app("youtube")
+        self.assertTrue(result["success"])
+        launched = run_mock.call_args[0][0]
+        self.assertEqual(launched[0], "termux-open-url")
 
     def test_open_app_falls_back_to_termux_open_url(self):
         with patch("shutil.which", side_effect=lambda name: None), \
