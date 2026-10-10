@@ -20,6 +20,12 @@ class KeepaliveTests(unittest.TestCase):
         self.assertEqual(result.stdout.count("crashed (code 3)"), 2)
         self.assertIn("Stopping: reached MAX_RESTARTS=2", result.stdout)
 
+    def test_configuration_failure_stops_without_retry_loop(self):
+        result = run_keepalive("exit 2", MAX_RESTARTS="0")
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn("crashed", result.stdout)
+        self.assertIn("JARVIS_PORT=8788", result.stdout)
+
     def test_clean_exit_is_not_restarted(self):
         result = run_keepalive("exit 0", MAX_RESTARTS="5")
         self.assertEqual(result.returncode, 0)

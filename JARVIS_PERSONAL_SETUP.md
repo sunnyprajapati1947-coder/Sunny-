@@ -222,6 +222,24 @@ Browser page par abhi voice (speech) nahi hai; voice terminal mein hi chalta hai
 - **Reminders:** page khula ho to upar banner aata hai jo overdue aur aaj ke tasks dikhata hai (har 5 minute mein check). Background push notification abhi nahi hai.
 - **Live information:** news, mausam, share/crypto price jaise sawalon ka jawab Jarvis fixed honest message se deta hai ("live access nahi hai"). Model inhe guess nahi karta.
 
+**Agar "Port 8787 is busy" aaye:** purana Jarvis page abhi bhi chal raha hai. Us purane Termux session mein Ctrl+C dabayein. Ya ek naya port use karein: `JARVIS_PORT=8788 bash automation/jarvis_web_keepalive.sh`. Keepalive busy port par ruk jaata hai aur message deta hai, lagatar retry nahi karta.
+
+### Backup local brain (port 8081)
+
+Agar primary model (8080) band ho, ya bahut slow ho, to Jarvis apne aap backup model (8081) se jawab leta hai. Dono sirf phone ke andar (127.0.0.1) hain; koi cloud provider call nahi hota. Backup ke liye ek alag Termux session mein:
+
+```bash
+llama-server -hf Qwen/Qwen3-0.6B-GGUF --hf-file Qwen3-0.6B-Q8_0.gguf --no-mmproj --host 127.0.0.1 --port 8081 --alias jarvis-local -c 2048 -t 4 -tb 4 -b 128 -ub 128 -n 256 --parallel 1 -ngl 0 --jinja --reasoning off --no-agent
+```
+
+Check: `curl -fsS --max-time 10 http://127.0.0.1:8081/health` → `{"status":"ok"}`.
+
+- File name Hugging Face repo se verify kiya gaya hai (`Qwen3-0.6B-Q8_0.gguf`, lagbhag 639 MB).
+- Backup model chhota hai, isliye jawab primary se kamzor ho sakte hain. Ye sirf fallback hai, main brain nahi.
+- Dono models ek saath chalen to RAM zyada lagegi. Phone par pehle check karein ki memory kaafi hai.
+- Agar 8081 band hai aur 8080 bhi, to Jarvis saaf message deta hai: "No local brain answered".
+- Online (cloud) fallback abhi nahi hai; ye aapke alag, explicit consent ke baad hi sochenge.
+
 **Ye abhi jaan-boojhkar nahi hai (aur bina aapki alag permission ke nahi hoga):**
 
 - Phone par bina confirm kiye automatic kaam (SMS, call, payment, app install, settings badalna). Har action ke liye aapki confirmation chahiye.

@@ -401,6 +401,44 @@ class JarvisTtsTimeoutHintTests(unittest.TestCase):
         self.assertNotIn("hint", app.speak_with_voice({"pitch": 1.1, "rate": 0.95}, "Namaste"))
 
 
+class FallbackBrainTests(unittest.TestCase):
+    def test_primary_down_uses_loopback_fallback(self):
+        brain = app.LocalBrain()
+        brain.opener = Mock()
+        brain.opener.open.side_effect = [
+            error.URLError("Connection refused"),
+            FakeReply({"choices": [{"message": {"content": "Backup Jarvis bol raha hai, Sunny ji."}}]},
+                      "http://127.0.0.1:8081/v1/chat/completions"),
+        ]
+        self.assertEqual(brain.ask("hlo"), "Backup Jarvis bol raha hai, Sunny ji.")
+        self.assertEqual(brain.last_host, "http://127.0.0.1:8081")
+        urls = [call.args[0].full_url for call in brain.opener.open.call_args_list]
+        self.assertEqual(urls, ["http://127.0.0.1:8080/v1/chat/completions", "http://127.0.0.1:8081/v1/chat/completions"])
+
+    def test_all_brains_down_gives_clear_message_and_no_remote_call(self):
+        brain = app.LocalBrain()
+        brain.opener = Mock()
+        brain.opener.open.side_effect = error.URLError("refused")
+        with self.assertRaises(ValueError) as caught:
+            brain.ask("hlo")
+        self.assertIn("8080, 8081", str(caught.exception))
+        self.assertTrue(all("127.0.0.1" in c.args[0].full_url for c in brain.opener.open.call_args_list))
+
+    def test_bad_answer_from_primary_does_not_silently_switch(self):
+        brain = app.LocalBrain()
+        brain.opener = Mock()
+        brain.opener.open.return_value = FakeReply({"choices": []})
+        with self.assertRaises(ValueError):
+            brain.ask("hlo")
+        self.assertEqual(brain.opener.open.call_count, 1)
+
+    def test_fallback_must_also_be_loopback(self):
+        with self.assertRaises(ValueError):
+            app.LocalBrain(fallback_hosts=("https://api.example.com",))
+        with self.assertRaises(ValueError):
+            app.LocalBrain(fallback_hosts=("http://192.168.1.20:8081",))
+
+
 class BrainDownMessageTests(unittest.TestCase):
     def test_connection_refused_gives_actionable_message(self):
         brain = app.LocalBrain()

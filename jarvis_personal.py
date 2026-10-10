@@ -110,19 +110,48 @@ class NoRedirect(request.HTTPRedirectHandler):
         raise ValueError("Brain redirects are blocked; only the phone's loopback server is allowed.")
 
 
+def validate_loopback_url(host: str) -> str:
+    url = parse.urlsplit(host)
+    if (
+        url.scheme != "http" or url.hostname != "127.0.0.1"
+        or url.username or url.password or url.path not in ("", "/")
+        or url.query or url.fragment
+    ):
+        raise ValueError("Brain URL must be the phone's HTTP 127.0.0.1 server; no remote provider.")
+    if url.port is not None and not 1 <= url.port <= 65535:
+        raise ValueError("Invalid loopback port.")
+    return host.rstrip("/")
+
+
+PRIMARY_BRAIN = "http://127.0.0.1:8080"
+# Backup local model on the phone (run a second llama-server). Only used when the primary
+# is down or times out. Still loopback only; no cloud provider is ever contacted.
+FALLBACK_BRAINS = ("http://127.0.0.1:8081",)
+
+
 class LocalBrain:
-    def __init__(self, host: str = "http://127.0.0.1:8080"):
-        url = parse.urlsplit(host)
-        if (
-            url.scheme != "http" or url.hostname != "127.0.0.1"
-            or url.username or url.password or url.path not in ("", "/")
-            or url.query or url.fragment
-        ):
-            raise ValueError("Brain URL must be the phone's HTTP 127.0.0.1 server; no remote provider.")
-        if url.port is not None and not 1 <= url.port <= 65535:
-            raise ValueError("Invalid loopback port.")
-        self.host = host.rstrip("/")
+    def __init__(self, host: str = PRIMARY_BRAIN, fallback_hosts: tuple[str, ...] = FALLBACK_BRAINS):
+        self.hosts: list[str] = []
+        for candidate in (host, *fallback_hosts):
+            checked = validate_loopback_url(candidate)
+            if checked not in self.hosts:
+                self.hosts.append(checked)
+        self.host = self.hosts[0]
+        self.last_host: str | None = None
         self.opener = request.build_opener(request.ProxyHandler({}), NoRedirect())
+
+    def _post(self, host: str, body: bytes) -> dict:
+        req = request.Request(
+            host + "/v1/chat/completions", data=body,
+            headers={"Content-Type": "application/json"}, method="POST",
+        )
+        with self.opener.open(req, timeout=180) as response:
+            if response.geturl() != req.full_url:
+                raise ValueError("Unexpected brain endpoint; no redirected response accepted.")
+            raw = response.read(1_000_001)
+        if len(raw) > 1_000_000:
+            raise ValueError("Local response exceeded the safety limit.")
+        return json.loads(raw)
 
     def ask(self, question: str, notes: str = "", system: str | None = None,
             history: list[dict] | None = None, examples: list[dict] | None = None) -> str:
@@ -140,24 +169,21 @@ class LocalBrain:
             "model": "jarvis-local", "messages": messages,
             "temperature": 0.7, "max_tokens": 256, "stream": False,
         }).encode("utf-8")
-        req = request.Request(
-            self.host + "/v1/chat/completions", data=body,
-            headers={"Content-Type": "application/json"}, method="POST",
-        )
-        try:
-            response = self.opener.open(req, timeout=180)
-        except error.URLError:
+        data = None
+        tried = []
+        for host in self.hosts:
+            try:
+                data = self._post(host, body)
+                self.last_host = host
+                break
+            except (error.URLError, TimeoutError):
+                # Only "not reachable / too slow" moves to the next local brain. Bad answers never do.
+                tried.append(host.rsplit(":", 1)[-1])
+        if data is None:
             raise ValueError(
-                "Local brain is not answering on 127.0.0.1:8080. Start llama-server in the other Termux "
-                "session, then check: curl -fsS http://127.0.0.1:8080/health"
-            ) from None
-        with response:
-            if response.geturl() != req.full_url:
-                raise ValueError("Unexpected brain endpoint; no redirected response accepted.")
-            raw = response.read(1_000_001)
-        if len(raw) > 1_000_000:
-            raise ValueError("Local response exceeded the safety limit.")
-        data = json.loads(raw)
+                "No local brain answered (tried 127.0.0.1 ports " + ", ".join(tried) + "). "
+                "Start llama-server in another Termux session, then check: curl -fsS http://127.0.0.1:8080/health"
+            )
         choices = data.get("choices") if isinstance(data, dict) else None
         if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
             raise ValueError("Malformed/empty local model response; inference is not verified.")
@@ -593,7 +619,12 @@ def main(argv=None) -> int:
         app = PersonalJarvis(args.home, Path(__file__).resolve().parent)
         if args.web:
             from jarvis_web import serve
-            serve(app, port=args.port)
+            try:
+                serve(app, port=args.port)
+            except ValueError as exc:
+                # Exit 2 = configuration problem; the keepalive script must not retry this.
+                print("Jarvis web cannot start:", exc)
+                return 2
             return 0
         print("Jarvis prototype: local brain; only your typed commands can request hands.\n" + HELP)
         due = app.tasks.plan()
