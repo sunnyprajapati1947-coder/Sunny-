@@ -50,7 +50,7 @@ class AutomationToolsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "project"
             root.mkdir()
-            (root / "metadata.json").write_text("{\\"script\\": \\"hello\\"}", encoding="utf-8")
+            (root / "metadata.json").write_text("{\"script\": \"hello\"}", encoding="utf-8")
             with patch.object(automation_tools, "_tts_command", return_value=None):
                 result = automation_tools.render_audio(str(root))
                 self.assertFalse(result["success"])
@@ -92,9 +92,9 @@ class AutomationToolsTests(unittest.TestCase):
             "sources": [{"title": "Trend", "url": "https://example.com", "snippet": "fresh signal"}],
             "documents": [],
         }
-        with patch.object(automation_tools, "research_topic", return_value=fake_research), \\
-             patch.object(automation_tools, "fast_router_ask", return_value={"success": False}), \\
-             patch.object(automation_tools, "_qwen", return_value="NICHE: AI\\nREASON: fresh\\nTOPIC: New AI breakthrough"):
+        with patch.object(automation_tools, "research_topic", return_value=fake_research), \
+             patch.object(automation_tools, "fast_router_ask", return_value={"success": False}), \
+             patch.object(automation_tools, "_qwen", return_value="NICHE: AI\nREASON: fresh\nTOPIC: New AI breakthrough"):
             result = automation_tools.discover_niche()
         self.assertTrue(result["success"])
         self.assertEqual(result["niche"], "AI")
