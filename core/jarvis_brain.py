@@ -118,6 +118,16 @@ def _intents(text: str) -> str | None:
     """Deterministic real-work intents; returns a spoken-style answer."""
     registry = _registry()
 
+    # Explicit task queue commands are handled before general intents.
+    # Queueing is persistent; this does not claim tasks are auto-executed.
+    try:
+        from tasks.jarvis_task_commands import handle_task_command
+        task_reply = handle_task_command(text, OWNER_NAME)
+        if task_reply:
+            return task_reply
+    except Exception:
+        pass
+
     if TIME_Q.search(text) and len(text.split()) <= 8:
         now = datetime.now()
         return f"{OWNER_NAME}, abhi {now.strftime('%I:%M %p')} baje hain, {now.strftime('%A, %d %B %Y')}."
