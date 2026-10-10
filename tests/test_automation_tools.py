@@ -93,6 +93,7 @@ class AutomationToolsTests(unittest.TestCase):
             "documents": [],
         }
         with patch.object(automation_tools, "research_topic", return_value=fake_research), \
+             patch.object(automation_tools, "fast_router_ask", return_value={"success": False}), \
              patch.object(automation_tools, "_qwen", return_value="NICHE: AI\nREASON: fresh\nTOPIC: New AI breakthrough"):
             result = automation_tools.discover_niche()
         self.assertTrue(result["success"])
