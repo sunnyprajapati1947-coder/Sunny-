@@ -131,6 +131,16 @@ function render(data) {
   if (data.error) return bubble(data.error, "err");
   if (data.reply !== undefined) return bubble(data.reply, "jarvis");
   const r = data.result || {};
+  if (r.approval_required) {
+    const c = el("div", "card"); c.appendChild(el("h4", null, "Confirm karein?"));
+    const q = (r.requested_action && r.requested_action.arguments && r.requested_action.arguments.question) || "";
+    c.appendChild(el("div", "task", q));
+    if (r.notice) c.appendChild(el("div", "d", r.notice));
+    const ok = el("button", "chip", "Confirm"); ok.onclick = () => send("/confirm " + r.approval_token);
+    c.appendChild(ok);
+    return row("jarvis", c);
+  }
+  if (r.reply !== undefined) return bubble("☁ " + (r.source || "Cloud") + "\\n" + r.reply, "jarvis");
   if (r.success === false && r.error) return bubble(r.error + (r.hint ? "\\n\\n" + r.hint : ""), "err");
   if (Array.isArray(r.tasks)) {
     return row("jarvis", taskCard("Open tasks", r.tasks.map(t => ({id: t.id, title: t.title, due: t.due}))));

@@ -113,3 +113,21 @@ class WebTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PageScriptTests(unittest.TestCase):
+    def test_embedded_javascript_is_valid(self):
+        import re
+        import shutil
+        import subprocess
+        import tempfile
+        from pathlib import Path
+
+        if shutil.which("node") is None:
+            self.skipTest("node not installed; syntax check skipped")
+        script = re.search(r"<script>(.*)</script>", jarvis_web.PAGE, re.S).group(1)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "page.js"
+            path.write_text(script, encoding="utf-8")
+            result = subprocess.run(["node", "--check", str(path)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)

@@ -224,6 +224,31 @@ Browser page par abhi voice (speech) nahi hai; voice terminal mein hi chalta hai
 
 **Agar "Port 8787 is busy" aaye:** purana Jarvis page abhi bhi chal raha hai. Us purane Termux session mein Ctrl+C dabayein. Ya ek naya port use karein: `JARVIS_PORT=8788 bash automation/jarvis_web_keepalive.sh`. Keepalive busy port par ruk jaata hai aur message deta hai, lagatar retry nahi karta.
 
+### Cloud jawab: `/ask-cloud` (har sawal par confirm)
+
+Jab local model ka jawab kamzor lage, to ek sawal Google Gemini se poochh sakte hain. Normal chat local hi rahegi.
+
+**Key setup (chat mein key mat likhiye):** Google AI Studio se key banayein (https://aistudio.google.com/apikey). Phir Termux mein:
+
+```bash
+read -rs GEMINI_API_KEY && export GEMINI_API_KEY
+```
+
+`read -rs` key ko screen par nahi dikhata aur command history mein nahi jaata. Ye sirf is Termux session tak chalta hai; session band karne par dobara dena hoga. Model naam badalna ho to `export GEMINI_MODEL=...` (default `gemini-3.8-flash`).
+
+**Use:**
+
+```text
+/ask-cloud Python decorators simple Hinglish mein samjhao
+/confirm TOKEN
+```
+
+- Confirm se pehle kuch bahar nahi jaata. Notice mein exact sawal dikhta hai.
+- Sirf sawal ka text cloud par jaata hai. Notes, tasks, chat history aur phone ka koi data nahi jaata.
+- Sawal mein password/API key ho to ye reject hota hai.
+- Jawab ke saath "Cloud (Gemini)" likha aata hai. Ye Google ke server se aaya hai, isliye sensitive cheezein na poochhein.
+- Google ke terms, quota aur charges aapke account ke hisaab se lagenge.
+
 ### Backup local brain (port 8081)
 
 Agar primary model (8080) band ho, ya bahut slow ho, to Jarvis apne aap backup model (8081) se jawab leta hai. Dono sirf phone ke andar (127.0.0.1) hain; koi cloud provider call nahi hota. Backup ke liye ek alag Termux session mein:
@@ -238,7 +263,7 @@ Check: `curl -fsS --max-time 10 http://127.0.0.1:8081/health` → `{"status":"ok
 - Backup model chhota hai, isliye jawab primary se kamzor ho sakte hain. Ye sirf fallback hai, main brain nahi.
 - Dono models ek saath chalen to RAM zyada lagegi. Phone par pehle check karein ki memory kaafi hai.
 - Agar 8081 band hai aur 8080 bhi, to Jarvis saaf message deta hai: "No local brain answered".
-- Online (cloud) fallback abhi nahi hai; ye aapke alag, explicit consent ke baad hi sochenge.
+- Cloud sirf `/ask-cloud` se, har sawal par aapki confirmation ke saath (neeche dekhein). Normal chat hamesha local rahegi.
 
 **Ye abhi jaan-boojhkar nahi hai (aur bina aapki alag permission ke nahi hoga):**
 

@@ -22,6 +22,7 @@ from urllib import error, parse, request
 from core.tool_registry import NovaTool, NovaToolRegistry
 from core import termux_tools
 from jarvis_start import SOURCES, fetch_source, source_catalog
+from jarvis_cloud import ask_cloud, cloud_key, cloud_model, validate_question
 from jarvis_tasks import Tasks
 from security.audit import NovaAudit
 from security.kill_switch import NovaKillSwitch
@@ -93,6 +94,7 @@ HELP = """Jarvis commands (owner typed only; model replies never execute or chan
 /task add TITLE [| DUE]  Add a local task, e.g. /task add Call Ravi | 2026-10-11 18:00
 /tasks                Open tasks; /task done ID marks one finished
 /plan                 Overdue, today and undated tasks (no background alarms)
+/ask-cloud QUESTION  Ask Google Gemini ONE question; needs /confirm; question text only
 /battery              Read native Termux:API battery status, if installed/allowed
 /notify TITLE | TEXT  Request an Android notification; confirm before showing it
 /say TEXT             Request one Android TTS line; confirm first (engine may use internet)
@@ -429,8 +431,14 @@ class PersonalJarvis:
             ("speak", "phone", speak, True),
             ("open_website", "browser", open_website, True),
             ("tts_engines", "phone", tts_engines, False),
+            ("ask_cloud", "cloud", self.cloud_answer, True),
         ]:
             self.registry.register(NovaTool(name, category, "Owner-command personal Jarvis tool", func, high_impact=impact))
+
+    def cloud_answer(self, question: str) -> dict:
+        """Runs only after /confirm. Sends the approved question text, nothing else."""
+        answer = ask_cloud(question, cloud_key() or "", cloud_model())
+        return {"success": True, "source": "cloud", "answer": answer}
 
     def fetch(self, source_id: str) -> dict:
         if source_id not in {source.id for source in SOURCES}:
@@ -455,6 +463,9 @@ class PersonalJarvis:
         # Original arguments only. Neither model text nor /confirm accepts a
         # replacement command or replacement arguments for a pending approval.
         result = self.registry.execute(name, deepcopy(args), approval_token=token)
+        content = (result.get("result") or {}).get("content") or {}
+        if name == "ask_cloud" and content.get("success"):
+            return {"success": True, "source": "Cloud (Gemini)", "reply": content["answer"]}
         return result
 
     def converse(self, question: str) -> str:
@@ -534,6 +545,18 @@ class PersonalJarvis:
             return HELP
         if line == "/prefs":
             return {"success": True, "preferences": self.prefs.view()}
+        if line.startswith("/ask-cloud"):
+            question = line[len("/ask-cloud"):].strip()
+            if not question:
+                raise ValueError("Use /ask-cloud YOUR QUESTION (the question text goes to Google after /confirm).")
+            validate_question(question)
+            if cloud_key() is None:
+                return {"success": False, "error": "Cloud key Termux mein set nahi hai. Chat mein key mat likhiye; "
+                        "Termux mein: read -rs GEMINI_API_KEY; export GEMINI_API_KEY (JARVIS_PERSONAL_SETUP.md dekhein)."}
+            requested = self.invoke("ask_cloud", {"question": question})
+            requested["notice"] = ("This exact question text will be sent to Google Gemini over the internet. "
+                                   "Notes, tasks and chat history are NOT sent.")
+            return requested
         if line.startswith("/task add "):
             # Local owner-typed task write: no external effect, so no approval token.
             return self.tasks.add(line[len("/task add "):])
@@ -647,6 +670,9 @@ def main(argv=None) -> int:
                 continue
             try:
                 result = app.handle(line)
+                if isinstance(result, dict) and "reply" in result:
+                    print(f"Jarvis ({result.get('source', 'cloud')}) >", result["reply"])
+                    continue
                 if isinstance(result, str):
                     print("Jarvis >", result)
                     if not line.startswith("/") and app.prefs.voice["enabled"]:
