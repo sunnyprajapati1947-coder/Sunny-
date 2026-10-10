@@ -27,6 +27,11 @@ LIST_RE = re.compile(
 )
 STATUS_RE = re.compile(r"\btask\s+status\s+(nova-[a-f0-9]{6,20})\b", re.IGNORECASE)
 RESUME_RE = re.compile(r"\b(?:task\s+resume|resume task|task dobara chalao)\s+(nova-[a-f0-9]{6,20})\b", re.IGNORECASE)
+RUN_RE = re.compile(
+    r"^\s*(?:jarvis[,: ]+)?(?:task run pending|run pending tasks|"
+    r"pending tasks run|pending kaam chalao)\s*[.!]?\s*$",
+    re.IGNORECASE,
+)
 
 
 def _queue() -> NovaTaskQueue:
@@ -69,6 +74,25 @@ def handle_task_command(text: str, owner: str = "Boss") -> str | None:
             for t in tasks[:8]
         ]
         return f"{owner}, task list (latest 8 tak): " + " | ".join(lines)
+
+    if RUN_RE.match(text):
+        try:
+            from tasks.safe_task_runner import run_next_safe_task
+            task = run_next_safe_task()
+            if task is None:
+                return f"Koi pending task nahi hai {owner}."
+            if task.status == "COMPLETED":
+                return (
+                    f"Verified task complete, {owner}: {task.task_id}. "
+                    f"Kaam: {task.description}. Result: {str(task.checkpoint)[:350]}"
+                )
+            return (
+                f"Task runner yahan ruk gaya: {task.task_id} ({task.status}). "
+                f"Reason: {task.error or 'verification incomplete'}. "
+                "Unsupported tasks execute nahi kiye gaye."
+            )
+        except Exception as exc:
+            return f"Safe task runner start nahi hua: {type(exc).__name__}."
 
     match = STATUS_RE.search(text)
     if match:
