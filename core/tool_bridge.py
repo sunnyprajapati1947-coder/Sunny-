@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from core.tool_registry import NovaTool, NovaToolRegistry
+from jarvis_start import source_catalog
 from github.local_ai_agent.tools.web import build_web_tools
 
 from core.termux_tools import (
@@ -21,6 +22,22 @@ def build_registry() -> NovaToolRegistry:
     """
 
     registry = NovaToolRegistry()
+    registry.register(
+        NovaTool(
+            name="github_source_catalog",
+            category="core",
+            description=(
+                "List the ten planned Jarvis GitHub sources and their limits. "
+                "Read-only: does not download, install, or activate upstream code."
+            ),
+            run=source_catalog,
+            parameters={
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
+        )
+    )
     web_search, web_fetch, web_research = build_web_tools(
         timeout=10.0,
         max_bytes=120_000,

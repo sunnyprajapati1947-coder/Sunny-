@@ -3,3 +3,17 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# Local assistant state, downloaded source checkouts, and Python caches
+/workspace/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+/.venv/
+/.arena/
+/logs/*.jsonl
+
+# Local API credentials (keep example files shareable)
+.env
+.env.*
+!.env.example
