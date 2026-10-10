@@ -6,6 +6,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import Mock, patch
+from urllib import error
 
 import jarvis_personal as app
 
@@ -398,6 +399,16 @@ class JarvisTtsTimeoutHintTests(unittest.TestCase):
         self.assertIn("hint", app.speak_with_voice({"pitch": 1.1, "rate": 0.95}, "Namaste"))
         run.return_value = {"success": False, "error": "Command unavailable: termux-tts-speak"}
         self.assertNotIn("hint", app.speak_with_voice({"pitch": 1.1, "rate": 0.95}, "Namaste"))
+
+
+class BrainDownMessageTests(unittest.TestCase):
+    def test_connection_refused_gives_actionable_message(self):
+        brain = app.LocalBrain()
+        brain.opener = Mock()
+        brain.opener.open.side_effect = error.URLError("Connection refused")
+        with self.assertRaises(ValueError) as caught:
+            brain.ask("hlo")
+        self.assertIn("llama-server", str(caught.exception))
 
 
 if __name__ == "__main__":

@@ -179,6 +179,39 @@ Settings are stored only in `~/.jarvis-personal/preferences.json` (private file)
 
 **Honest capability note.** Default brain is a small 1.7B Q8 local model on the phone. It can be warm and organized in Hinglish, but it will not match large cloud models in knowledge or reasoning. Do not expect "unlimited" or futuristic abilities from this local model. A bigger local model is possible only after a separate RAM/storage test on your phone.
 
+## 3c. Tasks, memory context aur browser page (naya)
+
+**Tasks (local, private, no Android API):**
+
+```text
+/task add Call Ravi | 2026-10-11 18:00
+/task add Buy milk
+/tasks
+/task done 1
+/plan
+```
+
+- Due date phone ke local time mein: `YYYY-MM-DD` ya `YYYY-MM-DD HH:MM`.
+- `/plan` overdue, aaj ke, aur bina date wale tasks dikhata hai. Terminal chat shuru hote waqt aaj/overdue ka reminder bhi dikhta hai.
+- Ye background alarm **nahi** hai. Phone ke samne rehne par hi reminder dikhega jab aap `/plan` ya chat start karenge.
+- Task likhna sirf aapka typed command se hota hai. Model text se task nahi banta, aur task add ke liye approval token ki zarurat nahi (koi external action nahi).
+- Open tasks ki short list model ko **DATA ONLY** context ke roop mein jaati hai, taaki Jarvis aapke kaam yaad rakh sake.
+
+**Conversation memory:** pichhle 3 sawal-jawab chat ke dauran in-memory yaad rehte hain, taaki "uska matlab kya?" jaise follow-up chal sakein. Ye disk par save nahi hote; restart par khatam ho jaate hain.
+
+**Browser page (terminal ke saath, same brain):**
+
+Termux session 1 mein model server chalta rahe. Session 2 mein:
+
+```bash
+cd "$HOME/Jarvis/jarvis-github"
+python jarvis_personal.py --web
+```
+
+Terminal mein ek link dikhega: `http://127.0.0.1:8787/?token=...`. Ye link **isi phone ke browser** (Chrome) mein kholiye. Ye sirf loopback (`127.0.0.1`) par chalta hai, bahar ke devices se nahi khulta. Har request ko token chahiye, aur ye token har baar naya banta hai. Browser page par `/plan`, `/tasks`, `/prefs`, `/stop` ke quick buttons hain. `/exit` aur `/resume` sirf terminal se chalte hain.
+
+Browser page par abhi voice (speech) nahi hai; voice terminal mein hi chalta hai. Port busy ho to `--port 8788` jaise dusra port dein.
+
 ## 4. All ten GitHub sources in the starter
 
 `/sources` shows all ten roles, pins, requirements and license warnings. `/fetch SOURCE_ID` requests an approved, pinned **source-only** download (no installer/runtime/model execution). Example `/fetch public-apis`, then review and confirm its real token.

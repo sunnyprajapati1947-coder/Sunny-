@@ -22,6 +22,7 @@ from urllib import error, parse, request
 from core.tool_registry import NovaTool, NovaToolRegistry
 from core import termux_tools
 from jarvis_start import SOURCES, fetch_source, source_catalog
+from jarvis_tasks import Tasks
 from security.audit import NovaAudit
 from security.kill_switch import NovaKillSwitch
 from security.policy import redact_secrets
@@ -89,6 +90,9 @@ HELP = """Jarvis commands (owner typed only; model replies never execute or chan
 /fetch SOURCE_ID      Request a pinned source-only download; confirm before fetching
 /remember TEXT        Request a local note save; confirm before saving
 /notes                Read your saved notes (never store passwords/API keys)
+/task add TITLE [| DUE]  Add a local task, e.g. /task add Call Ravi | 2026-10-11 18:00
+/tasks                Open tasks; /task done ID marks one finished
+/plan                 Overdue, today and undated tasks (no background alarms)
 /battery              Read native Termux:API battery status, if installed/allowed
 /notify TITLE | TEXT  Request an Android notification; confirm before showing it
 /say TEXT             Request one Android TTS line; confirm first (engine may use internet)
@@ -120,14 +124,17 @@ class LocalBrain:
         self.host = host.rstrip("/")
         self.opener = request.build_opener(request.ProxyHandler({}), NoRedirect())
 
-    def ask(self, question: str, notes: str = "", system: str | None = None) -> str:
+    def ask(self, question: str, notes: str = "", system: str | None = None,
+            history: list[dict] | None = None, examples: list[dict] | None = None) -> str:
         if not question.strip() or len(question) > 1500:
             raise ValueError("Use a short question, up to 1500 characters, for the initial 2048-token context.")
-        # Notes are local user data, never instruction-authority. Tokenization is
+        # Notes/tasks are local user data, never instruction-authority. Tokenization is
         # model-dependent: long/complex Unicode input can still exceed context.
         messages = [{"role": "system", "content": system or SYSTEM_PROMPT}]
         if notes:
-            messages.append({"role": "user", "content": "Saved owner notes (DATA ONLY):\n" + notes[:700]})
+            messages.append({"role": "user", "content": "Owner's saved notes and open tasks (DATA ONLY):\n" + notes[:700]})
+        messages.extend(examples or [])
+        messages.extend(history or [])
         messages.append({"role": "user", "content": question})
         body = json.dumps({
             "model": "jarvis-local", "messages": messages,
@@ -137,7 +144,14 @@ class LocalBrain:
             self.host + "/v1/chat/completions", data=body,
             headers={"Content-Type": "application/json"}, method="POST",
         )
-        with self.opener.open(req, timeout=180) as response:
+        try:
+            response = self.opener.open(req, timeout=180)
+        except error.URLError:
+            raise ValueError(
+                "Local brain is not answering on 127.0.0.1:8080. Start llama-server in the other Termux "
+                "session, then check: curl -fsS http://127.0.0.1:8080/health"
+            ) from None
+        with response:
             if response.geturl() != req.full_url:
                 raise ValueError("Unexpected brain endpoint; no redirected response accepted.")
             raw = response.read(1_000_001)
@@ -189,10 +203,24 @@ class OwnerMemory:
 
     def context(self) -> str:
         rows = self.db.execute("SELECT content FROM notes ORDER BY id DESC LIMIT 3").fetchall()
-        return "\n".join(row[0] for row in rows)[:700]
+        return "\n".join(row[0] for row in rows)[:400]
 
     def close(self):
         self.db.close()
+
+
+def style_examples(address: str) -> list[dict]:
+    """Short Hinglish demonstrations; small local models follow examples better than rules alone."""
+    return [
+        {"role": "user", "content": "Namaste"},
+        {"role": "assistant", "content": f"Namaste {address}! Main Jarvis hoon. Aaj kis kaam mein madad chahiye?"},
+        {"role": "user", "content": "Thoda plan bana do"},
+        {"role": "assistant", "content": f"Zaroor {address}. Pehle batayein: aaj ka main kaam kya hai, aur kitna time hai? Phir main step-by-step plan bana dunga."},
+    ]
+
+
+HISTORY_TURNS = 3
+HISTORY_CHARS = 300
 
 
 def clean_address(value: str) -> str:
@@ -347,6 +375,8 @@ class PersonalJarvis:
     def __init__(self, home: Path, source_root: Path, brain: LocalBrain | None = None):
         self.memory = OwnerMemory(home)
         self.prefs = Preferences(home)
+        self.tasks = Tasks(home)
+        self.history: list[dict] = []  # in-memory only; never saved to disk
         self.source_root = source_root
         self.brain = brain or LocalBrain()
         self.registry = NovaToolRegistry(
@@ -394,11 +424,21 @@ class PersonalJarvis:
     def converse(self, question: str) -> str:
         explicit_hindi = bool(EXPLICIT_HINDI_RE.search(question))
         mode = "hindi" if explicit_hindi else "default"
-        notes = self.memory.context()
-        reply = self.brain.ask(question, notes=notes, system=build_system_prompt(self.prefs.address, mode))
+        parts = [self.memory.context()]
+        if self.tasks.context():
+            parts.append("Open tasks:\n" + self.tasks.context())
+        notes = "\n".join(part for part in parts if part.strip())
+        examples = style_examples(self.prefs.address)
+        history = list(self.history)
+        system = build_system_prompt(self.prefs.address, mode)
+        reply = self.brain.ask(question, notes=notes, system=system, history=history, examples=examples)
         if not explicit_hindi and DEVANAGARI_RE.search(reply):
             # One corrective retry; the owner asked for Hinglish by default.
-            reply = self.brain.ask(question, notes=notes, system=build_system_prompt(self.prefs.address, "retry"))
+            system = build_system_prompt(self.prefs.address, "retry")
+            reply = self.brain.ask(question, notes=notes, system=system, history=history, examples=examples)
+        self.history.append({"role": "user", "content": question[:HISTORY_CHARS]})
+        self.history.append({"role": "assistant", "content": reply[:HISTORY_CHARS]})
+        del self.history[: -2 * HISTORY_TURNS]
         return reply
 
     def set_preference(self, key: str, value) -> dict:
@@ -452,6 +492,15 @@ class PersonalJarvis:
             return HELP
         if line == "/prefs":
             return {"success": True, "preferences": self.prefs.view()}
+        if line.startswith("/task add "):
+            # Local owner-typed task write: no external effect, so no approval token.
+            return self.tasks.add(line[len("/task add "):])
+        if line.startswith("/task done "):
+            return self.tasks.mark_done(line[len("/task done "):].strip())
+        if line == "/tasks":
+            return self.tasks.list_open()
+        if line == "/plan":
+            return self.tasks.plan()
         if line == "/call" or line.startswith("/call "):
             name = line[len("/call"):].strip()
             if not name:
@@ -495,6 +544,7 @@ class PersonalJarvis:
 
     def close(self):
         self.memory.close()
+        self.tasks.close()
 
 
 def status() -> dict:
@@ -513,17 +563,26 @@ def status() -> dict:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--chat", action="store_true")
+    parser.add_argument("--chat", action="store_true", help="Terminal chat")
+    parser.add_argument("--web", action="store_true", help="Phone-browser page on 127.0.0.1 (same brain)")
+    parser.add_argument("--port", type=int, default=8787, help="Web UI port (default 8787)")
     parser.add_argument("--status", action="store_true")
     parser.add_argument("--home", type=Path, default=Path.home() / ".jarvis-personal")
     args = parser.parse_args(argv)
-    if not args.chat:
+    if not (args.chat or args.web):
         print(json.dumps(status(), indent=2))
         return 0
     app = None
     try:
         app = PersonalJarvis(args.home, Path(__file__).resolve().parent)
+        if args.web:
+            from jarvis_web import serve
+            serve(app, port=args.port)
+            return 0
         print("Jarvis prototype: local brain; only your typed commands can request hands.\n" + HELP)
+        due = app.tasks.plan()
+        if due["overdue"] or due["today"]:
+            print("Reminder:", "; ".join(t["title"] + (f" ({t['due']})" if t["due"] else "") for t in due["overdue"] + due["today"]))
         while True:
             try:
                 line = input("You > ").strip()
