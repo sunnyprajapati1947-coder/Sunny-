@@ -100,7 +100,7 @@ def _smalltalk(text: str) -> str | None:
         wish = "Good morning" if 5 <= hour < 12 else ("Good afternoon" if 12 <= hour < 17 else "Good evening")
         return f"{wish} {OWNER_NAME}! {NOVA_NAME} ready hai. Bolo, kya kaam karna hai?"
     if re.search(r"\b(kaun ho tum|who are you|tumhara naam|your name)\b", text, re.IGNORECASE):
-        return f"Main {NOVA_NAME} hu — tumhara personal AI assistant, is phone ke andar chalta hu. Data kahin nahi jata."
+        return f"Main {NOVA_NAME} hu — tumhara personal AI assistant. Local Qwen phone par chalta hai; Gemini key configure ho to kuch chat online Google ko bheji ja sakti hai."
     return None
 
 
