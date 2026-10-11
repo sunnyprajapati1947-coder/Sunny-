@@ -102,6 +102,29 @@ class JarviewModelTest(unittest.TestCase):
         self.assertIn("system", kwargs)
         self.assertIn("history", kwargs)
 
+    def test_configured_gemini_answers_before_local_model(self):
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key", "NOVA_LLM_PROVIDER": "auto"}):
+            with patch("core.gemini_client.ask", return_value={
+                "success": True, "lane": "gemini", "answer": "Haan Boss, sun raha hu."
+            }) as gemini_mock, patch("core.fast_router.ask") as local_mock:
+                result = jb.respond("ek kahani sunao dragon ke baare me")
+        self.assertTrue(result["success"])
+        self.assertEqual(result["via"], "gemini")
+        gemini_mock.assert_called_once()
+        local_mock.assert_not_called()
+
+    def test_gemini_failure_falls_back_to_local_model(self):
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key", "NOVA_LLM_PROVIDER": "auto"}):
+            with patch("core.gemini_client.ask", return_value={
+                "success": False, "lane": "gemini", "answer": None, "error": "network_error"
+            }), patch("core.fast_router.ask", return_value={
+                "success": True, "lane": "fast", "answer": "Local model jawab."
+            }):
+                result = jb.respond("ek kahani sunao dragon ke baare me")
+        self.assertTrue(result["success"])
+        self.assertEqual(result["via"], "fast")
+        self.assertIn("Local model", result["reply"])
+
     def test_model_offline_falls_back_honestly(self):
         with patch("core.fast_router.ask") as ask_mock:
             ask_mock.return_value = {"success": False, "lane": "fast", "answer": None}
