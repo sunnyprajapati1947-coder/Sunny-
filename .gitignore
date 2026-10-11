@@ -10,3 +10,7 @@ __pycache__/
 
 # Test residue
 logs/audit.jsonl
+
+# Local runtime secrets (never commit a real Gemini API key)
+config/nova.env
+.env
