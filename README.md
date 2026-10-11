@@ -34,10 +34,15 @@ plus `pkg install termux-api`. Without it Jarvis silently falls back to typing.
 
 ## Model lanes
 
-- Smart lane: Google Gemini (free API key) — default for chat; falls back automatically.
+- Smart lane: Google Gemini (free API key) — **agentic**: it sees Nova's
+  curated tool declarations (weather, battery, search, memory, study...),
+  picks and runs them itself through the secure tool registry, then answers
+  with real data. Falls back to plain chat, then local lanes, automatically.
   Add your key once: `jarvis-gemini-key` (or `bash automation/add_gemini_key.sh`).
   Key from <https://aistudio.google.com/apikey>; stored in `config/gemini.key`
   (chmod 600, git-ignored — never committed).
+  Knobs: `NOVA_AGENT_ENABLED=0` (plain chat only), `NOVA_AGENT_TOOLS` (allowlist
+  override), `NOVA_AGENT_MAX_ROUNDS` (tool-call budget, default 3).
 - Fast lane: local Qwen small model for bounded, low-complexity turns.
 - Deep lane: local Qwen 4B-class model for reasoning, planning, and research.
 - `nova_chat.py` starts/checks both lanes automatically and self-heals.

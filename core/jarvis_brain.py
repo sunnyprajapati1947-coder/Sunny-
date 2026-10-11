@@ -510,7 +510,7 @@ def respond(text: str) -> dict[str, Any]:
     if worked:
         return {"success": True, "reply": worked, "via": "tool"}
 
-    # 3) Human-like conversation: Gemini (smart lane) -> local Qwen fallback.
+    # 3) Human-like conversation: Gemini agent (tools) -> plain Gemini -> local Qwen.
     # Voice speed: 1.7B on a phone is ~8-15 tokens/s, so cap tokens normally
     # and only allow a long generation when detail was explicitly requested.
     detail = bool(DETAIL_Q.search(text))
@@ -522,23 +522,43 @@ def respond(text: str) -> dict[str, Any]:
     via = "local"
     result: dict = {"success": False}
 
-    # Smart lane pehle: Boss ka Gemini key (agar set hai).
+    # Smart lane #1: agentic Gemini — tools khud choose karke real data laye.
     try:
-        from core.gemini_lane import ask_gemini, has_key
+        from core.gemini_agent import run_agent
+        from core.gemini_lane import has_key
         if has_key():
-            gem = ask_gemini(
+            ag = run_agent(
                 text,
                 history=history,
                 system=JARVIS_PERSONALITY,
                 timeout=45.0,
                 max_tokens=1500 if detail else 700,
             )
-            if gem.get("success"):
-                reply = str(gem.get("answer") or "").strip()
+            if ag.get("success"):
+                reply = str(ag.get("answer") or "").strip()
                 via = "gemini"
-                result = gem
+                result = ag
     except Exception:
         reply = ""
+
+    # Smart lane #2: plain Gemini (agent off/fail ho to).
+    if not reply:
+        try:
+            from core.gemini_lane import ask_gemini, has_key
+            if has_key():
+                gem = ask_gemini(
+                    text,
+                    history=history,
+                    system=JARVIS_PERSONALITY,
+                    timeout=45.0,
+                    max_tokens=1500 if detail else 700,
+                )
+                if gem.get("success"):
+                    reply = str(gem.get("answer") or "").strip()
+                    via = "gemini"
+                    result = gem
+        except Exception:
+            reply = ""
 
     # Local Qwen lane: Gemini na ho ya fail ho jaye.
     if not reply:
@@ -582,7 +602,11 @@ def respond(text: str) -> dict[str, Any]:
             pass
 
     if reply:
-        return {"success": True, "reply": reply, "via": via}
+        out = {"success": True, "reply": reply, "via": via}
+        if result.get("tools_used"):
+            out["tools_used"] = result["tools_used"]
+            out["tool_calls"] = result.get("tool_calls", [])
+        return out
 
     return {
         "success": True,

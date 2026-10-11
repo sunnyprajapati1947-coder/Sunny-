@@ -99,7 +99,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         from core.gemini_lane import has_key, _model
         if has_key():
-            print(f"Smart lane: GEMINI ON ({_model()}) — complex sawaal yahan jayenge")
+            agent_tools = 0
+            try:
+                from core.gemini_agent import tool_declarations
+                agent_tools = len(tool_declarations())
+            except Exception:
+                pass
+            extra = f", {agent_tools} tools khud chala sakta hu" if agent_tools else ""
+            print(f"Smart lane: GEMINI ON ({_model()}) — complex sawaal yahan jayenge{extra}")
         else:
             print("Smart lane: GEMINI OFF (key nahi hai) — add: bash automation/add_gemini_key.sh")
     except Exception:
@@ -244,6 +251,9 @@ def main(argv: list[str] | None = None) -> int:
 
         reply = clean_reply(result["reply"])
         via = result.get("via", "local")
+        n_tools = result.get("tools_used") or 0
+        if n_tools:
+            via = f"{via}+{n_tools}tool" if n_tools == 1 else f"{via}+{n_tools}tools"
         print(f"{NOVA_NAME} [{via}] → {reply}")
         speak(reply)
 

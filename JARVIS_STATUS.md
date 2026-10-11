@@ -139,6 +139,31 @@ v4 me already mixed the — ye wave un features pe thi jo abhi bhi missing the):
    search/safety/pdf, brain intents + TIME_Q priority) — suite total
    268 pass.
 
+## v8 update (2026-10-11, raat 2)
+
+Boss ne "Build Friday With Claude Code" (LiveKit voice agent guide) bheja.
+Uska setup PC + paid keys (OpenAI/Deepgram/ElevenLabs/LiveKit cloud) wala
+hai — phone ke liye nahi. Par uska ASLI idea liya: **agent khud decide
+karta hai kaunsa tool chalana hai.** Wahi Nova me aa gaya:
+
+1. **Gemini agentic lane** (`core/gemini_agent.py`): function-calling loop —
+   Gemini ko 28 curated tools ke declarations milte hain (weather, battery,
+   torch, search, wikipedia, yaadein, study, market...), model KHUD choose
+   karta hai, Nova ka secure registry execute karta hai (validation + audit
+   + kill switch), result wapas model ko, phir final Hinglish jawab.
+   - "dhanbad ka mausam aur battery dono batao" → 2 tool calls → ek jawab.
+   - Brain order: agent → plain Gemini → local Qwen (har level pe fallback).
+   - `via` ab `[gemini+2tools]` jaisa dikhta hai — kaam saaf dikhta hai.
+   - Env: `NOVA_AGENT_ENABLED`, `NOVA_AGENT_TOOLS`, `NOVA_AGENT_MAX_ROUNDS`.
+2. **Security (LiveKit guide me nahi thi)**: communication tools (dial,
+   whatsapp) aur destructive (personal_forget) allowlist me kabhi nahi;
+   high-impact excluded; tool output 1800 chars me truncated; rounds
+   bounded (default 3, max 6) — phone data bachta hai.
+3. `gemini_lane._generate` refactor — tools/functionCall support, purana
+   `ask_gemini` behavior same (13 purane tests untouched pass).
+4. Tests: 281/281 (13 naye agent tests: declarations format, loop,
+   multi-round, allowlist-block, rounds-bound, truncation, brain routing).
+
 ## Agla kaam (priority order)
 
 1. Offline-message honesty (lane slow vs down)

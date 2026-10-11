@@ -118,16 +118,41 @@ def ask_gemini(
 ) -> dict[str, Any]:
     """Gemini se ek jawab. Key/internet/safety fail -> success False (caller
     local lane pe fall back karta hai)."""
+    result = _generate(
+        _contents(history or [], prompt),
+        system=system,
+        timeout=timeout,
+        max_tokens=max_tokens,
+    )
+    if result.get("success") and result.get("text"):
+        return {"success": True, "answer": result["text"], "model": _model(), "lane": "gemini"}
+    return {"success": False, "error": result.get("error", "Gemini jawab nahi de paya.")}
+
+
+def _generate(
+    contents: list[dict[str, Any]],
+    system: str | None = None,
+    tools: dict[str, Any] | None = None,
+    timeout: float = DEFAULT_TIMEOUT,
+    max_tokens: int = 1200,
+) -> dict[str, Any]:
+    """Ek raw generateContent call. Contents/tools caller banata hai.
+
+    Return: {"success": True, "text": ..., "function_calls": [...]} —
+    function_calls tab jab model tool chalana chahe (agentic lane ke liye).
+    """
     if not has_key():
         return {"success": False, "error": "Gemini key set nahi hai."}
     key = get_key()
     model = _model()
-    payload = {
-        "contents": _contents(history or [], prompt),
+    payload: dict[str, Any] = {
+        "contents": contents,
         "generationConfig": {"temperature": 0.7, "maxOutputTokens": max_tokens},
     }
     if system:
         payload["system_instruction"] = {"parts": [{"text": system}]}
+    if tools:
+        payload["tools"] = [tools]
     url = f"{API_BASE}/{quote(model)}:generateContent?key={quote(key)}"
     try:
         req = Request(
@@ -143,9 +168,17 @@ def ask_gemini(
     candidates = data.get("candidates") or []
     for candidate in candidates:
         parts = (candidate.get("content") or {}).get("parts") or []
-        text = "".join(str(p.get("text") or "") for p in parts).strip()
-        if text:
-            return {"success": True, "answer": text, "model": model, "lane": "gemini"}
+        text = "".join(str(p.get("text") or "") for p in parts if p.get("text")).strip()
+        function_calls = [
+            {
+                "name": str(fc.get("name") or ""),
+                "args": dict(fc.get("args") or {}),
+            }
+            for p in parts if p.get("functionCall")
+            for fc in [p["functionCall"]]
+        ]
+        if text or function_calls:
+            return {"success": True, "text": text, "function_calls": function_calls}
 
     # Blocked/empty candidates -> safety block ya quota; honest failure.
     reason = "Gemini ne khaali/jawab-denese-inkaar kiya (safety ya quota)."
