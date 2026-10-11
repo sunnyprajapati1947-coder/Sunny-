@@ -72,11 +72,36 @@ python3 -m unittest discover -s tests -q   # run the test suite
 
 Skill packs live in `skills/<name>/SKILL.md` and are validated on load.
 
-## Provider
+## Provider: Gemini online + local fallback
 
-SunnyAI can also route to Google AI models via a configured `GEMINI_API_KEY`
-from the local environment. No API keys are stored in this repository.
+Jarvis can use Google Gemini for natural conversation and fall back to local
+Qwen when Gemini is not configured, times out, or returns an API error. Explicit
+tool intents still run through the local tool registry first; Gemini text alone
+does not grant phone or shell permissions.
 
-Model availability can depend on the Google account, API project, quota,
-region, preview status, and current Google API lifecycle. A model being
-listed in the registry does not guarantee access.
+After setup, create `config/nova.env` locally (this file is gitignored):
+
+```bash
+mkdir -p config
+cat > config/nova.env <<'EOF'
+GEMINI_API_KEY=PASTE_YOUR_KEY_HERE
+GEMINI_MODEL=gemini-2.5-flash
+NOVA_LLM_PROVIDER=auto
+GEMINI_TIMEOUT=25
+EOF
+chmod 600 config/nova.env
+```
+
+Replace the placeholder on your phone only. Never paste a real key into chat,
+GitHub issues, source files, screenshots, or commits. You can also export
+`GEMINI_API_KEY` in the local shell instead of using the file.
+
+- `NOVA_LLM_PROVIDER=auto`: Gemini first when a key is present, then local Qwen.
+- `NOVA_LLM_PROVIDER=local`: local Qwen only.
+- `NOVA_LLM_PROVIDER=gemini`: try Gemini first, then local Qwen fallback.
+- Default model: `gemini-2.5-flash`; set `GEMINI_MODEL` to a model available
+  to your Google AI project if this one is unavailable.
+
+Gemini API use is subject to Google's current pricing, quotas, region and model
+availability. The fallback does not mean the cloud request was free or that
+every requested phone action is supported.
