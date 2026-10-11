@@ -92,3 +92,13 @@ echo "   Add karo:  jarvis-gemini-key   (ya: bash $REPO/automation/add_gemini_ke
 echo "   Key file config/gemini.key me save hoti hai (git me kabhi commit nahi hoti)."
 echo "   Uske baad jarvis-start pe 'Smart lane: GEMINI ON' dikhega."
 echo "   No key / internet fail -> local Qwen lane pe apne aap fallback."
+echo
+echo "4) Phone file tools (optional but recommended):"
+echo "   Termux me chalao (ek baar, storage permission dialog aayega - Allow dena):"
+echo "     termux-setup-storage"
+echo "   Uske baad Jarvis bol sakta hai: 'downloads me pdf dhoondo', 'storage kitna khali hai'."
+echo "   PDF padhne ke liye (optional): pip install pypdf"
+echo
+echo "5) Wake word: voice mode me 'Jarvis ...' bol ke bulao (default ON)."
+echo "   Band karna ho to: /wake off  (ya env NOVA_WAKE_WORD=0)"
+echo "   Reminders: 'mujhe kal subah 7 baje jagana' bolo - waqt pe yaad dilayega."

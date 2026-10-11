@@ -20,8 +20,11 @@ python3 ~/Nova/jarvis.py          # voice mode (needs the Termux:API app)
          Qwen model with Jarvis personality + rolling memory)
       -> bolo (termux-tts-speak)
 
-- `jarvis.py` — voice-first entry point (`/status`, `/reset`, `/exit`)
+- `jarvis.py` — voice-first entry point (`/status`, `/reminders`, `/wake on|off`, `/reset`, `/exit`)
 - `core/voice_interface.py` — speak + listen (graceful text fallback)
+- `core/wake_word.py` — "Jarvis ..."/"Nova ..." bol ke bulao; background awaaz ignore
+- `core/reminders.py` — Hinglish reminders: "kal subah 7 baje jagana", "10 minute baad", "roz subah 6 baje" (daily); waqt pe bolkar + notification yaad dilata hai
+- `core/file_tools.py` — phone files: search, storage status, safe open, PDF padhna (`pip install pypdf`, `termux-setup-storage` once)
 - `core/jarvis_brain.py` — act-first intent router, then human-like chat
 - `core/conversation.py` — persistent rolling dialogue (last 12 turns replayed)
 - `core/identity.py` — name/owner + Hinglish personality (env-configurable)

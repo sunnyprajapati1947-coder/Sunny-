@@ -111,19 +111,66 @@ def main(argv: list[str] | None = None) -> int:
                        stderr=subprocess.DEVNULL, check=False)
         print("Wake lock ON (phone lock hone pe bhi sunta rahunga)")
     mem = summarize_load()
-    print(f"Memory: {mem['turns_stored']} turns stored | Commands: /status, /reset, /exit")
+    try:
+        from core import wake_word as _ww
+        wake_on = _ww.enabled()
+    except Exception:
+        wake_on = False
+    try:
+        from core import reminders as _rem
+        rem_count = _rem.list_reminders()["count"]
+    except Exception:
+        rem_count = 0
+    cmds = "/status, /reminders, /wake on|off, /reset, /exit"
+    print(f"Memory: {mem['turns_stored']} turns stored | Reminders: {rem_count} | Commands: {cmds}")
+    if voice["mode"] == "voice" and wake_on:
+        print('Wake word: ON — mujhe "Jarvis ..." ya "Nova ..." bol ke bulao (band: /wake off)')
+
+    # Startup pe due reminders bata do (agar loop band tha tab ke).
+    try:
+        from core import reminders as _rem
+        for line in _rem.speak_due():
+            print(f"{NOVA_NAME} → {line}")
+            speak(line)
+    except Exception:
+        pass
 
     greeting = f"{OWNER_NAME}, {NOVA_NAME} online. Bolo, kya kaam karna hai?"
     print(f"\n{NOVA_NAME} → {greeting}")
     speak(greeting)
 
     while True:
+        # Har cycle pe due reminders check (voice loop me bhi).
+        try:
+            from core import reminders as _rem
+            for line in _rem.speak_due():
+                print(f"{NOVA_NAME} → {line}")
+                speak(line)
+        except Exception:
+            pass
+
         heard = listen(f"You ({voice['mode']}) → ")
         if not heard.get("success"):
             continue
         text = heard["text"].strip()
         if not text:
             continue
+
+        # Wake word filter: sirf voice mode me — typing me har line diliberate hai.
+        try:
+            from core import wake_word as _ww
+            if voice["mode"] == "voice" and _ww.enabled() and not _ww.is_wake(text):
+                print("  (background awaaz — ignore)")
+                continue
+            if voice["mode"] == "voice":
+                stripped = _ww.strip_wake(text)
+                if stripped:
+                    text = stripped
+                else:
+                    print(f"{NOVA_NAME} → Haan Boss, bolo!")
+                    continue
+        except Exception:
+            pass
 
         cmd = text.lower()
         if cmd == "/status":
@@ -135,9 +182,53 @@ def main(argv: list[str] | None = None) -> int:
                     gem = "ON"
             except Exception:
                 pass
-            line = f"fast={'ON' if fast_ok else 'OFF'}, deep={'ON' if deep_ok else 'OFF'}, gemini={gem}, turns={summarize_load()['turns_stored']}"
+            try:
+                from core import wake_word as _ww
+                wake = "ON" if _ww.enabled() else "OFF"
+            except Exception:
+                wake = "OFF"
+            try:
+                from core import reminders as _rem
+                rem_n = _rem.list_reminders()["count"]
+            except Exception:
+                rem_n = 0
+            line = (f"fast={'ON' if fast_ok else 'OFF'}, deep={'ON' if deep_ok else 'OFF'}, "
+                    f"gemini={gem}, wake={wake}, reminders={rem_n}, turns={summarize_load()['turns_stored']}")
             print(f"{NOVA_NAME} → {line}")
-            speak(f"Fast {'on' if fast_ok else 'off'}, deep {'on' if deep_ok else 'off'}, Gemini {gem.lower()}.")
+            speak(f"Fast {'on' if fast_ok else 'off'}, deep {'on' if deep_ok else 'off'}, Gemini {gem.lower()}, wake word {wake.lower()}, {rem_n} reminders.")
+            continue
+        if cmd == "/reminders":
+            try:
+                from core import reminders as _rem
+                result = _rem.list_reminders()
+                items = result.get("reminders", [])
+                if items:
+                    from datetime import datetime as _dt
+                    parts = [f"{_rem.human_when(_dt.fromisoformat(i['when']))} — {i['text'][:40]}" for i in items[:5]]
+                    line = " | ".join(parts)
+                else:
+                    line = "Koi pending reminder nahi hai Boss."
+            except Exception:
+                line = "Reminders check nahi kar paya."
+            print(f"{NOVA_NAME} → {line}")
+            speak(line)
+            continue
+        if cmd.startswith("/wake"):
+            try:
+                from core import wake_word as _ww
+                arg = cmd.replace("/wake", "").strip()
+                if arg in ("on", "1", "start", "chalao"):
+                    _ww.set_enabled(True)
+                    line = 'Wake word ON — mujhe "Jarvis ..." bol ke bulao.'
+                elif arg in ("off", "0", "band", "band karo"):
+                    _ww.set_enabled(False)
+                    line = "Wake word OFF — ab har baat seedha bolo, main sun raha hu."
+                else:
+                    line = f"Wake word abhi {'ON' if _ww.enabled() else 'OFF'} hai. '/wake on' ya '/wake off' bolo."
+                print(f"{NOVA_NAME} → {line}")
+                speak(line)
+            except Exception:
+                print(f"{NOVA_NAME} → Wake word toggle nahi hua.")
             continue
         if cmd == "/reset":
             history_reset()

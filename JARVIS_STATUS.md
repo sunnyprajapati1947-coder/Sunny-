@@ -114,9 +114,34 @@ cd ~/Nova && git pull && jarvis-start
    key lifecycle, gitignore protection, env gates, response parse, network
    fail, brain routing + fallback, key-no-leak).
 
+## v7 update (2026-10-11, raat)
+
+Boss ki real-JARVIS feature list ke gaps pure kiye (sab 9 GitHub sources
+v4 me already mixed the — ye wave un features pe thi jo abhi bhi missing the):
+
+1. **Wake word** (`core/wake_word.py`): voice mode me "Jarvis ..."/"Nova ..."
+   bol ke bulao — TV/baatein/background awaaz ignore. Default ON, `/wake
+   on|off` ya `NOVA_WAKE_WORD=0` se control. Text mode me filter nahi.
+2. **Reminders — asli contextual memory** (`core/reminders.py`): Hinglish
+   time parsing — "kal subah 7 baje jagana", "10 minute baad paani pina",
+   "aaj raat 9 baje", "shaam 5:30 baje", "roz subah 6 baje" (daily
+   reschedule), "parso", "agle somvar", ISO datetime. Waqt aane pe bolkar
+   + termux-notification dono. One-shot fire hoke auto-clean; daily roz
+   reschedule. Personal file `tasks/reminders.json` (gitignored).
+3. **File management** (`core/file_tools.py`): "downloads me pdf dhoondo",
+   "storage kitna khali hai", "maths notes pdf kholo/padho" — bounded
+   search (phone kabhi hang nahi), safe open (allowed roots ke bahar path
+   block), PDF reader (optional `pip install pypdf`, bina uske saaf hint).
+   Pehle ek baar `termux-setup-storage` chalana hota hai.
+4. Naye commands: `/reminders` (list), `/wake on|off`; `/status` me ab
+   wake + reminders count bhi.
+5. Tests: 66 naye (reminders parse/lifecycle/daily, wake word, file
+   search/safety/pdf, brain intents + TIME_Q priority) — suite total
+   268 pass.
+
 ## Agla kaam (priority order)
 
-1. Task engine ↔ Jarvis loop wiring (phase 3 completion)
-2. Offline-message honesty (lane slow vs down)
-3. YouTube pipeline integration (phase 7)
-4. Wake-word / fast STT research
+1. Offline-message honesty (lane slow vs down)
+2. YouTube pipeline integration (phase 7)
+3. Email padhna (Gmail OAuth — Boss ke bole par)
+4. Wake-word upgrade (on-device koi chhota model)

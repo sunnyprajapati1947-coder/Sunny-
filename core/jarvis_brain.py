@@ -42,6 +42,11 @@ DETAIL_Q = re.compile(r"\b(detail|detailed|explain|samjhao|lambi|pura|poora|list
 WHATSAPP_Q = re.compile(r"\bwhatsapp\b", re.IGNORECASE)
 CALL_Q = re.compile(r"\b(call karo|phone lagao|phone karo|dial karo|dial kar|missed call|call lagao)\b", re.IGNORECASE)
 UPDATE_Q = re.compile(r"(?:\b(update|upgrade|naya version)\b.*\b(jarvis|nova|repo|code|khud)\b)|(?:\b(jarvis|nova|repo)\b.*\b(update|upgrade)\b)", re.IGNORECASE)
+REMINDER_ADD_Q = re.compile(r"\b(yaad dilana|yaad dila|yaad dila do|remind me|reminder lagao|reminder set|jagana|jaga dena|jagna hai|uthana|utha dena|alarm|bhoolna mat)\b", re.IGNORECASE)
+REMINDER_LIST_Q = re.compile(r"\b(reminders?|alarms?|kaun se kaam)\b.*\b(kya|kaun|list|dikhao|dikha|batao|show|padho|kaise)\b|\b(mere|sab)\s+(reminders?|alarms?)\b", re.IGNORECASE)
+FILE_SEARCH_Q = re.compile(r"\b(file|files|pdf|photo|foto|video|song|gaana|document|doc|apk|zip)\b.*\b(dhoondo|dhundo|dhoondho|dhundo|search|kaha hai|kahan hai|kaha mil|kahan mil|dikhao)\b|\b(dhoondo|dhundo|dhoondho)\b.*\b(file|files|pdf|photo|foto|video|song|gaana|document|doc|apk|zip)\b", re.IGNORECASE)
+STORAGE_Q = re.compile(r"\b(storage|space|kitna khali|disk|phone ki memory|memory kitni)\b", re.IGNORECASE)
+PDF_Q = re.compile(r"\bpdf\b", re.IGNORECASE)
 
 
 def _registry():
@@ -118,6 +123,40 @@ def _intents(text: str) -> str | None:
     """Deterministic real-work intents; returns a spoken-style answer."""
     registry = _registry()
 
+    # Reminders sabse pehle — "kal subah 7 baje jagana" me TIME_Q ("baje")
+    # pehle match ho jata, isliye reminder intent ko priority milti hai.
+    if REMINDER_LIST_Q.search(text):
+        from core import reminders as rem
+        result = rem.list_reminders()
+        items = result.get("reminders", [])
+        if not items:
+            return f"Koi pending reminder nahi hai {OWNER_NAME}. Bolo 'mujhe kal subah 7 baje jagana' jaisa kuch."
+        from datetime import datetime as _dt
+        lines = []
+        for item in items[:4]:
+            try:
+                when = _dt.fromisoformat(item["when"])
+                lines.append(f"{rem.human_when(when)} — {item['text'][:40]}")
+            except ValueError:
+                lines.append(item["text"][:40])
+        return f"Tumhare {result['count']} reminders: " + "; ".join(lines) + "."
+
+    if REMINDER_ADD_Q.search(text):
+        from core import reminders as rem
+        parsed = rem.parse_when(text)
+        if parsed:
+            when, daily = parsed
+            body = rem.strip_when(text)
+            if len(body) < 3:
+                body = text.strip()[:60]
+            result = rem.add_reminder(body, when, daily=daily)
+            if result.get("success"):
+                tag = " (roz ka)" if daily else ""
+                return (f"Theek hai {OWNER_NAME}! Yaad rakh liya{tag} — "
+                        f"{rem.human_when(when)}: {body}. Waqt pe bata dunga.")
+        return (f"Kab yaad dilaun {OWNER_NAME}? Jaise bolo: "
+                "'mujhe kal subah 7 baje jagana' ya '10 minute baad paani pina hai'.")
+
     if TIME_Q.search(text) and len(text.split()) <= 8:
         now = datetime.now()
         return f"{OWNER_NAME}, abhi {now.strftime('%I:%M %p')} baje hain, {now.strftime('%A, %d %B %Y')}."
@@ -178,6 +217,52 @@ def _intents(text: str) -> str | None:
             return f"Abhi kuch khaas yaad nahi hai {OWNER_NAME}. Bolo kya yaad rakhna hai."
         except Exception:
             pass
+
+    # PDF (OPEN se pehle — "pdf kholo/padho" yahan handle hoga).
+    if PDF_Q.search(text):
+        from core import file_tools as ft
+        if re.search(r"\b(kholo|khol|khol do|kholna|open)\b", text, re.IGNORECASE):
+            name = re.sub(r"\b(pdf|kholo|khol|khol do|kholna|open|mujhe|meri|mere|ka|ki|ke|me se|se|jarvis|nova|boss|karo|kar do|please|plz)\b", " ", text, flags=re.IGNORECASE)
+            name = re.sub(r"\s+", " ", name).strip(" ,.-:!?")
+            result = ft.file_open(name if len(name) >= 2 else ".pdf")
+            if result.get("success"):
+                return f"Khol diya {OWNER_NAME} — {result.get('opened')}"
+            return str(result.get("error", "pdf khol nahi paya"))
+        if re.search(r"\b(padho|padh|kya likha|kya hai|summary|sarah|sunchao|batao)\b", text, re.IGNORECASE):
+            name = re.sub(r"\b(pdf|padho|padh|kya likha|kya hai|summary|sarah|sunchao|batao|kar do|karo|dena|jarvis|nova|boss|meri|mere|me se|se)\b", " ", text, flags=re.IGNORECASE)
+            name = re.sub(r"\s+", " ", name).strip(" ,.-:!?")
+            result = ft.pdf_read(name if len(name) >= 2 else ".pdf")
+            if result.get("success"):
+                body = str(result.get("text", "")).strip()
+                if body:
+                    return (f"PDF padh liya {OWNER_NAME} ({result.get('pages')} pages). "
+                            f"Shuru ka hissa: {body[:400]}")
+                return f"Ye PDF me text nahi hai {OWNER_NAME} — scanned image lagti hai."
+            return str(result.get("error", "pdf nahi padh paya"))
+
+    # Files dhoondna.
+    if FILE_SEARCH_Q.search(text):
+        from core import file_tools as ft
+        pattern = re.sub(r"\b(dhoondo|dhundo|dhoondho|search|search karo|kaha hai|kahan hai|kaha mil|kahan mil|dikhao|mujhe|meri|mere|ka|ki|ke|me|me se|se|jarvis|nova|boss|karo|kar do|please|plz|sab)\b", " ", text, flags=re.IGNORECASE)
+        # "pdf" word filename me ".pdf" hota hai — strip karke saaf pattern banao
+        pattern = re.sub(r"\bpdf\b", " ", pattern, flags=re.IGNORECASE)
+        pattern = re.sub(r"\s+", " ", pattern).strip(" ,.-:!?")
+        result = ft.file_search(pattern if len(pattern) >= 2 else ".pdf")
+        if result.get("success"):
+            files = result.get("files", [])
+            if files:
+                names = "; ".join(f"{f['name']} ({f['size']})" for f in files[:4])
+                more = f"... aur {result['count'] - 4} mile" if result.get("count", 0) > 4 else ""
+                return f"Mil gaye {OWNER_NAME}: {names}{more}. Kholna ho to bolo."
+            return f"'{pattern}' jaisi koi file nahi mili {OWNER_NAME}."
+        return str(result.get("error", "search nahi kar paya"))
+
+    if STORAGE_Q.search(text) and len(text.split()) <= 8:
+        from core import file_tools as ft
+        result = ft.storage_status()
+        if result.get("success"):
+            return f"Phone me {result['summary']} {OWNER_NAME}."
+        return str(result.get("error", "storage check nahi hua"))
 
     # Hath: kholo/khol do/open X -> app ya website kholta hai.
     if OPEN_Q.search(text):

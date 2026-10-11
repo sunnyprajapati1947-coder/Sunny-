@@ -13,3 +13,4 @@ logs/audit.jsonl
 
 # Gemini API key — NEVER commit
 config/gemini.key
+tasks/reminders.json
