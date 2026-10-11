@@ -444,6 +444,30 @@ def respond(text: str) -> dict[str, Any]:
     max_tokens = 800 if detail else 300
     timeout = float(os.getenv("NOVA_CHAT_TIMEOUT", "60"))
     history = history_context(history_load())
+
+    # Online Gemini is optional. When configured, try it before local Qwen;
+    # any key/quota/network/model error falls back to the local lane.
+    # Explicit tool intents above always run first, independent of provider.
+    provider = os.getenv("NOVA_LLM_PROVIDER", "auto").strip().lower()
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if provider in {"auto", "gemini"} and gemini_key:
+        try:
+            from core.gemini_client import ask as ask_gemini
+            online = ask_gemini(
+                text,
+                timeout=float(os.getenv("GEMINI_TIMEOUT", "25")),
+                history=history,
+                system=JARVIS_PERSONALITY,
+                temperature=0.7,
+                max_tokens=max_tokens,
+            )
+            online_reply = str(online.get("answer") or "").strip()
+            if online.get("success") and online_reply:
+                return {"success": True, "reply": online_reply, "via": "gemini"}
+        except Exception:
+            # Never expose API keys or provider internals in the conversation.
+            pass
+
     try:
         from core.fast_router import ask
         result = ask(
