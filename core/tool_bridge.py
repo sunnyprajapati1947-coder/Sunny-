@@ -5,10 +5,18 @@ from github.local_ai_agent.tools.web import build_web_tools
 
 from core.termux_tools import (
     battery_status,
+    clipboard_get,
+    clipboard_set,
     device_volume,
+    dial_number,
     notify,
+    open_app,
+    set_brightness,
+    set_volume,
     toast,
+    torch_light,
     vibrate,
+    whatsapp_chat,
 )
 
 
@@ -140,6 +148,176 @@ def build_registry() -> NovaToolRegistry:
                         "maximum": 3000,
                     },
                 },
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_open",
+            category="phone",
+            description="Open a whitelisted app (Instagram, YouTube, WhatsApp...) or an http(s) URL on the phone.",
+            run=open_app,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "target": {"type": "string", "description": "App name or URL, e.g. instagram"},
+                },
+                "required": ["target"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_torch",
+            category="phone",
+            description="Phone torch (flashlight) on/off.",
+            run=torch_light,
+            parameters={
+                "type": "object",
+                "properties": {"on": {"type": "boolean"}},
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_clipboard_get",
+            category="phone",
+            description="Read the phone clipboard.",
+            run=clipboard_get,
+            parameters={"type": "object", "properties": {}, "additionalProperties": False},
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_clipboard_set",
+            category="phone",
+            description="Write text to the phone clipboard.",
+            run=clipboard_set,
+            parameters={
+                "type": "object",
+                "properties": {"text": {"type": "string"}},
+                "required": ["text"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_set_volume",
+            category="phone",
+            description="Set a phone volume stream (music/ring/notification/alarm) 0-100.",
+            run=set_volume,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "volume": {"type": "integer", "minimum": 0, "maximum": 100},
+                    "stream": {"type": "string", "enum": ["music", "ring", "notification", "alarm", "system"]},
+                },
+                "required": ["volume"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_brightness",
+            category="phone",
+            description="Set screen brightness 1-100.",
+            run=set_brightness,
+            parameters={
+                "type": "object",
+                "properties": {"percent": {"type": "integer", "minimum": 1, "maximum": 100}},
+                "required": ["percent"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_whatsapp",
+            category="phone",
+            description="Open a WhatsApp chat with a pre-filled message (wa.me). Send button is always the owner's - no auto-send.",
+            run=whatsapp_chat,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "number": {"type": "string", "description": "Phone number with country code, e.g. 919876543210."},
+                    "text": {"type": "string", "description": "Optional message to pre-fill."},
+                },
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    registry.register(
+        NovaTool(
+            name="phone_dial",
+            category="phone",
+            description="Open the phone dialer with a number (tel:). The call button is always the owner's.",
+            run=dial_number,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "number": {"type": "string", "description": "Phone number with country code."},
+                },
+                "required": ["number"],
+                "additionalProperties": False,
+            },
+        )
+    )
+
+    from core.study_assistant import study_plan, study_quiz, study_tips
+
+    registry.register(
+        NovaTool(
+            name="study_plan",
+            category="learning",
+            description="CBSE Class 10 syllabus, chapter list, weightage and Hinglish tips for a subject.",
+            run=study_plan,
+            parameters={
+                "type": "object",
+                "properties": {"subject": {"type": "string"}},
+                "required": ["subject"],
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="study_quiz",
+            category="learning",
+            description="CBSE Class 10 MCQ self-test for a subject (questions with options and answers).",
+            run=study_quiz,
+            parameters={
+                "type": "object",
+                "properties": {
+                    "subject": {"type": "string"},
+                    "count": {"type": "integer", "minimum": 1, "maximum": 10},
+                },
+                "required": ["subject"],
+                "additionalProperties": False,
+            },
+        )
+    )
+    registry.register(
+        NovaTool(
+            name="study_tips",
+            category="learning",
+            description="75+ target ke liye subject-wise CBSE board exam strategy (Hinglish).",
+            run=study_tips,
+            parameters={
+                "type": "object",
+                "properties": {"subject": {"type": "string"}},
                 "additionalProperties": False,
             },
         )
@@ -382,5 +560,10 @@ def build_registry() -> NovaToolRegistry:
             },
         )
     )
+
+    # Second import wave: new GitHub sources (see core/tool_bridge_new_sources.py).
+    from core.tool_bridge_new_sources import register_new_source_tools
+
+    register_new_source_tools(registry)
 
     return registry

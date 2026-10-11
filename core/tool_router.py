@@ -58,6 +58,22 @@ class NovaToolRouter:
             "system", "status", "health", "process", "cpu", "ram",
             "storage", "battery", "server",
         ),
+        "decision": (
+            "decide", "decision", "choose", "option", "better", "should i",
+            "yes or no", "score", "priority", "urgent",
+        ),
+        "learning": (
+            "learn", "learning", "book", "books", "tutorial", "guide",
+            "teach", "study", "course", "build your own", "define",
+            "definition", "dictionary", "wikipedia", "encyclopedia",
+        ),
+        "skills": (
+            "skill", "skills", "skill pack", "capability", "catalog",
+        ),
+        "briefing": (
+            "briefing", "brief", "digest", "morning", "good morning",
+            "my day", "today", "remind", "reminder",
+        ),
     }
 
     def __init__(self, min_score: int = 1, max_tools: int = 8):

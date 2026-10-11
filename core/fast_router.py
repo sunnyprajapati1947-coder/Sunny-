@@ -41,15 +41,30 @@ def _served_model(url: str, fallback: str, timeout: float = 2.0) -> str:
         pass
     return fallback
 
-def _call(url: str, model: str, prompt: str, timeout: float) -> str | None:
+def _call(
+    url: str,
+    model: str,
+    prompt: str,
+    timeout: float,
+    history: list[dict[str, str]] | None = None,
+    system: str | None = None,
+    temperature: float = 0.2,
+    max_tokens: int = 500,
+) -> str | None:
+    messages: list[dict[str, str]] = [
+        {"role": "system", "content": system or "You are Nova's fast routing assistant. Be concise and factual."}
+    ]
+    for turn in history or []:
+        role = str(turn.get("role") or "").lower()
+        content = str(turn.get("content") or "")
+        if role in {"user", "assistant", "system"} and content:
+            messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": prompt})
     payload = json.dumps({
         "model": model,
-        "messages": [
-            {"role": "system", "content": "You are Nova's fast routing assistant. Be concise and factual."},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.2,
-        "max_tokens": 500,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
     }).encode()
     try:
         req = Request(url, data=payload, headers={"Content-Type": "application/json"})
@@ -59,18 +74,31 @@ def _call(url: str, model: str, prompt: str, timeout: float) -> str | None:
     except Exception:
         return None
 
-def ask(prompt: str, timeout: float = 12.0) -> dict:
+
+def ask(
+    prompt: str,
+    timeout: float = 12.0,
+    history: list[dict[str, str]] | None = None,
+    system: str | None = None,
+    temperature: float = 0.2,
+    max_tokens: int = 500,
+) -> dict:
     lane = route(prompt)
     if lane == "fast":
-        answer = _call(FAST_URL, _served_model(FAST_URL, FAST_MODEL), prompt, timeout)
+        answer = _call(FAST_URL, _served_model(FAST_URL, FAST_MODEL), prompt, timeout, history, system, temperature, max_tokens)
         if answer is not None:
             used = "fast"
         else:
-            answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0))
+            answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0), history, system, temperature, max_tokens)
             used = "deep_fallback"
     else:
-        answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0))
-        used = "deep"
+        answer = _call(DEEP_URL, _served_model(DEEP_URL, DEEP_MODEL), prompt, min(45.0, timeout + 20.0), history, system, temperature, max_tokens)
+        if answer is not None:
+            used = "deep"
+        else:
+            # Deep lane down -> answer on the fast lane instead of giving up.
+            answer = _call(FAST_URL, _served_model(FAST_URL, FAST_MODEL), prompt, timeout, history, system, temperature, max_tokens)
+            used = "fast_fallback"
     return {"success": answer is not None, "lane": used, "answer": answer}
 
 def remember(prompt: str, lane: str) -> None:

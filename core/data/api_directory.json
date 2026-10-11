@@ -1,0 +1,369 @@
+{
+  "source": "public-apis/public-apis",
+  "source_url": "https://github.com/public-apis/public-apis",
+  "license_note": "Curated subset of the public-apis directory; each entry links to its own service.",
+  "selection": "No-auth, HTTPS-only entries from assistant-useful categories.",
+  "count": 60,
+  "apis": [
+    {
+      "name": "Exchangerate.host",
+      "url": "https://exchangerate.host",
+      "description": "Free foreign exchange & crypto rates API",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Frankfurter",
+      "url": "https://www.frankfurter.app/docs",
+      "description": "Exchange rates, currency conversion and time series",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Free Dictionary",
+      "url": "https://dictionaryapi.dev/",
+      "description": "Definitions, phonetics, pronunciations, parts of speech, examples, synonyms",
+      "category": "Dictionaries"
+    },
+    {
+      "name": "Open-Meteo",
+      "url": "https://open-meteo.com/",
+      "description": "Free weather API for non-commercial use",
+      "category": "Environment"
+    },
+    {
+      "name": "Wikipedia",
+      "url": "https://www.mediawiki.org/wiki/API:Main_page",
+      "description": "Mediawiki Encyclopedia",
+      "category": "Open Data"
+    },
+    {
+      "name": "Open-Meteo",
+      "url": "https://open-meteo.com/",
+      "description": "Global weather forecast API for non-commercial use",
+      "category": "Weather"
+    },
+    {
+      "name": "Open-Meteo Ensemble",
+      "url": "https://open-meteo.com/en/docs/ensemble-api",
+      "description": "Weather ensemble forecasts from multiple models",
+      "category": "Weather"
+    },
+    {
+      "name": "wttr.in",
+      "url": "https://wttr.in/:help",
+      "description": "Weather in your terminal, supports JSON output",
+      "category": "Weather"
+    },
+    {
+      "name": "caldays",
+      "url": "https://caldays.com/api",
+      "description": "Public holidays for 195+ countries",
+      "category": "Calendar"
+    },
+    {
+      "name": "India Public Holidays",
+      "url": "https://calendar-api-web.vercel.app/docs",
+      "description": "Official Indian public holidays for the Central government and 36 states/UTs",
+      "category": "Calendar"
+    },
+    {
+      "name": "Nager.Date",
+      "url": "https://date.nager.at",
+      "description": "Public holidays for more than 90 countries",
+      "category": "Calendar"
+    },
+    {
+      "name": "Namedays Calendar",
+      "url": "https://nameday.abalin.net",
+      "description": "Provides namedays for multiple countries",
+      "category": "Calendar"
+    },
+    {
+      "name": "Non-Working Days",
+      "url": "https://github.com/gadael/icsdb",
+      "description": "Database of ICS files for non working days",
+      "category": "Calendar"
+    },
+    {
+      "name": "Non-Working Days",
+      "url": "https://isdayoff.ru",
+      "description": "Simple REST API for checking working, non-working or short days for Russia, CIS, USA and other",
+      "category": "Calendar"
+    },
+    {
+      "name": "Russian Calendar",
+      "url": "https://github.com/egno/work-calendar",
+      "description": "Check if a date is a Russian holiday or not",
+      "category": "Calendar"
+    },
+    {
+      "name": "The Calendar",
+      "url": "https://the-calendar.net/api/",
+      "description": "Public holidays for US states and 30 countries plus sports and finance calendars as static JSON",
+      "category": "Calendar"
+    },
+    {
+      "name": "UK Bank Holidays",
+      "url": "https://www.gov.uk/bank-holidays.json",
+      "description": "Bank holidays in England and Wales, Scotland and Northern Ireland",
+      "category": "Calendar"
+    },
+    {
+      "name": "api-mint",
+      "url": "https://api-mint.hoiwan.workers.dev",
+      "description": "Free utility APIs: timezone, forex rates, crypto prices, page metadata",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Bank of Russia",
+      "url": "https://www.cbr.ru/development/SXML/",
+      "description": "Exchange rates and currency conversion",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Currency-api",
+      "url": "https://github.com/fawazahmed0/currency-api#readme",
+      "description": "Free Currency Exchange Rates API with 150+ Currencies & No Rate Limits",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Czech National Bank",
+      "url": "https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.xml",
+      "description": "A collection of exchange rates",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Daleelak",
+      "url": "https://getdaleelak.com/en/api",
+      "description": "Egyptian bank and dealer exchange rates, gold and silver prices",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Economia.Awesome",
+      "url": "https://docs.awesomeapi.com.br/api-de-moedas",
+      "description": "Portuguese free currency prices and conversion with no rate limits",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Exchangerate.dev",
+      "url": "https://exchangerate.dev/docs",
+      "description": "Live & historical FX, 168 pairs back to 1999, Frankfurter-compatible, free 10k/mo",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "FreeForexAPI",
+      "url": "https://freeforexapi.com/Home/Api",
+      "description": "Real-time foreign exchange rates for major currency pairs",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Fulusly",
+      "url": "https://fulusly.soft9.us/developers",
+      "description": "Exchange rates for 144 currencies with daily history back to the 1990s, English and Arabic",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "FXpeek",
+      "url": "https://fxpeek.com/en/api",
+      "description": "Source-linked historical reference exchange rates with CSV, JSON and an MCP server",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "National Bank of Poland",
+      "url": "http://api.nbp.pl/en.html",
+      "description": "A collection of currency exchange rates (data in XML and JSON)",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "Nerkhsanj",
+      "url": "https://nerkh.jahankhahan.shop/developers/en",
+      "description": "Iran free-market USD, EUR, CNY, gold and coin rates in toman, live and daily archive since 2010",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "paralelo.bo",
+      "url": "https://paralelo.bo/api",
+      "description": "Bolivia parallel-market USD/BOB exchange rate, aggregated from P2P sources every 60s",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "VATComply.com",
+      "url": "https://www.vatcomply.com/documentation",
+      "description": "Exchange rates, geolocation and VAT number validation",
+      "category": "Currency Exchange"
+    },
+    {
+      "name": "24 Pull Requests",
+      "url": "https://24pullrequests.com/api",
+      "description": "Project to promote open source collaboration during December",
+      "category": "Development"
+    },
+    {
+      "name": "Agent Nexus",
+      "url": "https://agentnexus.app/llms.txt",
+      "description": "Continuously probed registry of APIs, MCP servers and CLIs callable by agents",
+      "category": "Development"
+    },
+    {
+      "name": "AgentPay Domain Lookup",
+      "url": "https://agentpay-lookup.agentpay-apis.workers.dev",
+      "description": "DNS records, WHOIS/RDAP, IP ownership and domain reports for AI agents, paid per call via x402",
+      "category": "Development"
+    },
+    {
+      "name": "Agify.io",
+      "url": "https://agify.io",
+      "description": "Estimates the age from a first name",
+      "category": "Development"
+    },
+    {
+      "name": "API Grátis",
+      "url": "https://apigratis.com.br/",
+      "description": "Multiples services and public APIs",
+      "category": "Development"
+    },
+    {
+      "name": "API Tool Calls",
+      "url": "https://apitoolcalls.com/api/",
+      "description": "API Tool Calls: Home cost planners, page to Markdown, SEO checks and recalls",
+      "category": "Development"
+    },
+    {
+      "name": "ApicAgent",
+      "url": "https://www.apicagent.com",
+      "description": "Extract device details from user-agent string",
+      "category": "Development"
+    },
+    {
+      "name": "APIs.guru",
+      "url": "https://apis.guru/api-doc/",
+      "description": "Wikipedia for Web APIs, OpenAPI/Swagger specs for public APIs",
+      "category": "Development"
+    },
+    {
+      "name": "APIzone",
+      "url": "https://apizone.io/api-docs",
+      "description": "Independent uptime & status monitoring for 200+ popular APIs",
+      "category": "Development"
+    },
+    {
+      "name": "Aquanode",
+      "url": "https://docs.aquanode.io/docs/api/marketplace",
+      "description": "Live GPU rental prices and availability across nine cloud providers",
+      "category": "Development"
+    },
+    {
+      "name": "Beeceptor",
+      "url": "https://beeceptor.com/",
+      "description": "Build a mock Rest API endpoint in seconds",
+      "category": "Development"
+    },
+    {
+      "name": "Bored",
+      "url": "https://bored-api.appbrewery.com/",
+      "description": "Find random activities to fight boredom",
+      "category": "Development"
+    },
+    {
+      "name": "BountyCheck",
+      "url": "https://bountycheck.vercel.app",
+      "description": "Claimability verdicts for GitHub bounty issues; free stats and sample, checks paid per call via x402",
+      "category": "Development"
+    },
+    {
+      "name": "BrewPage",
+      "url": "https://brewpage.app",
+      "description": "Free hosting for HTML, JSON, key-value, files, multi-file sites with short URLs and TTL retention",
+      "category": "Development"
+    },
+    {
+      "name": "CDNJS",
+      "url": "https://api.cdnjs.com/libraries/jquery",
+      "description": "Library info on CDNJS",
+      "category": "Development"
+    },
+    {
+      "name": "Changelogs.md",
+      "url": "https://changelogs.md",
+      "description": "Structured changelog metadata from open source projects",
+      "category": "Development"
+    },
+    {
+      "name": "ChartBytes",
+      "url": "https://chartbytes.meridian-digital.pro",
+      "description": "Chart image API: turn a URL into a PNG or SVG chart (bar, line, area, scatter, pie, donut, stacked)",
+      "category": "Development"
+    },
+    {
+      "name": "Ciprand",
+      "url": "https://github.com/polarspetroll/ciprand",
+      "description": "Secure random string generator",
+      "category": "Development"
+    },
+    {
+      "name": "claudecookie",
+      "url": "https://claudecookie.com/api/",
+      "description": "Convert cookie formats, check Claude sessions and generate Claude Code credentials",
+      "category": "Development"
+    },
+    {
+      "name": "Cloudflare Trace",
+      "url": "https://github.com/fawazahmed0/cloudflare-trace-api",
+      "description": "Get IP Address, Timestamp, User Agent, Country Code, IATA, HTTP Version, TLS/SSL Version & More",
+      "category": "Development"
+    },
+    {
+      "name": "Codex",
+      "url": "https://github.com/Jaagrav/CodeX",
+      "description": "Online Compiler for Various Languages",
+      "category": "Development"
+    },
+    {
+      "name": "CORS Proxy",
+      "url": "https://github.com/burhanuday/cors-proxy",
+      "description": "Get around the dreaded CORS error by using this proxy as a middle man",
+      "category": "Development"
+    },
+    {
+      "name": "CountAPI",
+      "url": "https://countapi.xyz",
+      "description": "Free and simple counting service. You can use it to track page hits and specific events",
+      "category": "Development"
+    },
+    {
+      "name": "crates.io",
+      "url": "https://crates.io/data-access",
+      "description": "Rust crate versions, downloads and dependency metadata",
+      "category": "Development"
+    },
+    {
+      "name": "DigitalOcean Status",
+      "url": "https://status.digitalocean.com/api",
+      "description": "Status of all DigitalOcean services",
+      "category": "Development"
+    },
+    {
+      "name": "DigMyName",
+      "url": "https://digmyname.com/api",
+      "description": "Domain availability and registrar pricing across 52 TLDs",
+      "category": "Development"
+    },
+    {
+      "name": "DomainDb Info",
+      "url": "https://api.domainsdb.info/",
+      "description": "Domain name search to find all domains containing particular words/phrases/etc",
+      "category": "Development"
+    },
+    {
+      "name": "dotsweep",
+      "url": "https://dotsweep.com/docs",
+      "description": "Domain availability across 1200+ TLDs with registration and renewal prices",
+      "category": "Development"
+    },
+    {
+      "name": "DownStatus",
+      "url": "https://isitdownstatus.com",
+      "description": "Real-time status for GitHub, AWS, Discord and 90+ services",
+      "category": "Development"
+    }
+  ]
+}

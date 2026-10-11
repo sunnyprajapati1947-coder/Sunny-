@@ -16,7 +16,7 @@ with TemporaryDirectory() as tmp:
 
     attempts = {}
 
-    def executor(task):
+    def executor(task, args):
         attempts[task.task_id] = attempts.get(task.task_id, 0) + 1
 
         if task.task_id == a.task_id and attempts[task.task_id] == 1:
@@ -37,7 +37,7 @@ with TemporaryDirectory() as tmp:
     # Therefore use a stateful executor repair signal instead.
     attempts.clear()
 
-    def executor2(task):
+    def executor2(task, args):
         attempts[task.task_id] = attempts.get(task.task_id, 0) + 1
 
         if task.task_id == a.task_id and attempts[task.task_id] == 1:
