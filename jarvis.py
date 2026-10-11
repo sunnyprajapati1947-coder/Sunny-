@@ -96,6 +96,14 @@ def main(argv: list[str] | None = None) -> int:
     fast_ok, deep_ok = ensure_lanes()
     lane = "READY" if (fast_ok or deep_ok) else "OFFLINE"
     print(f"Thinking lane: {lane} (fast={'ON' if fast_ok else 'OFF'}, deep={'ON' if deep_ok else 'OFF'})")
+    try:
+        from core.gemini_lane import has_key, _model
+        if has_key():
+            print(f"Smart lane: GEMINI ON ({_model()}) — complex sawaal yahan jayenge")
+        else:
+            print("Smart lane: GEMINI OFF (key nahi hai) — add: bash automation/add_gemini_key.sh")
+    except Exception:
+        pass
     # Wake lock: screen off ho tab bhi Jarvis zinda rahe.
     import shutil as _shutil
     if _shutil.which("termux-wake-lock"):
@@ -120,9 +128,16 @@ def main(argv: list[str] | None = None) -> int:
         cmd = text.lower()
         if cmd == "/status":
             fast_ok, deep_ok = ensure_lanes()
-            line = f"fast={'ON' if fast_ok else 'OFF'}, deep={'ON' if deep_ok else 'OFF'}, turns={summarize_load()['turns_stored']}"
+            gem = "OFF"
+            try:
+                from core.gemini_lane import has_key
+                if has_key():
+                    gem = "ON"
+            except Exception:
+                pass
+            line = f"fast={'ON' if fast_ok else 'OFF'}, deep={'ON' if deep_ok else 'OFF'}, gemini={gem}, turns={summarize_load()['turns_stored']}"
             print(f"{NOVA_NAME} → {line}")
-            speak(f"Lanes: fast {'on' if fast_ok else 'off'}, deep {'on' if deep_ok else 'off'}.")
+            speak(f"Fast {'on' if fast_ok else 'off'}, deep {'on' if deep_ok else 'off'}, Gemini {gem.lower()}.")
             continue
         if cmd == "/reset":
             history_reset()

@@ -10,3 +10,6 @@ __pycache__/
 
 # Test residue
 logs/audit.jsonl
+
+# Gemini API key — NEVER commit
+config/gemini.key

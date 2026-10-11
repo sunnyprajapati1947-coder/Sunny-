@@ -90,8 +90,33 @@ cd ~/Nova && git pull && jarvis-start
      auto-refresh), quick buttons (torch, news, time), background UPDATE.
    - /api/tool allowlist se hi safe tools (torch/brightness/volume/open).
 
+## v6 update (2026-10-11)
+
+1. **HUD hata diya** (Boss ka decision): `jarvis-gui` / web dashboard poora
+   remove — `core/dashboard.py`, `automation/jarvis_gui.sh`,
+   `tests/test_dashboard.py` delete; setup + README se bhi saaf. Voice-first
+   hi asli Nova hai.
+2. **Gemini smart lane** (naya): chat ab Gemini-first hai —
+   `core/gemini_lane.py` Google `generateContent` API (v1beta) se baat
+   karta hai, JARVIS_PERSONALITY system prompt + rolling history ke saath;
+   default model `gemini-3.7-flash` (env `NOVA_GEMINI_MODEL` se override).
+   - Key add command: **`jarvis-gemini-key`** (ya
+     `bash automation/add_gemini_key.sh`) — interactive ya key as arg.
+   - Key `config/gemini.key` me save (chmod 600), `.gitignore` me protected
+     — git me kabhi commit nahi hoti. Env `NOVA_GEMINI_KEY_FILE` se path
+     badal sakte ho.
+   - No key / net fail / timeout => **local Qwen lane pe apne aap fallback**
+     (`via=gemini` vs `via=lane` batata hai kaun jawab de raha tha).
+   - `NOVA_GEMINI_ENABLED=0` se Gemini band (sirf local).
+   - `jarvis-start` pe "Smart lane: GEMINI ON (model)" dikhta hai; `/status`
+     me `gemini=ON/OFF`.
+3. Tests: 202/202 pass (10 dashboard tests removed, 13 gemini tests added:
+   key lifecycle, gitignore protection, env gates, response parse, network
+   fail, brain routing + fallback, key-no-leak).
+
 ## Agla kaam (priority order)
 
 1. Task engine ↔ Jarvis loop wiring (phase 3 completion)
-2. YouTube pipeline integration (phase 7)
-3. Wake-word / fast STT research
+2. Offline-message honesty (lane slow vs down)
+3. YouTube pipeline integration (phase 7)
+4. Wake-word / fast STT research

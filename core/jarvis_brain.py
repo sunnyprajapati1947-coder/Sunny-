@@ -425,29 +425,53 @@ def respond(text: str) -> dict[str, Any]:
     if worked:
         return {"success": True, "reply": worked, "via": "tool"}
 
-    # 3) Human-like conversation on the local lane, with memory.
+    # 3) Human-like conversation: Gemini (smart lane) -> local Qwen fallback.
     # Voice speed: 1.7B on a phone is ~8-15 tokens/s, so cap tokens normally
     # and only allow a long generation when detail was explicitly requested.
-    # 60s timeout: phone load + thermals can make 1.7B slow; better late
-    # than the dishonest "offline" message.
     detail = bool(DETAIL_Q.search(text))
     max_tokens = 800 if detail else 300
     timeout = float(os.getenv("NOVA_CHAT_TIMEOUT", "60"))
     history = history_context(history_load())
-    try:
-        from core.fast_router import ask
-        result = ask(
-            text,
-            timeout=timeout,
-            history=history,
-            system=JARVIS_PERSONALITY,
-            temperature=0.7,
-            max_tokens=max_tokens,
-        )
-    except Exception as exc:
-        return {"success": False, "error": f"brain unavailable: {exc}"}
 
-    reply = str(result.get("answer") or "").strip() if result.get("success") else ""
+    reply = ""
+    via = "local"
+    result: dict = {"success": False}
+
+    # Smart lane pehle: Boss ka Gemini key (agar set hai).
+    try:
+        from core.gemini_lane import ask_gemini, has_key
+        if has_key():
+            gem = ask_gemini(
+                text,
+                history=history,
+                system=JARVIS_PERSONALITY,
+                timeout=45.0,
+                max_tokens=1500 if detail else 700,
+            )
+            if gem.get("success"):
+                reply = str(gem.get("answer") or "").strip()
+                via = "gemini"
+                result = gem
+    except Exception:
+        reply = ""
+
+    # Local Qwen lane: Gemini na ho ya fail ho jaye.
+    if not reply:
+        try:
+            from core.fast_router import ask
+            result = ask(
+                text,
+                timeout=timeout,
+                history=history,
+                system=JARVIS_PERSONALITY,
+                temperature=0.7,
+                max_tokens=max_tokens,
+            )
+            if result.get("success"):
+                reply = str(result.get("answer") or "").strip()
+                via = result.get("lane", "local")
+        except Exception as exc:
+            return {"success": False, "error": f"brain unavailable: {exc}"}
 
     # Anti-repetition: tiny models love to echo the same greeting. If the
     # reply matches the last thing Jarvis said, regenerate once with a nudge.
@@ -468,11 +492,12 @@ def respond(text: str) -> dict[str, Any]:
             if retry.get("success") and str(retry.get("answer") or "").strip():
                 reply = str(retry["answer"]).strip()
                 result = retry
+                via = retry.get("lane", "local")
         except Exception:
             pass
 
     if reply:
-        return {"success": True, "reply": reply, "via": result.get("lane", "local")}
+        return {"success": True, "reply": reply, "via": via}
 
     return {
         "success": True,

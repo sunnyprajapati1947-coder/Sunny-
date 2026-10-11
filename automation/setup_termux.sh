@@ -61,11 +61,11 @@ if [ -d "$PREFIX_BIN" ] && [ -w "$PREFIX_BIN" ]; then
   ln -sf "$REPO/automation/jarvis_start.sh" "$PREFIX_BIN/jarvis-start"
   ln -sf "$REPO/automation/jarvis_doctor.sh" "$PREFIX_BIN/jarvis-doctor"
   ln -sf "$REPO/automation/jarvis_update.sh" "$PREFIX_BIN/jarvis-update"
-  ln -sf "$REPO/automation/jarvis_gui.sh" "$PREFIX_BIN/jarvis-gui"
+  ln -sf "$REPO/automation/add_gemini_key.sh" "$PREFIX_BIN/jarvis-gemini-key"
   printf '#!/data/data/com.termux/files/usr/bin/bash\nexec python3 %s/jarvis.py "$@"\n' "$REPO" > "$PREFIX_BIN/jarvis"
   chmod +x "$PREFIX_BIN/jarvis"
   echo
-  echo "Commands install ho gaye: jarvis-start, jarvis-doctor, jarvis-update, jarvis-gui, jarvis (kahin se bhi chalao)"
+  echo "Commands install ho gaye: jarvis-start, jarvis-doctor, jarvis-update, jarvis-gemini-key, jarvis (kahin se bhi chalao)"
 fi
 
 echo
@@ -85,3 +85,10 @@ echo "   Model download (verified URLs + size check):"
 echo "     bash $REPO/automation/download_model.sh 1.7b"
 echo "   Lane start:"
 echo "     bash $REPO/automation/start_fast_lane.sh"
+echo
+echo "3) Smart lane (Google Gemini) - optional but recommended:"
+echo "   Key lo:   https://aistudio.google.com/apikey (free tier hai)"
+echo "   Add karo:  jarvis-gemini-key   (ya: bash $REPO/automation/add_gemini_key.sh)"
+echo "   Key file config/gemini.key me save hoti hai (git me kabhi commit nahi hoti)."
+echo "   Uske baad jarvis-start pe 'Smart lane: GEMINI ON' dikhega."
+echo "   No key / internet fail -> local Qwen lane pe apne aap fallback."

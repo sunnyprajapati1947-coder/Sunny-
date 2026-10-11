@@ -11,7 +11,6 @@ git clone -b arena/648528ed-sunny https://github.com/sunnyprajapati1947-coder/Su
 bash ~/Nova/automation/setup_termux.sh
 python3 ~/Nova/jarvis.py --text   # type mode (works anywhere)
 python3 ~/Nova/jarvis.py          # voice mode (needs the Termux:API app)
-jarvis-gui                        # Iron Man style web HUD (browser me)
 ```
 
 ## The Jarvis loop
@@ -32,6 +31,10 @@ plus `pkg install termux-api`. Without it Jarvis silently falls back to typing.
 
 ## Model lanes
 
+- Smart lane: Google Gemini (free API key) — default for chat; falls back automatically.
+  Add your key once: `jarvis-gemini-key` (or `bash automation/add_gemini_key.sh`).
+  Key from <https://aistudio.google.com/apikey>; stored in `config/gemini.key`
+  (chmod 600, git-ignored — never committed).
 - Fast lane: local Qwen small model for bounded, low-complexity turns.
 - Deep lane: local Qwen 4B-class model for reasoning, planning, and research.
 - `nova_chat.py` starts/checks both lanes automatically and self-heals.
@@ -74,8 +77,12 @@ Skill packs live in `skills/<name>/SKILL.md` and are validated on load.
 
 ## Provider
 
-SunnyAI can also route to Google AI models via a configured `GEMINI_API_KEY`
-from the local environment. No API keys are stored in this repository.
+Chat routes to Google's Gemini API (`generativelanguage.googleapis.com`,
+`generateContent`) when a key is configured via `jarvis-gemini-key`.
+The key lives only in the local git-ignored file `config/gemini.key`
+(or `$NOVA_GEMINI_KEY_FILE`); no API keys are stored in this repository.
+Without a key — or if the network fails — Nova falls back to the local
+Qwen lanes, so chat always works.
 
 Model availability can depend on the Google account, API project, quota,
 region, preview status, and current Google API lifecycle. A model being
