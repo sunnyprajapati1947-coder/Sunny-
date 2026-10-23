@@ -6,11 +6,11 @@ import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-const KAGE = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v2/mens-wear/kage-app/dist/";
+const KAGE = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v3/mens-wear/kage-app/dist/";
 const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v9/mens-wear/";
 
 const KAGE_TEXT = [
-  ["assets/index-Czn7Xv1V.js", null],
+  ["assets/index-CD3ZoDni.js", null],
   ["assets/index-BneqYYAL.css", null],
   ["landing-pages/secret-pathways-assets/three.min.js", null],
   ["landing-pages/secret-pathways-assets/fonts.css", "985f85a904a4096f92c06552b06f42a45973ac004af4780d68f18af65ddcc1b0"],
