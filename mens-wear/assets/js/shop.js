@@ -13,22 +13,23 @@
      Shop owner can change these lines without touching anything else.      */
   var CONFIG = {
     whatsapp: "919608087035",
-    showMrp: true,          // false -> discount line poori tarah hide ho jaati hai
+    showMrp: false,         // asli MRP mile to true kar dein, warna discount line hide rehti hai
     priceNote: "Final price aur offer WhatsApp par confirm hote hain.",
     delivery: "Free delivery in Nawada · store pickup 2 ghante mein",
     exchange: "Size exchange available — store par confirm karein",
-    alteration: "Free alteration, 24 ghante mein"
+    alteration: "Free alteration",
+    instagram: "",          // jaise "https://instagram.com/menswear_nawada" — khali ho to icon chhupa rehta hai
+    facebook: "",
+    googleProfile: "https://www.google.com/maps/search/?api=1&query=Men%27s+Wear+Sudama+Nagar+Nawada+Bihar+805110",
+    catalogPdf: ""          // WhatsApp catalogue ka link (agar hai),
   };
 
   var PRODUCTS = {
   "sherwani": {
     "id": "sherwani",
     "name": "Black Zardozi Sherwani",
-    "cat": "Wedding",
+    "cat": "wedding",
     "price": 5999,
-    "mrp": 9999,
-    "rating": "4.8",
-    "ratings": 412,
     "imgs": [
       "assets/img/v2/sherwani.jpg",
       "assets/img/product-sherwani.jpg"
@@ -57,22 +58,253 @@
     "fit": "Slim · free alteration",
     "occasion": "Wedding · Reception · Sangeet",
     "care": "Dry clean only",
-    "box": "Sherwani, churidar, brooch pin",
-    "review": {
-      "name": "Aman Raj",
-      "city": "Nawada",
-      "size": "L",
-      "text": "Bhai ki shaadi ke liye liya. Fitting ekdum perfect, zari ka kaam photo se bhi zyada accha lag raha hai. Sabne poocha kahan se liya."
-    }
+    "box": "Sherwani, churidar, brooch pin"
+  },
+  "ivory-sherwani": {
+    "id": "ivory-sherwani",
+    "cat": "wedding",
+    "name": "Ivory Groom Sherwani",
+    "badge": "Groom",
+    "price": 6499,
+    "imgs": [
+      "assets/img/v2/ivory-sherwani.jpg"
+    ],
+    "cols": [
+      [
+        "Ivory",
+        "#efe6d5"
+      ],
+      [
+        "Champagne",
+        "#d9c29a"
+      ]
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "XXL",
+    "short": "Cream sherwani with fine gold thread work — classic groom pick.",
+    "fabric": "Silk blend · gold thread embroidery",
+    "fit": "Slim · free alteration",
+    "occasion": "Wedding · Reception",
+    "care": "Dry clean only",
+    "box": "Sherwani, churidar, dupatta (optional)",
+    "desc": "Cream sherwani har skin tone par lagti hai — isliye Nawada ke groom sabse zyada yahi uthate hain. Zari ka kaam halka hai, isliye poore function mein bhaari nahi lagta. Safa aur mojari ke saath ek complete groom look ban jaata hai."
+  },
+  "indo-western": {
+    "id": "indo-western",
+    "cat": "wedding",
+    "name": "Black Indo-Western Set",
+    "badge": "Trending",
+    "price": 5499,
+    "imgs": [
+      "assets/img/v2/indo-western.jpg"
+    ],
+    "cols": [
+      [
+        "Jet Black",
+        "#141418"
+      ],
+      [
+        "Deep Wine",
+        "#4a1226"
+      ]
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "S",
+    "short": "Asymmetric kurta-jacket with drape sash — cocktail & sangeet ke liye.",
+    "fabric": "Suiting blend · layered drape",
+    "fit": "Tailored · free alteration",
+    "occasion": "Sangeet · Cocktail · Reception",
+    "care": "Dry clean only",
+    "box": "Kurta-jacket, sash, trouser",
+    "desc": "Sherwani pehen-pehen ke bore ho gaye? Indo-western ek hi outfit mein modern aur desi dono hai. Drape sash alag se pin hota hai, isliye aap decide kar sakte hain kitna dramatic chahiye."
+  },
+  "bandhgala": {
+    "id": "bandhgala",
+    "name": "Wine Velvet Bandhgala",
+    "cat": "wedding",
+    "price": 3999,
+    "imgs": [
+      "assets/img/v2/bandhgala.jpg"
+    ],
+    "cols": [
+      {
+        "name": "Wine Velvet",
+        "hex": "#5a1730"
+      },
+      {
+        "name": "Royal Blue",
+        "hex": "#1e2f57"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "XXL",
+    "short": "Velvet bandhgala with brass buttons and mandarin collar.",
+    "desc": "Sherwani se hatt kar kuch chahiye? Velvet bandhgala — light, sharp aur photo mein ekdum film-star. Brass buttons real metal finish ke hain, isliye flash mein shine karte hain.",
+    "fabric": "Micro velvet · brass buttons",
+    "fit": "Slim · free alteration",
+    "occasion": "Engagement · Reception · Cocktail",
+    "care": "Dry clean only",
+    "box": "Bandhgala, inner shirt"
+  },
+  "jodhpuri": {
+    "id": "jodhpuri",
+    "cat": "wedding",
+    "name": "Royal Blue Jodhpuri Suit",
+    "badge": "Royal",
+    "price": 5999,
+    "imgs": [
+      "assets/img/v2/jodhpuri.jpg"
+    ],
+    "cols": [
+      [
+        "Royal Blue",
+        "#1e2f57"
+      ],
+      [
+        "Bottle Green",
+        "#14402f"
+      ]
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "XL",
+    "short": "High mandarin collar bandhgala suit with gold buttons.",
+    "fabric": "Wool blend · brass buttons",
+    "fit": "Structured · free alteration",
+    "occasion": "Wedding · Engagement · Formal dinner",
+    "care": "Dry clean only",
+    "box": "Jodhpuri jacket, trouser",
+    "desc": "Jodhpuri suit ka collar hi isko royal banata hai. Shaadi mein sherwani se halka lagta hai, isliye garmi mein bhi comfortable. Gold buttons shaam ki roshni mein khul ke dikhte hain."
+  },
+  "safa": {
+    "id": "safa",
+    "cat": "wedding",
+    "name": "Groom Safa + Kalgi",
+    "badge": "Groom set",
+    "price": 899,
+    "imgs": [
+      "assets/img/v2/safa.jpg"
+    ],
+    "cols": [
+      [
+        "Cream Gold",
+        "#e8d6b0"
+      ],
+      [
+        "Maroon Gold",
+        "#6c1a2c"
+      ]
+    ],
+    "sizes": [
+      "Free size"
+    ],
+    "sold": "",
+    "short": "Pre-tied safa with kalgi pin — 2 minute mein ready.",
+    "fabric": "Crushed silk · zari border",
+    "fit": "Pre-tied · adjustable",
+    "occasion": "Wedding · Baraat · Photos",
+    "care": "Dry clean / hand steam",
+    "box": "Safa, kalgi pin, extra pin",
+    "desc": "Safa khud baandhne mein time aur practice lagti hai — yeh pre-tied hai, isliye 2 minute mein pehen ke nikal sakte hain. Kalgi pin alag se aata hai, sherwani ke brooch ki jagah bhi use kar sakte hain."
+  },
+  "mojari": {
+    "id": "mojari",
+    "cat": "wedding",
+    "name": "Zari Velvet Mojari",
+    "badge": "Accessory",
+    "price": 999,
+    "imgs": [
+      "assets/img/v2/mojari.jpg"
+    ],
+    "cols": [
+      [
+        "Black Gold",
+        "#15151a"
+      ],
+      [
+        "Cream Gold",
+        "#e3d3ae"
+      ]
+    ],
+    "sizes": [
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "sold": "6",
+    "short": "Hand-embroidered velvet mojari with cushioned insole.",
+    "fabric": "Velvet · zari embroidery",
+    "fit": "True to size · cushioned",
+    "occasion": "Wedding · Festive · Kurta",
+    "care": "Dry brush only",
+    "box": "1 pair",
+    "desc": "Shaadi mein 6 ghante khade rehna hota hai — isliye insole cushioned hai, plain jutti jaisi sakht nahi. Zari ka kaam haath se kiya gaya hai, isliye har jodi thodi unique lagti hai."
+  },
+  "kurta-pyjama": {
+    "id": "kurta-pyjama",
+    "cat": "ethnic",
+    "name": "Cream Kurta Pyjama Set",
+    "badge": "Festive",
+    "price": 1899,
+    "imgs": [
+      "assets/img/v2/kurta-pyjama.jpg"
+    ],
+    "cols": [
+      [
+        "Cream",
+        "#efe7d8"
+      ],
+      [
+        "Sage",
+        "#b9c4ab"
+      ]
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "M",
+    "short": "Self-textured cotton kurta with churidar — all-day comfortable.",
+    "fabric": "Cotton blend · self texture",
+    "fit": "Straight · free alteration",
+    "occasion": "Puja · Eid · Family function",
+    "care": "Machine wash cold",
+    "box": "Kurta, churidar",
+    "desc": "Pooja, milan ya ghar ke function — yeh set sab jagah chal jaata hai. Cotton hai isliye pasina soakta hai, aur churidar thoda stretch deta hai taaki baithne mein dikkat na ho."
   },
   "suit": {
     "id": "suit",
     "name": "Midnight Navy 3-Piece Suit",
-    "cat": "Formal",
+    "cat": "formal",
     "price": 4499,
-    "mrp": 7999,
-    "rating": "4.7",
-    "ratings": 356,
     "imgs": [
       "assets/img/v2/suit.jpg",
       "assets/img/product-suit.jpg"
@@ -101,22 +333,158 @@
     "fit": "Slim · free alteration",
     "occasion": "Interview · Wedding · Office",
     "care": "Dry clean recommended",
-    "box": "Jacket, waistcoat, trouser",
-    "review": {
-      "name": "Rohit Kumar",
-      "city": "Bihar Sharif",
-      "size": "M",
-      "text": "Fabric genuinely premium hai, price market se better. Alteration same day mil gaya — ab family ke liye bhi yahin se lete hain."
-    }
+    "box": "Jacket, waistcoat, trouser"
+  },
+  "blazer": {
+    "id": "blazer",
+    "cat": "formal",
+    "name": "Charcoal Wool Blazer",
+    "badge": "Office",
+    "price": 2999,
+    "imgs": [
+      "assets/img/v2/blazer.jpg"
+    ],
+    "cols": [
+      [
+        "Charcoal",
+        "#3a3d42"
+      ],
+      [
+        "Navy",
+        "#1e2b45"
+      ]
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "XXL",
+    "short": "Single-breasted blazer that works with jeans and trousers both.",
+    "fabric": "Wool blend · half-canvas front",
+    "fit": "Slim · free alteration",
+    "occasion": "Office · Interview · Dinner",
+    "care": "Dry clean recommended",
+    "box": "1 blazer",
+    "desc": "Ek blazer se do look: shirt-trouser ke saath formal, t-shirt-jeans ke saath smart casual. Half-canvas front hai isliye chest par shape aati hai, par price poore suit jaisi nahi."
+  },
+  "overcoat": {
+    "id": "overcoat",
+    "name": "Camel Wool Overcoat",
+    "cat": "formal",
+    "price": 3499,
+    "imgs": [
+      "assets/img/v2/overcoat.jpg",
+      "assets/img/product-overcoat.jpg"
+    ],
+    "cols": [
+      {
+        "name": "Camel",
+        "hex": "#b98b57"
+      },
+      {
+        "name": "Charcoal",
+        "hex": "#3b3d42"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "S",
+    "short": "Soft wool blend with a structured, elegant drape.",
+    "desc": "Shaadi December mein ho to yeh overcoat sherwani ke upar bhi pehen sakte hain. Camel colour photos mein royal lagta hai, aur andar ki lining garmi ko rok ke rakhti hai.",
+    "fabric": "Wool blend · brushed finish",
+    "fit": "Tailored · mid-length",
+    "occasion": "Winter wedding · Travel · Formal",
+    "care": "Dry clean only",
+    "box": "1 overcoat"
+  },
+  "white-shirt": {
+    "id": "white-shirt",
+    "cat": "formal",
+    "name": "Classic White Formal Shirt",
+    "badge": "Essential",
+    "price": 899,
+    "imgs": [
+      "assets/img/v2/white-shirt.jpg"
+    ],
+    "cols": [
+      [
+        "White",
+        "#f6f4ef"
+      ],
+      [
+        "Sky",
+        "#cfe0ee"
+      ]
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "S",
+    "short": "Crisp cotton poplin, wrinkle-resistant finish.",
+    "fabric": "Cotton poplin · wrinkle resistant",
+    "fit": "Slim · true to size",
+    "occasion": "Office · Interview · Formal",
+    "care": "Machine wash",
+    "box": "1 shirt",
+    "desc": "Safed shirt har aadmi ke paas honi chahiye — par achhi wali. Yeh poplin hai, isliye dhone ke baad zyada press nahi karni padti. Collar stiff hai, isliye tie ke saath bhi theek lagti hai."
+  },
+  "trousers": {
+    "id": "trousers",
+    "cat": "formal",
+    "name": "Black Slim Formal Trouser",
+    "badge": "Essential",
+    "price": 1199,
+    "imgs": [
+      "assets/img/v2/trousers.jpg"
+    ],
+    "cols": [
+      [
+        "Black",
+        "#17171b"
+      ],
+      [
+        "Navy",
+        "#1e2b45"
+      ],
+      [
+        "Grey",
+        "#4a4d52"
+      ]
+    ],
+    "sizes": [
+      "30",
+      "32",
+      "34",
+      "36",
+      "38",
+      "40"
+    ],
+    "sold": "30",
+    "short": "Poly-wool trouser with a sharp crease that stays.",
+    "fabric": "Poly-wool blend · crease hold",
+    "fit": "Slim · mid-rise",
+    "occasion": "Office · Wedding · Daily formal",
+    "care": "Machine wash / dry clean",
+    "box": "1 trouser",
+    "desc": "Formal trouser ki asli test: shaam tak crease rehni chahiye. Yeh poly-wool blend hai isliye crease hold karti hai aur ghisne par bhi chamakti nahi. Length free alter hoti hai."
   },
   "linen": {
     "id": "linen",
     "name": "Ivory Linen Shirt",
-    "cat": "Casual",
+    "cat": "casual",
     "price": 1299,
-    "mrp": 2499,
-    "rating": "4.6",
-    "ratings": 1024,
     "imgs": [
       "assets/img/v2/linen-shirt.jpg",
       "assets/img/product-linen-shirt.jpg"
@@ -149,22 +517,121 @@
     "fit": "Relaxed · true to size",
     "occasion": "Casual · College · Date",
     "care": "Machine wash cold",
+    "box": "1 shirt"
+  },
+  "checked-shirt": {
+    "id": "checked-shirt",
+    "cat": "casual",
+    "name": "Navy Check Casual Shirt",
+    "badge": "Everyday",
+    "price": 899,
+    "imgs": [
+      "assets/img/v2/checked-shirt.jpg"
+    ],
+    "cols": [
+      [
+        "Navy Check",
+        "#2b3a53"
+      ],
+      [
+        "Green Check",
+        "#2f4a37"
+      ]
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "XXL",
+    "short": "Soft brushed cotton check — college aur outing ke liye.",
+    "fabric": "Brushed cotton · yarn dyed check",
+    "fit": "Regular · relaxed",
+    "occasion": "College · Casual · Travel",
+    "care": "Machine wash cold",
     "box": "1 shirt",
-    "review": {
-      "name": "Aditya Singh",
-      "city": "Nawada",
-      "size": "M",
-      "text": "Linen itna soft hai ki pata hi nahi chalta pehna hai. 3 colours le liye ek saath."
-    }
+    "desc": "Check shirt ka fayda: plain se zyada stylish, par print se zyada safe. Yeh brushed cotton hai isliye garmi mein bhi chipakti nahi. Jeans ho ya chinos, dono ke saath set."
+  },
+  "denim": {
+    "id": "denim",
+    "name": "Indigo Denim Jacket",
+    "cat": "casual",
+    "price": 1899,
+    "imgs": [
+      "assets/img/v2/denim.jpg",
+      "assets/img/product-denim.jpg"
+    ],
+    "cols": [
+      {
+        "name": "Indigo",
+        "hex": "#2b3a53"
+      },
+      {
+        "name": "Washed Black",
+        "hex": "#24252a"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "XL",
+    "short": "Heavy-weight stretch denim with a clean finish.",
+    "desc": "Yeh jacket har outfit ko 'styled' bana deta hai. 12 oz denim hai isliye shape rehti hai, par 2% stretch ki wajah se baith ke bhi comfortable. Sardiyaan aur monsoon dono mein kaam ka.",
+    "fabric": "12 oz cotton denim · 2% stretch",
+    "fit": "Regular · layer-friendly",
+    "occasion": "Street · Casual · Travel",
+    "care": "Machine wash cold",
+    "box": "1 jacket"
+  },
+  "chinos": {
+    "id": "chinos",
+    "name": "Charcoal Slim Chinos",
+    "cat": "casual",
+    "price": 999,
+    "imgs": [
+      "assets/img/v2/chinos.jpg"
+    ],
+    "cols": [
+      {
+        "name": "Charcoal",
+        "hex": "#3a3d42"
+      },
+      {
+        "name": "Khaki",
+        "hex": "#a98e6b"
+      },
+      {
+        "name": "Navy",
+        "hex": "#1e2b45"
+      }
+    ],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "sold": "XXL",
+    "short": "Four-way stretch cotton twill that keeps its crease.",
+    "desc": "Roz pehne jaane wali pant. 4-way stretch hai, isliye baithne-uthne mein aaram; aur wash ke baad bhi crease aa jaati hai. Office ho ya casual outing, ek hi pant kaafi.",
+    "fabric": "Cotton twill · 4-way stretch",
+    "fit": "Slim · mid-rise",
+    "occasion": "Daily · Office · Travel",
+    "care": "Machine wash",
+    "box": "1 pair chinos"
   },
   "kurta": {
     "id": "kurta",
     "name": "Emerald Silk Kurta",
-    "cat": "Ethnic",
+    "cat": "ethnic",
     "price": 1499,
-    "mrp": 2999,
-    "rating": "4.7",
-    "ratings": 688,
     "imgs": [
       "assets/img/v2/kurta.jpg",
       "assets/img/product-kurta.jpg"
@@ -197,191 +664,7 @@
     "fit": "Straight · free alteration",
     "occasion": "Puja · Eid · Family function",
     "care": "Gentle hand wash",
-    "box": "1 kurta (churidar optional)",
-    "review": {
-      "name": "Sana Parveen",
-      "city": "Nawada",
-      "size": "L",
-      "text": "Papa ke liye liya. Quality dekh ke hairan rah gayi, packing bhi bahut achhi thi."
-    }
-  },
-  "denim": {
-    "id": "denim",
-    "name": "Indigo Denim Jacket",
-    "cat": "Casual",
-    "price": 1899,
-    "mrp": 3499,
-    "rating": "4.5",
-    "ratings": 512,
-    "imgs": [
-      "assets/img/v2/denim.jpg",
-      "assets/img/product-denim.jpg"
-    ],
-    "cols": [
-      {
-        "name": "Indigo",
-        "hex": "#2b3a53"
-      },
-      {
-        "name": "Washed Black",
-        "hex": "#24252a"
-      }
-    ],
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "sold": "XL",
-    "short": "Heavy-weight stretch denim with a clean finish.",
-    "desc": "Yeh jacket har outfit ko 'styled' bana deta hai. 12 oz denim hai isliye shape rehti hai, par 2% stretch ki wajah se baith ke bhi comfortable. Sardiyaan aur monsoon dono mein kaam ka.",
-    "fabric": "12 oz cotton denim · 2% stretch",
-    "fit": "Regular · layer-friendly",
-    "occasion": "Street · Casual · Travel",
-    "care": "Machine wash cold",
-    "box": "1 jacket",
-    "review": {
-      "name": "Vikash Yadav",
-      "city": "Nalanda",
-      "size": "L",
-      "text": "Denim heavy hai but comfortable. Colour exactly photo jaisa aaya."
-    }
-  },
-  "overcoat": {
-    "id": "overcoat",
-    "name": "Camel Wool Overcoat",
-    "cat": "Formal",
-    "price": 3499,
-    "mrp": 6499,
-    "rating": "4.8",
-    "ratings": 207,
-    "imgs": [
-      "assets/img/v2/overcoat.jpg",
-      "assets/img/product-overcoat.jpg"
-    ],
-    "cols": [
-      {
-        "name": "Camel",
-        "hex": "#b98b57"
-      },
-      {
-        "name": "Charcoal",
-        "hex": "#3b3d42"
-      }
-    ],
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "sold": "S",
-    "short": "Soft wool blend with a structured, elegant drape.",
-    "desc": "Shaadi December mein ho to yeh overcoat sherwani ke upar bhi pehen sakte hain. Camel colour photos mein royal lagta hai, aur andar ki lining garmi ko rok ke rakhti hai.",
-    "fabric": "Wool blend · brushed finish",
-    "fit": "Tailored · mid-length",
-    "occasion": "Winter wedding · Travel · Formal",
-    "care": "Dry clean only",
-    "box": "1 overcoat",
-    "review": {
-      "name": "Nitesh Prasad",
-      "city": "Rajgir",
-      "size": "M",
-      "text": "Winter wedding ke liye perfect. Kapda heavy aur premium feel deta hai."
-    }
-  },
-  "bandhgala": {
-    "id": "bandhgala",
-    "name": "Wine Velvet Bandhgala",
-    "cat": "Wedding",
-    "price": 3999,
-    "mrp": 7499,
-    "rating": "4.9",
-    "ratings": 164,
-    "imgs": [
-      "assets/img/v2/bandhgala.jpg"
-    ],
-    "cols": [
-      {
-        "name": "Wine Velvet",
-        "hex": "#5a1730"
-      },
-      {
-        "name": "Royal Blue",
-        "hex": "#1e2f57"
-      }
-    ],
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "sold": "XXL",
-    "short": "Velvet bandhgala with brass buttons and mandarin collar.",
-    "desc": "Sherwani se hatt kar kuch chahiye? Velvet bandhgala — light, sharp aur photo mein ekdum film-star. Brass buttons real metal finish ke hain, isliye flash mein shine karte hain.",
-    "fabric": "Micro velvet · brass buttons",
-    "fit": "Slim · free alteration",
-    "occasion": "Engagement · Reception · Cocktail",
-    "care": "Dry clean only",
-    "box": "Bandhgala, inner shirt",
-    "review": {
-      "name": "Shivam Gupta",
-      "city": "Nawada",
-      "size": "M",
-      "text": "Engagement ke liye pehna. Sabne bola designer se banwaya hai kya. Value for money."
-    }
-  },
-  "chinos": {
-    "id": "chinos",
-    "name": "Charcoal Slim Chinos",
-    "cat": "Casual",
-    "price": 999,
-    "mrp": 1999,
-    "rating": "4.4",
-    "ratings": 2180,
-    "imgs": [
-      "assets/img/v2/chinos.jpg"
-    ],
-    "cols": [
-      {
-        "name": "Charcoal",
-        "hex": "#3a3d42"
-      },
-      {
-        "name": "Khaki",
-        "hex": "#a98e6b"
-      },
-      {
-        "name": "Navy",
-        "hex": "#1e2b45"
-      }
-    ],
-    "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL"
-    ],
-    "sold": "XXL",
-    "short": "Four-way stretch cotton twill that keeps its crease.",
-    "desc": "Roz pehne jaane wali pant. 4-way stretch hai, isliye baithne-uthne mein aaram; aur wash ke baad bhi crease aa jaati hai. Office ho ya casual outing, ek hi pant kaafi.",
-    "fabric": "Cotton twill · 4-way stretch",
-    "fit": "Slim · mid-rise",
-    "occasion": "Daily · Office · Travel",
-    "care": "Machine wash",
-    "box": "1 pair chinos",
-    "review": {
-      "name": "Suraj Kumar",
-      "city": "Hisua",
-      "size": "32",
-      "text": "Price ke hisaab se best. 3 mahine se roz pehen raha hoon, colour nahi fika."
-    }
+    "box": "1 kurta (churidar optional)"
   }
 };
 
@@ -394,14 +677,24 @@
     denim: ["chinos", "linen"],
     overcoat: ["suit", "chinos"],
     bandhgala: ["kurta", "sherwani"],
-    chinos: ["linen", "denim"]
+    chinos: ["linen", "denim"],
+    "ivory-sherwani": ["safa", "mojari"],
+    "indo-western": ["mojari", "bandhgala"],
+    jodhpuri: ["white-shirt", "trousers"],
+    safa: ["ivory-sherwani", "mojari"],
+    mojari: ["safa", "sherwani"],
+    "kurta-pyjama": ["mojari", "nehru"],
+    blazer: ["white-shirt", "trousers"],
+    "white-shirt": ["trousers", "blazer"],
+    "checked-shirt": ["chinos", "denim"],
+    trousers: ["white-shirt", "blazer"]
   };
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(s, c) { return (c || document).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); }
   function rupee(n) { return "₹" + n.toLocaleString("en-IN"); }
-  function off(p) { return Math.round((p.mrp - p.price) * 100 / p.mrp); }
+  function off(p) { return p.mrp && p.mrp > p.price ? Math.round((p.mrp - p.price) * 100 / p.mrp) : 0; }
   function store(key, value) {
     try {
       if (value === undefined) return JSON.parse(localStorage.getItem(key) || "null");
@@ -502,7 +795,7 @@
   function bagMrp() {
     return bag.reduce(function (sum, it) {
       var p = PRODUCTS[it.id];
-      return p ? sum + p.mrp * it.qty : sum;
+      return p ? sum + (p.mrp || p.price) * it.qty : sum;
     }, 0);
   }
   function bagQty() {
@@ -763,7 +1056,8 @@
     var bits = ["Namaste Men's Wear! Mujhe *" + p.name + "* chahiye."];
     if (state.colour) bits.push("Colour: " + state.colour + ".");
     bits.push("Size: " + (state.size || "confirm karna hai") + ".");
-    bits.push("Price dikha raha hai " + rupee(p.price) + " (MRP " + rupee(p.mrp) + ").");
+    bits.push("Price dikha raha hai " + rupee(p.price) +
+      (CONFIG.showMrp && p.mrp ? " (MRP " + rupee(p.mrp) + ")" : "") + ".");
     bits.push("Availability, delivery aur fitting bata dijiye.");
     return "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(bits.join(" "));
   }
@@ -774,7 +1068,6 @@
     waBtn.setAttribute("href", waMessage(p));
   }
 
-  function stars(p) { return p.rating + " ★"; }
 
   function render(p) {
     var disc = off(p);
@@ -784,14 +1077,13 @@
       '<p class="sheet__crumb">' + p.cat + ' · Men&#39;s Wear, Sudama Nagar</p>' +
       '<h2 class="sheet__title" id="sheetTitle">' + p.name + '</h2>' +
       '<p class="sheet__short">' + p.short + '</p>' +
-      '<div class="sheet__rate"><span class="rating">' + stars(p) + '</span>' +
-        '<span class="sheet__count">' + p.ratings.toLocaleString("en-IN") + ' ratings</span>' +
-        '<span class="sheet__verified">✓ Store se seedha</span>' +
+      '<div class="sheet__rate">' +
+        '<span class="sheet__verified">✓ Store se seedha · free alteration</span>' +
         '<button type="button" class="sheet__share" data-share>Share</button></div>' +
       '<div class="sheet__price"><span class="price">' + rupee(p.price) + '</span>' +
-        (CONFIG.showMrp ? '<s class="mrp">' + rupee(p.mrp) + '</s><span class="off">' + disc + '% off</span>' : '') +
+        (CONFIG.showMrp && p.mrp ? '<s class="mrp">' + rupee(p.mrp) + '</s><span class="off">' + disc + '% off</span>' : '') +
       '</div>' +
-      '<p class="sheet__tax">' + (CONFIG.showMrp ? 'Inclusive of all taxes · ' : '') + 'Free alteration included</p>' +
+      '<p class="sheet__tax">Inclusive of all taxes · free alteration included</p>' +
       '<p class="sheet__note">' + CONFIG.priceNote + '</p>' +
 
       '<div class="sheet__block"><p class="sheet__label">Select size <button type="button" class="sheet__chart" data-chart>Size chart</button></p>' +
@@ -850,19 +1142,6 @@
           '</button>';
         }).join("") + '</div></div>' : '') +
 
-      '<div class="sheet__block"><p class="sheet__label">Ratings &amp; reviews</p>' +
-        '<div class="ratingbox"><div class="ratingbox__score"><strong>' + p.rating + ' <em>★</em></strong><small>' + p.ratings.toLocaleString("en-IN") + ' ratings</small></div>' +
-        '<div class="ratingbox__bars">' +
-          '<div><span>5</span><i style="--w:78%"></i><small>78%</small></div>' +
-          '<div><span>4</span><i style="--w:15%"></i><small>15%</small></div>' +
-          '<div><span>3</span><i style="--w:4%"></i><small>4%</small></div>' +
-          '<div><span>2</span><i style="--w:2%"></i><small>2%</small></div>' +
-          '<div><span>1</span><i style="--w:1%"></i><small>1%</small></div>' +
-        '</div></div>' +
-        '<div class="reviewcard"><p class="reviewcard__stars">★★★★★</p><p class="reviewcard__text">“' + p.review.text + '”</p>' +
-          '<p class="reviewcard__by">' + p.review.name + ' · ' + p.review.city + ' · Size ' + p.review.size + ' <span>Customer feedback</span></p></div>' +
-      '</div>' +
-
       '<p class="sheet__foot">Aap seedha dukaan se kharid rahe hain — koi middle-man nahi. Size ya fitting ki dikkat ho to free alteration hamari taraf se.</p>';
 
     thumbs.innerHTML = p.imgs.map(function (src, i) {
@@ -874,12 +1153,12 @@
 
     if (barPrice) barPrice.textContent = rupee(p.price);
     if (barMrp) {
-      barMrp.textContent = rupee(p.mrp);
-      barMrp.hidden = !CONFIG.showMrp;
+      barMrp.textContent = CONFIG.showMrp && p.mrp ? rupee(p.mrp) : "";
+      barMrp.hidden = !(CONFIG.showMrp && p.mrp);
     }
     if (barOff) {
-      barOff.textContent = disc + "% off";
-      barOff.hidden = !CONFIG.showMrp;
+      barOff.textContent = disc ? disc + "% off" : "";
+      barOff.hidden = !(CONFIG.showMrp && disc);
     }
     syncWa();
 
@@ -1077,6 +1356,28 @@
     if (!h) { close(); closeBag(); return; }
     fromHash();
   });
+
+  /* owner links: social icons appear only when a real URL is configured */
+  (function socials() {
+    var box = document.querySelector(".footer__socials");
+    if (!box) return;
+    var icons = { instagram: CONFIG.instagram, facebook: CONFIG.facebook };
+    var svg = {
+      instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17.2" cy="6.8" r="1"/></svg>',
+      facebook: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 9h3V5.6h-3c-2.2 0-4 1.8-4 4V12H7v3.4h3V22h3.4v-6.6H16L16.6 12h-3.2V9.8c0-.5.3-.8.6-.8Z"/></svg>'
+    };
+    Object.keys(icons).forEach(function (key) {
+      var url = icons[key];
+      if (!url) return;
+      var a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.setAttribute("aria-label", "Men's Wear on " + key);
+      a.innerHTML = svg[key];
+      box.appendChild(a);
+    });
+  })();
 
   applySort();
   applyFilters(false);

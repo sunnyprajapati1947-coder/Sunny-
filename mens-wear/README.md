@@ -212,3 +212,40 @@ Ek product aisa dikhta hai:
 Har piece ka link aisa hota hai — WhatsApp status par bhej sakte hain:
 `https://nawada-menswear-shop.vercel.app/#p=sherwani`
 (`sherwani`, `suit`, `linen`, `kurta`, `denim`, `overcoat`, `bandhgala`, `chinos`)
+
+---
+
+## 4. v9 — kya badla (aur dukaan malik ko kya karna hai)
+
+**Site se hataya:** preloader, WebGL 3D hero (phone slow karta tha — ab halka CSS glow hai), banaye hue star ratings, "5,000+ customers", sample review quotes, aur fake MRP/discount (MRP ab default `false`).
+
+**Site mein joda:** 18 products (7 wedding), **Groom package** section, **Offers** strip, **7-sawaal FAQ**, honest **Reviews** section (Google + WhatsApp feedback), store mein landmark row, aur map ka zoom theek kiya.
+
+### In 5 lines ko bharna hai (bas itna)
+
+`assets/js/shop.js` ke top par `CONFIG`:
+
+```
+instagram:      ""   ->  "https://instagram.com/your_handle"
+facebook:       ""   ->  "https://facebook.com/your_page"
+googleProfile:  ""   ->  apne Google Business Profile ka link
+showMrp:        false->  asli MRP mile to true
+```
+
+Aur `CONFIG` ke neeche `PAIRS` mein "complete the look" pairs hain — apne hisaab se badal sakte hain.
+
+### Groom package ka rate
+Package ka rate design par depend karta hai, isliye site par rate nahi likha — button WhatsApp par le jaata hai. Agar aap fixed package rate dena chahte hain to `index.html` mein `groom__actions` ke paas ek `<p>` jod dein, ya mujhe bata dein.
+
+### Rent
+Rent abhi menu/section mein nahi hai kyunki pata nahi ki aap karte hain ya nahi. Haan bolenge to package jaisa hi ek rent block bana denge (rate + advance ke saath).
+
+### 2 photo baaki
+`polo` aur `nehru jacket` ke product abhi nahi hain (image limit). Agli baar add ho jayenge — total 20 ho jayenge.
+
+### Google Business Profile (sabse zaroori, site se bahar)
+1. business.google.com → "Add business" → naam **Men's Wear**, category "Men's clothing store".
+2. Address: Sudama Nagar, Nawada, Bihar 805110 + exact pin (dukaan par khade ho kar).
+3. Phone 9608087035, timing 10 AM – 9 PM, website: `https://nawada-menswear-shop.vercel.app/`
+4. 5–10 purane customers se review likhwao — phir site ke Reviews section mein wahi link already lag chuka hai.
+5. Dukaan ke andar-bahar ki 5–6 photo daalo.

@@ -336,3 +336,29 @@
     boot();
   }
 })();
+
+/* ==========================================================================
+   FAQ accordion (v9) — one answer open at a time, keyboard friendly
+   ========================================================================== */
+(function () {
+  "use strict";
+  var items = Array.prototype.slice.call(document.querySelectorAll(".faq__item"));
+  if (!items.length) return;
+
+  items.forEach(function (item) {
+    var btn = item.querySelector(".faq__q");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var open = !item.classList.contains("is-open");
+      items.forEach(function (other) {
+        other.classList.remove("is-open");
+        var b = other.querySelector(".faq__q");
+        if (b) b.setAttribute("aria-expanded", "false");
+      });
+      if (open) {
+        item.classList.add("is-open");
+        btn.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+})();
