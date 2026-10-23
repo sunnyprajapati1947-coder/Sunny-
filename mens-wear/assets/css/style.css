@@ -514,7 +514,7 @@ body::after {
   color: var(--ivory-dim);
 }
 .hero__trust-item svg { width: 15px; height: 15px; color: var(--gold); flex: none; }
-.stars { display: inline-flex; gap: 2px; color: var(--gold); }
+.stars { display: inline-flex; gap: 2px; color: var(--gold); font-size: 0.72rem; letter-spacing: 0.16em; line-height: 1; }
 .stars svg { width: 11px; height: 11px; }
 
 /* Hero visual */
@@ -1057,8 +1057,7 @@ body::after {
   opacity: 0.5;
   margin-bottom: 6px;
 }
-.review .stars { margin-bottom: 18px; }
-.review .stars svg { width: 13px; height: 13px; }
+.review .stars { margin-bottom: 18px; font-size: 0.9rem; letter-spacing: 0.2em; }
 .review__text {
   font-family: var(--display);
   font-size: 1.14rem;
