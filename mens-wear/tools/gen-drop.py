@@ -27,24 +27,24 @@ DROP = [
         occasion="College · Gig · Daily flex",
         care="Machine wash cold, inside out",
         box="1 tank top",
-        desc="Yeh wahi piece hai jo reel mein scroll rok deta hai — bina kisi bade logo ke, sirf cut se. "
-             "Paint-splatter finish haath se lagta hai, isliye har piece thoda different hota hai; raw hem "
-             "apne aap fray hoga. Gym ke baad ya bina gym ke, dono mein chalega.",
+        desc="This is the piece that stops the scroll — no big logo, just the cut. "
+             "The paint-splatter finish is applied by hand, so every piece comes out slightly different; "
+             "the raw hem frays on its own over time. Works after the gym and on the days you skip it.",
     ),
     dict(
         id="oversized-tee", name="Heavyweight Oversized Tee", price=999, tag="Drop 01",
         imgs=["oversized-tee-black.jpg"],
         cols=[("Washed Black", "#2a2a28"), ("Bone", "#ded7c4"), ("Acid Lime", "#c8f24d")],
         sizes=["S", "M", "L", "XL", "XXL"],
-        short="260 GSM boxy tee, vintage wash — collar jo wash ke baad bhi khada rehta hai.",
+        short="260 GSM boxy tee, vintage wash — a collar that still stands after a wash.",
         fabric="260 GSM cotton · vintage wash",
         fit="Oversized boxy · thick ribbed collar",
         occasion="Daily · Street · Travel",
         care="Machine wash cold, do not bleach",
         box="1 t-shirt",
-        desc="Sasta tee 3 wash mein gala khol deta hai — yeh nahi karega. 260 GSM cotton, double-stitched "
-             "collar aur boxy drop-shoulder cut, isliye kandhe par theek baithta hai. Plain hai, isliye jeans, "
-             "cargo, shorts — sabke saath chalega.",
+        desc="A cheap tee gives up after three washes — this one does not. 260 GSM cotton, double-stitched "
+             "collar and a boxy drop-shoulder cut, so it sits right on the shoulder. It is plain, so it works "
+             "with jeans, cargo and shorts alike.",
     ),
     dict(
         id="cargo-olive", name="Baggy Utility Cargo", price=1799, tag="Best seller",
@@ -57,9 +57,9 @@ DROP = [
         occasion="Street · College · Travel",
         care="Machine wash cold",
         box="1 cargo pant",
-        desc="Baggy fit ka asli maza tab hai jab pocket kaam ki ho. Do bade side cargo pockets, do back, "
-             "do hand pockets; ghutne par panel hai isliye roz pehenne se bhi nahi phatega. Neeche drawcord "
-             "se straight ya cuffed — aapka call.",
+        desc="Baggy only makes sense when the pockets actually work. Two large side cargo pockets, two at "
+             "the back, two hand pockets; a knee panel means daily wear will not tear them. The drawcord hem "
+             "goes straight or cuffed — your call.",
     ),
     dict(
         id="baggy-jeans", name="Vintage Wash Baggy Jeans", price=1899, tag="Trending",
@@ -72,9 +72,9 @@ DROP = [
         occasion="Street · Party · Daily",
         care="Machine wash cold, inside out",
         box="1 pair jeans",
-        desc="Y2K wali wide-leg jeans — lekin itni loose nahi ki chalti ho. High-rise hai isliye tee tuck "
-             "karke bhi sahi lagti hai. Fade naturally hota hai, isliye 6 mahine baad look aur behtar hoga; "
-             "pehli baar thodi tight lage to ek size up le lena.",
+        desc="Y2K wide-leg jeans — loose, but not so loose that they walk on their own. High-rise, so a "
+             "tucked tee still sits right. The fade is natural, so the look gets better after six months; "
+             "if they feel tight on day one, take one size up.",
     ),
     dict(
         id="varsity-cream", name="Cream Varsity Jacket", price=2799, tag="Winter drop",
@@ -87,9 +87,9 @@ DROP = [
         occasion="Winter · Party · Campus",
         care="Dry clean / spot clean only",
         box="1 varsity jacket",
-        desc="Campus jacket ka woh classic vibe, lekin clean colourway mein — cream body, black sleeves. "
-             "Andar quilted lining hai, isliye Nawada ki thand mein bhi kaam karta hai. Hoodie ke upar pehen "
-             "sakte hain; sleeves PU hain to barish mein na pehnein.",
+        desc="That classic campus jacket energy, in a clean colourway — cream body, black sleeves. "
+             "Quilted lining inside, so it holds up in a Nawada winter. Layer it over a hoodie; the sleeves "
+             "are PU, so keep it out of the rain.",
     ),
     dict(
         id="hoodie-bone", name="Heavyweight Boxy Hoodie", price=1599, tag="Core",
@@ -102,24 +102,24 @@ DROP = [
         occasion="Winter · Travel · College",
         care="Machine wash cold, inside out",
         box="1 hoodie",
-        desc="Bhaari hoodie ka farq pehenne par pata chalta hai — yeh apna shape hold karta hai, dhoke se "
-             "patla nahi lagta. 450 GSM fleece andar se brushed hai, isliye direct skin par bhi soft. "
-             "Matching drawcord, aur kangaroo pocket bhi deep.",
+        desc="You feel the difference of a heavy hoodie the moment you wear it — it holds its own shape "
+             "instead of hanging thin. 450 GSM fleece is brushed inside, so it is soft even on bare skin. "
+             "Matching drawcords, and a kangaroo pocket that is actually deep.",
     ),
     dict(
         id="cord-overshirt", name="Corduroy Overshirt", price=1699, tag="New in",
         imgs=["cord-overshirt.jpg"],
         cols=[("Tobacco", "#6b4a2f"), ("Olive", "#5d5f3a"), ("Black", "#232322")],
         sizes=["S", "M", "L", "XL"],
-        short="Wide-wale corduroy overshirt — shirt aur jacket ke beech.",
+        short="Wide-wale corduroy overshirt — halfway between a shirt and a jacket.",
         fabric="8-wale cotton corduroy",
         fit="Relaxed · wear open or buttoned",
         occasion="Winter · College · Date",
         care="Machine wash cold, inside out",
         box="1 overshirt",
-        desc="Ek layer jo tee ke upar bhi lagti hai aur shirt ki tarah andar bhi. Wide-wale corduroy thoda "
-             "texture deta hai, isliye plain tee ke saath bhi boring nahi lagta. Chest pockets usable hain; "
-             "button khol ke pehno to oversize look aata hai.",
+        desc="One layer that goes over a tee on top and works as a shirt underneath. Wide-wale corduroy "
+             "adds texture, so it is never boring next to a plain tee. The chest pockets are usable; wear it "
+             "open and it reads oversized.",
     ),
     dict(
         id="bowling-shirt", name="Camp Collar Bowling Shirt", price=1299, tag="Summer",
@@ -132,9 +132,8 @@ DROP = [
         occasion="Summer · Party · Vacation",
         care="Gentle machine wash",
         box="1 shirt",
-        desc="Camp collar shirt ko bina styling ke bhi style milta hai — half button kholo, tee ke upar "
-             "pehno, ya button karke tuck karo. Viscose hai isliye garmi mein thandi lagti hai aur wrinkles "
-             "jaldi nahi aate. Colour photos mein pop karta hai.",
+        desc="A camp collar shirt is styled without trying — half open, over a tee, or buttoned and "
+             "tucked. Viscose keeps it cool in the heat and keeps creases away. The colour pops on camera.",
     ),
 ]
 
@@ -156,7 +155,7 @@ def e(s):
 
 
 def card(p):
-    wa = "Namaste Men's Wear! Mujhe %s chahiye — price aur size bata dijiye." % p["name"]
+    wa = "Hi Men's Wear! I would like the %s — please share price and sizes." % p["name"]
     href = "https://wa.me/%s?text=%s" % (WA, __import__("urllib.parse", fromlist=["quote"]).quote(wa))
     return f'''      <article class="pcard pcard--drop" data-cat="drop" data-id="{p["id"]}" data-price="{p["price"]}" data-name="{e(p["name"])}">
         <div class="pcard__media">

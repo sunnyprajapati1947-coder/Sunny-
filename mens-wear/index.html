@@ -26,6 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/genz.css">
+<link rel="stylesheet" href="assets/css/premium.css">
 
 <!-- Local business structured data (helps Google trust + map visibility) -->
 <script type="application/ld+json">
@@ -115,7 +116,7 @@
     "@type": "Product",
     "name": "Black Indo-Western Set",
     "image": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@live-v11/mens-wear/assets/img/v2/indo-western.jpg",
-    "description": "Asymmetric kurta-jacket with drape sash — cocktail & sangeet ke liye.",
+    "description": "Asymmetric kurta-jacket with drape sash — made for cocktail and sangeet nights.",
     "category": "Wedding",
     "url": "https://nawada-menswear-shop.vercel.app/#p=indo-western",
     "brand": {
@@ -184,7 +185,7 @@
     "@type": "Product",
     "name": "Groom Safa + Kalgi",
     "image": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@live-v11/mens-wear/assets/img/v2/safa.jpg",
-    "description": "Pre-tied safa with kalgi pin — 2 minute mein ready.",
+    "description": "Pre-tied safa with kalgi pin — ready in 2 minutes.",
     "category": "Wedding",
     "url": "https://nawada-menswear-shop.vercel.app/#p=safa",
     "brand": {
@@ -391,7 +392,7 @@
     "@type": "Product",
     "name": "Navy Check Casual Shirt",
     "image": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@live-v11/mens-wear/assets/img/v2/checked-shirt.jpg",
-    "description": "Soft brushed cotton check — college aur outing ke liye.",
+    "description": "Soft brushed cotton check — built for college and outings.",
     "category": "Casual",
     "url": "https://nawada-menswear-shop.vercel.app/#p=checked-shirt",
     "brand": {
@@ -482,9 +483,46 @@
 </head>
 <body>
 
-<!-- ================= PRELOADER ================= -->
+<div class="enter" id="enter" hidden>
+  <div class="enter__scrim"></div>
+  <div class="enter__card" role="dialog" aria-modal="true" aria-labelledby="enterTitle">
+    <div class="enter__top">
+      <span class="enter__mark">MW</span>
+      <p class="enter__place">Nawada · Bihar · 805110</p>
+      <button class="enter__close" type="button" id="enterClose" aria-label="Close and browse as a guest">&#215;</button>
+    </div>
+    <h2 class="enter__title" id="enterTitle">Step into<br><em>the drop.</em></h2>
+    <p class="enter__sub">One minute now, faster orders later. We keep your name and size ready, so every WhatsApp message leaves already addressed.</p>
 
-<a class="skip-link" href="#main" style="position:absolute;left:-9999px;top:0;z-index:10000;background:#c9a45c;color:#111;padding:12px 20px">Skip to content</a>
+    <form class="enter__form" id="enterForm" novalidate>
+      <label class="enter__field">
+        <span>Your name <i>required</i></span>
+        <input id="enterName" name="name" type="text" autocomplete="name" placeholder="Sunny Kumar" maxlength="40" required>
+      </label>
+      <label class="enter__field">
+        <span>WhatsApp number <i>optional</i></span>
+        <input id="enterPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="98XXXXXXXX" maxlength="14">
+      </label>
+      <div class="enter__field">
+        <span>Usual size <i>optional</i></span>
+        <div class="enter__sizes" id="enterSizes" role="group" aria-label="Usual size">
+          <button type="button" data-size="S">S</button>
+          <button type="button" data-size="M">M</button>
+          <button type="button" data-size="L">L</button>
+          <button type="button" data-size="XL">XL</button>
+          <button type="button" data-size="XXL">XXL</button>
+        </div>
+      </div>
+      <button class="enter__go" type="submit" id="enterGo">Enter the drop <b aria-hidden="true">&#8594;</b></button>
+      <p class="enter__err" id="enterErr" role="alert" hidden>Please add your name to continue.</p>
+    </form>
+
+    <button class="enter__skip" type="button" id="enterSkip">Just browsing — skip for now</button>
+    <p class="enter__note">Saved on this phone only. No password, no email, no spam.</p>
+  </div>
+</div>
+
+<a class="skip-link" href="#main">Skip to content</a>
 
 <!-- ================= HEADER ================= -->
 <header class="header" id="header">
@@ -511,11 +549,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         96080&nbsp;87035
       </a>
+      <button class="header__you" id="youBtn" type="button" aria-label="Your fit profile" hidden>
+        <span class="header__youmark" id="youInitials">MW</span>
+      </button>
       <a class="header__bag" id="bagBtn" href="#bag" aria-label="Bag">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
         <span class="header__bagcount" data-bag-count hidden>0</span>
       </a>
-      <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe aapki collection ke baare mein jaankari chahiye." target="_blank" rel="noopener">
+      <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like to know more about your collection." target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
         WhatsApp
       </a>
@@ -537,9 +578,9 @@
     <a href="#contact"><span>05</span> Contact</a>
   </nav>
   <div class="drawer__foot">
-    <a class="btn btn--wa btn--block" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe aapki collection ke baare mein jaankari chahiye." target="_blank" rel="noopener">
+    <a class="btn btn--wa btn--block" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like to know more about your collection." target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-      WhatsApp par order karein
+      Order on WhatsApp
     </a>
     <a class="btn btn--ghost btn--block" href="tel:+919608087035">Call&nbsp;96080&nbsp;87035</a>
     <p class="drawer__meta">Sudama Nagar, Nawada · Bihar 805110</p>
@@ -554,26 +595,45 @@
     <div class="gz-hero__top">
       <p class="gz-eyebrow"><span class="gz-live">Drop 01 live</span> · Sudama Nagar · Nawada</p>
       <h1 class="gz-title">
-        <span>Kapda</span>
-        <span><span class="gz-title__accent">jo bolta</span></span>
-        <span>hai.</span>
+        <span>Dress</span>
+        <span><span class="gz-title__accent">like you</span></span>
+        <span>mean it.</span>
       </h1>
-      <p class="gz-sub">Streetwear, oversized fits aur quiet-luxury basics — <b>Nawada ka pehla Gen-Z wardrobe.</b> Har piece ek tap door, seedha WhatsApp par.</p>
+      <p class="gz-sub">Streetwear, oversized fits and quiet-luxury basics — <b>Nawada's first Gen-Z wardrobe.</b> Every piece one tap away, straight to WhatsApp.</p>
+    </div>
+
+    <div class="gz-stage" id="gzStage">
+      <div class="gz-stage__bar" aria-hidden="true"><i></i><i></i></div>
+      <div class="gz-stage__viewport">
+        <div class="gz-stage__frame" id="gzFrame" data-tilt-soft>
+          <img class="gz-stage__img is-on" id="gzStageA" src="assets/img/genz/tank-charcoal.jpg" alt="Distressed Painted Tank on a hanger" width="800" height="1000" fetchpriority="high" decoding="async">
+          <img class="gz-stage__img" id="gzStageB" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23eae5d6'/%3E%3C/svg%3E" alt="" aria-hidden="true">
+          <span class="gz-stage__shine" aria-hidden="true"></span>
+          <span class="gz-stage__hint" aria-hidden="true">Tap to see details</span>
+        </div>
+
+        <div class="gz-stage__side">
+          <p class="gz-stage__index"><span id="gzIndexNo">01</span> <span aria-hidden="true">/</span> <span id="gzIndexTotal">08</span> <em>Drop 01</em></p>
+          <h2 class="gz-stage__name" id="gzName" aria-live="polite">Distressed Painted Tank</h2>
+          <div class="gz-toggle" id="gzToggle" role="group" aria-label="Photo side">
+            <button type="button" data-face="front" class="is-on" aria-pressed="true">Front</button>
+            <button type="button" data-face="back" aria-pressed="false">Back</button>
+          </div>
+          <p class="gz-meta" id="gzMeta">Drop 01 · ₹899 · Free alteration</p>
+          <a class="gz-avail" id="gzAvail" href="#p=distressed-tank" data-gz-open="distressed-tank">See availability <b aria-hidden="true">&#8599;</b></a>
+
+          <div class="gz-stage__nav">
+            <button type="button" class="gz-arrow" id="gzPrev" aria-label="Previous piece">&#8592;</button>
+            <div class="gz-dots" id="gzDots" role="tablist" aria-label="Choose a piece"></div>
+            <button type="button" class="gz-arrow" id="gzNext" aria-label="Next piece">&#8594;</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="gz-rail">
       <div class="gz-rail__bar" aria-hidden="true"></div>
       <div class="gz-rail__items" id="gzRail" role="tablist" aria-label="Drop 01 pieces"></div>
-
-      <div class="gz-featured">
-        <p class="gz-name" id="gzName">Distressed Painted Tank</p>
-        <div class="gz-toggle" id="gzToggle" role="group" aria-label="Photo side">
-          <button type="button" data-face="front" class="is-on" aria-pressed="true">Front</button>
-          <button type="button" data-face="back" aria-pressed="false">Back</button>
-        </div>
-        <p class="gz-meta" id="gzMeta">Drop 01 · ₹899 · Free alteration</p>
-        <a class="gz-avail" id="gzAvail" href="#p=distressed-tank" data-gz-open="distressed-tank">See availability <b aria-hidden="true">&#8599;</b></a>
-      </div>
     </div>
   </div>
 
@@ -595,19 +655,19 @@
     <div class="trust__grid">
       <div class="trust__item" data-reveal>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 11.5 2 2 4-4"/></svg>
-        <div><strong>100% Original Fabric</strong><span>Mill-seedha kapda — koi compromise nahi.</span></div>
+        <div><strong>100% Original Fabric</strong><span>Mill-direct fabric. No compromise.</span></div>
       </div>
       <div class="trust__item" data-reveal style="--d:.06s">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/></svg>
-        <div><strong>Perfect Fitting</strong><span>Free alteration — fitting hamari zimmedari.</span></div>
+        <div><strong>Perfect Fitting</strong><span>Free alteration — the fit is on us.</span></div>
       </div>
       <div class="trust__item" data-reveal style="--d:.12s">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a4 4 0 0 0-4 4c0 1.5.8 2.2 1.5 2.8"/><path d="M12 9.8 3.4 15.2A1.6 1.6 0 0 0 4.2 18h15.6a1.6 1.6 0 0 0 .8-2.8L12 9.8Z"/><path d="M12 3a1.6 1.6 0 0 1 2.6 1.9"/></svg>
-        <div><strong>Styling Advice</strong><span>Body type aur occasion ke hisaab se suggestion.</span></div>
+        <div><strong>Styling Advice</strong><span>Body type and occasion, sorted for you.</span></div>
       </div>
       <div class="trust__item" data-reveal style="--d:.18s">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
-        <div><strong>UPI · Card · Cash</strong><span>Payment easy, safe aur transparent.</span></div>
+        <div><strong>UPI · Card · Cash</strong><span>Easy, safe and transparent.</span></div>
       </div>
     </div>
   </div>
@@ -620,8 +680,8 @@
     <div class="shop__head">
       <div class="section-head shop__intro">
         <p class="eyebrow" data-reveal>Drop 01 · 2026</p>
-        <h2 class="h2" data-reveal style="--d:.06s">Poora drop, <em>ek scroll</em> mein.</h2>
-        <p class="shop__sub" data-reveal style="--d:.1s">Oversized tees, cargos, varsity aur quiet-luxury basics — 26 pieces. Har card par photo, price, fabric, size aur delivery; tap karo aur poora detail khul jayega.</p>
+        <h2 class="h2" data-reveal style="--d:.06s">The whole drop, <em>one scroll</em>.</h2>
+        <p class="shop__sub" data-reveal style="--d:.1s">Oversized tees, cargos, varsity and quiet-luxury basics — 26 pieces. Every card carries photo, price, fabric, size and delivery. Tap to open the full detail.</p>
       </div>
       <div class="shop__tools" data-reveal style="--d:.12s">
         <label class="shop__search">
@@ -680,7 +740,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="distressed-tank">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Distressed%20Painted%20Tank%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Distressed Painted Tank chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Distressed Painted Tank on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Distressed%20Painted%20Tank%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Distressed Painted Tank — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Distressed Painted Tank on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -688,7 +748,7 @@
         <div class="pcard__media">
           <span class="pcard__badge">Drop 01</span>
           <button class="pcard__wish" type="button" data-wish="oversized-tee" aria-label="Save Heavyweight Oversized Tee to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
-          <img src="assets/img/genz/oversized-tee-black.jpg" alt="Heavyweight Oversized Tee — 260 GSM boxy tee, vintage wash — collar jo wash ke baad bhi khada rehta hai." width="800" height="1000" loading="lazy" decoding="async">
+          <img src="assets/img/genz/oversized-tee-black.jpg" alt="Heavyweight Oversized Tee — 260 GSM boxy tee, vintage wash — a collar that still stands after a wash." width="800" height="1000" loading="lazy" decoding="async">
           <span class="pcard__hint">Tap for details</span>
         </div>
         <div class="pcard__body">
@@ -698,7 +758,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="oversized-tee">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Heavyweight%20Oversized%20Tee%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Heavyweight Oversized Tee chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Heavyweight Oversized Tee on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Heavyweight%20Oversized%20Tee%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Heavyweight Oversized Tee — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Heavyweight Oversized Tee on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -716,7 +776,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="cargo-olive">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Baggy%20Utility%20Cargo%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Baggy Utility Cargo chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Baggy Utility Cargo on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Baggy%20Utility%20Cargo%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Baggy Utility Cargo — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Baggy Utility Cargo on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -734,7 +794,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="baggy-jeans">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Vintage%20Wash%20Baggy%20Jeans%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Vintage Wash Baggy Jeans chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Vintage Wash Baggy Jeans on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Vintage%20Wash%20Baggy%20Jeans%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Vintage Wash Baggy Jeans — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Vintage Wash Baggy Jeans on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -752,7 +812,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="varsity-cream">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Cream%20Varsity%20Jacket%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Cream Varsity Jacket chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Cream Varsity Jacket on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Cream%20Varsity%20Jacket%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Cream Varsity Jacket — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Cream Varsity Jacket on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -770,7 +830,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="hoodie-bone">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Heavyweight%20Boxy%20Hoodie%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Heavyweight Boxy Hoodie chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Heavyweight Boxy Hoodie on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Heavyweight%20Boxy%20Hoodie%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Heavyweight Boxy Hoodie — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Heavyweight Boxy Hoodie on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -778,7 +838,7 @@
         <div class="pcard__media">
           <span class="pcard__badge">New in</span>
           <button class="pcard__wish" type="button" data-wish="cord-overshirt" aria-label="Save Corduroy Overshirt to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
-          <img src="assets/img/genz/cord-overshirt.jpg" alt="Corduroy Overshirt — Wide-wale corduroy overshirt — shirt aur jacket ke beech." width="800" height="1000" loading="lazy" decoding="async">
+          <img src="assets/img/genz/cord-overshirt.jpg" alt="Corduroy Overshirt — Wide-wale corduroy overshirt — halfway between a shirt and a jacket." width="800" height="1000" loading="lazy" decoding="async">
           <span class="pcard__hint">Tap for details</span>
         </div>
         <div class="pcard__body">
@@ -788,7 +848,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="cord-overshirt">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Corduroy%20Overshirt%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Corduroy Overshirt chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Corduroy Overshirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Corduroy%20Overshirt%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Corduroy Overshirt — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Corduroy Overshirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -806,7 +866,7 @@
           <p class="pcard__meta">Street · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="bowling-shirt">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035?text=Namaste%20Men%27s%20Wear%21%20Mujhe%20Camp%20Collar%20Bowling%20Shirt%20chahiye%20%E2%80%94%20price%20aur%20size%20bata%20dijiye." data-wa="Namaste Men&#x27;s Wear! Mujhe Camp Collar Bowling Shirt chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Camp Collar Bowling Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035?text=Hi%20Men%27s%20Wear%21%20I%20would%20like%20the%20Camp%20Collar%20Bowling%20Shirt%20%E2%80%94%20please%20share%20price%20and%20sizes." data-wa="Hi Men&#x27;s Wear! I would like the Camp Collar Bowling Shirt — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Camp Collar Bowling Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -826,7 +886,7 @@
           <p class="pcard__meta">Wedding · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="sherwani">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Black Zardozi Sherwani chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Black Zardozi Sherwani on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Black Zardozi Sherwani — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Black Zardozi Sherwani on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -844,7 +904,7 @@
           <p class="pcard__meta">Wedding · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="ivory-sherwani">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Ivory Groom Sherwani chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Ivory Groom Sherwani on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Ivory Groom Sherwani — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Ivory Groom Sherwani on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -852,7 +912,7 @@
         <div class="pcard__media">
           <span class="pcard__badge">Trending</span>
           <button class="pcard__wish" type="button" data-wish="indo-western" aria-label="Save Black Indo-Western Set to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
-          <img src="assets/img/v2/indo-western.jpg" alt="Black Indo-Western Set — Asymmetric kurta-jacket with drape sash — cocktail & sangeet ke liye." width="640" height="1147" loading="lazy" decoding="async">
+          <img src="assets/img/v2/indo-western.jpg" alt="Black Indo-Western Set — Asymmetric kurta-jacket with drape sash — made for cocktail and sangeet nights." width="640" height="1147" loading="lazy" decoding="async">
           <span class="pcard__hint">Tap for details</span>
         </div>
         <div class="pcard__body">
@@ -862,7 +922,7 @@
           <p class="pcard__meta">Wedding · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="indo-western">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Black Indo-Western Set chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Black Indo-Western Set on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Black Indo-Western Set — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Black Indo-Western Set on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -880,7 +940,7 @@
           <p class="pcard__meta">Wedding · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="bandhgala">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Wine Velvet Bandhgala chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Wine Velvet Bandhgala on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Wine Velvet Bandhgala — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Wine Velvet Bandhgala on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -898,7 +958,7 @@
           <p class="pcard__meta">Wedding · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="jodhpuri">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Royal Blue Jodhpuri Suit chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Royal Blue Jodhpuri Suit on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Royal Blue Jodhpuri Suit — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Royal Blue Jodhpuri Suit on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -906,7 +966,7 @@
         <div class="pcard__media">
           <span class="pcard__badge">Groom set</span>
           <button class="pcard__wish" type="button" data-wish="safa" aria-label="Save Groom Safa + Kalgi to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
-          <img src="assets/img/v2/safa.jpg" alt="Groom Safa + Kalgi — Pre-tied safa with kalgi pin — 2 minute mein ready." width="640" height="1147" loading="lazy" decoding="async">
+          <img src="assets/img/v2/safa.jpg" alt="Groom Safa + Kalgi — Pre-tied safa with kalgi pin — ready in 2 minutes." width="640" height="1147" loading="lazy" decoding="async">
           <span class="pcard__hint">Tap for details</span>
         </div>
         <div class="pcard__body">
@@ -916,7 +976,7 @@
           <p class="pcard__meta">Wedding · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="safa">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Groom Safa + Kalgi chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Groom Safa + Kalgi on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Groom Safa + Kalgi — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Groom Safa + Kalgi on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -934,7 +994,7 @@
           <p class="pcard__meta">Wedding · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="mojari">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Zari Velvet Mojari chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Zari Velvet Mojari on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Zari Velvet Mojari — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Zari Velvet Mojari on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -952,7 +1012,7 @@
           <p class="pcard__meta">Ethnic · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="kurta-pyjama">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Cream Kurta Pyjama Set chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Cream Kurta Pyjama Set on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Cream Kurta Pyjama Set — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Cream Kurta Pyjama Set on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -970,7 +1030,7 @@
           <p class="pcard__meta">Formal · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="suit">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Midnight Navy 3-Piece Suit chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Midnight Navy 3-Piece Suit on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Midnight Navy 3-Piece Suit — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Midnight Navy 3-Piece Suit on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -988,7 +1048,7 @@
           <p class="pcard__meta">Formal · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="blazer">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Charcoal Wool Blazer chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Charcoal Wool Blazer on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Charcoal Wool Blazer — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Charcoal Wool Blazer on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1006,7 +1066,7 @@
           <p class="pcard__meta">Formal · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="overcoat">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Camel Wool Overcoat chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Camel Wool Overcoat on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Camel Wool Overcoat — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Camel Wool Overcoat on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1024,7 +1084,7 @@
           <p class="pcard__meta">Formal · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="white-shirt">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Classic White Formal Shirt chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Classic White Formal Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Classic White Formal Shirt — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Classic White Formal Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1042,7 +1102,7 @@
           <p class="pcard__meta">Formal · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="trousers">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Black Slim Formal Trouser chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Black Slim Formal Trouser on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Black Slim Formal Trouser — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Black Slim Formal Trouser on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1060,7 +1120,7 @@
           <p class="pcard__meta">Casual · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="linen">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Ivory Linen Shirt chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Ivory Linen Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Ivory Linen Shirt — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Ivory Linen Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1068,7 +1128,7 @@
         <div class="pcard__media">
           <span class="pcard__badge">Everyday</span>
           <button class="pcard__wish" type="button" data-wish="checked-shirt" aria-label="Save Navy Check Casual Shirt to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
-          <img src="assets/img/v2/checked-shirt.jpg" alt="Navy Check Casual Shirt — Soft brushed cotton check — college aur outing ke liye." width="640" height="1147" loading="lazy" decoding="async">
+          <img src="assets/img/v2/checked-shirt.jpg" alt="Navy Check Casual Shirt — Soft brushed cotton check — built for college and outings." width="640" height="1147" loading="lazy" decoding="async">
           <span class="pcard__hint">Tap for details</span>
         </div>
         <div class="pcard__body">
@@ -1078,7 +1138,7 @@
           <p class="pcard__meta">Casual · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="checked-shirt">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Navy Check Casual Shirt chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Navy Check Casual Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Navy Check Casual Shirt — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Navy Check Casual Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1096,7 +1156,7 @@
           <p class="pcard__meta">Casual · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="denim">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Indigo Denim Jacket chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Indigo Denim Jacket on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Indigo Denim Jacket — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Indigo Denim Jacket on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1114,7 +1174,7 @@
           <p class="pcard__meta">Casual · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="chinos">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Charcoal Slim Chinos chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Charcoal Slim Chinos on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Charcoal Slim Chinos — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Charcoal Slim Chinos on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
@@ -1132,16 +1192,16 @@
           <p class="pcard__meta">Ethnic · Free alteration</p>
           <div class="pcard__cta">
             <button class="btn btn--gold btn--xs" type="button" data-open="kurta">View details</button>
-            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe Emerald Silk Kurta chahiye — price aur size bata dijiye." target="_blank" rel="noopener" aria-label="Order Emerald Silk Kurta on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like the Emerald Silk Kurta — please share price and sizes." target="_blank" rel="noopener" aria-label="Order Emerald Silk Kurta on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
 
-    <p class="shop__empty" id="shopEmpty" hidden>Kuch nahi mila — doosra naam try kijiye ya WhatsApp par poochh lein.</p>
+    <p class="shop__empty" id="shopEmpty" hidden>Nothing here — try another name, or just ask us on WhatsApp.</p>
 
     <div class="shop__more" data-reveal>
-      <p>200+ designs store par available hain — photos WhatsApp par mangwa lein.</p>
-      <a class="btn btn--ghost" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Aapke store par kaun kaun se naye designs available hain? Photos bhej dijiye." target="_blank" rel="noopener">Catalogue maangein <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+      <p>More designs are on the racks in store — ask for photos on WhatsApp.</p>
+      <a class="btn btn--ghost" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! Which new designs do you have in store? Please send photos." target="_blank" rel="noopener">Request catalogue <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
     </div>
   </div>
 </section>
@@ -1152,20 +1212,20 @@
   <div class="wrap">
     <div class="groom__grid">
       <div class="groom__copy" data-reveal>
-        <p class="eyebrow">Shaadi special</p>
-        <h2 class="h2">Groom ka poora look,<br><em>ek package mein.</em></h2>
-        <p class="lead">Sherwani, safa, kalgi, mojari aur brooch — sab ek saath trial hota hai, taaki colour aur fitting match karein. Alag-alag dukaan bhaagne ki zaroorat nahi.</p>
+        <p class="eyebrow">Wedding special</p>
+        <h2 class="h2">The full groom look,<br><em>one package.</em></h2>
+        <p class="lead">Sherwani, safa, kalgi, mojari and brooch — everything tried together, so colour and fit match. No running between shops.</p>
         <ul class="groom__list">
-          <li><span>01</span><div><b>Sherwani ya Indo-Western</b><small>Aapka choice — dono package mein</small></div></li>
-          <li><span>02</span><div><b>Safa + Kalgi</b><small>Pre-tied, 2 minute mein ready</small></div></li>
-          <li><span>03</span><div><b>Mojari + Brooch</b><small>Colour-matched, trial ke saath</small></div></li>
-          <li><span>04</span><div><b>Free alteration</b><small>Shaadi se pehle fitting lock</small></div></li>
+          <li><span>01</span><div><b>Sherwani or Indo-Western</b><small>Your pick — both in the package</small></div></li>
+          <li><span>02</span><div><b>Safa + Kalgi</b><small>Pre-tied, ready in 2 minutes</small></div></li>
+          <li><span>03</span><div><b>Mojari + Brooch</b><small>Colour-matched, fitted in trial</small></div></li>
+          <li><span>04</span><div><b>Free alteration</b><small>Fit locked before the wedding</small></div></li>
         </ul>
         <div class="groom__actions">
-          <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Groom package chahiye (sherwani + safa + kalgi + mojari + brooch). Rate aur trial ka time bata dijiye." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg> Package rate poochhein</a>
-          <a class="btn btn--ghost" href="#collection">Pieces alag dekhna hai</a>
+          <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I want the groom package (sherwani + safa + kalgi + mojari + brooch). Please share the rate and a trial time." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg> Ask for package rate</a>
+          <a class="btn btn--ghost" href="#collection">Browse pieces individually</a>
         </div>
-        <p class="groom__note">Package ka rate aapke sherwani ke design par depend karta hai — WhatsApp par photo bhej dijiye, turant rate bata denge.</p>
+        <p class="groom__note">The package rate depends on your sherwani design — send a photo on WhatsApp and we will quote it right away.</p>
       </div>
       <div class="groom__visual" data-reveal="right">
         <div class="groom__stack">
@@ -1195,11 +1255,11 @@
 
       <div class="craft__copy">
         <p class="eyebrow" data-reveal>The Men's Wear Standard</p>
-        <h2 class="h2" data-reveal style="--d:.06s">Kapda nahi,<br><em>confidence</em> bechte hain.</h2>
+        <h2 class="h2" data-reveal style="--d:.06s">We don't sell cloth.<br><em>We sell confidence.</em></h2>
         <p class="lead" data-reveal style="--d:.12s;margin-top:20px">
-          Aap yahan sirf kapde lene nahi aate — aap ek aisa look lete hain jo shaadi, interview
-          aur har photo mein yaad rahe. Isliye hum fabric, fit aur finishing par sabse zyada
-          mehnat karte hain.
+          You don't come here just to buy clothes — you come for a look that stays in every
+          wedding photo, every interview, every frame. That is why fabric, fit and finishing
+          get all of our attention.
         </p>
 
         <ul class="craft__list">
@@ -1207,21 +1267,21 @@
             <span class="craft__num">01</span>
             <div>
               <strong>Fabric first</strong>
-              <p>Har piece mill-direct fabric se chuna jaata hai — kapde ka fall aur shine pehli baar mein hi dikh jaata hai.</p>
+              <p>Every piece is cut from mill-direct fabric — the fall and the finish show from the first wear.</p>
             </div>
           </li>
           <li data-reveal style="--d:.22s">
             <span class="craft__num">02</span>
             <div>
               <strong>Tailored to you</strong>
-              <p>Trial ke baad size lock hota hai. Free alteration ke saath aapke shoulders par perfect baithta hai.</p>
+              <p>Your size is locked after the trial. Free alteration makes it sit right on your shoulders.</p>
             </div>
           </li>
           <li data-reveal style="--d:.28s">
             <span class="craft__num">03</span>
             <div>
               <strong>Honest pricing</strong>
-              <p>Boutique quality, factory-seedha rate. Jo price bola, wahi final — koi surprise nahi.</p>
+              <p>Boutique quality at a mill-direct rate. The price we say is the price you pay — no surprises.</p>
             </div>
           </li>
         </ul>
@@ -1237,9 +1297,9 @@
   <div class="wrap">
     <div class="stats__grid">
       <div class="stat"><p class="stat__num">Free</p><p class="stat__label">Alteration on every piece</p></div>
-      <div class="stat"><p class="stat__num">Trial</p><p class="stat__label">Pehen ke dekho, phir decide karo</p></div>
-      <div class="stat"><p class="stat__num">UPI</p><p class="stat__label">Card aur cash bhi chalta hai</p></div>
-      <div class="stat"><p class="stat__num">Wardrobe</p><p class="stat__label">Groom se daily wear tak</p></div>
+      <div class="stat"><p class="stat__num">Trial</p><p class="stat__label">Try it on, then decide</p></div>
+      <div class="stat"><p class="stat__num">UPI</p><p class="stat__label">Card and cash accepted too</p></div>
+      <div class="stat"><p class="stat__num">Wardrobe</p><p class="stat__label">From groom wear to daily fits</p></div>
     </div>
   </div>
 </section>
@@ -1252,26 +1312,26 @@
   <div class="wrap">
     <div class="section-head section-head--center">
       <p class="eyebrow eyebrow--center" data-reveal>Reviews</p>
-      <h2 class="h2" data-reveal style="--d:.06s">Asli review, <em>asli customer.</em></h2>
-      <p class="lead" data-reveal style="--d:.12s">Hum site par banaye hue stars nahi lagate. Jo customer Google par likhte hain, wahi dikhta hai — aur aap bhi apna anubhav likh sakte hain.</p>
+      <h2 class="h2" data-reveal style="--d:.06s">Real reviews, <em>real customers.</em></h2>
+      <p class="lead" data-reveal style="--d:.12s">We don't put made-up stars on this site. What customers write on Google is what you see — and you can add your own experience too.</p>
     </div>
     <div class="proofgrid">
       <article class="proofcard" data-reveal>
         <p class="proofcard__tag">Google</p>
         <h3>Google par reviews</h3>
-        <p>Dukaan ka Google profile kholiye — timing, location, photos aur customers ke likhe review wahan milenge.</p>
-        <a class="btn btn--gold" href="https://www.google.com/maps/search/?api=1&amp;query=Men%27s+Wear+Sudama+Nagar+Nawada+Bihar+805110" target="_blank" rel="noopener">Google par kholein</a>
+        <p>Open the store's Google profile for timings, location, photos and reviews written by customers.</p>
+        <a class="btn btn--gold" href="https://www.google.com/maps/search/?api=1&amp;query=Men%27s+Wear+Sudama+Nagar+Nawada+Bihar+805110" target="_blank" rel="noopener">Open on Google</a>
       </article>
       <article class="proofcard" data-reveal style="--d:.06s">
-        <p class="proofcard__tag">Aapka anubhav</p>
-        <h3>Review likhna hai?</h3>
-        <p>Kapda pasand aaya ho ya koi dikkat aayi ho — seedha WhatsApp par bhejiye. Hum jawab dete hain, chhupate nahi.</p>
-        <a class="btn btn--ghost" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Apna anubhav share karna hai." target="_blank" rel="noopener">Feedback bhejein</a>
+        <p class="proofcard__tag">Your experience</p>
+        <h3>Want to leave a review?</h3>
+        <p>Loved a piece, or something went wrong? Message us on WhatsApp. We reply — we don't hide.</p>
+        <a class="btn btn--ghost" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like to share my experience." target="_blank" rel="noopener">Send feedback</a>
       </article>
       <article class="proofcard" data-reveal style="--d:.12s">
         <p class="proofcard__tag">Store</p>
-        <h3>Aake khud dekhiye</h3>
-        <p>Photo aur asli kapde mein farq hota hai. Trial ke liye aa jaiye — pasand na aaye to lena zaroori nahi.</p>
+        <h3>Come see it yourself</h3>
+        <p>Photos and real fabric are never the same. Come for a trial — no obligation to buy.</p>
         <a class="btn btn--ghost" href="#store">Store details</a>
       </article>
     </div>
@@ -1285,27 +1345,27 @@
   <div class="wrap">
     <div class="section-head section-head--center">
       <p class="eyebrow eyebrow--center" data-reveal>Right now</p>
-      <h2 class="h2" data-reveal style="--d:.06s">Jo milta hai, <em>sach mein milta hai.</em></h2>
-      <p class="lead" data-reveal style="--d:.1s">Koi fake MRP nahi, koi "70% off" ka natak nahi. Jo offer hai, wahi site par likha hai.</p>
+      <h2 class="h2" data-reveal style="--d:.06s">What you see, <em>is what you get.</em></h2>
+      <p class="lead" data-reveal style="--d:.1s">No fake MRP, no "70% off" theatre. If an offer exists, it is written on this site.</p>
     </div>
     <div class="offergrid">
       <article class="offercard" data-reveal>
-        <p class="offercard__tag">Shaadi season</p>
+        <p class="offercard__tag">Wedding season</p>
         <h3>Groom package</h3>
-        <p>Sherwani + safa + kalgi + mojari + brooch ek saath lijiye — package rate alag se tay hota hai, aur alteration free.</p>
-        <a class="offercard__link" href="#groom">Package dekhein →</a>
+        <p>Take sherwani + safa + kalgi + mojari + brooch together — the package rate is fixed separately, and alteration is free.</p>
+        <a class="offercard__link" href="#groom">See the package →</a>
       </article>
       <article class="offercard" data-reveal style="--d:.06s">
-        <p class="offercard__tag">Har piece par</p>
+        <p class="offercard__tag">On every piece</p>
         <h3>Free alteration</h3>
-        <p>Kapda lene ke baad fitting hamari zimmedari. Shoulder, length, waist — jo chahiye karwa lijiye, extra paisa nahi.</p>
-        <a class="offercard__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Alteration ke baare mein jaankari chahiye." target="_blank" rel="noopener">WhatsApp par poochhein →</a>
+        <p>Once you buy, the fit is our job. Shoulder, length, waist — get it altered, no extra charge.</p>
+        <a class="offercard__link" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I need details about alteration." target="_blank" rel="noopener">Ask on WhatsApp →</a>
       </article>
       <article class="offercard" data-reveal style="--d:.12s">
-        <p class="offercard__tag">Sasta nahi, sahi</p>
-        <h3>2 shirt par bachat</h3>
-        <p>Do ya usse zyada shirt ek saath lijiye — bundle rate counter par milta hai. Rate dukaan par confirm karein.</p>
-        <a class="offercard__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! 2 shirt par kya rate milega? Bata dijiye." target="_blank" rel="noopener">Rate poochhein →</a>
+        <p class="offercard__tag">Not cheap. Right.</p>
+        <h3>Save on two shirts</h3>
+        <p>Pick two or more shirts together — a bundle rate applies at the counter. Confirm the rate in store.</p>
+        <a class="offercard__link" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! What is the rate for two shirts?" target="_blank" rel="noopener">Ask for the rate →</a>
       </article>
     </div>
   </div>
@@ -1316,60 +1376,60 @@
   <div class="wrap">
     <div class="faq__grid">
       <div class="faq__intro" data-reveal>
-        <p class="eyebrow">Sawaal jawab</p>
-        <h2 class="h2">Jo sabse zyada<br><em>poocha jaata hai.</em></h2>
-        <p class="lead">Yahan jawab nahi mila? WhatsApp par message kar dijiye — dukaan se seedha jawab aayega.</p>
-        <a class="btn btn--ghost" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mera ek sawaal hai." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg> Sawaal poochhein</a>
+        <p class="eyebrow">Questions</p>
+        <h2 class="h2">What people ask<br><em>the most.</em></h2>
+        <p class="lead">Not answered here? Message us on WhatsApp — the reply comes straight from the store.</p>
+        <a class="btn btn--ghost" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I have a question." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg> Ask a question</a>
       </div>
       <div class="faq__list" data-reveal="right">
         <div class="faq__item">
           <button class="faq__q" type="button" aria-expanded="false">
-            <span>Alteration kitne din mein hoti hai?</span>
+            <span>How many days does alteration take?</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <div class="faq__a"><p>Normal alteration 2–4 din leti hai. Shaadi ya function ki date paas ho to pehle bata dijiye — hum jaldi karne ki koshish karte hain. Exact time kapde aur kaam dekh kar batate hain.</p></div>
+          <div class="faq__a"><p>Normal alteration takes 2–4 days. If a wedding or function is close, tell us in advance — we try to rush it. Exact timing depends on the piece and the work.</p></div>
         </div>
         <div class="faq__item">
           <button class="faq__q" type="button" aria-expanded="false">
-            <span>Advance kitna dena hota hai?</span>
+            <span>How much advance is required?</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <div class="faq__a"><p>Order confirm karne ke liye token advance liya jaata hai, baaki payment delivery ya pickup ke time. Amount piece ke hisaab se badalta hai — WhatsApp par exact bata denge.</p></div>
+          <div class="faq__a"><p>A token advance confirms the order; the balance is paid on delivery or pickup. The amount depends on the piece — we share the exact figure on WhatsApp.</p></div>
         </div>
         <div class="faq__item">
           <button class="faq__q" type="button" aria-expanded="false">
-            <span>Exchange ya return kaise hota hai?</span>
+            <span>How do exchange and returns work?</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <div class="faq__a"><p>Size issue ho to bill ke saath store par laaiye, hum exchange karne ki koshish karte hain. Kapda use ho chuka hai ya alteration ho chuki hai to exchange nahi hota — isliye trial ke baad hi final karein.</p></div>
+          <div class="faq__a"><p>If the size is off, bring the piece to the store with the bill and we will try to exchange it. Used or altered pieces cannot be exchanged — so please finalise after the trial.</p></div>
         </div>
         <div class="faq__item">
           <button class="faq__q" type="button" aria-expanded="false">
-            <span>Kahan tak delivery hoti hai?</span>
+            <span>Where do you deliver?</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <div class="faq__a"><p>Nawada aur aas-paas ke ilaake mein free delivery. Bahar ke liye courier hota hai, uska charge order ke saath batate hain.</p></div>
+          <div class="faq__a"><p>Free delivery in and around Nawada. Outside the district we courier it, and the charge is shared with the order.</p></div>
         </div>
         <div class="faq__item">
           <button class="faq__q" type="button" aria-expanded="false">
-            <span>Size ka pata nahi — kaise choose karun?</span>
+            <span>Not sure about size — how do I choose?</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <div class="faq__a"><p>Product page par size chart hai. Phir bhi doubt ho to WhatsApp par apna chest/waist ya purani shirt ki naap bhej dijiye — hum size bata denge.</p></div>
+          <div class="faq__a"><p>Every product page has a size chart. Still unsure? Send your chest/waist or the measurement of a shirt that fits you on WhatsApp — we will tell you the size.</p></div>
         </div>
         <div class="faq__item">
           <button class="faq__q" type="button" aria-expanded="false">
-            <span>Kiraye par kapde milte hain?</span>
+            <span>Do you rent outfits?</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <div class="faq__a"><p>Rent ki availability design aur date par depend karti hai. WhatsApp par date aur design bhejiye, hum batayenge ki rent possible hai ya nahi.</p></div>
+          <div class="faq__a"><p>Rent depends on the design and the date. Send both on WhatsApp and we will confirm whether it is possible.</p></div>
         </div>
         <div class="faq__item">
           <button class="faq__q" type="button" aria-expanded="false">
-            <span>Dukaan par trial ke liye kab aayein?</span>
+            <span>When should I come for a trial?</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           </button>
-          <div class="faq__a"><p>Roz 10 AM se 9 PM. Shaadi ke season mein shaam 4–8 bheed rehti hai — aaram se dekhna ho to dopahar 12–3 ka time best hai.</p></div>
+          <div class="faq__a"><p>Daily, 10 AM to 9 PM. In wedding season, 4–8 PM gets busy — 12–3 PM is the calmest time to take your time.</p></div>
         </div>
       </div>
     </div>
@@ -1380,8 +1440,8 @@
   <div class="wrap">
     <div class="section-head">
       <p class="eyebrow" data-reveal>Visit The Store</p>
-      <h2 class="h2" data-reveal style="--d:.06s">Aaiye, <em>trial</em> kijiye.</h2>
-      <p class="lead" data-reveal style="--d:.12s">Sudama Nagar mein aapka intezaar hai. Chai ke saath fitting, aur poora time sirf aapke look ke liye.</p>
+      <h2 class="h2" data-reveal style="--d:.06s">Come in. <em>Try it on.</em></h2>
+      <p class="lead" data-reveal style="--d:.12s">We are waiting for you in Sudama Nagar. Chai, a fitting, and all our time for your look.</p>
     </div>
 
     <div class="store__grid">
@@ -1419,11 +1479,11 @@
               </div>
               <div class="store__row">
                 <p class="store__row-label">Alteration</p>
-                <p class="store__row-value">Free — timing store par confirm karein</p>
+                <p class="store__row-value">Free — confirm timing at the store</p>
               </div>
               <div class="store__row">
                 <p class="store__row-label">Exchange</p>
-                <p class="store__row-value">Size exchange — store par confirm karein</p>
+                <p class="store__row-value">Size exchange — confirm at the store</p>
               </div>
               <div class="store__row">
                 <p class="store__row-label">Landmark</p>
@@ -1431,15 +1491,15 @@
               </div>
               <div class="store__row">
                 <p class="store__row-label">Delivery</p>
-                <p class="store__row-value">Nawada mein free · pickup store par confirm</p>
+                <p class="store__row-value">Free in Nawada · store pickup on request</p>
               </div>
           </div>
         </div>
 
         <div class="store__actions">
-          <a class="btn btn--wa btn--block" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Main store par aana chahta hoon. Timing confirm kar dijiye aur location bhej dijiye." target="_blank" rel="noopener">
+          <a class="btn btn--wa btn--block" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like to visit the store. Please confirm the timing and share the location." target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-            WhatsApp par message karein
+            Message on WhatsApp
           </a>
           <a class="btn btn--ghost btn--block" href="tel:+919608087035">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -1468,13 +1528,13 @@
 <section class="cta" id="contact">
   <div class="wrap">
     <p class="eyebrow eyebrow--center" data-reveal>Ready when you are</p>
-    <h2 class="cta__title" data-reveal style="--d:.06s">Apna perfect fit <em>WhatsApp</em> par final karein.</h2>
+    <h2 class="cta__title" data-reveal style="--d:.06s">Find your fit <em>on WhatsApp.</em></h2>
     <p class="cta__sub" data-reveal style="--d:.12s">
-      Design ka photo bhejiye ya seedha message kijiye — size, fabric aur best price turant share karenge.
-      Koi pressure nahi, sirf sahi salah.
+      Send a photo of the design or just message us — size, fabric and the best price come right back.
+      No pressure, only honest advice.
     </p>
     <div class="cta__actions" data-reveal style="--d:.18s">
-      <a class="btn btn--wa btn--lg" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe apne liye ek outfit chahiye. Size, design aur price discuss kar sakte hain?" target="_blank" rel="noopener">
+      <a class="btn btn--wa btn--lg" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I need an outfit for myself. Can we discuss size, design and price?" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
         Chat on WhatsApp
       </a>
@@ -1501,7 +1561,7 @@
             <span class="logo__tag">Nawada · Premium Menswear</span>
           </span>
         </a>
-        <p>Sherwani, suits, shirts aur ethnic wear ka premium address — Sudama Nagar, Nawada. Original fabric, perfect fitting, aur personal styling.</p>
+        <p>The premium address for sherwani, suits, shirts and ethnic wear — Sudama Nagar, Nawada. Original fabric, perfect fitting, personal styling.</p>
         <div class="footer__socials">
           <a href="https://wa.me/919608087035" target="_blank" rel="noopener" aria-label="WhatsApp Men's Wear">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
@@ -1540,7 +1600,7 @@
         <p class="footer__title">Order / Contact</p>
         <div class="footer__links">
           <a class="num" href="tel:+919608087035">+91&nbsp;96080&nbsp;87035</a>
-          <a href="https://wa.me/919608087035" target="_blank" rel="noopener">WhatsApp par order</a>
+          <a href="https://wa.me/919608087035" target="_blank" rel="noopener">Order on WhatsApp</a>
           <span>UPI · Card · Cash</span>
         </div>
       </div>
@@ -1548,13 +1608,13 @@
 
     <div class="footer__bottom">
       <p>© <span id="year">2026</span> Men's Wear, Nawada. All rights reserved.</p>
-      <p>Prices indicative hain — final price store ya WhatsApp par confirm karein.</p>
+      <p>Prices are indicative — confirm the final price in store or on WhatsApp.</p>
     </div>
   </div>
 </footer>
 
 <!-- ================= FLOATING WHATSAPP ================= -->
-<a class="wa-float" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe aapki collection ke baare mein jaankari chahiye." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+<a class="wa-float" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like to know more about your collection." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
   <span class="wa-float__label">Order on WhatsApp</span>
 </a>
@@ -1570,7 +1630,7 @@
     <span>Bag</span>
     <span class="ab-bag__count" data-bag-count hidden>0</span>
   </a>
-  <a class="ab-wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe aapki collection ke baare mein jaankari chahiye." target="_blank" rel="noopener">
+  <a class="ab-wa" href="https://wa.me/919608087035" data-wa="Hi Men's Wear! I would like to know more about your collection." target="_blank" rel="noopener">
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
     WhatsApp
   </a>
@@ -1610,7 +1670,7 @@
     <div class="bag__foot" id="bagFoot"></div>
     <div class="bag__wish">
       <p>Wishlist <span class="bag__wishcount" id="bagWishCount" hidden>0</span></p>
-      <button type="button" class="btn btn--ghost" id="bagWishSend">Wishlist WhatsApp par bhejein</button>
+      <button type="button" class="btn btn--ghost" id="bagWishSend">Send wishlist on WhatsApp</button>
     </div>
   </div>
 </aside>
@@ -1619,5 +1679,6 @@
 <script src="assets/js/drop-data.js" defer></script>
 <script src="assets/js/shop.js" defer></script>
 <script src="assets/js/drop.js" defer></script>
+<script src="assets/js/welcome.js" defer></script>
 </body>
 </html>

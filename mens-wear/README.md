@@ -1,5 +1,11 @@
 # Men's Wear — Premium Website
 
+> **v10 — English edition + premium stage.** Every line of site copy is now in
+> English. The hero is a single large garment that rotates itself (pausable,
+> swipeable, FRONT/BACK), the first screen is a one-time fit profile (name,
+> optional WhatsApp number, usual size — stored on the device only), and the
+> product sheet uses a paper gallery instead of a black strip.
+
 > ### 🔗 Live website
 > **https://nawada-menswear-shop.vercel.app/**
 >
@@ -311,3 +317,30 @@ Target ab **Gen-Z** hai. Design sirf "accha dikhna" nahi — neeche wahi soch li
 2. `tools/gen-drop.py` ke `DROP` list mein ek block copy-paste karke naam/price/fabric badlein.
 3. `python3 tools/gen-drop.py` → `assets/js/drop-data.js` + `index.html` ke cards dono update ho jayenge.
 4. `python3 tools/build-live.py app-vN` → naya tag → deploy (dekhein §5).
+
+
+---
+
+## 5. v10 — premium pass (English + stage + gate)
+
+- **All copy in English.** Product names were always English; the descriptions,
+  toasts, FAQ answers, WhatsApp messages, manifest text and PWA fallback are now
+  English too. No Hinglish left in the shipped page.
+- **First screen:** `assets/js/welcome.js` renders the fit profile gate
+  (`#enter`). Name is required, phone + size are optional. It is stored in
+  `localStorage` under `mw:you` — nothing is sent anywhere, there is no server.
+  "Skip for now" hides it for 7 days. The header chip (`#youBtn`) reopens it.
+  The saved size is preselected in every product sheet, and the name is added to
+  the WhatsApp message.
+- **Hero stage:** `assets/js/drop.js` now drives `.gz-stage` — one big garment,
+  auto-advance every 4.2 s (paused on hover, on focus, when off-screen, after a
+  tap, and fully off for `prefers-reduced-motion`), arrows, dots, swipe, and the
+  existing FRONT/BACK photos. Thumbnails sit on the rail underneath.
+- **Sheet gallery:** dark thumbnail strip removed; paper stage with `contain`
+  fit, hairline thumbnails, sticky action bar with bottom padding so nothing is
+  covered.
+- **Removed:** `assets/js/hero3d.js`, the preloader code path in `main.js`, dead
+  filter/parallax handlers, inline skip-link styling.
+
+### Still owner-supplied
+Real MRP, real reviews, real photos, true policies, groom package rate, rent yes/no.

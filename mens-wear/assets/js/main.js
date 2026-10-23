@@ -11,8 +11,8 @@
      only receives the HTML/CSS/JS bundle, a missing photo automatically loads
      from this base instead — the visitor never sees a broken image. */
   var IMG_CDNS = [
-    "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@live-v8/mens-wear/",
-    "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/live-v8/mens-wear/"
+    "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v8/mens-wear/",
+    "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/app-v8/mens-wear/"
   ];
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -36,40 +36,7 @@
   }
 
   /* -------------------------------------------------------------------------
-     2. Preloader
-     ---------------------------------------------------------------------- */
-  function initLoader() {
-    var loader = $("#loader");
-    if (!loader) return;
-
-    var done = false;
-    function finish() {
-      if (done) return;
-      done = true;
-      loader.classList.add("is-done");
-      document.body.classList.remove("is-locked");
-      window.setTimeout(function () {
-        loader.style.display = "none";
-      }, 900);
-      revealAboveFold();
-    }
-
-    document.body.classList.add("is-locked");
-    window.addEventListener("load", function () { window.setTimeout(finish, 380); });
-    // Never keep the visitor waiting, whatever happens with assets.
-    window.setTimeout(finish, 2600);
-  }
-
-  /* Reveal whatever is already in view as soon as the loader clears. */
-  function revealAboveFold() {
-    $$("[data-reveal]").forEach(function (el) {
-      var r = el.getBoundingClientRect();
-      if (r.top < window.innerHeight * 0.92) el.classList.add("in");
-    });
-  }
-
-  /* -------------------------------------------------------------------------
-     3. Scroll reveal
+     2. Scroll reveal
      ---------------------------------------------------------------------- */
   function initReveals() {
     var items = $$("[data-reveal]");
@@ -96,7 +63,7 @@
   }
 
   /* -------------------------------------------------------------------------
-     4. Header state + scroll spy
+     3. Header state + scroll spy
      ---------------------------------------------------------------------- */
   function initHeader() {
     var header = $("#header");
@@ -132,7 +99,7 @@
   }
 
   /* -------------------------------------------------------------------------
-     5. Mobile drawer
+     4. Mobile drawer
      ---------------------------------------------------------------------- */
   function initDrawer() {
     var burger = $("#burger");
@@ -162,38 +129,7 @@
   }
 
   /* -------------------------------------------------------------------------
-     6. Collection filters
-     ---------------------------------------------------------------------- */
-  function initFilters() {
-    var filters = $$(".filter");
-    var cards = $$("#productGrid .card");
-    if (!filters.length || !cards.length) return;
-
-    filters.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var cat = btn.getAttribute("data-filter");
-
-        filters.forEach(function (f) {
-          f.classList.toggle("is-active", f === btn);
-          f.setAttribute("aria-selected", f === btn ? "true" : "false");
-        });
-
-        cards.forEach(function (card, i) {
-          var show = cat === "all" || card.getAttribute("data-cat") === cat;
-          card.style.display = show ? "" : "none";
-          if (show && !reduceMotion) {
-            card.style.animation = "none";
-            // force reflow so the entrance animation replays on filter change
-            void card.offsetWidth;
-            card.style.animation = "cardIn .5s cubic-bezier(.16,1,.3,1) " + (i * 0.045) + "s both";
-          }
-        });
-      });
-    });
-  }
-
-  /* -------------------------------------------------------------------------
-     7. Animated counters
+     5. Animated counters
      ---------------------------------------------------------------------- */
   function startCount(el) {
     if (el.dataset.counted) return;
@@ -216,7 +152,7 @@
   }
 
   /* -------------------------------------------------------------------------
-     8. 3D tilt on cards / craft panel  (pointer devices only)
+     6. 3D tilt on cards / craft panel  (pointer devices only)
      ---------------------------------------------------------------------- */
   function initTilt() {
     if (reduceMotion || !finePointer) return;
@@ -250,41 +186,7 @@
   }
 
   /* -------------------------------------------------------------------------
-     9. Hero photo parallax
-     ---------------------------------------------------------------------- */
-  function initHeroParallax() {
-    var frame = $("#heroFrame");
-    var hero = $(".hero");
-    if (!frame || !hero || reduceMotion) return;
-
-    if (finePointer) {
-      hero.addEventListener("pointermove", function (e) {
-        var r = hero.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width - 0.5;
-        var py = (e.clientY - r.top) / r.height - 0.5;
-        frame.style.transform =
-          "perspective(1200px) rotateY(" + (px * -6).toFixed(2) + "deg) rotateX(" +
-          (py * 5).toFixed(2) + "deg) translateZ(0)";
-      });
-      hero.addEventListener("pointerleave", function () { frame.style.transform = ""; });
-    }
-
-    // gentle float on scroll
-    var raf = false;
-    window.addEventListener("scroll", function () {
-      if (raf) return;
-      raf = true;
-      window.requestAnimationFrame(function () {
-        var y = Math.min(window.scrollY, window.innerHeight);
-        var img = $(".hero__img", frame);
-        if (img) img.style.translate = "0 " + (y * 0.06).toFixed(1) + "px";
-        raf = false;
-      });
-    }, { passive: true });
-  }
-
-  /* -------------------------------------------------------------------------
-     10. Misc: year, image error safety
+     7. Misc: year, image error safety
      ---------------------------------------------------------------------- */
   function initMisc() {
     var year = $("#year");
@@ -320,13 +222,10 @@
   /* ------------------------------------------------------------------ boot */
   function boot() {
     buildWhatsAppLinks();
-    initLoader();
     initReveals();
     initHeader();
     initDrawer();
-    initFilters();
     initTilt();
-    initHeroParallax();
     initMisc();
   }
 

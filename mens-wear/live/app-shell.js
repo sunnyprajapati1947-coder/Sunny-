@@ -8,9 +8,9 @@
   window.__mwShellLoaded = true;
 
   var REPO = "sunnyprajapati1947-coder/Sunny-";
-  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v7/mens-wear/live/index.html";
+  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v8/mens-wear/live/index.html";
   var ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/live/index.html";
-  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v7/mens-wear/";
+  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v8/mens-wear/";
   var BASE_ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/";
   var MANIFEST = BASE_JD + "manifest.json";
   var APPLE_ICON = BASE_JD + "assets/img/app/apple-touch-icon.png";
@@ -20,7 +20,8 @@
     "assets/js/main.js",
     "assets/js/drop-data.js",
     "assets/js/shop.js",
-    "assets/js/drop.js"
+    "assets/js/drop.js",
+    "assets/js/welcome.js"
   ];
 
   var boot = document.getElementById("boot");

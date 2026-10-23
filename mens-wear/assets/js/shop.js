@@ -13,15 +13,15 @@
      Shop owner can change these lines without touching anything else.      */
   var CONFIG = {
     whatsapp: "919608087035",
-    showMrp: false,         // asli MRP mile to true kar dein, warna discount line hide rehti hai
-    priceNote: "Final price aur offer WhatsApp par confirm hote hain.",
+    showMrp: false,         // set true once real MRP is supplied; the discount line stays hidden until then
+    priceNote: "Final price and offers are confirmed on WhatsApp.",
     delivery: "Free delivery in Nawada · store pickup",
-    exchange: "Size exchange available — store par confirm karein",
+    exchange: "Size exchange available — confirm at the store",
     alteration: "Free alteration",
-    instagram: "",          // jaise "https://instagram.com/menswear_nawada" — khali ho to icon chhupa rehta hai
+    instagram: "",          // e.g. "https://instagram.com/menswear_nawada" — leave blank to hide the icon
     facebook: "",
     googleProfile: "https://www.google.com/maps/search/?api=1&query=Men%27s+Wear+Sudama+Nagar+Nawada+Bihar+805110",
-    catalogPdf: ""          // WhatsApp catalogue ka link (agar hai),
+    catalogPdf: ""          // WhatsApp catalogue link, if you have one
   };
 
   var PRODUCTS =  {
@@ -53,7 +53,7 @@
     ],
     "sold": "XXL",
     "short": "Hand-embroidered zardozi & zari work on a rich silk blend.",
-    "desc": "Bhai ki shaadi ho ya apni — yeh sherwani pehnte hi sabki nazar aap par rukti hai. Ghaas-patthar zari ka kaam haath se kiya gaya hai, aur kanjoos nahi hain hum: aage-peeche dono taraf embroidery hai. Andar soft lining, isliye 6 ghante ki shaadi mein bhi aaram.",
+    "desc": "Your brother's wedding or your own — this sherwani stops the room the moment you walk in. The zari is done by hand, and we are not stingy with it: embroidery on the front and the back. Soft lining inside, so six hours of wedding still feels comfortable.",
     "fabric": "Silk blend · hand zari + zardozi",
     "fit": "Slim · free alteration",
     "occasion": "Wedding · Reception · Sangeet",
@@ -93,7 +93,7 @@
     "occasion": "Wedding · Reception",
     "care": "Dry clean only",
     "box": "Sherwani, churidar, dupatta (optional)",
-    "desc": "Cream sherwani har skin tone par lagti hai — isliye Nawada ke groom sabse zyada yahi uthate hain. Zari ka kaam halka hai, isliye poore function mein bhaari nahi lagta. Safa aur mojari ke saath ek complete groom look ban jaata hai."
+    "desc": "Cream works on every skin tone — which is why most grooms in Nawada pick it. The zari is light, so it never feels heavy through the function. Add the safa and mojari and the groom look is complete."
   },
   "indo-western": {
     "id": "indo-western",
@@ -122,13 +122,13 @@
       "XXL"
     ],
     "sold": "S",
-    "short": "Asymmetric kurta-jacket with drape sash — cocktail & sangeet ke liye.",
+    "short": "Asymmetric kurta-jacket with drape sash — made for cocktail and sangeet nights.",
     "fabric": "Suiting blend · layered drape",
     "fit": "Tailored · free alteration",
     "occasion": "Sangeet · Cocktail · Reception",
     "care": "Dry clean only",
     "box": "Kurta-jacket, sash, trouser",
-    "desc": "Sherwani pehen-pehen ke bore ho gaye? Indo-western ek hi outfit mein modern aur desi dono hai. Drape sash alag se pin hota hai, isliye aap decide kar sakte hain kitna dramatic chahiye."
+    "desc": "Tired of sherwanis? Indo-western is modern and desi in a single outfit. The drape sash pins on separately, so you decide how dramatic it gets."
   },
   "bandhgala": {
     "id": "bandhgala",
@@ -157,7 +157,7 @@
     ],
     "sold": "XXL",
     "short": "Velvet bandhgala with brass buttons and mandarin collar.",
-    "desc": "Sherwani se hatt kar kuch chahiye? Velvet bandhgala — light, sharp aur photo mein ekdum film-star. Brass buttons real metal finish ke hain, isliye flash mein shine karte hain.",
+    "desc": "Want something other than a sherwani? A velvet bandhgala — light, sharp, film-star in photos. The brass buttons are real metal, so they catch the flash.",
     "fabric": "Micro velvet · brass buttons",
     "fit": "Slim · free alteration",
     "occasion": "Engagement · Reception · Cocktail",
@@ -197,7 +197,7 @@
     "occasion": "Wedding · Engagement · Formal dinner",
     "care": "Dry clean only",
     "box": "Jodhpuri jacket, trouser",
-    "desc": "Jodhpuri suit ka collar hi isko royal banata hai. Shaadi mein sherwani se halka lagta hai, isliye garmi mein bhi comfortable. Gold buttons shaam ki roshni mein khul ke dikhte hain."
+    "desc": "The collar is what makes a Jodhpuri suit royal. Lighter than a sherwani at a wedding, so it stays comfortable in the heat. Gold buttons open up in evening light."
   },
   "safa": {
     "id": "safa",
@@ -222,13 +222,13 @@
       "Free size"
     ],
     "sold": "",
-    "short": "Pre-tied safa with kalgi pin — 2 minute mein ready.",
+    "short": "Pre-tied safa with kalgi pin — ready in 2 minutes.",
     "fabric": "Crushed silk · zari border",
     "fit": "Pre-tied · adjustable",
     "occasion": "Wedding · Baraat · Photos",
     "care": "Dry clean / hand steam",
     "box": "Safa, kalgi pin, extra pin",
-    "desc": "Safa khud baandhne mein time aur practice lagti hai — yeh pre-tied hai, isliye 2 minute mein pehen ke nikal sakte hain. Kalgi pin alag se aata hai, sherwani ke brooch ki jagah bhi use kar sakte hain."
+    "desc": "Tying a safa takes time and practice — this one is pre-tied, so you are ready in two minutes. The kalgi pin comes separately and also works in place of a brooch."
   },
   "mojari": {
     "id": "mojari",
@@ -263,7 +263,7 @@
     "occasion": "Wedding · Festive · Kurta",
     "care": "Dry brush only",
     "box": "1 pair",
-    "desc": "Shaadi mein 6 ghante khade rehna hota hai — isliye insole cushioned hai, plain jutti jaisi sakht nahi. Zari ka kaam haath se kiya gaya hai, isliye har jodi thodi unique lagti hai."
+    "desc": "Six hours on your feet at a wedding — that is why the insole is cushioned, not stiff like a plain jutti. The zari is hand-done, so every pair is slightly unique."
   },
   "kurta-pyjama": {
     "id": "kurta-pyjama",
@@ -298,7 +298,7 @@
     "occasion": "Puja · Eid · Family function",
     "care": "Machine wash cold",
     "box": "Kurta, churidar",
-    "desc": "Pooja, milan ya ghar ke function — yeh set sab jagah chal jaata hai. Cotton hai isliye pasina soakta hai, aur churidar thoda stretch deta hai taaki baithne mein dikkat na ho."
+    "desc": "Pooja, milan or a function at home — this set works everywhere. Cotton soaks up sweat, and the churidar has a little stretch so sitting down is easy."
   },
   "suit": {
     "id": "suit",
@@ -328,7 +328,7 @@
     ],
     "sold": "S",
     "short": "Italian wool blend with a sharp, tailored silhouette.",
-    "desc": "Interview ho ya reception — is navy 3-piece mein aap har jagah 'serious banda' lagte hain. Waistcoat alag pehen sakte hain, isliye ek suit se teen look. Shoulder aur chest par structure hai jo shape 12 ghante tak hold karta hai.",
+    "desc": "Interview or reception — in this navy 3-piece you read as someone serious. The waistcoat works on its own, so one suit gives three looks. Structure in the shoulder and chest holds shape for 12 hours.",
     "fabric": "Italian wool blend · 280 GSM",
     "fit": "Slim · free alteration",
     "occasion": "Interview · Wedding · Office",
@@ -368,7 +368,7 @@
     "occasion": "Office · Interview · Dinner",
     "care": "Dry clean recommended",
     "box": "1 blazer",
-    "desc": "Ek blazer se do look: shirt-trouser ke saath formal, t-shirt-jeans ke saath smart casual. Half-canvas front hai isliye chest par shape aati hai, par price poore suit jaisi nahi."
+    "desc": "One blazer, two looks: shirt and trouser for formal, tee and jeans for smart casual. A half-canvas front shapes the chest without a full suit price."
   },
   "overcoat": {
     "id": "overcoat",
@@ -398,7 +398,7 @@
     ],
     "sold": "S",
     "short": "Soft wool blend with a structured, elegant drape.",
-    "desc": "Shaadi December mein ho to yeh overcoat sherwani ke upar bhi pehen sakte hain. Camel colour photos mein royal lagta hai, aur andar ki lining garmi ko rok ke rakhti hai.",
+    "desc": "If the wedding is in December, this overcoat can go over the sherwani too. Camel shoots royal, and the lining keeps the heat in.",
     "fabric": "Wool blend · brushed finish",
     "fit": "Tailored · mid-length",
     "occasion": "Winter wedding · Travel · Formal",
@@ -438,7 +438,7 @@
     "occasion": "Office · Interview · Formal",
     "care": "Machine wash",
     "box": "1 shirt",
-    "desc": "Safed shirt har aadmi ke paas honi chahiye — par achhi wali. Yeh poplin hai, isliye dhone ke baad zyada press nahi karni padti. Collar stiff hai, isliye tie ke saath bhi theek lagti hai."
+    "desc": "Every man needs a white shirt — but a good one. This is poplin, so it needs less pressing after a wash. The collar is stiff enough to hold with a tie."
   },
   "trousers": {
     "id": "trousers",
@@ -478,7 +478,7 @@
     "occasion": "Office · Wedding · Daily formal",
     "care": "Machine wash / dry clean",
     "box": "1 trouser",
-    "desc": "Formal trouser ki asli test: shaam tak crease rehni chahiye. Yeh poly-wool blend hai isliye crease hold karti hai aur ghisne par bhi chamakti nahi. Length free alter hoti hai."
+    "desc": "The real test of a formal trouser: the crease should survive till evening. This poly-wool blend holds it and does not shine where it rubs. Length altered free."
   },
   "linen": {
     "id": "linen",
@@ -512,7 +512,7 @@
     ],
     "sold": "XXL",
     "short": "Breathable pure-feel linen, perfect for Bihar summers.",
-    "desc": "Garmi mein cotton bhi bhaari lagta hai — isliye linen. Hawa pass hoti hai, pasina sukhta hai, aur collar subah se shaam tak shape mein rehta hai. Rolled sleeves ke saath ekdum 'effortless' look.",
+    "desc": "Even cotton feels heavy in summer — that is what linen is for. Air passes through, sweat dries, and the collar holds shape from morning to evening. Rolled sleeves make it look effortless.",
     "fabric": "60-Lea linen blend · breathable",
     "fit": "Relaxed · true to size",
     "occasion": "Casual · College · Date",
@@ -546,13 +546,13 @@
       "XXL"
     ],
     "sold": "XXL",
-    "short": "Soft brushed cotton check — college aur outing ke liye.",
+    "short": "Soft brushed cotton check — built for college and outings.",
     "fabric": "Brushed cotton · yarn dyed check",
     "fit": "Regular · relaxed",
     "occasion": "College · Casual · Travel",
     "care": "Machine wash cold",
     "box": "1 shirt",
-    "desc": "Check shirt ka fayda: plain se zyada stylish, par print se zyada safe. Yeh brushed cotton hai isliye garmi mein bhi chipakti nahi. Jeans ho ya chinos, dono ke saath set."
+    "desc": "The point of a check shirt: more interesting than plain, safer than print. Brushed cotton, so it does not stick in the heat. Works with jeans and chinos both."
   },
   "denim": {
     "id": "denim",
@@ -582,7 +582,7 @@
     ],
     "sold": "XL",
     "short": "Heavy-weight stretch denim with a clean finish.",
-    "desc": "Yeh jacket har outfit ko 'styled' bana deta hai. 12 oz denim hai isliye shape rehti hai, par 2% stretch ki wajah se baith ke bhi comfortable. Sardiyaan aur monsoon dono mein kaam ka.",
+    "desc": "This jacket makes any outfit look styled. 12 oz denim holds its shape, and 2% stretch keeps it comfortable when you sit. Works through winter and monsoon.",
     "fabric": "12 oz cotton denim · 2% stretch",
     "fit": "Regular · layer-friendly",
     "occasion": "Street · Casual · Travel",
@@ -620,7 +620,7 @@
     ],
     "sold": "XXL",
     "short": "Four-way stretch cotton twill that keeps its crease.",
-    "desc": "Roz pehne jaane wali pant. 4-way stretch hai, isliye baithne-uthne mein aaram; aur wash ke baad bhi crease aa jaati hai. Office ho ya casual outing, ek hi pant kaafi.",
+    "desc": "The everyday trouser. 4-way stretch for sitting and standing, and the crease comes back after a wash. Office or a casual outing, one pair does it.",
     "fabric": "Cotton twill · 4-way stretch",
     "fit": "Slim · mid-rise",
     "occasion": "Daily · Office · Travel",
@@ -659,7 +659,7 @@
     ],
     "sold": "S",
     "short": "Mandarin collar with subtle tonal thread work.",
-    "desc": "Simple kurta nahi — collar ke paas tone-on-tone thread work hai jo door se plain lagta hai aur paas jaake premium. Churidar ke saath traditional, jeans ke saath Gen-Z street style.",
+    "desc": "Not a plain kurta — there is tone-on-tone thread work near the collar that reads plain from a distance and premium up close. With a churidar it is traditional; with jeans it is Gen-Z street.",
     "fabric": "Art silk · tonal thread work",
     "fit": "Straight · free alteration",
     "occasion": "Puja · Eid · Family function",
@@ -668,7 +668,7 @@
   }
 };
 
-  /* "Complete the look" — is piece ke saath kaunse 2 piece achhe lagte hain */
+  /* "Complete the look" — the two pieces that pair best with each one */
   var PAIRS = {
     sherwani: ["kurta", "bandhgala"],
     suit: ["linen", "chinos"],
@@ -792,8 +792,8 @@
       e.stopPropagation();
       var id = btn.getAttribute("data-wish");
       var i = saved.indexOf(id);
-      if (i > -1) { saved.splice(i, 1); toast("Wishlist se hata diya"); }
-      else { saved.push(id); toast("Wishlist mein save ho gaya"); track("wishlist_add", { id: id }); }
+      if (i > -1) { saved.splice(i, 1); toast("Removed from wishlist"); }
+      else { saved.push(id); toast("Saved to wishlist"); track("wishlist_add", { id: id }); }
       store("mw-saved", saved);
       refreshWish();
     });
@@ -843,7 +843,7 @@
   }
 
   function orderText(ref) {
-    var lines = ["Namaste Men's Wear! Order karna hai:", ""];
+    var lines = ["Hi Men's Wear! I would like to order:", ""];
     lines.push("Order ref: " + ref);
     bag.forEach(function (it, i) {
       var p = PRODUCTS[it.id];
@@ -861,7 +861,8 @@
     lines.push("Delivery address ya store pickup: ");
     lines.push("Payment: UPI / Card / Cash");
     lines.push("");
-    lines.push("Confirm kar dijiye — fitting aur delivery bata dijiye.");
+    lines.push("Please confirm — and share fitting and delivery details.");
+    if (window.__MW_YOU && window.__MW_YOU.name) lines.push("Name: " + window.__MW_YOU.name + ".");
     return lines.join("\n");
   }
 
@@ -869,8 +870,8 @@
     if (!bagList) return;
     if (!bag.length) {
       bagList.innerHTML =
-        '<div class="bag__empty"><p>Bag khali hai.</p>' +
-        '<p class="bag__emptysub">Koi bhi piece kholiye aur <b>Add to bag</b> dabaiye.</p></div>';
+        '<div class="bag__empty"><p>Your bag is empty.</p>' +
+        '<p class="bag__emptysub">Open any piece and tap <b>Add to bag</b>.</p></div>';
       if (bagFoot) bagFoot.innerHTML = "";
     } else {
       bagList.innerHTML = bag.map(function (it, i) {
@@ -909,7 +910,7 @@
           bag.splice(+btn.closest(".bagitem").getAttribute("data-i"), 1);
           saveBag();
           renderBag();
-          toast("Bag se hata diya");
+          toast("Removed from bag");
         });
       });
 
@@ -918,14 +919,14 @@
         var save = mrp - total;
         bagFoot.innerHTML =
           '<div class="bag__sum"><div><span>Total MRP</span><b>' + rupee(mrp) + '</b></div>' +
-          (save > 0 ? '<div class="bag__save"><span>Aap bacha rahe hain</span><b>' + rupee(save) + '</b></div>' : '') +
+          (save > 0 ? '<div class="bag__save"><span>You save</span><b>' + rupee(save) + '</b></div>' : '') +
           '<div class="bag__grand"><span>Total</span><b>' + rupee(total) + '</b></div></div>' +
           '<p class="bag__note">' + CONFIG.alteration + ' · ' + CONFIG.exchange + '</p>' +
           '<div class="bag__actions">' +
             '<a class="btn btn--wa btn--block" id="bagOrder" href="#" target="_blank" rel="noopener">Order on WhatsApp</a>' +
             '<button type="button" class="btn btn--ghost" id="bagCopy">Copy order</button>' +
           '</div>' +
-          '<p class="bag__ref">Order ref message mein apne aap chala jayega — dukaan par isi se order milega.</p>';
+          '<p class="bag__ref">Your order ref travels inside the message — the store matches it instantly.</p>';
 
         var ref = orderRef();
         var orderBtn = $("#bagOrder");
@@ -956,7 +957,7 @@
 
   function addToBag(p, size, colour) {
     if (!size) {
-      toast("Pehle size choose karein");
+      toast("Choose a size first");
       var box = $(".sizes", info);
       if (box) {
         box.classList.add("is-warn");
@@ -972,7 +973,7 @@
     saveBag();
     renderBag();
     track("add_to_bag", { id: p.id, size: size, colour: colour });
-    toast(p.name + " bag mein add ho gaya");
+    toast(p.name + " added to bag");
     return true;
   }
 
@@ -1075,12 +1076,13 @@
   var state = { id: null, size: null, colour: null };
 
   function waMessage(p) {
-    var bits = ["Namaste Men's Wear! Mujhe *" + p.name + "* chahiye."];
+    var bits = ["Hi Men's Wear! I would like the *" + p.name + "*."];
     if (state.colour) bits.push("Colour: " + state.colour + ".");
-    bits.push("Size: " + (state.size || "confirm karna hai") + ".");
-    bits.push("Price dikha raha hai " + rupee(p.price) +
+    bits.push("Size: " + (state.size || "to be confirmed") + ".");
+    bits.push("The website shows " + rupee(p.price) +
       (CONFIG.showMrp && p.mrp ? " (MRP " + rupee(p.mrp) + ")" : "") + ".");
-    bits.push("Availability, delivery aur fitting bata dijiye.");
+    bits.push("Please share availability, delivery and fitting details.");
+    if (window.__MW_YOU && window.__MW_YOU.name) bits.push("\u2014 " + window.__MW_YOU.name + ".");
     return "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(bits.join(" "));
   }
 
@@ -1100,7 +1102,7 @@
       '<h2 class="sheet__title" id="sheetTitle">' + p.name + '</h2>' +
       '<p class="sheet__short">' + p.short + '</p>' +
       '<div class="sheet__rate">' +
-        '<span class="sheet__verified">✓ Store se seedha · free alteration</span>' +
+        '<span class="sheet__verified">✓ Straight from the store · free alteration</span>' +
         '<button type="button" class="sheet__share" data-share>Share</button></div>' +
       '<div class="sheet__price"><span class="price">' + rupee(p.price) + '</span>' +
         (CONFIG.showMrp && p.mrp ? '<s class="mrp">' + rupee(p.mrp) + '</s><span class="off">' + disc + '% off</span>' : '') +
@@ -1111,8 +1113,10 @@
       '<div class="sheet__block"><p class="sheet__label">Select size <button type="button" class="sheet__chart" data-chart>Size chart</button></p>' +
         '<div class="sizes">' + p.sizes.map(function (s) {
           var soldOut = s === p.sold;
-          return '<button type="button" class="size' + (soldOut ? ' is-sold' : '') + '" data-size="' + s + '"' +
-                 (soldOut ? ' disabled aria-label="Size ' + s + ' sold out"' : '') + '>' + s + '</button>';
+          var chosen = !soldOut && s === state.size;
+          return '<button type="button" class="size' + (soldOut ? ' is-sold' : '') + (chosen ? ' is-on' : '') + '" data-size="' + s + '"' +
+                 (soldOut ? ' disabled aria-label="Size ' + s + ' sold out"' : ' aria-pressed="' + (chosen ? 'true' : 'false') + '"') +
+                 '>' + s + '</button>';
         }).join("") + '</div>' +
         '<div class="sheet__chartbox" hidden data-chartbox>' +
           '<table><thead><tr><th>Size</th><th>Chest</th><th>Waist</th><th>Length</th></tr></thead><tbody>' +
@@ -1121,7 +1125,7 @@
           '<tr><td>L</td><td>42"</td><td>36"</td><td>42"</td></tr>' +
           '<tr><td>XL</td><td>44"</td><td>38"</td><td>43"</td></tr>' +
           '<tr><td>XXL</td><td>46"</td><td>40"</td><td>44"</td></tr>' +
-          '</tbody></table><p>Confusion ho to WhatsApp par apna chest/waist bhej dijiye — hum perfect size bata denge.</p>' +
+          '</tbody></table><p>Unsure? Send your chest and waist on WhatsApp and we will tell you the perfect size.</p>' +
         '</div></div>' +
 
       '<div class="sheet__block"><p class="sheet__label">Colour <span class="sheet__picked" data-picked>' + p.cols[0].name + '</span></p>' +
@@ -1164,7 +1168,7 @@
           '</button>';
         }).join("") + '</div></div>' : '') +
 
-      '<p class="sheet__foot">Aap seedha dukaan se kharid rahe hain — koi middle-man nahi. Size ya fitting ki dikkat ho to free alteration hamari taraf se.</p>';
+      '<p class="sheet__foot">You are buying straight from the store — no middle-man. If the size or the fit is off, free alteration is on us.</p>';
 
     thumbs.innerHTML = p.imgs.map(function (src, i) {
       var url = imgSrc(src);
@@ -1230,7 +1234,7 @@
       navigator.share({ title: p.name, text: text, url: url }).catch(function () {});
       return;
     }
-    copy(text + "\n" + url).then(function () { toast("Link copy ho gaya — WhatsApp par bhej dijiye"); });
+    copy(text + "\n" + url).then(function () { toast("Link copied — send it on WhatsApp"); });
   }
 
   function lockBody() { document.body.classList.add("is-locked"); }
@@ -1246,7 +1250,12 @@
     var p = PRODUCTS[id];
     if (!p || !sheet) return;
     opts = opts || {};
-    state = { id: id, size: null, colour: p.cols[0].name };
+    var liked = window.__MW_YOU && window.__MW_YOU.size;
+    state = {
+      id: id,
+      size: liked && p.sizes && p.sizes.indexOf(liked) > -1 ? liked : null,
+      colour: p.cols[0].name
+    };
     lastFocus = document.activeElement;
     render(p);
     sheet.hidden = false;
@@ -1345,10 +1354,10 @@
   var wishSend = $("#bagWishSend");
   if (wishSend) {
     wishSend.addEventListener("click", function () {
-      if (!saved.length) { toast("Wishlist khali hai"); return; }
+      if (!saved.length) { toast("Your wishlist is empty"); return; }
       var names = saved.map(function (id) { return PRODUCTS[id] ? PRODUCTS[id].name : ""; }).filter(Boolean);
       var msg = "Namaste Men's Wear! Meri wishlist:\n" + names.map(function (n, i) { return (i + 1) + ". " + n; }).join("\n") +
-        "\n\nIn sab ki price, size aur availability bata dijiye.";
+        "\n\nPlease share price, size and availability for these.";
       window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
       track("wishlist_share", { count: names.length });
     });
