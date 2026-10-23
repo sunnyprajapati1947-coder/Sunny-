@@ -249,3 +249,31 @@ Rent abhi menu/section mein nahi hai kyunki pata nahi ki aap karte hain ya nahi.
 3. Phone 9608087035, timing 10 AM – 9 PM, website: `https://nawada-menswear-shop.vercel.app/`
 4. 5–10 purane customers se review likhwao — phir site ke Reviews section mein wahi link already lag chuka hai.
 5. Dukaan ke andar-bahar ki 5–6 photo daalo.
+
+---
+
+## 5. App (install karein) — v12
+
+Site ab **installable app** hai: customer Chrome mein "Install" dabaye ya iPhone par Safari → Share → **Add to Home Screen**, to home screen par **MW** icon ban jaata hai, app fullscreen khulta hai aur ek baar khulne ke baad **offline** bhi chalta hai. Koi Play Store fee nahi.
+
+**Kaise:** wahi link `https://nawada-menswear-shop.vercel.app/` — bas.
+
+### App ke files
+
+| File | Kaam |
+|---|---|
+| `live/entry.src.html` | chhota app shell (3.4 KB) — yahi Vercel par `index.html` banta hai |
+| `live/vercel-entry.html` | `python3 tools/build-entry.py` se banta hai (deploy payload) |
+| `live/app-shell.js` | asli logic — CDN se site laata hai, head/body transplant karta hai, install prompt + offline toast |
+| `manifest.json` | app ka naam, icon, fullscreen, 3 shortcuts (Collection / Groom / Bag) |
+| `sw.js` | offline service worker (`mw-app-v3`) — last copy cache karta hai |
+| `assets/img/app/*.png` | home-screen icons (192, 512, maskable, apple-touch) |
+
+### Update karne ka tarika
+1. Site content ho to `assets/js/*`, `index.html`, `assets/css/*` badlein → `tools/build-live.py`.
+2. Shell/offline logic ho to `live/app-shell.js` ya `sw.js` badlein (`sw.js` ka `VERSION` bump karein).
+3. `python3 tools/build-entry.py` → `node --check live/app-shell.js` → commit.
+4. **Naya tag** lagayein (`app-v4`, `app-v5` …) aur `live/app-shell.js` + manifest ke andar `@app-vN` refs bhi badlein — jsDelivr purane tag ko cache karta hai, isliye purana tag reuse na karein.
+5. Vercel par `index.html` (= `live/vercel-entry.html`) + `sw.js` deploy karein. Bas.
+
+> Note: `sw.js` sirf same-origin se register hota hai, isliye wo Vercel par hi rehta hai. Manifest CDN se aata hai (absolute `start_url`/`scope` ki wajah se install theek kaam karta hai).
