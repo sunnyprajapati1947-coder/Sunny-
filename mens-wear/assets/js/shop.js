@@ -24,7 +24,7 @@
     catalogPdf: ""          // WhatsApp catalogue ka link (agar hai),
   };
 
-  var PRODUCTS = {
+  var PRODUCTS =  {
   "sherwani": {
     "id": "sherwani",
     "name": "Black Zardozi Sherwani",
@@ -70,14 +70,14 @@
       "assets/img/v2/ivory-sherwani.jpg"
     ],
     "cols": [
-      [
-        "Ivory",
-        "#efe6d5"
-      ],
-      [
-        "Champagne",
-        "#d9c29a"
-      ]
+      {
+        "name": "Ivory",
+        "hex": "#efe6d5"
+      },
+      {
+        "name": "Champagne",
+        "hex": "#d9c29a"
+      }
     ],
     "sizes": [
       "S",
@@ -105,14 +105,14 @@
       "assets/img/v2/indo-western.jpg"
     ],
     "cols": [
-      [
-        "Jet Black",
-        "#141418"
-      ],
-      [
-        "Deep Wine",
-        "#4a1226"
-      ]
+      {
+        "name": "Jet Black",
+        "hex": "#141418"
+      },
+      {
+        "name": "Deep Wine",
+        "hex": "#4a1226"
+      }
     ],
     "sizes": [
       "S",
@@ -174,14 +174,14 @@
       "assets/img/v2/jodhpuri.jpg"
     ],
     "cols": [
-      [
-        "Royal Blue",
-        "#1e2f57"
-      ],
-      [
-        "Bottle Green",
-        "#14402f"
-      ]
+      {
+        "name": "Royal Blue",
+        "hex": "#1e2f57"
+      },
+      {
+        "name": "Bottle Green",
+        "hex": "#14402f"
+      }
     ],
     "sizes": [
       "S",
@@ -209,14 +209,14 @@
       "assets/img/v2/safa.jpg"
     ],
     "cols": [
-      [
-        "Cream Gold",
-        "#e8d6b0"
-      ],
-      [
-        "Maroon Gold",
-        "#6c1a2c"
-      ]
+      {
+        "name": "Cream Gold",
+        "hex": "#e8d6b0"
+      },
+      {
+        "name": "Maroon Gold",
+        "hex": "#6c1a2c"
+      }
     ],
     "sizes": [
       "Free size"
@@ -240,14 +240,14 @@
       "assets/img/v2/mojari.jpg"
     ],
     "cols": [
-      [
-        "Black Gold",
-        "#15151a"
-      ],
-      [
-        "Cream Gold",
-        "#e3d3ae"
-      ]
+      {
+        "name": "Black Gold",
+        "hex": "#15151a"
+      },
+      {
+        "name": "Cream Gold",
+        "hex": "#e3d3ae"
+      }
     ],
     "sizes": [
       "6",
@@ -275,14 +275,14 @@
       "assets/img/v2/kurta-pyjama.jpg"
     ],
     "cols": [
-      [
-        "Cream",
-        "#efe7d8"
-      ],
-      [
-        "Sage",
-        "#b9c4ab"
-      ]
+      {
+        "name": "Cream",
+        "hex": "#efe7d8"
+      },
+      {
+        "name": "Sage",
+        "hex": "#b9c4ab"
+      }
     ],
     "sizes": [
       "S",
@@ -345,14 +345,14 @@
       "assets/img/v2/blazer.jpg"
     ],
     "cols": [
-      [
-        "Charcoal",
-        "#3a3d42"
-      ],
-      [
-        "Navy",
-        "#1e2b45"
-      ]
+      {
+        "name": "Charcoal",
+        "hex": "#3a3d42"
+      },
+      {
+        "name": "Navy",
+        "hex": "#1e2b45"
+      }
     ],
     "sizes": [
       "S",
@@ -415,14 +415,14 @@
       "assets/img/v2/white-shirt.jpg"
     ],
     "cols": [
-      [
-        "White",
-        "#f6f4ef"
-      ],
-      [
-        "Sky",
-        "#cfe0ee"
-      ]
+      {
+        "name": "White",
+        "hex": "#f6f4ef"
+      },
+      {
+        "name": "Sky",
+        "hex": "#cfe0ee"
+      }
     ],
     "sizes": [
       "S",
@@ -450,18 +450,18 @@
       "assets/img/v2/trousers.jpg"
     ],
     "cols": [
-      [
-        "Black",
-        "#17171b"
-      ],
-      [
-        "Navy",
-        "#1e2b45"
-      ],
-      [
-        "Grey",
-        "#4a4d52"
-      ]
+      {
+        "name": "Black",
+        "hex": "#17171b"
+      },
+      {
+        "name": "Navy",
+        "hex": "#1e2b45"
+      },
+      {
+        "name": "Grey",
+        "hex": "#4a4d52"
+      }
     ],
     "sizes": [
       "30",
@@ -529,14 +529,14 @@
       "assets/img/v2/checked-shirt.jpg"
     ],
     "cols": [
-      [
-        "Navy Check",
-        "#2b3a53"
-      ],
-      [
-        "Green Check",
-        "#2f4a37"
-      ]
+      {
+        "name": "Navy Check",
+        "hex": "#2b3a53"
+      },
+      {
+        "name": "Green Check",
+        "hex": "#2f4a37"
+      }
     ],
     "sizes": [
       "S",
