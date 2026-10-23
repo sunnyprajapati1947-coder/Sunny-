@@ -8,9 +8,9 @@
   window.__mwShellLoaded = true;
 
   var REPO = "sunnyprajapati1947-coder/Sunny-";
-  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v4/mens-wear/live/index.html";
+  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v5/mens-wear/live/index.html";
   var ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/live/index.html";
-  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v4/mens-wear/";
+  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v5/mens-wear/";
   var BASE_ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/";
   var MANIFEST = BASE_JD + "manifest.json";
   var APPLE_ICON = BASE_JD + "assets/img/app/apple-touch-icon.png";
@@ -259,18 +259,29 @@
     document.title = parsed.title || document.title;
     appHead();
 
-    /* inline DOMContentLoaded handlers will never fire again: re-run <script> tags */
-    [].slice.call(document.querySelectorAll("script")).forEach(function (old) {
-      if (old.getAttribute("type") === "application/ld+json") return;
+    /* inline DOMContentLoaded handlers will never fire again: re-run <script>
+       tags in document order, one at a time, so page scripts see each other. */
+    var queue = [].slice.call(document.querySelectorAll("script")).filter(function (el) {
+      return el.getAttribute("type") !== "application/ld+json";
+    });
+
+    (function next(i) {
+      if (i >= queue.length) return;
+      var old = queue[i];
+      var s = document.createElement("script");
       try {
-        var s = document.createElement("script");
-        for (var i = 0; i < old.attributes.length; i++) {
-          s.setAttribute(old.attributes[i].name, old.attributes[i].value);
+        for (var k = 0; k < old.attributes.length; k++) {
+          s.setAttribute(old.attributes[k].name, old.attributes[k].value);
         }
         s.text = old.textContent;
+        if (s.src) {
+          s.async = false;
+          s.onload = s.onerror = function () { next(i + 1); };
+        }
         old.parentNode.replaceChild(s, old);
       } catch (e) {}
-    });
+      if (!s.src) next(i + 1);
+    })(0);
   }
 
   tryFrom(0);

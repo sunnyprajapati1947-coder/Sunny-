@@ -690,18 +690,24 @@
     trousers: ["white-shirt", "blazer"]
   };
 
-  /* Drop 01 pieces come from assets/js/drop-data.js (loaded before this file).
-     They ride through the same sheet, bag, wishlist and WhatsApp order flow. */
-  if (window.__MW_DROP) {
-    window.__MW_DROP.forEach(function (p) {
-      if (p && p.id && !PRODUCTS[p.id]) PRODUCTS[p.id] = p;
-    });
+  /* Drop 01 pieces come from assets/js/drop-data.js.
+     The app shell loads scripts in parallel, so this can't assume order: absorb
+     the data whenever we need it, and again on window load. */
+  function absorbDrop() {
+    if (window.__MW_DROP) {
+      window.__MW_DROP.forEach(function (p) {
+        if (p && p.id && !PRODUCTS[p.id]) PRODUCTS[p.id] = p;
+      });
+    }
+    if (window.__MW_DROP_PAIRS) {
+      Object.keys(window.__MW_DROP_PAIRS).forEach(function (k) {
+        if (!PAIRS[k]) PAIRS[k] = window.__MW_DROP_PAIRS[k];
+      });
+    }
   }
-  if (window.__MW_DROP_PAIRS) {
-    Object.keys(window.__MW_DROP_PAIRS).forEach(function (k) {
-      if (!PAIRS[k]) PAIRS[k] = window.__MW_DROP_PAIRS[k];
-    });
-  }
+  absorbDrop();
+  window.addEventListener("load", absorbDrop);
+  window.addEventListener("mw:drop-ready", absorbDrop);
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(s, c) { return (c || document).querySelector(s); }
@@ -1236,6 +1242,7 @@
   }
 
   function open(id, opts) {
+    absorbDrop();
     var p = PRODUCTS[id];
     if (!p || !sheet) return;
     opts = opts || {};

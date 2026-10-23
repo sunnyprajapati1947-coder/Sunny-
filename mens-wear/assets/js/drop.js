@@ -132,6 +132,16 @@
     });
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
+  /* the shell may execute this file before drop-data.js: wait for the data */
+  var tries = 0;
+  function start() {
+    if (!data().length && tries < 40) {
+      tries++;
+      setTimeout(start, 100);
+      return;
+    }
+    boot();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();

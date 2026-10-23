@@ -203,6 +203,7 @@ def data_js():
     body = body.replace("\n", "\n    ")
     out.append("    " + body)
     out.append("  ];")
+    out.append('  try { window.dispatchEvent(new Event("mw:drop-ready")); } catch (e) {}')
     out.append("  window.__MW_DROP_PAIRS = " + json.dumps(PAIRS, indent=2).replace("\n", "\n  ") + ";")
     out.append("})();")
     return "\n".join(out) + "\n"

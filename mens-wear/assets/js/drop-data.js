@@ -306,6 +306,7 @@
       "box": "1 shirt"
     }
   ];
+  try { window.dispatchEvent(new Event("mw:drop-ready")); } catch (e) {}
   window.__MW_DROP_PAIRS = {
     "distressed-tank": [
       "cargo-olive",
