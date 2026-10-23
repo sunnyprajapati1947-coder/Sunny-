@@ -1,0 +1,56 @@
+{
+  "id": "/",
+  "name": "Men's Wear — Nawada",
+  "short_name": "Men's Wear",
+  "description": "Nawada ka premium menswear store — sherwani, suit, kurta, shirt aur daily wear. Order seedha WhatsApp par.",
+  "start_url": "/?src=app",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#08080a",
+  "theme_color": "#08080a",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Collection",
+      "short_name": "Collection",
+      "url": "/#collection",
+      "description": "Saare kapde dekhein"
+    },
+    {
+      "name": "Groom package",
+      "short_name": "Groom",
+      "url": "/#groom",
+      "description": "Shaadi ka poora look"
+    },
+    {
+      "name": "Mera bag",
+      "short_name": "Bag",
+      "url": "/#bag",
+      "description": "Bag mein rakhe pieces"
+    }
+  ]
+}

@@ -732,6 +732,9 @@
     toastTimer = setTimeout(function () { toastEl.classList.remove("is-on"); }, 2400);
   }
 
+  /* the app shell can nudge the visitor (offline, saved copy, …) */
+  window.__mwToast = toast;
+
   function copy(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       return navigator.clipboard.writeText(text);
