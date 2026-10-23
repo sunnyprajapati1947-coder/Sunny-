@@ -690,6 +690,19 @@
     trousers: ["white-shirt", "blazer"]
   };
 
+  /* Drop 01 pieces come from assets/js/drop-data.js (loaded before this file).
+     They ride through the same sheet, bag, wishlist and WhatsApp order flow. */
+  if (window.__MW_DROP) {
+    window.__MW_DROP.forEach(function (p) {
+      if (p && p.id && !PRODUCTS[p.id]) PRODUCTS[p.id] = p;
+    });
+  }
+  if (window.__MW_DROP_PAIRS) {
+    Object.keys(window.__MW_DROP_PAIRS).forEach(function (k) {
+      if (!PAIRS[k]) PAIRS[k] = window.__MW_DROP_PAIRS[k];
+    });
+  }
+
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(s, c) { return (c || document).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); }
@@ -1002,8 +1015,8 @@
     var sorted = cards.slice().sort(function (a, b) {
       if (sortBy === "low") return +a.dataset.price - +b.dataset.price;
       if (sortBy === "high") return +b.dataset.price - +a.dataset.price;
-      if (sortBy === "rating") return +b.dataset.rating - +a.dataset.rating;
-      return +b.dataset.rating * 1000 + +b.dataset.price / 100 - (+a.dataset.rating * 1000 + +a.dataset.price / 100);
+      if (sortBy === "rating") return (+b.dataset.rating || 0) - (+a.dataset.rating || 0);
+      return (+b.dataset.rating || 0) * 1000 + +b.dataset.price / 100 - ((+a.dataset.rating || 0) * 1000 + +a.dataset.price / 100);
     });
     sorted.forEach(function (c) { c.parentNode.appendChild(c); });
   }
