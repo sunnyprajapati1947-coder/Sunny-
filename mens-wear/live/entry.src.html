@@ -10,15 +10,15 @@
 <meta property="og:site_name" content="Men's Wear — Nawada">
 <meta property="og:title" content="Men's Wear — Premium Menswear in Nawada">
 <meta property="og:description" content="Sherwani, suits, shirts &amp; ethnic wear — Sudama Nagar, Nawada. Order on WhatsApp 96080 87035.">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/hero-model.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/assets/img/hero-model.jpg">
 <meta property="og:locale" content="en_IN">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://nawada-menswear-shop.vercel.app/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2308080a'/%3E%3Crect x='5' y='5' width='54' height='54' fill='none' stroke='%23c9a45c' stroke-width='1.4'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='24' fill='%23eed9a8' text-anchor='middle'%3EMW%3C/text%3E%3C/svg%3E">
 
 <!-- app plumbing -->
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/apple-touch-icon.png">
+<link rel="manifest" href="https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/manifest.json" crossorigin>
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/assets/img/app/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Men's Wear">
@@ -52,10 +52,10 @@ html,body{margin:0;height:100%;background:#08080a;color:#f7f2e8}
 <noscript><div id="boot-ns"><p>Yeh website dekhne ke liye JavaScript on karein.</p></div></noscript>
 <script>
 (function () {
-  var JD = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/live/index.html";
-  var ST = "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/app-v1/mens-wear/live/index.html";
-  var BASE_JD = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/";
-  var BASE_ST = "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/app-v1/mens-wear/";
+  var JD = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/live/index.html";
+  var ST = "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/app-v2/mens-wear/live/index.html";
+  var BASE_JD = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/";
+  var BASE_ST = "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/app-v2/mens-wear/";
   var SOURCES = [[JD, BASE_JD], [ST, BASE_ST]];
   var boot = document.getElementById("boot");
 
@@ -65,9 +65,9 @@ html,body{margin:0;height:100%;background:#08080a;color:#f7f2e8}
   }
 
   /* ---------------------------------------------------------- service worker */
-  if ("serviceWorker" in navigator) {
+  if (navigator.serviceWorker && typeof navigator.serviceWorker.register === "function") {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function () {});
+      try { navigator.serviceWorker.register("/sw.js").catch(function () {}); } catch (e) {}
     });
   }
 
@@ -174,7 +174,10 @@ html,body{margin:0;height:100%;background:#08080a;color:#f7f2e8}
     get(src)
       .then(function (html) {
         if (html.length < 2000 || html.indexOf("hero") === -1) throw new Error("bad payload");
-        if (base !== BASE_JD) html = html.split(BASE_JD).join(base);
+        if (base !== BASE_JD) {
+          /* the fetched page hard-codes jsDelivr asset URLs: repoint them at whichever CDN answered */
+          html = html.replace(/https:\/\/cdn\.jsdelivr\.net\/gh\/sunnyprajapati1947-coder\/Sunny-@[^\/]+\/mens-wear\//g, base);
+        }
         mount(html);
       })
       .catch(function () { tryFrom(i + 1); });
@@ -197,9 +200,9 @@ html,body{margin:0;height:100%;background:#08080a;color:#f7f2e8}
       document.head.appendChild(el);
       return el;
     }
-    if (!document.querySelector('link[rel="manifest"]')) add("link", { rel: "manifest", href: "/manifest.json" });
+    if (!document.querySelector('link[rel="manifest"]')) add("link", { rel: "manifest", href: "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/manifest.json", crossorigin: "" });
     if (!document.querySelector('link[rel="apple-touch-icon"]')) {
-      add("link", { rel: "apple-touch-icon", href: "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/apple-touch-icon.png" });
+      add("link", { rel: "apple-touch-icon", href: "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/assets/img/app/apple-touch-icon.png" });
     }
     if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
       add("meta", { name: "apple-mobile-web-app-capable", content: "yes" });

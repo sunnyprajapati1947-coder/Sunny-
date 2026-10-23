@@ -1,33 +1,39 @@
 {
-  "id": "/",
+  "id": "https://nawada-menswear-shop.vercel.app/",
   "name": "Men's Wear — Nawada",
   "short_name": "Men's Wear",
   "description": "Nawada ka premium menswear store — sherwani, suit, kurta, shirt aur daily wear. Order seedha WhatsApp par.",
-  "start_url": "/?src=app",
-  "scope": "/",
+  "start_url": "https://nawada-menswear-shop.vercel.app/?src=app",
+  "scope": "https://nawada-menswear-shop.vercel.app/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#08080a",
   "theme_color": "#08080a",
   "lang": "en-IN",
   "dir": "ltr",
-  "categories": ["shopping", "lifestyle"],
+  "categories": [
+    "shopping",
+    "lifestyle"
+  ],
   "icons": [
     {
-      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/icon-192.png",
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/assets/img/app/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/icon-512.png",
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/assets/img/app/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v1/mens-wear/assets/img/app/icon-maskable-512.png",
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v2/mens-wear/assets/img/app/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
