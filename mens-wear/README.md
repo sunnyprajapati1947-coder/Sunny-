@@ -29,7 +29,7 @@ Phir browser mein `http://localhost:8080` kholein.
 
 | Section | Kya karta hai |
 |---|---|
-| **Hero** | 3D gold silk waves, rotating halo aur gold dust (Three.js). Photo par mouse move karne se 3D tilt. |
+| **Hero** | 3D gold silk, ghoomte halo rings aur gold dust — sab ek custom WebGL shader se (koi library nahi, sirf ~9 KB). Photo par tilt bhi. |
 | **Trust strip** | Original fabric, free fitting, styling advice, payment options — customer ka trust turant banata hai. |
 | **Collection** | 6 product cards + filters (Wedding / Formal / Casual / Ethnic). Har card ka button WhatsApp par **product ka naam likh kar** bhejta hai. |
 | **Craft** | Store interior photo + 3-point quality explanation. |
@@ -95,7 +95,15 @@ customer seedha aapki dukaan tak pahunch jayega.
 
 ---
 
-## 6. Free hosting (2 minute)
+## 6. Live site
+
+Abhi ye site live hai:
+
+**https://menswear-nawada.vercel.app**
+
+Har update ke baad naya deploy chahiye. Hosting options:
+
+## 6b. Free hosting (apne account par)
 
 1. **GitHub Pages** — repo ke Settings → Pages → branch `main`, folder `/` (ya `mens-wear`
    ko alag repo banayein). Site live ho jayegi.
@@ -113,7 +121,7 @@ Live jaane se pehle `index.html` ke `<link rel="canonical">` mein apna asli doma
   payment modes. Google par "mens wear nawada" search mein madad karta hai.
 - Open Graph tags — WhatsApp par link bhejne par premium preview card dikhta hai.
 - Mobile-first responsive, accessibility (keyboard, screen reader labels, `prefers-reduced-motion`).
-- Lightweight: fonts self-hosted, koi external CDN/tracker nahi, sab kuch aapke apne server se.
+- Lightweight: 3D khud ka WebGL shader (koi 700 KB library nahi), fonts Google Fonts se, koi tracker nahi.
 
 **Ek zaroori kaam:** Google Business Profile par shop list karein (naam, address, phone,
 timing, photos). Website + GBP dono milke local customers laate hain.
@@ -143,9 +151,7 @@ mens-wear/
 └── assets/
     ├── css/style.css       # design system (colors, type, layout, animations)
     ├── js/main.js          # filters, WhatsApp links, drawer, counters, tilt, reveals
-    ├── js/hero3d.js        # Three.js 3D hero (silk waves, halo, gold dust)
-    ├── vendor/three.module.min.js
-    ├── fonts/              # self-hosted Cormorant Garamond, Jost, Marcellus
+    ├── js/hero3d.js        # 3D hero — custom WebGL shader (no library)
     └── img/                # hero, products, store photos
 ```
 

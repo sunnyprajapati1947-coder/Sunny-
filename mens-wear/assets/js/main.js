@@ -6,6 +6,12 @@
   "use strict";
 
   var WHATSAPP_NUMBER = "919608087035";
+
+  /* Photos live in the project repo. When the site is served from a host that
+     only receives the HTML/CSS/JS bundle, a missing photo automatically loads
+     from this base instead — the visitor never sees a broken image. */
+  var REMOTE_IMG_BASE =
+    "https://raw.githubusercontent.com/sunnyprajapati1947-coder/Sunny-/arena/42c450ee-sunny/mens-wear/assets/img/";
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
@@ -282,9 +288,16 @@
     var year = $("#year");
     if (year) year.textContent = new Date().getFullYear();
 
-    // If a photo ever fails to load, fade it out instead of showing a broken icon.
+    // Photos: if a local copy is unavailable, retry once from the project CDN.
+    // Only if that also fails do we fall back to a quiet gradient placeholder.
     $$("img").forEach(function (img) {
       img.addEventListener("error", function () {
+        var src = img.getAttribute("src") || "";
+        if (!img.dataset.remote && src && src.indexOf("http") !== 0) {
+          img.dataset.remote = "1";
+          img.src = REMOTE_IMG_BASE + src.split("/").pop();
+          return;
+        }
         img.style.opacity = "0";
         var media = img.closest(".card__media, .hero__frame, .craft__card");
         if (media) media.style.background = "linear-gradient(140deg,#141419,#0b0b0e)";

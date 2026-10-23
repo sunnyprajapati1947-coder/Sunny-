@@ -3,48 +3,6 @@
    Premium menswear boutique · design system
    ========================================================================== */
 
-/* ---------- Fonts (self-hosted, no CDN) ---------- */
-@font-face {
-  font-family: "Cormorant Garamond";
-  src: url("../fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2");
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Cormorant Garamond";
-  src: url("../fonts/cormorant-garamond-latin-500-normal.woff2") format("woff2");
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Cormorant Garamond";
-  src: url("../fonts/cormorant-garamond-latin-600-normal.woff2") format("woff2");
-  font-weight: 600; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Jost";
-  src: url("../fonts/jost-latin-300-normal.woff2") format("woff2");
-  font-weight: 300; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Jost";
-  src: url("../fonts/jost-latin-400-normal.woff2") format("woff2");
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Jost";
-  src: url("../fonts/jost-latin-500-normal.woff2") format("woff2");
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Jost";
-  src: url("../fonts/jost-latin-600-normal.woff2") format("woff2");
-  font-weight: 600; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Marcellus";
-  src: url("../fonts/marcellus-latin-400-normal.woff2") format("woff2");
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-
 /* ---------- Tokens ---------- */
 :root {
   --ink:        #08080a;
