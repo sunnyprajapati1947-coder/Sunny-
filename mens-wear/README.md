@@ -1,5 +1,11 @@
 # Men's Wear — Premium Website
 
+> ### 🔗 Live website
+> **https://nawada-menswear-shop.vercel.app/**
+>
+> Yeh link kisi bhi phone/laptop par khulta hai — WhatsApp par bhejne ke liye ready.
+> Har product ka button aur phone number seedha aapke WhatsApp (`96080 87035`) par le jaata hai.
+
 Premium, 3D-enhanced single-page website for **Men's Wear**, Sudama Nagar, Nawada (Bihar 805110).
 
 - **Shop:** Men's Wear
