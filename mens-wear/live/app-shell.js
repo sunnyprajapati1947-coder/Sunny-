@@ -8,14 +8,14 @@
   window.__mwShellLoaded = true;
 
   var REPO = "sunnyprajapati1947-coder/Sunny-";
-  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v8/mens-wear/live/index.html";
+  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v9/mens-wear/live/index.html";
   var ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/live/index.html";
-  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v8/mens-wear/";
+  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v9/mens-wear/";
   var BASE_ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/";
   var MANIFEST = BASE_JD + "manifest.json";
   var APPLE_ICON = BASE_JD + "assets/img/app/apple-touch-icon.png";
   var SOURCES = [[JD, BASE_JD], [ST, BASE_ST]];
-  /* the storefront ships these four files, in this order */
+  /* the storefront ships these five files, in this order */
   var PAGE_SCRIPTS = [
     "assets/js/main.js",
     "assets/js/drop-data.js",
@@ -29,7 +29,7 @@
   function fail() {
     if (!boot) return;
     boot.innerHTML =
-      '<div><p>Site load nahi ho payi.</p><p><a href="' + JD + '">Yahan tap karke kholein</a></p></div>';
+      '<div><p>The store could not load.</p><p><a href="' + JD + '">Open the page directly</a></p></div>';
   }
 
   /* ------------------------------------------------------------- app styles */
@@ -118,10 +118,10 @@
     var el = document.createElement("div");
     el.id = "mw-install";
     el.innerHTML =
-      '<div class="t"><b>App install karein</b><span>' +
+      '<div class="t"><b>Install the app</b><span>' +
       (mode === "ios"
-        ? "Share (up arrow) dabaiye, phir Add to Home Screen"
-        : "Home screen par icon ban jaayega, offline bhi chalega") +
+        ? "Tap Share, then Add to Home Screen"
+        : "It lands on your home screen and works offline") +
       "</span></div>" +
       (mode === "ios" ? "" : '<button class="go" type="button">Install</button>') +
       '<button class="no" type="button" aria-label="Baad mein">x</button>';
@@ -180,7 +180,7 @@
   /* offline notice */
   window.addEventListener("offline", function () {
     if (typeof window.__mwToast === "function") {
-      window.__mwToast("Offline — saved copy dikha rahe hain");
+      window.__mwToast("Offline — showing your saved copy");
     }
   });
 
