@@ -43,9 +43,9 @@ self.addEventListener("fetch", function (event) {
         return caches.match(SHELL).then(function (hit) {
           return hit || new Response(
             "<!doctype html><meta name=viewport content='width=device-width,initial-scale=1'>" +
-            "<body style='margin:0;background:#08080a;color:#f7f2e8;font-family:system-ui;display:grid;place-items:center;height:100vh;text-align:center'>" +
+            "<body style='margin:0;background:#f2eee3;color:#16160f;font-family:system-ui;display:grid;place-items:center;height:100vh;text-align:center'>" +
             "<div><p style='letter-spacing:.4em;font-size:.9rem'>MEN'S WEAR</p>" +
-            "<p style='color:#c9a45c;font-size:.7rem'>Internet nahi hai — dobara try karein</p></div></body>",
+            "<p style='color:#6b6b55;font-size:.7rem'>No internet — please try again</p></div></body>",
             { headers: { "Content-Type": "text/html; charset=utf-8" } }
           );
         });
