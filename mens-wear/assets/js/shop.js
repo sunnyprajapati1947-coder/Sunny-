@@ -7,6 +7,18 @@
   "use strict";
 
   var WA_NUMBER = "919608087035";
+
+  /* Where the garment photos live. When this file is served from a CDN the
+     photos sit next to it, so resolve the base from our own <script> URL.
+     Served locally the paths stay relative. */
+  var IMG_BASE = (function () {
+    var tag = document.currentScript || document.querySelector('script[src*="shop.js"]');
+    var src = tag && tag.src ? tag.src : "";
+    var i = src.indexOf("assets/js/shop.js");
+    return i > -1 ? src.slice(0, i + "assets/js/shop.js".length).replace(/assets\/js\/shop\.js$/, "") : "";
+  })();
+
+  function imgSrc(path) { return path.indexOf("http") === 0 ? path : IMG_BASE + path; }
   var PRODUCTS = {
   "sherwani": {
     "id": "sherwani",
@@ -573,9 +585,10 @@
 
     // gallery
     thumbs.innerHTML = p.imgs.map(function (src, i) {
-      return '<button type="button" class="sheet__thumb' + (i === 0 ? ' is-on' : '') + '" data-src="' + src + '"><img src="' + src + '" alt="" loading="lazy"></button>';
+      var url = imgSrc(src);
+      return '<button type="button" class="sheet__thumb' + (i === 0 ? ' is-on' : '') + '" data-src="' + url + '"><img src="' + url + '" alt="" loading="lazy"></button>';
     }).join("");
-    stageImg.src = p.imgs[0];
+    stageImg.src = imgSrc(p.imgs[0]);
     stageImg.alt = p.name;
 
     // bar

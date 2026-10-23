@@ -10,8 +10,10 @@
   /* Photos live in the project repo. When the site is served from a host that
      only receives the HTML/CSS/JS bundle, a missing photo automatically loads
      from this base instead — the visitor never sees a broken image. */
-  var REMOTE_IMG_BASE =
-    "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@live-v4/mens-wear/assets/img/";
+  var IMG_CDNS = [
+    "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@live-v6/mens-wear/",
+    "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/live-v6/mens-wear/"
+  ];
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
@@ -288,15 +290,24 @@
     var year = $("#year");
     if (year) year.textContent = new Date().getFullYear();
 
-    // Photos: if a local copy is unavailable, retry once from the project CDN.
-    // Only if that also fails do we fall back to a quiet gradient placeholder.
+    // Photos: walk a small CDN chain before giving up, so a single outage never
+    // leaves an empty card. Last resort is a quiet gradient placeholder.
+    function relativeOf(src) {
+      var i = src.indexOf("assets/img/");
+      if (i > -1) return src.slice(i);
+      return "assets/img/" + src.split("/").pop();
+    }
     $$("img").forEach(function (img) {
       img.addEventListener("error", function () {
         var src = img.getAttribute("src") || "";
-        if (!img.dataset.remote && src && src.indexOf("http") !== 0) {
-          img.dataset.remote = "1";
-          var rel = src.indexOf("assets/img/") > -1 ? src.split("assets/img/")[1] : src.split("/").pop();
-          img.src = REMOTE_IMG_BASE + rel;
+        if (!src) return;
+        var rel = relativeOf(src);
+        var next = img.dataset.cdn ? parseInt(img.dataset.cdn, 10) + 1 : 0;
+        // first hop: local file that only exists in the repo -> use the CDN list
+        if (src.indexOf("http") !== 0 && !img.dataset.cdn) { next = 0; }
+        if (next < IMG_CDNS.length) {
+          img.dataset.cdn = String(next);
+          img.src = IMG_CDNS[next] + rel;
           return;
         }
         img.style.opacity = "0";
