@@ -15,7 +15,7 @@
     whatsapp: "919608087035",
     showMrp: false,         // asli MRP mile to true kar dein, warna discount line hide rehti hai
     priceNote: "Final price aur offer WhatsApp par confirm hote hain.",
-    delivery: "Free delivery in Nawada · store pickup 2 ghante mein",
+    delivery: "Free delivery in Nawada · store pickup",
     exchange: "Size exchange available — store par confirm karein",
     alteration: "Free alteration",
     instagram: "",          // jaise "https://instagram.com/menswear_nawada" — khali ho to icon chhupa rehta hai
