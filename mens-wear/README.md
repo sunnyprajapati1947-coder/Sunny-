@@ -277,3 +277,37 @@ Site ab **installable app** hai: customer Chrome mein "Install" dabaye ya iPhone
 5. Vercel par `index.html` (= `live/vercel-entry.html`) + `sw.js` deploy karein. Bas.
 
 > Note: `sw.js` sirf same-origin se register hota hai, isliye wo Vercel par hi rehta hai. Manifest CDN se aata hai (absolute `start_url`/`scope` ki wajah se install theek kaam karta hai).
+
+---
+
+## 6. Drop 01 — Gen-Z layer (v13)
+
+Target ab **Gen-Z** hai. Design sirf "accha dikhna" nahi — neeche wahi soch likhi hai jo site mein convert hui hai.
+
+### Gen-Z mindset → site par kya bana
+| Gen-Z kya chahta hai | Site par kahan |
+|---|---|
+| 8-second attention span — seedha product dikhao | Hero = seedha **hanger rail**, koi text wall nahi. Tap karo, piece aage aata hai. |
+| "Real product" feel, stock-photo kachra nahi | Sab photos **hanger par hanging**, plain deewar, natural light — jaise dukaan ka rack. |
+| Khud dekhna, poochhna nahi | Har card tap → poora detail: photo (front/back), price, fabric, fit, sizes, colour, delivery. |
+| Aesthetic pehle, sales baad mein | Paper (`#f2eee3`) + ink (`#16160f`) + **acid lime** (`#c8f24d`) — quiet streetwear, loud accent. |
+| Quiet flex > bada logo | Bina logo ke pieces, chhota mono type, "Drop 01" language. |
+| Comfort above all | Oversized/boxy fits, 240–450 GSM fabrics — copy mein seedha likha hai. |
+| Anti-corporate, seedha baat | Koi fake rating nahi, koi fake MRP/discount nahi. Jo rate hai wahi, baaki WhatsApp par. |
+| WhatsApp hi shopping hai | Har piece par ek hi tap → aapka WhatsApp, piece ka naam pehle se likha. |
+
+### Design system
+- **Fonts:** Archivo (900 display / 400 body) + Space Mono (labels, prices, buttons).
+- **Tokens:** `--gz-paper #f2eee3`, `--gz-ink #16160f`, `--gz-lime #c8f24d`, hairline `rgba(22,22,15,.16)`.
+- **Hero:** `.gz-hero` → rail (`#gzRail`, built by `drop.js`), featured name + **FRONT / BACK** toggle + `See availability`.
+- **Ticker:** lime strip, `26s` loop, hover par rukta hai.
+- **Cards:** flat paper, no glass, no glow; badge lime, 2-column mobile / 4-column desktop.
+
+### Drop ke 8 pieces (₹899–₹2,799)
+`distressed-tank`, `oversized-tee`, `cargo-olive`, `baggy-jeans`, `varsity-cream`, `hoodie-bone`, `cord-overshirt`, `bowling-shirt` — photos `assets/img/genz/`.
+
+### Naya piece add karna
+1. Photo `assets/img/genz/<naam>.jpg` mein daalein (hanger par, plain deewar, 4:5).
+2. `tools/gen-drop.py` ke `DROP` list mein ek block copy-paste karke naam/price/fabric badlein.
+3. `python3 tools/gen-drop.py` → `assets/js/drop-data.js` + `index.html` ke cards dono update ho jayenge.
+4. `python3 tools/build-live.py app-vN` → naya tag → deploy (dekhein §5).

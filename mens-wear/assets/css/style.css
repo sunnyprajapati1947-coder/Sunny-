@@ -1942,7 +1942,7 @@ body::after {
   position: absolute; left: 0; top: 0.55em;
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: linear-gradient(140deg, #c8f24d, #16160f);
+  background: #c8f24d;
 }
 .offers b { color: var(--ivory); font-weight: 500; }
 
@@ -2151,7 +2151,7 @@ body::after {
   font-weight: 600;
   letter-spacing: 0;
   color: #17110a;
-  background: linear-gradient(120deg, #c8f24d, #16160f);
+  background: #c8f24d;
   box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.8);
 }
 .ab-bag { position: relative; }
@@ -2250,7 +2250,7 @@ body::after {
   font-weight: 600;
   letter-spacing: 0;
   color: #17110a;
-  background: linear-gradient(120deg, #c8f24d, #16160f);
+  background: #c8f24d;
   border-radius: 100px;
   padding: 2px 8px;
 }

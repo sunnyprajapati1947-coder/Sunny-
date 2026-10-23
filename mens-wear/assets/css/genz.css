@@ -491,7 +491,20 @@ em { font-style: normal; }
   .gz-hang { width: clamp(46px, 13vw, 92px); }
 }
 @media (max-width: 620px) {
-  .gz-rail__items { gap: 2px; padding-left: 4px; padding-right: 4px; }
+  /* small phones: the rail scrolls sideways instead of squeezing 8 pieces */
+  .gz-rail__items {
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .gz-rail__items::-webkit-scrollbar { display: none; }
+  .gz-hang { scroll-snap-align: center; width: 84px; }
+  .gz-featured { padding-top: 14px; }
   .gz-hang img { object-position: 50% 10%; }
   .grid-products { gap: 20px 10px; }
   .pcard__cta .btn--gold { padding: 8px 10px; font-size: 0.48rem; }
