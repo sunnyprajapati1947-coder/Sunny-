@@ -170,3 +170,45 @@ mens-wear/
 
 Design tokens (colors/fonts) `assets/css/style.css` ke top par `:root` mein hain — ek jagah
 badalne se poori site ka look badal jaata hai.
+
+---
+
+## 3. Dukaan malik ke liye — kya-kya khud badal sakte hain
+
+Sab settings ek hi jagah hain: **`assets/js/shop.js`** ke sabse upar `CONFIG` block.
+
+| Setting | Kya karti hai |
+|---|---|
+| `whatsapp` | Order kis number par jayega |
+| `showMrp` | `false` karne par MRP / discount line poori tarah hide ho jaati hai |
+| `priceNote` | Price ke neeche chhoti line (default: "Final price aur offer WhatsApp par confirm hote hain") |
+| `delivery` | Delivery / pickup ka text |
+| `exchange` | Exchange ka text |
+| `alteration` | Alteration ka text |
+
+Product ka price, MRP, size, colour, photo — sab `PRODUCTS` block mein hai, uske neeche.
+Ek product aisa dikhta hai:
+
+```
+"sherwani": {
+  "price": 5999, "mrp": 9999,        // apne asli daam daaliye
+  "imgs": ["assets/img/v2/sherwani.jpg", "assets/img/product-sherwani.jpg"],
+  "cols": [{ "name": "Jet Black", "hex": "#111114" }],
+  "sizes": ["S", "M", "L", "XL", "XXL"], "sold": "XXL"
+}
+```
+
+### Apne kapdon ki photo lagana
+1. Photo phone se kheenchein — **safed/plain deewar**, din ki roshni, poora kapda frame mein, seedha khada ho kar.
+2. Photo ka naam wahi rakhein jo `imgs` mein hai (jaise `sherwani.jpg`) aur file `assets/img/v2/` mein daal dein.
+3. Sirf file badalne se site par photo badal jayegi.
+
+### Order kaise milega
+- Customer **Add to bag** → **Order on WhatsApp** dabata hai.
+- Aapke WhatsApp par poora order ek message mein aata hai: order ref, har piece ka naam, size, colour, qty, total — aur customer ka naam/address ki jagah.
+- Jo customer seedha WhatsApp button dabata hai, usme bhi piece, size aur colour pehle se likha hota hai.
+
+### Product ka apna link
+Har piece ka link aisa hota hai — WhatsApp status par bhej sakte hain:
+`https://nawada-menswear-shop.vercel.app/#p=sherwani`
+(`sherwani`, `suit`, `linen`, `kurta`, `denim`, `overcoat`, `bandhgala`, `chinos`)
