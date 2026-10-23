@@ -170,7 +170,7 @@
 
     <div class="hero__visual" data-reveal="fade" style="--d:.18s">
       <div class="hero__frame" id="heroFrame">
-        <img class="hero__img" src="assets/img/hero-model.jpg" alt="Model wearing an ivory premium linen shirt at Men's Wear, Nawada" width="768" height="1376" fetchpriority="high">
+        <img class="hero__img" src="assets/img/hero-model.jpg" alt="Model wearing an ivory premium linen shirt at Men's Wear, Nawada" width="640" height="1147" fetchpriority="high">
       </div>
       <div class="hero__frame-outline" aria-hidden="true"></div>
 
@@ -244,187 +244,261 @@
 </section>
 
 <!-- ================= COLLECTION ================= -->
-<section class="section collection" id="collection">
-  <div class="collection__glow" aria-hidden="true"></div>
+<section class="section shop" id="collection">
+  <div class="shop__glow" aria-hidden="true"></div>
   <div class="wrap">
-    <div class="collection__head">
-      <div class="section-head" style="margin-bottom:0">
-        <p class="eyebrow" data-reveal>The Collection</p>
-        <h2 class="h2" data-reveal style="--d:.06s">Har mauke ke liye,<br><em>ek perfect look.</em></h2>
+    <div class="shop__head">
+      <div class="section-head shop__intro">
+        <p class="eyebrow" data-reveal>The Collection · 2026</p>
+        <h2 class="h2" data-reveal style="--d:.06s">Tap karo, <em>poora detail</em> dekho.</h2>
+        <p class="shop__sub" data-reveal style="--d:.1s">Har piece ka photo, price, fabric, size aur delivery — sab kuch ek tap mein. Pasand aaye to seedha WhatsApp.</p>
       </div>
-      <div class="filters" role="tablist" aria-label="Filter collection" data-reveal style="--d:.12s">
-        <button type="button" class="filter is-active" data-filter="all" role="tab" aria-selected="true">All</button>
-        <button type="button" class="filter" data-filter="wedding" role="tab" aria-selected="false">Wedding</button>
-        <button type="button" class="filter" data-filter="formal" role="tab" aria-selected="false">Formal</button>
-        <button type="button" class="filter" data-filter="casual" role="tab" aria-selected="false">Casual</button>
-        <button type="button" class="filter" data-filter="ethnic" role="tab" aria-selected="false">Ethnic</button>
+      <div class="shop__tools" data-reveal style="--d:.12s">
+        <label class="shop__search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <input type="search" id="shopSearch" placeholder="Search kurta, suit, sherwani…" aria-label="Search the collection" autocomplete="off">
+        </label>
+        <label class="shop__sort">
+          <span>Sort</span>
+          <select id="shopSort" aria-label="Sort collection">
+            <option value="popular">Popular</option>
+            <option value="low">Price: low to high</option>
+            <option value="high">Price: high to low</option>
+            <option value="rating">Top rated</option>
+          </select>
+        </label>
       </div>
     </div>
 
-    <div class="grid-products" id="productGrid" data-reveal style="--d:.1s">
+    <div class="shop__bar" data-reveal>
+      <div class="filters" role="tablist" aria-label="Filter collection">
+        <button type="button" class="filter is-active" data-filter="all" role="tab" aria-selected="true">All <span>8</span></button>
+        <button type="button" class="filter" data-filter="wedding" role="tab" aria-selected="false">Wedding <span>2</span></button>
+        <button type="button" class="filter" data-filter="formal" role="tab" aria-selected="false">Formal <span>2</span></button>
+        <button type="button" class="filter" data-filter="casual" role="tab" aria-selected="false">Casual <span>3</span></button>
+        <button type="button" class="filter" data-filter="ethnic" role="tab" aria-selected="false">Ethnic <span>1</span></button>
+      </div>
+      <p class="shop__hint"><span class="dot" aria-hidden="true"></span> Free alteration · 7-day exchange · UPI / Card / Cash</p>
+    </div>
 
-      <!-- 1 -->
-      <article class="card" data-cat="wedding" data-tilt>
-        <div class="card__media">
-          <span class="card__tag">Best Seller</span>
-          <img src="assets/img/product-sherwani.jpg" alt="Black zardozi hand-embroidered wedding sherwani" width="1024" height="1024" loading="lazy" decoding="async">
-          <div class="card__shade">
-            <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Black Zardozi Sherwani* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-              Order on WhatsApp
-            </a>
-          </div>
+    <div class="grid-products" id="productGrid" data-shop>
+
+      <article class="pcard" data-cat="wedding" data-id="sherwani" data-price="5999" data-rating="4.8" data-name="Black Zardozi Sherwani">
+        <div class="pcard__media">
+          <span class="pcard__badge">Bestseller</span>
+          <button class="pcard__wish" type="button" data-wish="sherwani" aria-label="Save Black Zardozi Sherwani to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/sherwani.jpg" alt="Black Zardozi Sherwani — Hand-embroidered zardozi & zari work on a rich silk blend." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
         </div>
-        <div class="card__body">
-          <p class="card__cat">Wedding</p>
-          <h3 class="card__title">Black Zardozi Sherwani</h3>
-          <p class="card__desc">Hand-embroidered zari work on a rich silk blend.</p>
-          <div class="card__foot">
-            <span class="card__price">₹5,999<small>onwards</small></span>
-            <a class="card__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Black Zardozi Sherwani* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              Enquire
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
-            </a>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Black Zardozi Sherwani</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.8 ★</span>
+            <span class="pcard__count">(412)</span>
+          </div>
+          <div class="pcard__price">
+            <span class="price">₹5,999</span>
+            <span class="mrp">₹9,999</span>
+            <span class="off">40% off</span>
+          </div>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="sherwani">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Black Zardozi Sherwani* chahiye — price ₹5,999" target="_blank" rel="noopener" aria-label="Order Black Zardozi Sherwani on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
-
-      <!-- 2 -->
-      <article class="card" data-cat="formal" data-tilt>
-        <div class="card__media">
-          <span class="card__tag">Signature</span>
-          <img src="assets/img/product-suit.jpg" alt="Midnight navy three-piece formal suit with tie" width="1024" height="1024" loading="lazy" decoding="async">
-          <div class="card__shade">
-            <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Midnight Navy 3-Piece Suit* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-              Order on WhatsApp
-            </a>
-          </div>
+      <article class="pcard" data-cat="formal" data-id="suit" data-price="4499" data-rating="4.7" data-name="Midnight Navy 3-Piece Suit">
+        <div class="pcard__media">
+          <span class="pcard__badge">Signature</span>
+          <button class="pcard__wish" type="button" data-wish="suit" aria-label="Save Midnight Navy 3-Piece Suit to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/suit.jpg" alt="Midnight Navy 3-Piece Suit — Italian wool blend with a sharp, tailored silhouette." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
         </div>
-        <div class="card__body">
-          <p class="card__cat">Formal</p>
-          <h3 class="card__title">Midnight Navy 3-Piece</h3>
-          <p class="card__desc">Italian wool blend with a sharp, tailored silhouette.</p>
-          <div class="card__foot">
-            <span class="card__price">₹4,499<small>onwards</small></span>
-            <a class="card__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Midnight Navy 3-Piece Suit* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              Enquire
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
-            </a>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Midnight Navy 3-Piece Suit</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.7 ★</span>
+            <span class="pcard__count">(356)</span>
           </div>
-        </div>
-      </article>
-
-      <!-- 3 -->
-      <article class="card" data-cat="casual" data-tilt>
-        <div class="card__media">
-          <span class="card__tag">New Arrival</span>
-          <img src="assets/img/product-linen-shirt.jpg" alt="Ivory premium linen shirt" width="1024" height="1024" loading="lazy" decoding="async">
-          <div class="card__shade">
-            <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Ivory Linen Shirt* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-              Order on WhatsApp
-            </a>
+          <div class="pcard__price">
+            <span class="price">₹4,499</span>
+            <span class="mrp">₹7,999</span>
+            <span class="off">44% off</span>
           </div>
-        </div>
-        <div class="card__body">
-          <p class="card__cat">Casual</p>
-          <h3 class="card__title">Ivory Linen Shirt</h3>
-          <p class="card__desc">Breathable pure-feel linen, perfect for Bihar summers.</p>
-          <div class="card__foot">
-            <span class="card__price">₹1,299<small>onwards</small></span>
-            <a class="card__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Ivory Linen Shirt* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              Enquire
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
-            </a>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="suit">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Midnight Navy 3-Piece Suit* chahiye — price ₹4,499" target="_blank" rel="noopener" aria-label="Order Midnight Navy 3-Piece Suit on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
-
-      <!-- 4 -->
-      <article class="card" data-cat="ethnic" data-tilt>
-        <div class="card__media">
-          <span class="card__tag">Festive</span>
-          <img src="assets/img/product-kurta.jpg" alt="Emerald green silk kurta with mandarin collar" width="1024" height="1024" loading="lazy" decoding="async">
-          <div class="card__shade">
-            <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Emerald Silk Kurta* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-              Order on WhatsApp
-            </a>
-          </div>
+      <article class="pcard" data-cat="casual" data-id="linen" data-price="1299" data-rating="4.6" data-name="Ivory Linen Shirt">
+        <div class="pcard__media">
+          <span class="pcard__badge">New drop</span>
+          <button class="pcard__wish" type="button" data-wish="linen" aria-label="Save Ivory Linen Shirt to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/linen-shirt.jpg" alt="Ivory Linen Shirt — Breathable pure-feel linen, perfect for Bihar summers." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
         </div>
-        <div class="card__body">
-          <p class="card__cat">Ethnic</p>
-          <h3 class="card__title">Emerald Silk Kurta</h3>
-          <p class="card__desc">Mandarin collar with subtle tonal thread work.</p>
-          <div class="card__foot">
-            <span class="card__price">₹1,499<small>onwards</small></span>
-            <a class="card__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Emerald Silk Kurta* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              Enquire
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
-            </a>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Ivory Linen Shirt</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.6 ★</span>
+            <span class="pcard__count">(1,024)</span>
           </div>
-        </div>
-      </article>
-
-      <!-- 5 -->
-      <article class="card" data-cat="casual" data-tilt>
-        <div class="card__media">
-          <span class="card__tag">Trending</span>
-          <img src="assets/img/product-denim.jpg" alt="Dark indigo premium denim jacket with white t-shirt" width="1024" height="1024" loading="lazy" decoding="async">
-          <div class="card__shade">
-            <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Indigo Denim Jacket* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-              Order on WhatsApp
-            </a>
+          <div class="pcard__price">
+            <span class="price">₹1,299</span>
+            <span class="mrp">₹2,499</span>
+            <span class="off">48% off</span>
           </div>
-        </div>
-        <div class="card__body">
-          <p class="card__cat">Casual</p>
-          <h3 class="card__title">Indigo Denim Jacket</h3>
-          <p class="card__desc">Heavy-weight stretch denim with a clean finish.</p>
-          <div class="card__foot">
-            <span class="card__price">₹1,899<small>onwards</small></span>
-            <a class="card__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Indigo Denim Jacket* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              Enquire
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
-            </a>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="linen">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Ivory Linen Shirt* chahiye — price ₹1,299" target="_blank" rel="noopener" aria-label="Order Ivory Linen Shirt on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
-
-      <!-- 6 -->
-      <article class="card" data-cat="formal" data-tilt>
-        <div class="card__media">
-          <span class="card__tag">Limited</span>
-          <img src="assets/img/product-overcoat.jpg" alt="Camel tan wool overcoat" width="1024" height="1024" loading="lazy" decoding="async">
-          <div class="card__shade">
-            <a class="btn btn--wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Camel Wool Overcoat* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>
-              Order on WhatsApp
-            </a>
+      <article class="pcard" data-cat="ethnic" data-id="kurta" data-price="1499" data-rating="4.7" data-name="Emerald Silk Kurta">
+        <div class="pcard__media">
+          <span class="pcard__badge">Festive</span>
+          <button class="pcard__wish" type="button" data-wish="kurta" aria-label="Save Emerald Silk Kurta to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/kurta.jpg" alt="Emerald Silk Kurta — Mandarin collar with subtle tonal thread work." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
+        </div>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Emerald Silk Kurta</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.7 ★</span>
+            <span class="pcard__count">(688)</span>
+          </div>
+          <div class="pcard__price">
+            <span class="price">₹1,499</span>
+            <span class="mrp">₹2,999</span>
+            <span class="off">50% off</span>
+          </div>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="kurta">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Emerald Silk Kurta* chahiye — price ₹1,499" target="_blank" rel="noopener" aria-label="Order Emerald Silk Kurta on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
-        <div class="card__body">
-          <p class="card__cat">Formal</p>
-          <h3 class="card__title">Camel Wool Overcoat</h3>
-          <p class="card__desc">Soft wool blend with a structured, elegant drape.</p>
-          <div class="card__foot">
-            <span class="card__price">₹3,499<small>onwards</small></span>
-            <a class="card__link" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Camel Wool Overcoat* ke baare mein jaankari chahiye — price, size aur availability bata dijiye." target="_blank" rel="noopener">
-              Enquire
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
-            </a>
+      </article>
+      <article class="pcard" data-cat="casual" data-id="denim" data-price="1899" data-rating="4.5" data-name="Indigo Denim Jacket">
+        <div class="pcard__media">
+          <span class="pcard__badge">Trending</span>
+          <button class="pcard__wish" type="button" data-wish="denim" aria-label="Save Indigo Denim Jacket to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/denim.jpg" alt="Indigo Denim Jacket — Heavy-weight stretch denim with a clean finish." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
+        </div>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Indigo Denim Jacket</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.5 ★</span>
+            <span class="pcard__count">(512)</span>
+          </div>
+          <div class="pcard__price">
+            <span class="price">₹1,899</span>
+            <span class="mrp">₹3,499</span>
+            <span class="off">46% off</span>
+          </div>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="denim">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Indigo Denim Jacket* chahiye — price ₹1,899" target="_blank" rel="noopener" aria-label="Order Indigo Denim Jacket on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="pcard" data-cat="formal" data-id="overcoat" data-price="3499" data-rating="4.8" data-name="Camel Wool Overcoat">
+        <div class="pcard__media">
+          <span class="pcard__badge">Limited</span>
+          <button class="pcard__wish" type="button" data-wish="overcoat" aria-label="Save Camel Wool Overcoat to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/overcoat.jpg" alt="Camel Wool Overcoat — Soft wool blend with a structured, elegant drape." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
+        </div>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Camel Wool Overcoat</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.8 ★</span>
+            <span class="pcard__count">(207)</span>
+          </div>
+          <div class="pcard__price">
+            <span class="price">₹3,499</span>
+            <span class="mrp">₹6,499</span>
+            <span class="off">46% off</span>
+          </div>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="overcoat">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Camel Wool Overcoat* chahiye — price ₹3,499" target="_blank" rel="noopener" aria-label="Order Camel Wool Overcoat on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="pcard" data-cat="wedding" data-id="bandhgala" data-price="3999" data-rating="4.9" data-name="Wine Velvet Bandhgala">
+        <div class="pcard__media">
+          <span class="pcard__badge">Groom edit</span>
+          <button class="pcard__wish" type="button" data-wish="bandhgala" aria-label="Save Wine Velvet Bandhgala to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/bandhgala.jpg" alt="Wine Velvet Bandhgala — Velvet bandhgala with brass buttons and mandarin collar." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
+        </div>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Wine Velvet Bandhgala</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.9 ★</span>
+            <span class="pcard__count">(164)</span>
+          </div>
+          <div class="pcard__price">
+            <span class="price">₹3,999</span>
+            <span class="mrp">₹7,499</span>
+            <span class="off">47% off</span>
+          </div>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="bandhgala">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Wine Velvet Bandhgala* chahiye — price ₹3,999" target="_blank" rel="noopener" aria-label="Order Wine Velvet Bandhgala on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="pcard" data-cat="casual" data-id="chinos" data-price="999" data-rating="4.4" data-name="Charcoal Slim Chinos">
+        <div class="pcard__media">
+          <span class="pcard__badge">Everyday</span>
+          <button class="pcard__wish" type="button" data-wish="chinos" aria-label="Save Charcoal Slim Chinos to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+          <img src="assets/img/v2/chinos.jpg" alt="Charcoal Slim Chinos — Four-way stretch cotton twill that keeps its crease." width="640" height="1147" loading="lazy" decoding="async">
+          <span class="pcard__hint">Tap for full details</span>
+        </div>
+        <div class="pcard__body">
+          <p class="pcard__brand">Men&#39;s Wear <span>· Nawada</span></p>
+          <h3 class="pcard__title">Charcoal Slim Chinos</h3>
+          <div class="pcard__rate">
+            <span class="rating">4.4 ★</span>
+            <span class="pcard__count">(2,180)</span>
+          </div>
+          <div class="pcard__price">
+            <span class="price">₹999</span>
+            <span class="mrp">₹1,999</span>
+            <span class="off">50% off</span>
+          </div>
+          <p class="pcard__meta">Free alteration · Free delivery in Nawada</p>
+          <div class="pcard__cta">
+            <button class="btn btn--gold btn--xs" type="button" data-open="chinos">View details</button>
+            <a class="pcard__wa" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Mujhe *Charcoal Slim Chinos* chahiye — price ₹999" target="_blank" rel="noopener" aria-label="Order Charcoal Slim Chinos on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
           </div>
         </div>
       </article>
 
     </div>
+    <p class="shop__empty" id="shopEmpty" hidden>Kuch nahi mila — doosra naam try kijiye ya WhatsApp par poochh lein.</p>
 
-    <p class="collection__note" data-reveal>
-      Aur bhi 200+ designs store par available hain —
-      <a href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Aapke store par kaun kaun se naye designs available hain? Photos bhej dijiye." target="_blank" rel="noopener">WhatsApp par catalogue maangein</a>
-    </p>
+    <div class="shop__more" data-reveal>
+      <p>200+ designs store par available hain — photos WhatsApp par mangwa lein.</p>
+      <a class="btn btn--ghost" href="https://wa.me/919608087035" data-wa="Namaste Men's Wear! Aapke store par kaun kaun se naye designs available hain? Photos bhej dijiye." target="_blank" rel="noopener">Catalogue maangein <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg></a>
+    </div>
   </div>
 </section>
 
@@ -728,5 +802,27 @@
 
 <script src="assets/js/main.js" defer></script>
 <script src="assets/js/hero3d.js" defer></script>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Product details" hidden>
+  <div class="sheet__scrim" data-close></div>
+  <div class="sheet__panel">
+    <button class="sheet__close" type="button" data-close aria-label="Close details">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="sheet__grid">
+      <div class="sheet__media">
+        <div class="sheet__stage"><img id="sheetImg" src="" alt="" width="640" height="1147"></div>
+        <div class="sheet__thumbs" id="sheetThumbs"></div>
+      </div>
+      <div class="sheet__info" id="sheetInfo"></div>
+    </div>
+    <div class="sheet__bar">
+      <div class="sheet__barprice"><strong id="sheetBarPrice">₹—</strong><s id="sheetBarMrp"></s><span id="sheetBarOff" class="off"></span></div>
+      <a class="btn btn--wa" id="sheetWa" href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
+      <a class="btn btn--ghost sheet__call" href="tel:+919608087035">Call</a>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/shop.js" defer></script>
 </body>
 </html>

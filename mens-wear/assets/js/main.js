@@ -11,7 +11,7 @@
      only receives the HTML/CSS/JS bundle, a missing photo automatically loads
      from this base instead — the visitor never sees a broken image. */
   var REMOTE_IMG_BASE =
-    "https://raw.githubusercontent.com/sunnyprajapati1947-coder/Sunny-/arena/42c450ee-sunny/mens-wear/assets/img/";
+    "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@live-v4/mens-wear/assets/img/";
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
@@ -295,11 +295,12 @@
         var src = img.getAttribute("src") || "";
         if (!img.dataset.remote && src && src.indexOf("http") !== 0) {
           img.dataset.remote = "1";
-          img.src = REMOTE_IMG_BASE + src.split("/").pop();
+          var rel = src.indexOf("assets/img/") > -1 ? src.split("assets/img/")[1] : src.split("/").pop();
+          img.src = REMOTE_IMG_BASE + rel;
           return;
         }
         img.style.opacity = "0";
-        var media = img.closest(".card__media, .hero__frame, .craft__card");
+        var media = img.closest(".pcard__media, .sheet__stage, .card__media, .hero__frame, .craft__card");
         if (media) media.style.background = "linear-gradient(140deg,#141419,#0b0b0e)";
       });
     });

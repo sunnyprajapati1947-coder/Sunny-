@@ -13,6 +13,13 @@ Premium, 3D-enhanced single-page website for **Men's Wear**, Sudama Nagar, Nawad
 - **Mobile / WhatsApp:** +91 96080 87035
 - **Type:** Static site — no build step, no server, no paid services needed.
 
+## Naya kya hai (v2)
+- **8 products**, real studio photos (sherwani, 3-piece suit, bandhgala, kurta, linen shirt, denim jacket, overcoat, chinos).
+- **Tap any garment -> full product page**: big gallery, MRP + discount %, size picker + size chart, colour swatches, offers, delivery/pickup, specs, wash care, rating breakdown, verified review.
+- **Search + sort + category filters** (Popular / Price / Top rated) — shopping-app jaisa.
+- **Wishlist** (phone mein save rehta hai) aur **WhatsApp button jo size + colour ke saath message bhejta hai**.
+- Product detail sheet mobile par full-screen, desktop par split view — dono jagah premium dark + holographic look.
+
 ---
 
 ## 1. Kaise chalayein (local)
