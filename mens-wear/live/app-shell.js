@@ -8,13 +8,20 @@
   window.__mwShellLoaded = true;
 
   var REPO = "sunnyprajapati1947-coder/Sunny-";
-  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v5/mens-wear/live/index.html";
+  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v6/mens-wear/live/index.html";
   var ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/live/index.html";
-  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v5/mens-wear/";
+  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v6/mens-wear/";
   var BASE_ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/";
   var MANIFEST = BASE_JD + "manifest.json";
   var APPLE_ICON = BASE_JD + "assets/img/app/apple-touch-icon.png";
   var SOURCES = [[JD, BASE_JD], [ST, BASE_ST]];
+  /* the storefront ships these four files, in this order */
+  var PAGE_SCRIPTS = [
+    "assets/js/main.js",
+    "assets/js/drop-data.js",
+    "assets/js/shop.js",
+    "assets/js/drop.js"
+  ];
 
   var boot = document.getElementById("boot");
 
@@ -222,23 +229,26 @@
             base
           );
         }
-        mount(html);
+        mount(html, base);
       })
       .catch(function () {
         tryFrom(i + 1);
       });
   }
 
-  function mount(html) {
+  var mountedBase = BASE_JD;
+
+  function mount(html, base) {
     try {
-      paint(html);
+      mountedBase = base || BASE_JD;
+      paint(html, mountedBase);
       window.__mwBooted = true;
     } catch (e) {
       fail();
     }
   }
 
-  function paint(html) {
+  function paint(html, base) {
     var parsed = new DOMParser().parseFromString(html, "text/html");
 
     var frag = document.createDocumentFragment();
@@ -251,6 +261,7 @@
 
     var bfrag = document.createDocumentFragment();
     [].slice.call(parsed.body.childNodes).forEach(function (n) {
+      if (n.nodeName === "SCRIPT") return; /* re-loaded explicitly below */
       bfrag.appendChild(document.importNode(n, true));
     });
     document.body.innerHTML = "";
@@ -259,29 +270,26 @@
     document.title = parsed.title || document.title;
     appHead();
 
-    /* inline DOMContentLoaded handlers will never fire again: re-run <script>
-       tags in document order, one at a time, so page scripts see each other. */
-    var queue = [].slice.call(document.querySelectorAll("script")).filter(function (el) {
-      return el.getAttribute("type") !== "application/ld+json";
-    });
+    /* the page's own scripts cannot re-run once transplanted, so load them by
+       URL instead — one at a time, in order, with a timeout guard. */
+    var i = 0;
+    (function loadNext() {
+      if (i >= PAGE_SCRIPTS.length) return;
+      var el = document.createElement("script");
+      var done = false;
+      el.src = base + PAGE_SCRIPTS[i++];
+      el.async = false;
 
-    (function next(i) {
-      if (i >= queue.length) return;
-      var old = queue[i];
-      var s = document.createElement("script");
-      try {
-        for (var k = 0; k < old.attributes.length; k++) {
-          s.setAttribute(old.attributes[k].name, old.attributes[k].value);
-        }
-        s.text = old.textContent;
-        if (s.src) {
-          s.async = false;
-          s.onload = s.onerror = function () { next(i + 1); };
-        }
-        old.parentNode.replaceChild(s, old);
-      } catch (e) {}
-      if (!s.src) next(i + 1);
-    })(0);
+      function step() {
+        if (done) return;
+        done = true;
+        loadNext();
+      }
+
+      el.onload = el.onerror = step;
+      setTimeout(step, 5000);
+      document.head.appendChild(el);
+    })();
   }
 
   tryFrom(0);
