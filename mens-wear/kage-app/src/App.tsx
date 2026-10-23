@@ -42,5 +42,14 @@ export function Scene(props?: Partial<KageConfig>) {
 }
 
 export default function App() {
-  return <Scene />;
+  return (
+    <>
+      <Scene />
+      {/* Shop entry lives in this shell, not in the authored document, so the
+          Kage page itself stays byte-identical to the published source. */}
+      <a className="shop-entry" href="/shop/">
+        Enter the shop <span aria-hidden="true">&#8599;</span>
+      </a>
+    </>
+  );
 }

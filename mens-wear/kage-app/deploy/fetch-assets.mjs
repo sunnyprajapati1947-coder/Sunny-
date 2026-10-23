@@ -1,13 +1,23 @@
-/* Vercel build step: pull the built bundle, the authored Kage document and its
-   assets from the CDN into this deployment, so the page and the iframe it loads
-   are served first-party (same origin). Text files are hash-checked. */
+/* Vercel build step for nawada-menswear-shop.
+   The deployment payload is text-only, so this step materialises the binaries:
+   it pulls the Kage bundle, the authored Kage document with its assets, and the
+   existing shop entry, then hash-checks the files that must stay identical. */
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-const CDN = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v1/mens-wear/kage-app/dist/";
+const KAGE = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v2/mens-wear/kage-app/dist/";
+const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v9/mens-wear/";
 
-const ASSETS = [
+const KAGE_TEXT = [
+  ["assets/index-Czn7Xv1V.js", null],
+  ["assets/index-BneqYYAL.css", null],
+  ["landing-pages/secret-pathways-assets/three.min.js", null],
+  ["landing-pages/secret-pathways-assets/fonts.css", "985f85a904a4096f92c06552b06f42a45973ac004af4780d68f18af65ddcc1b0"],
+  ["landing-pages/kage.html", "c8e06b90397ac246baf0ab6f32f5f6b570acc6fe03c7009f711b579fb72d9f49"],
+];
+
+const KAGE_ASSETS = [
   "landing-pages/secret-pathways-assets/generated/kage-approach.webp",
   "landing-pages/secret-pathways-assets/generated/kage-lantern-court.webp",
   "landing-pages/secret-pathways-assets/generated/kage-moonwater.webp",
@@ -24,34 +34,34 @@ const ASSETS = [
   "landing-pages/secret-pathways-assets/foreground/png/temple-wall.webp",
 ];
 
-const TEXT = [
-  ["assets/index-CHYk7ZYP.js", null],
-  ["assets/index-CkD_5ZM3.css", null],
-  ["landing-pages/secret-pathways-assets/three.min.js", null],
-  ["landing-pages/secret-pathways-assets/fonts.css", "985f85a904a4096f92c06552b06f42a45973ac004af4780d68f18af65ddcc1b0"],
-  ["landing-pages/kage.html", "c8e06b90397ac246baf0ab6f32f5f6b570acc6fe03c7009f711b579fb72d9f49"],
-];
+/* the shop itself, unchanged: its CSS/JS/images already come from the CDN */
+const SHOP_FILES = [["shop/index.html", "live/vercel-entry.html"]];
 
-async function grab(path) {
-  const res = await fetch(CDN + path);
-  if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
+async function grab(url, target) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${target}: HTTP ${res.status}`);
   const body = Buffer.from(await res.arrayBuffer());
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, body);
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, body);
   return body;
 }
 
 let count = 0;
-for (const [path, expected] of TEXT) {
-  const body = await grab(path);
+for (const [path, expected] of KAGE_TEXT) {
+  const body = await grab(KAGE + path, path);
   if (expected) {
     const hash = createHash("sha256").update(body).digest("hex");
     if (hash !== expected) throw new Error(`${path}: hash ${hash} != ${expected}`);
   }
   count += 1;
 }
-for (const path of ASSETS) {
-  await grab(path);
+for (const path of KAGE_ASSETS) {
+  await grab(KAGE + path, path);
   count += 1;
 }
-console.log(`kage: fetched ${count} files, kage.html and fonts.css hash-verified`);
+for (const [target, path] of SHOP_FILES) {
+  const body = await grab(SHOP + path, target);
+  if (body.length < 2000) throw new Error(`${target}: suspiciously small (${body.length} B)`);
+  count += 1;
+}
+console.log(`build: materialised ${count} files (kage.html + fonts.css hash-verified)`);
