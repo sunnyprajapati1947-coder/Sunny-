@@ -8,8 +8,11 @@
   const bookingDate = document.querySelector("#bookingDate");
   const menuToggle = document.querySelector(".menu-toggle");
   const primaryNav = document.querySelector("#primaryNav");
+  const installButton = document.querySelector("#installAppButton");
+  const installHelpDialog = document.querySelector("#installHelpDialog");
   let currentLanguage = "en";
   let lastBookingTrigger = null;
+  let deferredInstallPrompt = null;
 
   function setLanguage(language) {
     currentLanguage = language === "hi" ? "hi" : "en";
@@ -77,13 +80,50 @@
     button.addEventListener("click", () => openBooking(button));
   });
 
-  document.querySelector(".dialog-close")?.addEventListener("click", () => bookingDialog.close());
+  bookingDialog.querySelector(".dialog-close")?.addEventListener("click", () => bookingDialog.close());
   bookingDialog.addEventListener("click", (event) => {
     if (event.target === bookingDialog) bookingDialog.close();
   });
   bookingDialog.addEventListener("close", () => {
     document.body.classList.remove("dialog-open");
     if (lastBookingTrigger && typeof lastBookingTrigger.focus === "function") lastBookingTrigger.focus();
+  });
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+  });
+
+  installButton?.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) {
+      if (installHelpDialog && typeof installHelpDialog.showModal === "function") installHelpDialog.showModal();
+      return;
+    }
+
+    const promptEvent = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    try {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      if (choice?.outcome === "accepted") installButton.hidden = true;
+    } catch (_) {
+      if (installHelpDialog && typeof installHelpDialog.showModal === "function") installHelpDialog.showModal();
+    }
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    if (installButton) installButton.hidden = true;
+  });
+
+  if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true) {
+    if (installButton) installButton.hidden = true;
+  }
+
+  installHelpDialog?.querySelector("#closeInstallHelp")?.addEventListener("click", () => installHelpDialog.close());
+  installHelpDialog?.querySelector("#closeInstallHelpButton")?.addEventListener("click", () => installHelpDialog.close());
+  installHelpDialog?.addEventListener("click", (event) => {
+    if (event.target === installHelpDialog) installHelpDialog.close();
   });
 
   bookingForm.addEventListener("submit", (event) => {
@@ -151,5 +191,13 @@
     revealElements.forEach((element) => revealObserver.observe(element));
   } else {
     revealElements.forEach((element) => element.classList.add("is-visible"));
+  }
+
+  if ("serviceWorker" in navigator && window.isSecureContext) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        // The site remains fully usable when offline storage is unavailable.
+      });
+    });
   }
 })();

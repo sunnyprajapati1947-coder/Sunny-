@@ -2,14 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#171715">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Men's Salon">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="A premium men's salon in Sudama Nagar, Nawada. Book a personal haircut or grooming appointment with Nitish Jatav, a barber with 10 years of experience.">
   <meta property="og:title" content="Men's Salon">
   <meta property="og:description" content="A sharper cut, a calmer hour. Meet Nitish Jatav and book your appointment in Sudama Nagar, Nawada.">
   <meta property="og:type" content="website">
   <title>Men's Salon</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171715'/%3E%3Cpath d='M19 16h7v32h-7zm19 0h7v32h-7zM26 29h12v6H26z' fill='%23c5a36a'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/salon-interior.jpg">
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
@@ -96,7 +101,11 @@
           <span class="hero-footnote-icon" aria-hidden="true">✦</span>
           <span data-en="Personal attention, every appointment." data-hi="हर अपॉइंटमेंट में खास ध्यान।">Personal attention, every appointment.</span>
         </div>
-      </div>
+        <button class="install-app-link" id="installAppButton" type="button" aria-label="Install the salon app" data-en-aria="Install the salon app" data-hi-aria="सलून ऐप इंस्टॉल करें">
+          <span class="install-app-icon" aria-hidden="true">↓</span>
+          <span data-en="Install the salon app" data-hi="सलून ऐप इंस्टॉल करें">Install the salon app</span>
+          <span aria-hidden="true">↗</span>
+        </button>
 
       <div class="hero-visual">
         <img src="assets/salon-interior.jpg" alt="Bright modern salon interior with black barber chairs and marble flooring" fetchpriority="high">
@@ -347,6 +356,23 @@
         <p class="form-footnote" data-en="This is a booking request, not a confirmed appointment. We'll reply to confirm availability."
            data-hi="यह बुकिंग अनुरोध है, पक्का अपॉइंटमेंट नहीं। उपलब्धता की पुष्टि हम जवाब देकर करेंगे।">This is a booking request, not a confirmed appointment. We'll reply to confirm availability.</p>
       </form>
+    </div>
+  </dialog>
+
+  <dialog class="booking-dialog install-help-dialog" id="installHelpDialog" aria-labelledby="installHelpTitle">
+    <div class="dialog-topline"><span data-en="MEN'S SALON · APP" data-hi="मेन्स सलून · ऐप">MEN'S SALON · APP</span><button class="dialog-close" id="closeInstallHelp" type="button" aria-label="Close installation help">×</button></div>
+    <div class="dialog-content">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span><span data-en="YOUR SALON, ONE TAP AWAY" data-hi="आपका सलून, बस एक टैप दूर">YOUR SALON, ONE TAP AWAY</span></p>
+      <h2 id="installHelpTitle"><span data-en="Add the app." data-hi="ऐप इंस्टॉल करें।">Add the app.</span></h2>
+      <p class="dialog-intro" data-en="Install Men's Salon on your home screen for a quick return to services and WhatsApp booking."
+         data-hi="सेवाओं और WhatsApp बुकिंग तक जल्दी पहुँचने के लिए Men's Salon को अपनी होम स्क्रीन पर जोड़ें।">Install Men's Salon on your home screen for a quick return to services and WhatsApp booking.</p>
+      <div class="install-instructions">
+        <p><strong data-en="Android" data-hi="Android">Android</strong><span data-en="Open the browser menu ⋮ and choose “Install app” or “Add to Home screen.”"
+          data-hi="ब्राउज़र मेन्यू ⋮ खोलें और “Install app” या “Add to Home screen” चुनें।">Open the browser menu ⋮ and choose “Install app” or “Add to Home screen.”</span></p>
+        <p><strong data-en="iPhone / iPad" data-hi="iPhone / iPad">iPhone / iPad</strong><span data-en="In Safari, tap Share, then “Add to Home Screen.”"
+          data-hi="Safari में Share टैप करें, फिर “Add to Home Screen” चुनें।">In Safari, tap Share, then “Add to Home Screen.”</span></p>
+      </div>
+      <button class="button button-gold dialog-submit" id="closeInstallHelpButton" type="button"><span data-en="Got it" data-hi="समझ गया">Got it</span><span class="button-arrow" aria-hidden="true">✓</span></button>
     </div>
   </dialog>
 </body>

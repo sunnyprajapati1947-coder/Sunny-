@@ -30,9 +30,16 @@ Then open `http://localhost:4173` in a browser. The site is static and needs no 
 - **Haircut portfolio and reviews:** no client haircut photos or real reviews were provided. The “style” cards are clearly marked as inspiration, and no fake testimonials or star ratings are shown. Add real work/reviews once available.
 - **Address:** currently set to Sudama Nagar, Nawada, Bihar 805110. Confirm the exact map pin / landmark if available.
 
+## App installation
+
+This is an installable **Progressive Web App (PWA)**, not a Play Store APK. Deploy it over HTTPS (Vercel provides HTTPS), then use the in-page **Install the salon app** action. Android browsers can install it directly; on iPhone/iPad, open the site in Safari and choose **Share → Add to Home Screen**. The cached app shell keeps the salon pages available offline; booking still needs an internet connection to open WhatsApp.
+
 ## Main files
 
-- `index.html` — site copy, services, contact details, structured data
+- `index.html` — site copy, services, contact details, structured data, and install help
 - `styles.css` — visual theme and responsive layout
-- `script.js` — language toggle, responsive menu, and WhatsApp booking flow
+- `script.js` — language toggle, responsive menu, WhatsApp booking, PWA install prompt, and service-worker registration
+- `manifest.webmanifest` — PWA name and launch settings
+- `sw.js` — offline app-shell cache
+- `icons/` — install and home-screen icons
 - `assets/` — supplied salon and barber photographs
