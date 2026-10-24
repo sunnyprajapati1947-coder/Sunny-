@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -75,3 +75,24 @@ jobs:
           path: salon-website/android-app/dist/*
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish public Android release
+        if: github.ref == 'refs/heads/arena/01e737c4-sunny' || github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          target_commitish: ${{ github.sha }}
+          name: Men's Salon Android v1.0.0
+          body: |
+            The first downloadable Android app for Men's Salon, Nawada.
+
+            - Includes the bilingual English/Hindi salon site, photos, and gold M branding.
+            - Browsing works offline; WhatsApp booking and sharing require internet access.
+            - Install the debug-signed APK on Android 7.0 or later. This is a sideload build, not a Play Store release.
+            - `SHA256SUMS` contains the APK checksum.
+          files: |
+            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.0.apk
+            salon-website/android-app/dist/SHA256SUMS
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          make_latest: true

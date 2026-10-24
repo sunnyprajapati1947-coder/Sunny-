@@ -49,7 +49,7 @@ The site remains an installable **Progressive Web App (PWA)**. Android browsers 
 - **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.0.apk)** from the public GitHub release.
 - The APK bundles the bilingual site and its salon photos locally, so browsing does not rely on the Vercel website being public. WhatsApp booking and sharing need internet access.
 - Install on Android 7.0 or newer: download the APK, open it from Downloads, allow your browser or file manager to install unknown apps if Android asks, then tap **Install**. This is a debug-signed sideload APK for direct installation/testing, not a Play Store release; installing a later release may require uninstalling an older differently signed build.
-- Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android APK** in GitHub Actions. The workflow bundles the site, builds and verifies the APK, and publishes the APK plus SHA-256 checksum as a workflow artifact; public release downloads are linked above.
+- Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android APK** in GitHub Actions. It bundles the site, builds and verifies the APK, and publishes the APK plus SHA-256 checksum as a workflow artifact. Successful builds from this app branch or `main` also publish/refresh the public `v1.0.0` GitHub release linked above.
 
 To build locally (Node.js 22, Java 21, Android SDK 36):
 
