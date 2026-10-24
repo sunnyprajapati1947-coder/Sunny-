@@ -1,6 +1,6 @@
 {
   "name": "ludo-royal",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Free & open-source Ludo King-style Ludo game (clean-room clone) \u2014 2-4 players, vs Computer AI, Pass N Play, animated dice, capture, safe stars, home race.",
   "type": "module",
   "license": "MIT",
@@ -15,8 +15,10 @@
   "dependencies": {
     "@capacitor/android": "^8.5.3",
     "@capacitor/core": "^8.5.3",
+    "@react-three/fiber": "^8.18.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",

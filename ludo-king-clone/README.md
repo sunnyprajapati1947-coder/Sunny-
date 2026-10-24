@@ -1,96 +1,69 @@
-# 👑 Ludo Royal — Free Open-Source Ludo King-Style Clone
+# 👑 Ludo Royal 3D — Futuristic Ludo (Ludo King Style)
 
-Ek **bilkul free, open-source (MIT)** Ludo game jo dikhne aur khelne mein
-Ludo King jaisa feel deta hai — lekin ye ek **clean-room implementation** hai:
-koi Ludo King code, logo ya asset copy nahi kiya gaya. Sirf Ludo ke
-public-domain rules istemal hue hain. Naam bhi apna hai: **Ludo Royal**.
+A **free, open-source (MIT)** Ludo game in **real 3D** — glossy 3D pawns that
+hop across a floating neon board, a tumbling 3D dice that settles on the rolled
+face, futuristic glass HUD, all in **English**. Clean-room original: no
+Ludo King code, logo or assets were copied — only the public-domain Ludo
+rules, rebuilt bigger and better. (That's also why ours is called *Ludo Royal*.)
 
-![Modes](https://img.shields.io/badge/Modes-Computer%20vs%20AI%20%7C%20Pass%20N%20Play-blue)
-![Players](https://img.shields.io/badge/Players-2--4-green)
+![3D](https://img.shields.io/badge/Engine-Three.js%203D-black)
+![Players](https://img.shields.io/badge/Players-2--4%20•%20AI%20•%20Pass%20%26%20Play-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-## 🎮 Features (Ludo King style)
+## 🎮 What's inside
 
-- 🏠 Ludo King jaisa home screen — Computer / Pass N Play mode, player names
-- 🎲 Animated dice (shake + pips), dice dabane par roll
-- 🔴🟢🟡🔵 15×15 original Ludo board — 4 rang, 4-4 gotiyan (tokens)
-- ⭐ Safe star squares — wahan goti nahi kategi
-- ⚔️ Kata (capture) — dushman ki goti katne par **extra baari**
-- 6️⃣ 6 aane par goti bahar + extra baari, teen 6 = baari khatam
-- 🏁 Home column + beech wala HOME, saari 4 gotiyan = jeet 🏆
-- 🤖 Smart Computer AI (bahar nikalo, kata karo, safe par jao, khatre se bacho)
-- 👥 Pass N Play — 2–4 dost ek hi phone/computer par
-- 🔊 Bina file ke WebAudio sounds (dice, kata, jeet)
-- 📱 Mobile + desktop dono par chalta hai
+- 🎲 **Real 3D dice** (Three.js) — tap ROLL, it tumbles in the air and lands on the exact face
+- ♟️ **Real 3D board & pawns** — lathe-turned glossy pawns, neon-glow floating board,
+  star particles, dynamic lights & shadows, gentle camera drift
+- 🇬🇧 **100% English** interface
+- 🤖 **VS Computer** — smart AI (launches pawns, captures, races home, avoids danger)
+- 👨‍👩‍👧‍👦 **Pass & Play** — 2–4 friends on one phone
+- ⭐ Safe stars, ⚔️ capture = bonus turn, 6 = launch + bonus turn, three 6s = skip
+- 🏠 Animated pawn hops, capture/victory effects, 🔊 sounds + 📳 vibration
+- 📴 Works **fully offline** after install
 
-## 📲 Phone Mein Install Karo (Sabse Aasan)
+## 📲 Install on any phone
 
-### Tarika 1 — APK (Android, direct)
-1. Is repo ke **Releases** mein jao → `Ludo Royal APK` → **LudoRoyal.apk** download karo (phone se)
-2. File kholo → **Install** → "Unknown apps" puche to **Allow** kar do (debug-signed free app hai)
-3. Game khul jayega — bina internet ke bhi chalega! 🎲
+### Option 1 — APK (Android, direct)
+1. Open this repo's **Releases** → `Ludo Royal 3D APK v2.0…` → download **LudoRoyal.apk** (~7 MB)
+2. Tap the file → **Install** → allow "Install unknown apps" if asked (debug-signed free build)
+3. Done — the 👑 icon appears on your home screen!
 
-Har push par GitHub Actions (`.github/workflows/build-ludo-apk.yml`) nayi APK
-khud bana kar Release mein daal deta hai.
+Every push rebuilds the APK automatically via GitHub Actions
+(`../.github/workflows/build-ludo-apk.yml`) and publishes a fresh Release.
 
-### Tarika 2 — PWA (Android + iPhone, bina APK)
-Game ko browser mein kholo → menu se **"APP INSTALL KARO"** button dabao:
-- **Android/Chrome:** ⋮ → *Install app / Add to Home screen*
-- **iPhone/Safari:** Share → *Add to Home Screen*
+### Option 2 — PWA (Android + iPhone)
+Open the game in the browser → **INSTALL THE APP**:
+Android/Chrome ⋮ → *Install app* · iPhone/Safari Share → *Add to Home Screen*.
 
-Home screen par Ludo Royal ka icon aa jayega, full-screen app ki tarah chalega, offline bhi.
-
-### Tarika 3 — Khud APK banao (Android Studio)
+### Option 3 — Build it yourself
 ```bash
-cd ludo-king-clone && npm install && npm run sync && npm run open:android
+cd ludo-king-clone && npm install
+npm run dev          # web version at http://localhost:5173
+npm run sync         # build + sync into the Android (Capacitor) project
+npm run apk:local    # needs Android SDK -> android/app/build/outputs/apk/debug/
 ```
 
-## 🚀 Developer Run
+## 🛠 Tech
 
-```bash
-cd ludo-king-clone
-npm install
-npm run dev     # http://localhost:5173
-```
-
-Build: `npm run build`
-
-## 🔌 REA MCP (morluto/rea) — plugged
-
-Is project mein [REA MCP](https://github.com/morluto/rea) plug kiya gaya hai
-(repo root par `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json` dekho).
-Puri detail: [`REA-MCP.md`](./REA-MCP.md) / [`../docs/REA-MCP-LUDO.md`](../docs/REA-MCP-LUDO.md)
-
-```json
-{ "mcpServers": { "rea": { "command": "npx", "args": ["-y", "rea-agents", "mcp"] } } }
-```
-
-REA se humne apni hi app ko analyze karke verify kiya:
-
-```bash
-npx -y rea-agents doctor
-npx -y rea-agents analyze-javascript-application ./ludo-king-clone --json
-```
-
-> Note: Ludo King khud ek copyrighted commercial app hai — use reverse
-> engineer karke uska code/asset copy karna theek nahi hoga. Isliye humne
-> wohi *gameplay feel* saaf tareeke se dobara banaya hai.
+React 18 • Three.js (@react-three/fiber) • Capacitor 8 (Android) •
+PWA (manifest + service worker) • REA MCP (`../.mcp.json`, see `REA-MCP.md`)
 
 ## 📂 Structure
 
 ```
-ludo-king-clone/
-├── .mcp.json            # REA MCP registration (is folder ke liye)
-├── index.html
-├── src/
-│   ├── App.jsx          # Menu + board + dice UI
-│   ├── styles.css       # Ludo King style theme
-│   └── game/engine.js   # Board path, rules, capture, AI (pure JS, testable)
-└── REA-MCP.md
+src/
+├── App.jsx            # English futuristic HUD, menu, game flow
+├── styles.css         # neon/futuristic theme
+├── game/engine.js     # board path, rules, captures, AI (pure, tested)
+└── three/
+    ├── Board3D.jsx    # 3D board, glossy pawns, lights, particles
+    ├── Dice3D.jsx     # tumbling 3D dice (verified face math)
+    └── boardTexture.js# canvas-drawn board artwork + dice faces
+android/               # Capacitor native project (com.Sunny.ludoroyal)
 ```
 
 ## 📜 License
 
-MIT — free mein use, badlo, baanto. Ludo ke rules public domain hain;
-"Ludo King" naam/logo uski company ka trademark hai, isliye is project ka
-naam **Ludo Royal** rakha hai.
+MIT — free to use, modify and share. "Ludo King" is a trademark of its owner;
+this independent project is named **Ludo Royal**.

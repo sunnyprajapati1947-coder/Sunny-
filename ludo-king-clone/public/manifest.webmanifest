@@ -1,7 +1,7 @@
 {
-  "name": "Ludo Royal — Ludo King Style Game",
+  "name": "Ludo Royal 3D \u2014 Futuristic Ludo Game",
   "short_name": "Ludo Royal",
-  "description": "Free open-source Ludo game. Computer aur doston ke saath khelo, bilkul Ludo King style mein!",
+  "description": "Free futuristic 3D Ludo game. Play vs Computer AI or Pass & Play with friends \u2014 Ludo King style, in real 3D!",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,8 +10,23 @@
   "theme_color": "#1a237e",
   "lang": "en",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
