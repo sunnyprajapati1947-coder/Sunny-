@@ -64,11 +64,15 @@ The site is an installable **Progressive Web App (PWA)**. Android browsers can u
 
 ### Android APK
 
-- **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.3.apk)** from the public GitHub release.
-- Release version: **1.0.3** (version code 4), package `com.menssalon.nawada`.
+- **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.4.apk)** from the public GitHub release.
+- Release version: **1.0.4** (version code 5), package `com.menssalon.nawada`.
 - The APK bundles the bilingual site, privacy policy, and salon photos locally. WhatsApp booking and sharing need internet access.
-- Install on Android 7.0 or newer. If Google Play Protect asks to scan this first-time sideload, choose **Scan app**. This debug-signed build is not a Play Store listing; sideload installation may still display Google's scan recommendation.
-- Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android APK** in GitHub Actions. Successful builds from this app branch or `main` publish the APK and SHA-256 checksum as a GitHub release.
+- Install on Android 7.0 or newer. The debug-signed APK is for direct installation only, not a Play Store upload; follow Google Play Protect's scan recommendation if shown.
+- Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android release** in GitHub Actions. Successful builds from this app branch or `main` publish the APK and SHA-256 checksum as a GitHub release.
+
+### Google Play handoff
+
+A Play Store upload requires a **signed Android App Bundle (AAB)** and an owner-managed Google Play Console account. The workflow builds and attaches a signed AAB only when the repository has the existing upload key configured as these GitHub Actions secrets: `ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, and `ANDROID_UPLOAD_KEY_PASSWORD`. Do not commit a keystore or share its passwords in chat. If this package already exists in Play Console, use its existing upload key; do not replace or regenerate it casually. Play Console submission and store declarations remain owner actions; a GitHub release is not a Play Store listing.
 
 To build locally (Node.js 22, Java 21, Android SDK 36):
 

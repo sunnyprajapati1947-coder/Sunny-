@@ -79,6 +79,12 @@ fastlane/readme.md
 # Version control
 vcs.xml
 
+# Keep Play upload signing material out of Git and build artifacts.
+*.jks
+*.keystore
+*.p12
+*.pfx
+
 # lint
 lint/intermediates/
 lint/generated/

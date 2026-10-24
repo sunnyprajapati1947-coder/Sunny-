@@ -1,4 +1,4 @@
-name: Build Men's Salon Android APK
+name: Build Men's Salon Android release
 
 on:
   push:
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build and verify APK
+    name: Build and verify Android release
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -53,27 +53,84 @@ jobs:
         working-directory: salon-website/android-app
         run: npm run cap:sync
 
-      - name: Build debug APK
+      - name: Configure Play upload signing (optional)
+        id: play-signing
+        shell: bash
+        env:
+          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$ANDROID_UPLOAD_KEYSTORE_BASE64" || -z "$ANDROID_UPLOAD_KEYSTORE_PASSWORD" || -z "$ANDROID_UPLOAD_KEY_ALIAS" || -z "$ANDROID_UPLOAD_KEY_PASSWORD" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "No Play upload key is configured; the sideload APK will still be built." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          keystore="$RUNNER_TEMP/mens-salon-upload.jks"
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          test -s "$keystore"
+          chmod 600 "$keystore"
+          echo "ANDROID_UPLOAD_KEYSTORE_PATH=$keystore" >> "$GITHUB_ENV"
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+          echo "Play upload signing is configured. A signed AAB will be built; Play Console submission remains an owner action." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build signed Play App Bundle
+        if: steps.play-signing.outputs.configured == 'true'
+        working-directory: salon-website/android-app/android
+        env:
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease --no-daemon --stacktrace
+
+      - name: Verify and stage signed Play App Bundle
+        if: steps.play-signing.outputs.configured == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          aab="salon-website/android-app/android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$aab"
+          unzip -tq "$aab"
+          jarsigner -verify -certs "$aab"
+          mkdir -p salon-website/android-app/dist
+          cp "$aab" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.aab
+
+      - name: Build debug APK for direct installation
         working-directory: salon-website/android-app/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Verify APK package and signature
         shell: bash
         run: |
+          set -euo pipefail
           apk="salon-website/android-app/android/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$apk"
           badging=$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk")
-          printf '%s\n' "$badging" | grep -F "package: name='com.menssalon.nawada' versionCode='4' versionName='1.0.3'"
+          printf '%s\n' "$badging" | grep -F "package: name='com.menssalon.nawada' versionCode='5' versionName='1.0.4'"
           mkdir -p salon-website/android-app/dist
-          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.3.apk
-          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.3.apk > SHA256SUMS)
+          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.apk
+          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.4.apk > SHA256SUMS)
 
       - name: Upload APK download
         uses: actions/upload-artifact@v4
         with:
-          name: mens-salon-android-apk
-          path: salon-website/android-app/dist/*
+          name: mens-salon-android-apk-v1.0.4
+          path: |
+            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.apk
+            salon-website/android-app/dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload signed Play App Bundle artifact
+        if: steps.play-signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mens-salon-play-aab-v1.0.4
+          path: salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.aab
           if-no-files-found: error
           retention-days: 30
 
@@ -81,21 +138,27 @@ jobs:
         if: github.ref == 'refs/heads/arena/01e737c4-sunny' || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.3
+          tag_name: v1.0.4
           target_commitish: ${{ github.sha }}
-          name: Men's Salon Android v1.0.3
+          name: Men's Salon Android v1.0.4
           body: |
             Updated Android release for Men's Salon, Nawada.
 
-            - Includes the bilingual English/Hindi salon site, mobile Help & Support scroll fix, privacy policy, supplied shopfront photo, and offline-ready salon imagery.
+            - Includes the bilingual English/Hindi salon site, booking/support tools, privacy policy, supplied shopfront photo, and offline-ready salon imagery.
             - Lists ₹50/₹100 services, updated salon contact details, and six years of barbering experience.
             - WhatsApp booking and sharing require internet access.
-            - Install the debug-signed APK on Android 7.0 or later. This is a sideload build, not a Play Store release; follow the Play Protect scan recommendation.
+            - The debug-signed APK is for direct installation, not a Play Store upload.
+            - A signed Play App Bundle is attached only when the owner-configured upload key is available. Google Play Console submission is not automated by this release.
             - `SHA256SUMS` contains the APK checksum.
-
           files: |
-            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.3.apk
+            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.apk
             salon-website/android-app/dist/SHA256SUMS
           fail_on_unmatched_files: true
           overwrite_files: true
           make_latest: true
+
+      - name: Attach signed Play App Bundle to GitHub release
+        if: steps.play-signing.outputs.configured == 'true' && (github.ref == 'refs/heads/arena/01e737c4-sunny' || github.ref == 'refs/heads/main')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload v1.0.4 salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.aab --clobber
