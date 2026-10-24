@@ -1,0 +1,55 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #080808;
+  color: #f1f5f9;
+  overflow: hidden;
+  font-family: "Onest", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.shader-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #080808;
+}
+
+.shop-entry {
+  position: fixed;
+  z-index: 60;
+  left: clamp(18px, 3vw, 34px);
+  bottom: clamp(18px, 3vw, 30px);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 12px 19px;
+  border: 1px solid rgba(223, 231, 224, 0.22);
+  border-radius: 999px;
+  background: rgba(7, 10, 13, 0.62);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: #dfe7e0;
+  font: 500 11.5px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.32s ease, border-color 0.32s ease, transform 0.32s ease;
+}
+
+.shop-entry:hover,
+.shop-entry:focus-visible {
+  background: #e0231c;
+  border-color: #e0231c;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.shop-entry:focus-visible {
+  outline: 2px solid #dfe7e0;
+  outline-offset: 3px;
+}
