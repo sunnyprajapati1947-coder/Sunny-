@@ -354,3 +354,16 @@
 /* live open/closed badge */
 .open-now { color: #2bd06f !important; }
 .closed-now { color: #ff7a72 !important; }
+
+/* QR card (Visit section) */
+.qr-card {
+  display: flex; gap: 1.1rem; align-items: center; margin-top: 1.8rem;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: rgba(20, 5, 5, 0.6); padding: 1rem 1.2rem;
+}
+.qr-card img { border-radius: 10px; background: #fff; padding: 6px; flex: none; }
+.qr-card div { display: flex; flex-direction: column; gap: 0.3rem; }
+.qr-card strong { color: var(--gold-2); font-size: 1.05rem; }
+.qr-card span { color: var(--muted); font-size: 0.9rem; }
+.qr-card a { font-weight: 600; font-size: 0.92rem; }
+@media (max-width: 520px) { .qr-card { flex-direction: column; text-align: center; } .qr-card div { align-items: center; } }

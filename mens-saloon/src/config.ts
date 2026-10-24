@@ -8,6 +8,7 @@
 
 export const BUSINESS = {
   name: "Men's Saloon",
+  siteUrl: 'https://menssaloon-nawada.vercel.app',
   tagline: 'Premium Haircut | Beard | Styling | Grooming',
   phoneDisplay: '+91 90313 68918',
   phoneE164: '+919031368918',

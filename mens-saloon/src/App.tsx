@@ -553,6 +553,14 @@ export default function App() {
               <li><span>Hours</span><strong>{BUSINESS.hoursLabel}</strong><strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? '● Open Now — walk in!' : '● Closed now — opens 7:00 AM, book for tomorrow'}</strong><small>{BUSINESS.hoursNote}</small></li>
               <li><span>Barber</span><strong>{BARBER.name} · {BARBER.experienceYears} yrs experience</strong></li>
             </ul>
+            <div className="qr-card">
+              <img src="/images/qr-website.png" alt="QR code to open the Men's Saloon Nawada website" width={132} height={132} loading="lazy" />
+              <div>
+                <strong>Scan karke booking karo</strong>
+                <span>Camera se scan karo — website khulegi, price dekho aur WhatsApp par chair book karo. Doston ko share karne ke liye bhi yahi QR hai.</span>
+                <a href={BUSINESS.siteUrl} target="_blank" rel="noreferrer">menssaloon-nawada.vercel.app</a>
+              </div>
+            </div>
             <div className="hero-ctas">
               <a className="btn btn-red" href={BUSINESS.mapsUrl} target="_blank" rel="noreferrer">Get Directions ↗</a>
               <a className="btn btn-ghost" href={`tel:${BUSINESS.phoneE164}`}>☎ Call the Saloon</a>
