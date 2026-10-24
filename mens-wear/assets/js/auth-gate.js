@@ -303,6 +303,43 @@
     }
   }
 
+  /* A calm invitation instead of a wall: the shop opens straight away, and the
+     account is offered in a slim bar the visitor can ignore. The gate itself
+     only appears when they ask for it. */
+  var barEl = null;
+  function promptBar() {
+    if (barEl || document.getElementById("mw-account-bar")) return;
+    barEl = document.createElement("div");
+    barEl.id = "mw-account-bar";
+    barEl.className = "accbar";
+    barEl.innerHTML =
+      '<span class="accbar__text"><b>Keep your size on file</b> — name, number and fit fill themselves into every WhatsApp order.</span>' +
+      '<span class="accbar__acts">' +
+        '<button type="button" class="accbar__go">Create account</button>' +
+        '<button type="button" class="accbar__later" aria-label="Not now">Later</button>' +
+      "</span>";
+    document.body.appendChild(barEl);
+    barEl.querySelector(".accbar__go").addEventListener("click", function () {
+      hideBar();
+      openGate("signup");
+    });
+    barEl.querySelector(".accbar__later").addEventListener("click", function () {
+      try { sessionStorage.setItem(SKIP, "1"); } catch (e) {}
+      hideBar();
+    });
+    window.setTimeout(function () {
+      if (barEl) barEl.classList.add("is-on");
+    }, 2200);
+  }
+
+  function hideBar() {
+    if (!barEl) return;
+    barEl.classList.remove("is-on");
+    var el = barEl;
+    barEl = null;
+    window.setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
+  }
+
   function skipped() {
     try {
       return sessionStorage.getItem(SKIP) === "1";
@@ -639,7 +676,7 @@
       var session = res.data && res.data.session;
       if (!session) {
         publishYou(null);
-        if (!skipped()) window.setTimeout(function () { openGate("signup"); }, 650);
+        if (!skipped()) promptBar();
         return null;
       }
       return loadProfile(session).then(function (profile) {
@@ -650,7 +687,7 @@
       });
     }).catch(function () {
       publishYou(null);
-      if (!skipped()) window.setTimeout(function () { openGate("signup"); }, 650);
+      if (!skipped()) promptBar();
     });
 
     client.auth.onAuthStateChange(function (event, session) {

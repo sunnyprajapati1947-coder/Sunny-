@@ -137,3 +137,14 @@
   .enter__card { max-height: 94vh; }
   .enter__title { font-size: 1.85rem; }
 }
+
+/* ---------- the calm account bar (replaces the auto-opening gate) ---------- */
+.accbar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,24px);z-index:7300;display:flex;align-items:center;gap:14px;max-width:min(680px,calc(100vw - 28px));padding:12px 14px 12px 18px;border-radius:100px;background:rgba(22,22,15,.97);color:#f7f2e8;border:1px solid rgba(200,242,77,.4);box-shadow:0 24px 50px -26px rgba(0,0,0,.8);opacity:0;pointer-events:none;transition:opacity .35s ease,transform .45s cubic-bezier(.16,1,.3,1)}
+.accbar.is-on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.accbar__text{font-family:var(--sans);font-size:.72rem;line-height:1.45;color:rgba(247,242,232,.72)}
+.accbar__text b{color:#f7f2e8;font-weight:600}
+.accbar__acts{display:flex;align-items:center;gap:8px;margin-left:auto}
+.accbar__go{border:0;border-radius:100px;padding:9px 15px;background:#c8f24d;color:#16160f;font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+.accbar__later{border:0;background:transparent;color:rgba(247,242,232,.5);font-family:var(--sans);font-size:.68rem;cursor:pointer;padding:6px}
+@media (max-width:640px){.accbar{border-radius:18px;padding:12px;gap:10px;flex-wrap:wrap}.accbar__acts{margin-left:0;width:100%;justify-content:flex-end}}
+@media (prefers-reduced-motion:reduce){.accbar{transition:none}}
