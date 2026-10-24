@@ -344,3 +344,33 @@ Target ab **Gen-Z** hai. Design sirf "accha dikhna" nahi — neeche wahi soch li
 
 ### Still owner-supplied
 Real MRP, real reviews, real photos, true policies, groom package rate, rent yes/no.
+
+---
+
+## 6. v22 — shop plus (open-source pieces, honestly used)
+
+Flipkart-style shopping layer on top of the same catalogue. Two libraries are
+vendored into `assets/js/vendor/` (no runtime dependency on a CDN we do not
+control, no tracking, no account):
+
+| Library | Version | Licence | Used for | Repo |
+|---|---|---|---|---|
+| Fuse.js (basic build) | 7.0.0 | Apache-2.0 | typo-tolerant instant search over the live catalogue | github.com/krisk/fuse |
+| medium-zoom | 1.1.0 | MIT | tap-to-zoom on the product photo | github.com/francoischalifour/medium-zoom |
+
+Both keep their upstream licence headers in the vendored file. Everything else
+in `assets/js/shop-plus.js` is ours:
+
+- **Search overlay** — search from the header (or press `/`), fuzzy results with
+  photo, price and fabric; recent searches stay on the device. Zero results
+  offers a WhatsApp ask instead of a dead end. Accessories never appear.
+- **Category tiles** — built from the live catalogue, only categories that
+  actually have pieces, tap to filter the real grid (tap again to clear).
+- **Recently viewed** — device-local rail, no server call.
+- **You may also like** — same category first, then nearest price.
+- **Pincode check** in the bag — states the real rule: free inside Nawada
+  district (805xxx), courier outside with the charge confirmed on WhatsApp.
+
+**Not added, on purpose:** unlicensed "Flipkart clone" repos (copyright risk),
+admin/dashboard repos (attack surface on a static site), and any library that
+invents ratings, reviews or discounts.

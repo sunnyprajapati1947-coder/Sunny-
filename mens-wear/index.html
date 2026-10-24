@@ -33,6 +33,7 @@
 <link rel="stylesheet" href="assets/css/fitroom.css">
 <link rel="stylesheet" href="assets/css/owner.css">
 <link rel="stylesheet" href="assets/css/luxe.css">
+<link rel="stylesheet" href="assets/css/shop-plus.css">
 
 <!-- Local business structured data (helps Google trust + map visibility) -->
 <script type="application/ld+json">
@@ -576,6 +577,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         96080&nbsp;87035
       </a>
+      <button class="fp-find" id="fpSearchBtn" type="button" aria-label="Search the drop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <span>Search</span><kbd>/</kbd>
+      </button>
       <button class="header__you" id="youBtn" type="button" aria-label="Your fit profile" hidden>
         <span class="header__youmark" id="youInitials">MW</span>
       </button>
@@ -726,6 +731,8 @@
         </label>
       </div>
     </div>
+
+    <div class="fp-cats" id="fpCats" aria-label="Shop by category" hidden></div>
 
     <div class="shop__bar" data-reveal>
       <div class="filters" role="tablist" aria-label="Filter collection">
@@ -1233,6 +1240,14 @@
   </div>
 </section>
 
+<!-- ================= RECENTLY VIEWED ================= -->
+<section class="section fp-recent-band" id="fpRecentSection" hidden>
+  <div class="wrap">
+    <p class="fp-s__label">Recently viewed · this device only</p>
+    <div class="fp-recent" id="fpRecent"></div>
+  </div>
+</section>
+
 <!-- ================= CRAFT ================= -->
 <!-- ================= GROOM PACKAGE ================= -->
 <section class="section trend" id="trending">
@@ -1722,6 +1737,21 @@
     </div>
   </div>
 </div>
+<!-- ================= SEARCH ================= -->
+<div class="fp-search" id="fpSearch" role="dialog" aria-modal="true" aria-label="Search the drop" hidden>
+  <div class="fp-search__box">
+    <div class="fp-search__bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      <input id="fpSearchInput" type="search" placeholder="Search kurta, sherwani, cargo, hoodie…" aria-label="Search the collection" autocomplete="off" spellcheck="false">
+      <button type="button" data-fp-close>Cancel</button>
+    </div>
+    <div class="fp-search__body">
+      <div id="fpSearches"></div>
+      <div id="fpResults"></div>
+    </div>
+  </div>
+</div>
+
 <aside class="bag" id="bag" role="dialog" aria-modal="true" aria-label="Your bag" hidden>
   <div class="bag__scrim" data-close></div>
   <div class="bag__panel">
@@ -1752,5 +1782,8 @@
 <script src="assets/js/owner.js" defer></script>
 <script src="assets/js/catalog.js" defer></script>
 <script src="assets/js/luxe.js" defer></script>
+<script src="assets/js/vendor/fuse.basic.min.js" defer></script>
+<script src="assets/js/vendor/medium-zoom.min.js" defer></script>
+<script src="assets/js/shop-plus.js" defer></script>
 </body>
 </html>

@@ -1147,6 +1147,28 @@
     sel.addEventListener("change", function () { sortBy = sel.value; applySort(); applyFilters(true); });
   }
 
+  /* ------------------------------------------------ public hooks (shop-plus)
+     The Flipkart-style layer — category tiles, instant search, recently viewed —
+     drives this same filter state instead of keeping a second copy of it. */
+  window.__mwSetCat = function (cat) {
+    activeCat = cat || "all";
+    $$(".filter[data-filter]").forEach(function (f) {
+      var on = f.getAttribute("data-filter") === activeCat;
+      f.classList.toggle("is-active", on);
+      f.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    applyFilters(true);
+  };
+  window.__mwSetQuery = function (q) {
+    query = String(q || "").trim().toLowerCase();
+    if (search) search.value = q || "";
+    applyFilters(true);
+  };
+  window.__mwList = function () {
+    return Object.keys(PRODUCTS).map(function (k) { return PRODUCTS[k]; })
+      .filter(function (p) { return p && p.imgs && p.imgs.length && isClothing(p); });
+  };
+
   /* ----------------------------------------------------------------- sheet */
   var sheet = $("#sheet");
   var info = $("#sheetInfo");
