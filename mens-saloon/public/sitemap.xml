@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://menssaloon-nawada.vercel.app/</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://menssaloon-nawada.vercel.app/images/shop-front.jpg</image:loc>
+      <image:title>Men's Saloon — Premium Haircut, Beard, Styling and Grooming, Sudama Nagar, Nawada</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://menssaloon-nawada.vercel.app/images/nitish-jatav.jpg</image:loc>
+      <image:title>Nitish Jatav — Master Barber at Men's Saloon, Nawada (10 years experience)</image:title>
+    </image:image>
+  </url>
+</urlset>

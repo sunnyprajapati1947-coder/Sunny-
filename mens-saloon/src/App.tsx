@@ -12,6 +12,9 @@ import {
   inr,
   isOpenNow,
   whatsappLink,
+  SERVICE_DESC_HI,
+  FAQ_HI,
+  STYLE_HINT_HI,
 } from './config'
 
 /* ---------- small helpers ---------- */
@@ -43,11 +46,141 @@ type Booking = {
   notes: string
 }
 
+
+/* ---------- English / हिंदी toggle (copied from the earlier salon site) ---------- */
+type Lang = 'en' | 'hi'
+const T = {
+  en: {
+    announce: 'A considered cut. A little time for yourself. — Sudama Nagar, Nawada',
+    navServices: 'Services', navCombos: 'Combos', navBarber: 'Barber', navStyles: 'Styles', navVisit: 'Visit', navFaq: 'FAQ',
+    bookWhats: 'Book on WhatsApp',
+    heroChapter: 'Chapter 00 — The Chair Awaits',
+    heroLede: 'brings a premium, luxury chair experience to',
+    heroLede2: '— precision haircuts, sculpted beards and complete grooming by',
+    heroLede3: 'a master barber with',
+    heroLede4: 'years of craft.',
+    heroBook: '{t.heroBook}', heroWhats: '{t.heroWhats}', heroCall: '{t.heroCall}',
+    stat1: 'Master barber craft', stat2: 'Open daily', stat3: 'Haircut · bajar price', stat4: 'Open · walk-ins welcome',
+    openNow: '● Open Now', closedNow: '● Closed — Opens 7:00 AM',
+    servicesChapter: 'Chapter 01 — Services & Prices',
+    servicesH2: 'Everything a gentleman needs, honestly priced.',
+    bookThis: '{t.bookThis}',
+    combosChapter: 'Chapter 02 — Grooming Rituals', combosH2: 'Combos that save time — and money.',
+    barberChapter: 'Chapter 03 — Meet Your Barber',
+    exp: 'Experience', young: 'Young master barber', personal: 'Personal attention, every chair',
+    bookWith: '{t.bookWith}', chatWhats: '{t.chatWhats}',
+    stylesChapter: 'Style Menu — Pick Your Look', stylesH2: 'Not sure what suits you? Start here.',
+    askStyle: 'Ask for this style →',
+    whyH3: 'Why men choose',
+    bookChapter: 'Chapter 04 — Book Your Chair', bookH2: 'Three steps. Zero waiting.',
+    step1: 'Fill the form', step1d: 'Name, service, date and your preferred time (7 AM – 8:30 PM).',
+    step2: 'Send on WhatsApp', step2d: 'We open WhatsApp with everything pre-filled — just press send.',
+    step3: 'We confirm', step3d: 'replies on WhatsApp to lock your exact time.',
+    youBooking: 'You are booking', withWord: 'with',
+    formH3: 'Book an Appointment', fName: '{t.fName}', fPhone: '{t.fPhone}', fService: '{t.fService}',
+    fDate: '{t.fDate}', fTime: '{t.fTime}', fNotes: '{t.fNotes}',
+    fSubmit: '{t.fSubmit}',
+    fNote: 'No advance payment. Pay at the saloon after your service. Your details open directly in WhatsApp — nothing is stored on a server.',
+    faqChapter: 'Good Questions', faqH2: 'Before you visit',
+    visitChapter: 'Chapter 05 — Visit Us',
+    vAddress: 'Address', vPhone: 'Phone / WhatsApp', vHours: 'Hours', vBarber: 'Barber',
+    vOpen: '● Open Now — walk in!', vClosed: '● Closed now — opens 7:00 AM, book for tomorrow',
+    directions: '{t.directions}', callSaloon: '{t.callSaloon}',
+    call: 'Call', bookChair: 'Book Chair',
+    finderChapter: 'Style Finder — 30 Second Quiz', finderH2: 'Bring an idea. Leave with your style.',
+    finderSub: 'Answer 3 quick questions — we will suggest the look made for you, with its exact bajar price.',
+    ritualChapter: 'The Ritual', ritualH2: 'A little time for yourself.',
+    reviewChapter: 'Your Words Matter', reviewH2: 'A good name is built one visit at a time.',
+    reviewSub: 'Visited us already? A few honest words on Google help every man in Nawada choose with confidence — and help this little shop grow.',
+    reviewGoogle: '⭐ Review us on Google', reviewWhats: 'Send feedback on WhatsApp',
+    reviewNote: 'Real service. Real feedback. No fake reviews — ever.',
+    installChapter: "Men's Saloon · App", installH2: 'Add the app.',
+    installSub: 'Install Men\'s Saloon on your home screen — one tap to prices, directions and WhatsApp booking, even offline.',
+    installBtn: '↓ Install the Salon App',
+    finalChapter: 'Afterlight — Your Chair Is Waiting',
+  },
+  hi: {
+    announce: 'सोच-समझकर किया गया कट। अपने लिए थोड़ा समय। — सुधामा नगर, नवादा',
+    navServices: 'सर्विसेज़', navCombos: 'कॉम्बो', navBarber: 'बार्बर', navStyles: 'स्टाइल', navVisit: 'पता', navFaq: 'सवाल-जवाब',
+    bookWhats: 'WhatsApp पर बुक करो',
+    heroChapter: 'अध्याय 00 — कुर्सी आपका इंतज़ार कर रही है',
+    heroLede: 'प्रीमियम, लग्ज़री कुर्सी का अनुभव लेकर आया है',
+    heroLede2: 'में — सटीक हेयरकट, शेप्ड दाढ़ी और पूरी ग्रूमिंग,',
+    heroLede3: 'के हाथों — मास्टर बार्बर,',
+    heroLede4: 'साल के हुनर के साथ।',
+    heroBook: 'मेरी कुर्सी बुक करो — ₹50 हेयरकट', heroWhats: 'WhatsApp करो', heroCall: '☎ कॉल करो',
+    stat1: 'मास्टर बार्बर का हुनर', stat2: 'रोज़ खुला', stat3: 'हेयरकट · बाज़ार भाव', stat4: 'खुला · वॉक-इन स्वागत है',
+    openNow: '● अभी खुला है', closedNow: '● बंद — सुबह 7 बजे खुलेगा',
+    servicesChapter: 'अध्याय 01 — सर्विसेज़ और दाम',
+    servicesH2: 'एक सज्जन को जो चाहिए, सब कुछ — ईमानदार दाम में।',
+    bookThis: 'यही बुक करो →',
+    combosChapter: 'अध्याय 02 — ग्रूमिंग रिचुअल', combosH2: 'कॉम्बो — समय भी बचे, पैसा भी।',
+    barberChapter: 'अध्याय 03 — अपने बार्बर से मिलिए',
+    exp: 'अनुभव', young: 'युवा मास्टर बार्बर', personal: 'हर कुर्सी पर पर्सनल ध्यान',
+    bookWith: 'नितीश के साथ बुक करो', chatWhats: 'WhatsApp पर बात करो',
+    stylesChapter: 'स्टाइल मेनू — अपना लुक चुनो', stylesH2: 'समझ नहीं आ रहा कौन-सा स्टाइल जँचेगा? यहाँ से शुरू करो।',
+    askStyle: 'यही स्टाइल माँगो →',
+    whyH3: 'लोग क्यों चुनते हैं',
+    bookChapter: 'अध्याय 04 — अपनी कुर्सी बुक करो', bookH2: 'तीन स्टेप। ज़ीरो इंतज़ार।',
+    step1: 'फ़ॉर्म भरो', step1d: 'नाम, सर्विस, तारीख़ और अपना पसंदीदा समय (7 AM – 8:30 PM)।',
+    step2: 'WhatsApp पर भेजो', step2d: 'WhatsApp सब कुछ भरकर खुलेगा — बस Send दबा दो।',
+    step3: 'हम कन्फ़र्म करेंगे', step3d: 'WhatsApp पर जवाब देकर आपका समय पक्का करेगा।',
+    youBooking: 'आप बुक कर रहे हैं', withWord: 'के साथ',
+    formH3: 'Appointment बुक करो', fName: 'आपका नाम *', fPhone: 'मोबाइल नंबर (WhatsApp) *', fService: 'सर्विस *',
+    fDate: 'तारीख़ *', fTime: 'पसंदीदा समय (7 AM – 8:30 PM) *', fNotes: 'कुछ और बताना चाहोगे?',
+    fSubmit: 'WhatsApp पर कन्फ़र्म करो →',
+    fNote: 'कोई एडवांस पेमेंट नहीं। सर्विस के बाद दुकान पर ही पैसे दो। आपकी जानकारी सीधे WhatsApp में खुलती है — किसी सर्वर पर सेव नहीं होती।',
+    faqChapter: 'अच्छे सवाल', faqH2: 'आने से पहले जान लो',
+    visitChapter: 'अध्याय 05 — हमसे मिलिए',
+    vAddress: 'पता', vPhone: 'फ़ोन / WhatsApp', vHours: 'समय', vBarber: 'बार्बर',
+    vOpen: '● अभी खुला है — आ जाओ!', vClosed: '● अभी बंद — सुबह 7 बजे खुलेगा, कल के लिए बुक करो',
+    directions: 'रास्ता देखो ↗', callSaloon: '☎ दुकान पर कॉल करो',
+    call: 'कॉल', bookChair: 'कुर्सी बुक करो',
+    finderChapter: 'स्टाइल फ़ाइंडर — 30 सेकंड क्विज़', finderH2: 'आइडिया लाओ। अपना स्टाइल लेकर जाओ।',
+    finderSub: '3 छोटे सवालों के जवाब दो — हम आपके लिए बना लुक बताएँगे, उसके पक्के बाज़ार दाम के साथ।',
+    ritualChapter: 'द रिचुअल', ritualH2: 'अपने लिए थोड़ा समय।',
+    reviewChapter: 'आपकी बात मायने रखती है', reviewH2: 'अच्छा नाम एक-एक विज़िट से बनता है।',
+    reviewSub: 'हमारे यहाँ आ चुके हो? Google पर कुछ ईमानदार शब्द नवादा के हर आदमी को भरोसे से चुनने में मदद करेंगे — और इस छोटी दुकान को बढ़ने में भी।',
+    reviewGoogle: '⭐ Google पर रिव्यू दो', reviewWhats: 'WhatsApp पर फ़ीडबैक भेजो',
+    reviewNote: 'असली सर्विस। असली फ़ीडबैक। नकली रिव्यू — कभी नहीं।',
+    installChapter: "Men's Saloon · ऐप", installH2: 'ऐप लगा लो।',
+    installSub: 'Men\'s Saloon को होम स्क्रीन पर लगा लो — एक टैप में दाम, रास्ता और WhatsApp बुकिंग, ऑफ़लाइन भी।',
+    installBtn: '↓ सैलून ऐप इंस्टॉल करो',
+    finalChapter: 'आफ़्टरलाइट — आपकी कुर्सी इंतज़ार कर रही है',
+  },
+} as const
+
+type BeforeInstallPromptEvent = Event & { prompt: () => Promise<void> }
+
 /* ---------- app ---------- */
 
 export default function App() {
   useReveal()
 
+  const [lang, setLang] = useState<Lang>(() => {
+    try { return localStorage.getItem('mens-saloon-lang') === 'hi' ? 'hi' : 'en' } catch { return 'en' }
+  })
+  const t = T[lang]
+  useEffect(() => {
+    try { localStorage.setItem('mens-saloon-lang', lang) } catch { /* ignore */ }
+    document.documentElement.lang = lang === 'hi' ? 'hi' : 'en'
+  }, [lang])
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [showInstallHelp, setShowInstallHelp] = useState(false)
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e as BeforeInstallPromptEvent) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+  const [finder, setFinder] = useState<{ vibe?: string; hair?: string; beard?: string }>({})
+  const finderResult = (() => {
+    if (!finder.vibe || !finder.hair || !finder.beard) return null
+    if (finder.vibe === 'party') return { style: 'Pompadour + Glow Facial', serviceId: 'facial', en: 'Volume on top, photo-ready glow — the full shaadi-party look.', hi: 'ऊपर वॉल्यूम, फोटो-रेडी ग्लो — पूरा शादी-पार्टी लुक।' }
+    if (finder.hair === 'curly') return { style: 'Curly Top Fade', serviceId: 'skin-fade', en: 'Your natural curls on top, clean faded sides. Zero daily struggle.', hi: 'ऊपर आपके नैचुरल कर्ल्स, साइड में साफ़ फ़ेड। रोज़ की झंझट ख़त्म।' }
+    if (finder.vibe === 'bold') return { style: finder.beard === 'full' ? 'Skin Fade + Beard Setting' : 'Buzz + Line-Up', serviceId: 'skin-fade', en: 'Sharp, bold and crisp from every angle — low maintenance, full attitude.', hi: 'हर एंगल से शार्प और बोल्ड — कम देखभाल, पूरा एटिट्यूड।' }
+    if (finder.vibe === 'office') return { style: 'Side Part Classic', serviceId: 'signature-haircut', en: 'Neat, respected, ready for anything — the timeless gentleman look.', hi: 'नीट, सम्मानजनक, हर मौके के लिए तैयार — सदाबहार जेंटलमैन लुक।' }
+    return { style: 'Textured Crop', serviceId: 'signature-haircut', en: 'Short, modern and easy — fresh everyday style in 30 minutes.', hi: 'छोटा, मॉडर्न और आसान — 30 मिनट में रोज़ का फ्रेश स्टाइल।' }
+  })()
   const [menuOpen, setMenuOpen] = useState(false)
   const [openNow, setOpenNow] = useState(() => isOpenNow())
   useEffect(() => {
@@ -143,7 +276,11 @@ export default function App() {
   }
 
   return (
-    <div className="site">
+    <div className="site" lang={lang}>
+      <div className="announcement">
+        <span className="announce-dot" aria-hidden="true" />
+        <p>{t.announce}</p>
+      </div>
       {/* ===== top bar ===== */}
       <header className="topbar">
         <a className="brand" href="#top" onClick={(e) => { e.preventDefault(); scrollToId('top') }}>
@@ -156,12 +293,12 @@ export default function App() {
 
         <nav className={`topnav ${menuOpen ? 'open' : ''}`} aria-label="Main">
           {[
-            ['Services', 'services'],
-            ['Combos', 'combos'],
-            ['Barber', 'barber'],
-            ['Styles', 'styles'],
-            ['Visit', 'visit'],
-            ['FAQ', 'faq'],
+            [t.navServices, 'services'],
+            [t.navCombos, 'combos'],
+            [t.navBarber, 'barber'],
+            [t.navStyles, 'styles'],
+            [t.navVisit, 'visit'],
+            [t.navFaq, 'faq'],
           ].map(([label, id]) => (
             <a
               key={id}
@@ -183,8 +320,15 @@ export default function App() {
             target="_blank"
             rel="noreferrer"
           >
-            Book on WhatsApp
+            {t.bookWhats}
           </a>
+          <button
+            className="lang-btn"
+            onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+            aria-label={lang === 'en' ? 'हिंदी में देखो' : 'View in English'}
+          >
+            {lang === 'en' ? 'हिंदी' : 'EN'}
+          </button>
           <button
             className="menu-btn"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
@@ -200,16 +344,15 @@ export default function App() {
         {/* ===== Chapter 00 — salon hero ===== */}
         <section className="hero">
           <div className="hero-copy reveal">
-            <p className="chapter">Chapter 00 — The Chair Awaits</p>
+            <p className="chapter">{t.heroChapter}</p>
             <h1>
               Sharp cuts.
               <br />
               <em>Royal</em> grooming.
             </h1>
             <p className="lede">
-              {BUSINESS.name} brings a premium, luxury chair experience to {BUSINESS.area},{' '}
-              {BUSINESS.city} — precision haircuts, sculpted beards and complete grooming by{' '}
-              {BARBER.name}, a master barber with {BARBER.experienceYears} years of craft.
+              {BUSINESS.name} {t.heroLede} {BUSINESS.area}, {BUSINESS.city}{' '}
+              {t.heroLede2} {BARBER.name} {t.heroLede3} {BARBER.experienceYears} {t.heroLede4}
             </p>
             <div className="hero-ctas">
               <button className="btn btn-red btn-lg" onClick={() => scrollToId('book')}>
@@ -228,10 +371,10 @@ export default function App() {
               </a>
             </div>
             <ul className="hero-stats" aria-label="Highlights">
-              <li><strong>{BARBER.experienceYears} yrs</strong><span>Master barber craft</span></li>
-              <li><strong>7 AM–8:30 PM</strong><span>Open daily</span></li>
-              <li><strong>{inr(50)}</strong><span>Haircut · bajar price</span></li>
-              <li><strong>Daily</strong><span>Open · walk-ins welcome</span></li>
+              <li><strong>{BARBER.experienceYears} yrs</strong><span>{t.stat1}</span></li>
+              <li><strong>7 AM–8:30 PM</strong><span>{t.stat2}</span></li>
+              <li><strong>{inr(50)}</strong><span>{t.stat3}</span></li>
+              <li><strong>Daily</strong><span>{t.stat4}</span></li>
             </ul>
           </div>
 
@@ -244,12 +387,26 @@ export default function App() {
               fetchPriority="high"
             />
             <figcaption className="hero-chip">
-              <strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? '● Open Now' : '● Closed — Opens 7:00 AM'}</strong>
+              <strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? t.openNow : t.closedNow}</strong>
               <span>{BUSINESS.tagline}</span>
               <span>{BUSINESS.addressLine} · {BUSINESS.phoneDisplay}</span>
             </figcaption>
           </figure>
         </section>
+
+
+        {/* ===== luxury ticker ===== */}
+        <div className="ticker" aria-hidden="true">
+          <div className="ticker-track">
+            {[0, 1].map((n) => (
+              <span key={n} className="ticker-run">
+                {['Haircut ₹50', 'Haircut + Shaving ₹100', 'Skin Fade ₹100', 'Open Daily 7 AM – 8:30 PM', 'WhatsApp Booking — No Waiting', 'Facial ₹499 Onwards', 'Nitish Jatav · 10 Years'].map((x) => (
+                  <span key={x} className="ticker-item">{x}<i>✂</i></span>
+                ))}
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* ===== Kage experience (exact ThreeUI component) ===== */}
         <section className="kage-section" id="experience" aria-label="Immersive experience">
@@ -275,8 +432,8 @@ export default function App() {
         {/* ===== Chapter 01 — services ===== */}
         <section className="section" id="services">
           <header className="section-head reveal">
-            <p className="chapter">Chapter 01 — Services & Prices</p>
-            <h2>Everything a gentleman needs, honestly priced.</h2>
+            <p className="chapter">{t.servicesChapter}</p>
+            <h2>{t.servicesH2}</h2>
             <p>
               Starting prices for standard hair — your final price is always confirmed before we
               begin — <strong>haircut sirf {inr(50)}, haircut + shaving {inr(100)}</strong>. Facial & colour are bajar-rate “onwards” by product.
@@ -288,7 +445,7 @@ export default function App() {
               <article className="service-card reveal" key={s.id} style={{ transitionDelay: `${(i % 3) * 70}ms` }}>
                 {s.tag && <span className="tag">{s.tag}</span>}
                 <h3>{s.name}</h3>
-                <p>{s.desc}</p>
+                <p>{lang === 'hi' ? (SERVICE_DESC_HI[s.id] ?? s.desc) : s.desc}</p>
                 <div className="service-meta">
                   <span className="price">{inr(s.price)}{s.priceNote ? <small> {s.priceNote}</small> : null}</span>
                   <span className="duration">◷ {s.duration}</span>
@@ -304,8 +461,8 @@ export default function App() {
         {/* ===== Chapter 02 — combos ===== */}
         <section className="section alt" id="combos">
           <header className="section-head reveal">
-            <p className="chapter">Chapter 02 — Grooming Rituals</p>
-            <h2>Combos that save time — and money.</h2>
+            <p className="chapter">{t.combosChapter}</p>
+            <h2>{t.combosH2}</h2>
           </header>
           <div className="combo-grid">
             {COMBOS.map((c) => (
@@ -316,7 +473,7 @@ export default function App() {
                 <p className="combo-price">{inr(c.price)} <span>· {c.duration}</span></p>
                 <ul>{c.items.map((it) => <li key={it}>{it}</li>)}</ul>
                 <button className="btn btn-red" onClick={() => chooseCombo(c.name, c.price)}>
-                  Book on WhatsApp
+                  {t.bookWhats}
                 </button>
               </article>
             ))}
@@ -339,12 +496,12 @@ export default function App() {
             </figcaption>
           </figure>
           <div className="barber-copy reveal">
-            <p className="chapter">Chapter 03 — Meet Your Barber</p>
+            <p className="chapter">{t.barberChapter}</p>
             <h2>{BARBER.name}</h2>
             <ul className="barber-facts">
-              <li><strong>{BARBER.experienceYears} years</strong><span>Experience</span></li>
-              <li><strong>Age {BARBER.age}</strong><span>Young master barber</span></li>
-              <li><strong>1-to-1</strong><span>Personal attention, every chair</span></li>
+              <li><strong>{BARBER.experienceYears} years</strong><span>{t.exp}</span></li>
+              <li><strong>Age {BARBER.age}</strong><span>{t.young}</span></li>
+              <li><strong>1-to-1</strong><span>{t.personal}</span></li>
             </ul>
             <p>{BARBER.bio}</p>
             <div className="chips" aria-label="Specialities">
@@ -364,11 +521,88 @@ export default function App() {
           </div>
         </section>
 
+
+        {/* ===== The Ritual (copied concept: "A little time for yourself") ===== */}
+        <section className="section ritual">
+          <header className="section-head reveal">
+            <p className="chapter">{t.ritualChapter}</p>
+            <h2>{t.ritualH2}</h2>
+            <p>{lang === 'hi'
+              ? 'ये सिर्फ़ बाल काटना नहीं है — ये दिन भर की भागदौड़ के बीच अपने लिए निकाला हुआ सुकून भरा आधा घंटा है।'
+              : 'This is not just a haircut — it is a calm half-hour you take for yourself in the middle of a rushing day.'}</p>
+          </header>
+          <div className="ritual-grid">
+            {[
+              { n: '01', en: ['The Conversation', 'Sit down, show a photo or just describe it — Nitish settles the style with you before the first cut.'], hi: ['बातचीत', 'बैठो, फ़ोटो दिखाओ या बस बता दो — पहली कैंची से पहले नितीश आपके साथ स्टाइल तय करता है।'] },
+              { n: '02', en: ['The Chair Time', 'A clean chair, fresh towel, sanitised tools — and unhurried, precise work at your pace.'], hi: ['कुर्सी का समय', 'साफ़ कुर्सी, ताज़ा तौलिया, सैनिटाइज़ औज़ार — और आपकी रफ़्तार से बिना जल्दी का सटीक काम।'] },
+              { n: '03', en: ['The Finish', 'Wash, set, final mirror check from every angle — you leave sharper than you arrived.'], hi: ['फ़िनिश', 'वॉश, सेटिंग, हर एंगल से आख़िरी आईना-चेक — आप आए थे उससे ज़्यादा शार्प होकर जाओगे।'] },
+            ].map((r) => (
+              <article className="ritual-card reveal" key={r.n}>
+                <span className="style-no">{r.n}</span>
+                <h3>{lang === 'hi' ? r.hi[0] : r.en[0]}</h3>
+                <p>{lang === 'hi' ? r.hi[1] : r.en[1]}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* ===== Style Finder — curiosity quiz ===== */}
+        <section className="section alt" id="style-finder">
+          <header className="section-head reveal">
+            <p className="chapter">{t.finderChapter}</p>
+            <h2>{t.finderH2}</h2>
+            <p>{t.finderSub}</p>
+          </header>
+          <div className="finder reveal">
+            {([
+              { key: 'vibe', en: '1 · Your vibe today?', hi: '1 · आज का मूड?', opts: [['fresh', '🌿 Fresh & Daily', '🌿 फ्रेश रोज़ वाला'], ['office', '👔 Office / Neat', '👔 ऑफ़िस / नीट'], ['bold', '🔥 Bold Look', '🔥 बोल्ड लुक'], ['party', '✨ Shaadi / Party', '✨ शादी / पार्टी']] },
+              { key: 'hair', en: '2 · Your hair type?', hi: '2 · आपके बाल कैसे हैं?', opts: [['straight', 'Straight', 'सीधे'], ['curly', 'Curly / Wavy', 'घुंघराले / लहरदार'], ['thick', 'Thick & Heavy', 'घने और भारी'], ['thin', 'Thin', 'पतले']] },
+              { key: 'beard', en: '3 · Beard plan?', hi: '3 · दाढ़ी का प्लान?', opts: [['clean', 'Clean Shave', 'क्लीन शेव'], ['trim', 'Light Trim', 'हल्की ट्रिम'], ['full', 'Full Beard Style', 'पूरी दाढ़ी स्टाइल']] },
+            ] as const).map((q) => (
+              <div className="finder-q" key={q.key}>
+                <h3>{lang === 'hi' ? q.hi : q.en}</h3>
+                <div className="finder-opts">
+                  {q.opts.map(([val, en, hi]) => (
+                    <button key={val} type="button"
+                      className={finder[q.key] === val ? 'opt active' : 'opt'}
+                      aria-pressed={finder[q.key] === val}
+                      onClick={() => setFinder((f) => ({ ...f, [q.key]: val }))}>
+                      {lang === 'hi' ? hi : en}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {finderResult ? (
+              <div className="finder-result" role="status">
+                <span>{lang === 'hi' ? 'आपके लिए बना लुक' : 'Your look, found'}</span>
+                <strong>{finderResult.style}</strong>
+                <p>{lang === 'hi' ? finderResult.hi : finderResult.en}</p>
+                <p className="finder-price">
+                  {(SERVICES.find((x) => x.id === finderResult.serviceId)?.name)} · {inr(SERVICES.find((x) => x.id === finderResult.serviceId)?.price ?? 50)}
+                  {SERVICES.find((x) => x.id === finderResult.serviceId)?.priceNote ? ' onwards' : ''}
+                </p>
+                <div className="hero-ctas">
+                  <button className="btn btn-red" onClick={() => chooseService(finderResult.serviceId)}>
+                    {lang === 'hi' ? 'यही लुक बुक करो' : 'Book This Look'}
+                  </button>
+                  <a className="btn btn-wa" target="_blank" rel="noreferrer"
+                    href={quickBook(`Hello Men's Saloon! Style Finder ne mere liye *${finderResult.style}* suggest kiya hai. Mujhe yehi look chahiye — kab aaun?`)}>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <p className="finder-hint">{lang === 'hi' ? '👆 तीनों जवाब चुनो — आपका लुक यहीं दिखेगा…' : '👆 Pick all three — your look appears here…'}</p>
+            )}
+          </div>
+        </section>
+
         {/* ===== style menu ===== */}
         <section className="section alt" id="styles">
           <header className="section-head reveal">
-            <p className="chapter">Style Menu — Pick Your Look</p>
-            <h2>Not sure what suits you? Start here.</h2>
+            <p className="chapter">{t.stylesChapter}</p>
+            <h2>{t.stylesH2}</h2>
             <p>Tap a style to ask for it on WhatsApp — or bring any photo and we will match it to your face shape and hair type.</p>
           </header>
           <div className="style-grid">
@@ -383,14 +617,14 @@ export default function App() {
               >
                 <span className="style-no">{String(i + 1).padStart(2, '0')}</span>
                 <strong>{st.name}</strong>
-                <small>{st.hint}</small>
-                <span className="style-cta">Ask for this style →</span>
+                <small>{lang === 'hi' ? (STYLE_HINT_HI[st.name] ?? st.hint) : st.hint}</small>
+                <span className="style-cta">{t.askStyle}</span>
               </a>
             ))}
           </div>
 
           <div className="why reveal">
-            <h3>Why men choose {BUSINESS.name}</h3>
+            <h3>{t.whyH3} {BUSINESS.name}</h3>
             <ul>
               <li><strong>Clean & hygienic chair</strong><span>Fresh towels and sanitised tools for every customer.</span></li>
               <li><strong>Premium products</strong><span>Quality creams, oils and styling products on our shelf — see them in-store.</span></li>
@@ -403,26 +637,26 @@ export default function App() {
         {/* ===== Chapter 04 — booking ===== */}
         <section className="section booking" id="book">
           <div className="booking-copy reveal">
-            <p className="chapter">Chapter 04 — Book Your Chair</p>
-            <h2>Three steps. Zero waiting.</h2>
+            <p className="chapter">{t.bookChapter}</p>
+            <h2>{t.bookH2}</h2>
             <ol className="steps">
-              <li><strong>Fill the form</strong><span>Name, service, date and your preferred time (7 AM – 8:30 PM).</span></li>
-              <li><strong>Send on WhatsApp</strong><span>We open WhatsApp with everything pre-filled — just press send.</span></li>
-              <li><strong>We confirm</strong><span>{BARBER.name} replies on WhatsApp to lock your exact time.</span></li>
+              <li><strong>{t.step1}</strong><span>{t.step1d}</span></li>
+              <li><strong>{t.step2}</strong><span>{t.step2d}</span></li>
+              <li><strong>{t.step3}</strong><span>{BARBER.name} {t.step3d}</span></li>
             </ol>
             <p className="booking-alt">
               Prefer to talk? <a href={`tel:${BUSINESS.phoneE164}`}>Call {BUSINESS.phoneDisplay}</a> — walk-ins
               are welcome too.
             </p>
             <div className="booking-summary" aria-live="polite">
-              <span>You are booking</span>
+              <span>{t.youBooking}</span>
               <strong>{selectedService.name}</strong>
               <span>{inr(selectedService.price)}{selectedService.priceNote ? ' ' + selectedService.priceNote : ''} · {selectedService.duration} · with {BARBER.name}</span>
             </div>
           </div>
 
           <form className="booking-form reveal" ref={formRef} onSubmit={submitBooking} noValidate>
-            <h3>Book an Appointment</h3>
+            <h3>{t.formH3}</h3>
 
             <label>
               Your name *
@@ -504,8 +738,7 @@ export default function App() {
               Confirm on WhatsApp →
             </button>
             <p className="form-note">
-              No advance payment. Pay at the saloon after your service. Your details open directly in
-              WhatsApp — nothing is stored on a server.
+{t.fNote}
             </p>
             {sent && (
               <p className="success" role="status">
@@ -523,11 +756,11 @@ export default function App() {
         {/* ===== FAQ ===== */}
         <section className="section alt" id="faq">
           <header className="section-head reveal">
-            <p className="chapter">Good Questions</p>
-            <h2>Before you visit</h2>
+            <p className="chapter">{t.faqChapter}</p>
+            <h2>{t.faqH2}</h2>
           </header>
           <div className="faq-list reveal">
-            {FAQS.map((f, i) => (
+            {(lang === 'hi' ? FAQ_HI : FAQS).map((f, i) => (
               <div className={`faq-item ${openFaq === i ? 'open' : ''}`} key={f.q}>
                 <button
                   aria-expanded={openFaq === i}
@@ -545,13 +778,13 @@ export default function App() {
         {/* ===== visit ===== */}
         <section className="section visit" id="visit">
           <div className="reveal">
-            <p className="chapter">Chapter 05 — Visit Us</p>
+            <p className="chapter">{t.visitChapter}</p>
             <h2>{BUSINESS.area}, {BUSINESS.city}</h2>
             <ul className="visit-list">
-              <li><span>Address</span><strong>{BUSINESS.addressLine}</strong></li>
-              <li><span>Phone / WhatsApp</span><a href={`tel:${BUSINESS.phoneE164}`}><strong>{BUSINESS.phoneDisplay}</strong></a></li>
-              <li><span>Hours</span><strong>{BUSINESS.hoursLabel}</strong><strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? '● Open Now — walk in!' : '● Closed now — opens 7:00 AM, book for tomorrow'}</strong><small>{BUSINESS.hoursNote}</small></li>
-              <li><span>Barber</span><strong>{BARBER.name} · {BARBER.experienceYears} yrs experience</strong></li>
+              <li><span>{t.vAddress}</span><strong>{BUSINESS.addressLine}</strong></li>
+              <li><span>{t.vPhone}</span><a href={`tel:${BUSINESS.phoneE164}`}><strong>{BUSINESS.phoneDisplay}</strong></a></li>
+              <li><span>{t.vHours}</span><strong>{BUSINESS.hoursLabel}</strong><strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? t.vOpen : t.vClosed}</strong><small>{BUSINESS.hoursNote}</small></li>
+              <li><span>{t.vBarber}</span><strong>{BARBER.name} · {BARBER.experienceYears} yrs experience</strong></li>
             </ul>
             <div className="qr-card">
               <img src="/images/qr-website.png" alt="QR code to open the Men's Saloon Nawada website" width={132} height={132} loading="lazy" />
@@ -580,12 +813,51 @@ export default function App() {
           </figure>
         </section>
 
+
+        {/* ===== reviews (copied: "A good name is built one visit at a time") ===== */}
+        <section className="section reviews" id="reviews">
+          <div className="reviews-card reveal">
+            <p className="chapter">{t.reviewChapter}</p>
+            <div className="stars" aria-hidden="true">★★★★★</div>
+            <h2>{t.reviewH2}</h2>
+            <p>{t.reviewSub}</p>
+            <div className="hero-ctas center">
+              <a className="btn btn-red" target="_blank" rel="noreferrer"
+                href="https://www.google.com/search?q=Men%27s+Saloon+Sudama+Nagar+Nawada+reviews">{t.reviewGoogle}</a>
+              <a className="btn btn-ghost" target="_blank" rel="noreferrer"
+                href={quickBook("Hello Men's Saloon! Mera feedback: ")}>{t.reviewWhats}</a>
+            </div>
+            <small>✦ {t.reviewNote}</small>
+          </div>
+
+          {/* ===== install app (PWA, copied from the earlier salon site) ===== */}
+          <div className="install-card reveal" id="app">
+            <img src="/icons/icon-192.png" alt="Men's Saloon app icon" width={72} height={72} loading="lazy" />
+            <div>
+              <p className="chapter">{t.installChapter}</p>
+              <h3>{t.installH2}</h3>
+              <p>{t.installSub}</p>
+              <button className="btn btn-red" onClick={async () => {
+                if (installPrompt) { await installPrompt.prompt(); setInstallPrompt(null) }
+                else setShowInstallHelp((v) => !v)
+              }}>{t.installBtn}</button>
+              {showInstallHelp && (
+                <div className="install-help">
+                  <p><strong>Android:</strong> {lang === 'hi' ? 'Browser menu ⋮ खोलो और "Install app" / "Add to Home screen" चुनो।' : 'Open the browser menu ⋮ and choose “Install app” or “Add to Home screen.”'}</p>
+                  <p><strong>iPhone / iPad:</strong> {lang === 'hi' ? 'Safari में Share दबाओ, फिर "Add to Home Screen"।' : 'In Safari, tap Share, then “Add to Home Screen.”'}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
         {/* ===== final CTA ===== */}
         <section className="final-cta reveal">
-          <p className="chapter">Afterlight — Your Chair Is Waiting</p>
-          <h2>Walk in ordinary.<br />Walk out <em>unforgettable</em>.</h2>
+          <p className="chapter">{t.finalChapter}</p>
+          <h2>{lang === 'hi' ? <>आ जाओ।<br />हम आपकी <em>कुर्सी</em> बचा रखेंगे।</> : <>Come on in.<br />We’ll save you a <em>chair</em>.</>}</h2>
+          <p className="final-sub">{lang === 'hi' ? 'आम आओ — अविस्मरणीय बनकर जाओ।' : 'Walk in ordinary. Walk out unforgettable.'}</p>
           <div className="hero-ctas center">
-            <button className="btn btn-red btn-lg" onClick={() => scrollToId('book')}>Book My Chair</button>
+            <button className="btn btn-red btn-lg" onClick={() => scrollToId('book')}>{lang === 'hi' ? 'मेरी कुर्सी बुक करो' : 'Book My Chair'}</button>
             <a className="btn btn-ghost btn-lg" href={`tel:${BUSINESS.phoneE164}`}>☎ {BUSINESS.phoneDisplay}</a>
           </div>
         </section>
@@ -621,7 +893,7 @@ export default function App() {
       </a>
 
       <div className="mobile-bar" aria-label="Quick actions">
-        <a href={`tel:${BUSINESS.phoneE164}`}>☎<span>Call</span></a>
+        <a href={`tel:${BUSINESS.phoneE164}`}>☎<span>{t.call}</span></a>
         <a
           href={quickBook("Hello Men's Saloon! I want to book an appointment.")}
           target="_blank"
@@ -629,7 +901,7 @@ export default function App() {
         >
           ◉<span>WhatsApp</span>
         </a>
-        <button onClick={() => scrollToId('book')}>✂<span>Book Chair</span></button>
+        <button onClick={() => scrollToId('book')}>✂<span>{t.bookChair}</span></button>
       </div>
     </div>
   )

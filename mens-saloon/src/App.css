@@ -367,3 +367,48 @@
 .qr-card span { color: var(--muted); font-size: 0.9rem; }
 .qr-card a { font-weight: 600; font-size: 0.92rem; }
 @media (max-width: 520px) { .qr-card { flex-direction: column; text-align: center; } .qr-card div { align-items: center; } }
+
+/* ===== copied & new: announcement, lang toggle, ticker, ritual, finder, reviews, install ===== */
+.announcement{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.5rem 1rem;text-align:center;background:linear-gradient(90deg,#2a0e0e,#3d0a0a,#2a0e0e);border-bottom:1px solid var(--line);font-size:.85rem;letter-spacing:.04em;color:var(--gold-2)}
+.announce-dot{width:8px;height:8px;border-radius:50%;background:var(--vermilion);flex:none;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,35,28,.55)}50%{box-shadow:0 0 0 7px rgba(224,35,28,0)}}
+.lang-btn{border:1px solid var(--gold);color:var(--gold-2);background:rgba(201,162,75,.1);border-radius:999px;padding:.5rem .95rem;font-weight:700;cursor:pointer;font-size:.9rem}
+.lang-btn:hover{background:var(--maroon);color:#fff}
+.ticker{overflow:hidden;border-block:1px solid var(--line);background:rgba(20,5,5,.65);padding:.85rem 0}
+.ticker-track{display:flex;width:max-content;animation:tick 30s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused}
+.ticker-run{display:inline-flex}
+.ticker-item{display:inline-flex;align-items:center;gap:1.6rem;padding-right:1.6rem;font-family:var(--serif);font-size:1.06rem;letter-spacing:.06em;color:var(--gold-2);white-space:nowrap}
+.ticker-item i{color:var(--vermilion);font-style:normal;font-size:.9rem}
+@keyframes tick{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ticker-track{animation:none}.announce-dot{animation:none}}
+.ritual-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
+.ritual-card{border:1px solid var(--line);border-radius:var(--radius);padding:1.7rem 1.5rem;background:linear-gradient(165deg,var(--panel),var(--bg-2));display:flex;flex-direction:column;gap:.6rem;transition:transform .25s ease,border-color .25s ease}
+.ritual-card:hover{transform:translateY(-5px);border-color:var(--gold)}
+.ritual-card h3{font-size:1.35rem;font-family:var(--serif);color:var(--gold-2)}
+.ritual-card p{color:var(--muted)}
+.finder{border:1px solid var(--gold);border-radius:22px;padding:clamp(1.3rem,3vw,2.2rem);background:linear-gradient(160deg,rgba(201,162,75,.09),rgba(224,35,28,.05));display:grid;gap:1.6rem}
+.finder-q h3{font-size:1.15rem;margin-bottom:.8rem}
+.finder-opts{display:flex;flex-wrap:wrap;gap:.6rem}
+.finder-opts .opt{border:1px solid var(--line);background:rgba(245,237,225,.04);color:var(--ink);border-radius:999px;padding:.62rem 1.15rem;cursor:pointer;font-weight:500;transition:all .18s ease}
+.finder-opts .opt:hover{border-color:var(--gold);transform:translateY(-2px)}
+.finder-opts .opt.active{background:linear-gradient(135deg,#f03329,var(--vermilion));border-color:var(--vermilion);color:#fff;box-shadow:0 10px 24px rgba(224,35,28,.35)}
+.finder-result{border-top:1px dashed var(--line);padding-top:1.4rem;display:grid;gap:.4rem}
+.finder-result span{color:var(--faint);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;font-weight:700}
+.finder-result strong{font-family:var(--serif);font-size:clamp(1.7rem,3.5vw,2.3rem);color:var(--gold-2);line-height:1.1}
+.finder-result p{color:var(--muted)}
+.finder-price{color:var(--gold-2)!important;font-weight:700;font-size:1.1rem}
+.finder-hint{color:var(--faint);border-top:1px dashed var(--line);padding-top:1.2rem}
+.reviews-card{text-align:center;border:1px solid var(--line);border-radius:22px;padding:clamp(1.8rem,4vw,3rem);background:radial-gradient(700px 300px at 50% -10%,rgba(201,162,75,.14),transparent 65%),var(--panel);display:grid;gap:.8rem;justify-items:center}
+.reviews-card .stars{color:var(--gold-2);font-size:1.7rem;letter-spacing:.35em}
+.reviews-card p{color:var(--muted);max-width:40rem}
+.reviews-card small{color:var(--faint)}
+.install-card{margin-top:1.2rem;display:flex;gap:1.4rem;align-items:flex-start;border:1px dashed var(--gold);border-radius:22px;padding:clamp(1.3rem,3vw,2rem);background:rgba(20,5,5,.55)}
+.install-card img{border-radius:18px;flex:none}
+.install-card h3{font-size:1.6rem;margin-bottom:.4rem}
+.install-card p{color:var(--muted);margin-bottom:1rem}
+.install-help{margin-top:1rem;display:grid;gap:.5rem;border-top:1px dashed var(--line);padding-top:1rem}
+.install-help p{margin:0}
+.final-sub{color:var(--muted);margin-top:.9rem;font-size:1.05rem}
+@media (max-width:1020px){.ritual-grid{grid-template-columns:1fr}}
+@media (max-width:640px){.install-card{flex-direction:column}}
