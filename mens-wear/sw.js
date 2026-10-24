@@ -1,7 +1,7 @@
 /* Men's Wear — offline shell.
    The page itself lives on a CDN; this worker keeps the last copy so the app
    opens even on a weak 2G connection or with no data at all. */
-var VERSION = "mw-app-v11";
+var VERSION = "mw-app-v12";
 var SHELL = "/";
 var CDN_HOSTS = ["cdn.jsdelivr.net", "cdn.statically.io", "fonts.googleapis.com", "fonts.gstatic.com"];
 

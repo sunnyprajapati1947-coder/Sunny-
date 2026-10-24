@@ -8,20 +8,22 @@
   window.__mwShellLoaded = true;
 
   var REPO = "sunnyprajapati1947-coder/Sunny-";
-  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v11/mens-wear/live/index.html";
+  var JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v12/mens-wear/live/index.html";
   var ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/live/index.html";
-  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v11/mens-wear/";
+  var BASE_JD = "https://cdn.jsdelivr.net/gh/" + REPO + "@app-v12/mens-wear/";
   var BASE_ST = "https://cdn.statically.io/gh/" + REPO + "app-v2/mens-wear/";
   var MANIFEST = BASE_JD + "manifest.json";
   var APPLE_ICON = BASE_JD + "assets/img/app/apple-touch-icon.png";
   var SOURCES = [[JD, BASE_JD], [ST, BASE_ST]];
-  /* the storefront ships these five files, in this order */
+  /* the storefront ships these files, in this order (accounts last, after
+     shop.js has defined the toast helper) */
   var PAGE_SCRIPTS = [
     "assets/js/main.js",
     "assets/js/drop-data.js",
     "assets/js/shop.js",
     "assets/js/drop.js",
-    "assets/js/welcome.js"
+    "assets/js/vendor/supabase.js",
+    "assets/js/auth-gate.js"
   ];
 
   var boot = document.getElementById("boot");
