@@ -3,3 +3,5 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+# Temporary, generated Vercel deployment payload
+.vercel-upload/

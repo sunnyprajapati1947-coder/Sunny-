@@ -13,6 +13,22 @@
   "theme_color": "#171715",
   "categories": ["lifestyle", "beauty"],
   "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Request an appointment",
+      "short_name": "Book",
+      "description": "Request a visit with Men's Salon on WhatsApp.",
+      "url": "/#visit",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Find your cut",
+      "short_name": "Find a cut",
+      "description": "Explore services and choose a starting point for your look.",
+      "url": "/#services",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

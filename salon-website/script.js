@@ -2,6 +2,7 @@
   "use strict";
 
   const businessPhone = "919608087035";
+  const usualServiceKey = "mens-salon-usual-service";
   const bookingDialog = document.querySelector("#bookingDialog");
   const bookingForm = document.querySelector("#bookingForm");
   const serviceSelect = document.querySelector("#serviceSelect");
@@ -10,9 +11,97 @@
   const primaryNav = document.querySelector("#primaryNav");
   const installButton = document.querySelector("#installAppButton");
   const installHelpDialog = document.querySelector("#installHelpDialog");
+  const styleFinderDialog = document.querySelector("#styleFinderDialog");
+  const finderOptions = document.querySelectorAll("[data-finder-service]");
+  const finderSelection = document.querySelector("#finderSelection");
+  const continueFromFinder = document.querySelector("#continueFromFinder");
+  const visitToolStatus = document.querySelector("#visitToolStatus");
+  const usualServiceStatus = document.querySelector("#usualServiceStatus");
   let currentLanguage = "en";
   let lastBookingTrigger = null;
+  let lastFinderTrigger = null;
+  let selectedFinderService = "";
   let deferredInstallPrompt = null;
+
+  const services = {
+    signature: {
+      en: "Signature haircut",
+      hi: "सिग्नेचर हेयरकट"
+    },
+    fade: {
+      en: "Fade & finish",
+      hi: "फेड और फिनिश"
+    },
+    beard: {
+      en: "Beard shape-up",
+      hi: "बियर्ड शेप-अप"
+    },
+    combo: {
+      en: "Haircut + beard",
+      hi: "हेयरकट + बियर्ड"
+    }
+  };
+
+  function readUsualService() {
+    try {
+      const saved = localStorage.getItem(usualServiceKey) || "";
+      return Object.prototype.hasOwnProperty.call(services, saved) ? saved : "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function writeUsualService(service) {
+    try {
+      if (service) localStorage.setItem(usualServiceKey, service);
+      else localStorage.removeItem(usualServiceKey);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function updateUsualServiceUI() {
+    const savedService = readUsualService();
+    const savedName = document.querySelector("#usualCutName");
+    const savedCard = document.querySelector("#usualCutCard");
+
+    if (savedCard) savedCard.hidden = !savedService;
+    if (savedName) savedName.textContent = savedService ? services[savedService][currentLanguage] : "";
+
+    document.querySelectorAll("[data-toggle-usual]").forEach((button) => {
+      const isSaved = button.dataset.service === savedService;
+      button.classList.toggle("is-saved", isSaved);
+      button.setAttribute("aria-pressed", String(isSaved));
+      const translatedDefault = button.getAttribute(`data-${currentLanguage}-aria`);
+      const savedLabel = currentLanguage === "hi"
+        ? `${services[button.dataset.service]?.hi || "सेवा"} आपकी पसंदीदा सेवा के रूप में सेव है; हटाने के लिए फिर टैप करें।`
+        : `${services[button.dataset.service]?.en || "Service"} is saved as your usual; tap again to remove.`;
+      button.setAttribute("aria-label", isSaved ? savedLabel : translatedDefault || "Save this service as my usual");
+      button.title = isSaved ? savedLabel : translatedDefault || "Save this service as my usual";
+    });
+  }
+
+  function updateFinderSelection() {
+    if (!finderSelection) return;
+
+    if (!selectedFinderService || !services[selectedFinderService]) {
+      finderSelection.textContent = finderSelection.getAttribute(`data-${currentLanguage}`) || "";
+      if (continueFromFinder) continueFromFinder.disabled = true;
+      return;
+    }
+
+    const serviceName = services[selectedFinderService][currentLanguage];
+    finderSelection.textContent = currentLanguage === "hi"
+      ? `अच्छा चुनाव — ${serviceName} बुकिंग के लिए तैयार है। नितीश आपके साथ बारीकियाँ तय करेंगे।`
+      : `Good choice — ${serviceName} is ready to book. Nitish can fine-tune the details with you.`;
+    if (continueFromFinder) continueFromFinder.disabled = false;
+  }
+
+  function syncDialogOpenState() {
+    const open = [bookingDialog, installHelpDialog, styleFinderDialog].some((dialog) => dialog?.open);
+    document.body.classList.toggle("dialog-open", open);
+  }
 
   function setLanguage(language) {
     currentLanguage = language === "hi" ? "hi" : "en";
@@ -36,6 +125,16 @@
       button.setAttribute("aria-pressed", String(isSelected));
     });
 
+    if (menuToggle) {
+      const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
+      menuToggle.setAttribute("aria-label", currentLanguage === "hi"
+        ? (isOpen ? "नेविगेशन बंद करें" : "नेविगेशन खोलें")
+        : (isOpen ? "Close navigation" : "Open navigation"));
+    }
+
+    updateUsualServiceUI();
+    updateFinderSelection();
+
     try {
       localStorage.setItem("mens-salon-language", currentLanguage);
     } catch (_) {
@@ -50,7 +149,9 @@
   try {
     const savedLanguage = localStorage.getItem("mens-salon-language");
     if (savedLanguage === "hi" || savedLanguage === "en") setLanguage(savedLanguage);
+    else updateUsualServiceUI();
   } catch (_) {
+    updateUsualServiceUI();
     // Keep English as the default when browser storage is unavailable.
   }
 
@@ -58,21 +159,21 @@
   const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 10);
-  bookingDate.min = localToday;
+  if (bookingDate) bookingDate.min = localToday;
 
-  function openBooking(trigger) {
+  function openBooking(trigger, serviceOverride = "") {
     if (!bookingDialog || typeof bookingDialog.showModal !== "function") return;
     lastBookingTrigger = trigger || document.activeElement;
 
-    const requestedService = trigger?.dataset?.service;
-    if (requestedService && serviceSelect.querySelector(`option[value="${requestedService}"]`)) {
+    const requestedService = serviceOverride || trigger?.dataset?.service;
+    if (requestedService && services[requestedService] && serviceSelect?.querySelector(`option[value="${requestedService}"]`)) {
       serviceSelect.value = requestedService;
-    } else {
+    } else if (serviceSelect) {
       serviceSelect.value = "";
     }
 
     bookingDialog.showModal();
-    document.body.classList.add("dialog-open");
+    syncDialogOpenState();
     window.setTimeout(() => bookingDialog.querySelector('input[name="name"]')?.focus(), 30);
   }
 
@@ -80,14 +181,69 @@
     button.addEventListener("click", () => openBooking(button));
   });
 
-  bookingDialog.querySelector(".dialog-close")?.addEventListener("click", () => bookingDialog.close());
-  bookingDialog.addEventListener("click", (event) => {
+  bookingDialog?.querySelector(".dialog-close")?.addEventListener("click", () => bookingDialog.close());
+  bookingDialog?.addEventListener("click", (event) => {
     if (event.target === bookingDialog) bookingDialog.close();
   });
-  bookingDialog.addEventListener("close", () => {
-    document.body.classList.remove("dialog-open");
+  bookingDialog?.addEventListener("close", () => {
+    syncDialogOpenState();
     if (lastBookingTrigger && typeof lastBookingTrigger.focus === "function") lastBookingTrigger.focus();
   });
+
+  function openStyleFinder(trigger) {
+    if (!styleFinderDialog || typeof styleFinderDialog.showModal !== "function") return;
+    lastFinderTrigger = trigger || document.activeElement;
+    selectedFinderService = "";
+    finderOptions.forEach((option) => {
+      option.classList.remove("is-selected");
+      option.setAttribute("aria-pressed", "false");
+    });
+    updateFinderSelection();
+    styleFinderDialog.showModal();
+    syncDialogOpenState();
+    window.setTimeout(() => finderOptions[0]?.focus(), 20);
+  }
+
+  document.querySelectorAll("[data-open-style-finder]").forEach((button) => {
+    button.addEventListener("click", () => openStyleFinder(button));
+  });
+
+  finderOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      selectedFinderService = option.dataset.finderService || "";
+      finderOptions.forEach((candidate) => {
+        const isSelected = candidate === option;
+        candidate.classList.toggle("is-selected", isSelected);
+        candidate.setAttribute("aria-pressed", String(isSelected));
+      });
+      updateFinderSelection();
+    });
+  });
+
+  styleFinderDialog?.querySelector("#closeStyleFinder")?.addEventListener("click", () => styleFinderDialog.close());
+  styleFinderDialog?.addEventListener("click", (event) => {
+    if (event.target === styleFinderDialog) styleFinderDialog.close();
+  });
+  styleFinderDialog?.addEventListener("close", () => {
+    syncDialogOpenState();
+    if (!bookingDialog?.open && lastFinderTrigger && typeof lastFinderTrigger.focus === "function") {
+      lastFinderTrigger.focus();
+    }
+  });
+
+  continueFromFinder?.addEventListener("click", () => {
+    if (!selectedFinderService) return;
+    const service = selectedFinderService;
+    const trigger = lastFinderTrigger;
+    styleFinderDialog.close();
+    openBooking(trigger, service);
+  });
+
+  function showInstallHelp() {
+    if (!installHelpDialog || typeof installHelpDialog.showModal !== "function") return;
+    installHelpDialog.showModal();
+    syncDialogOpenState();
+  }
 
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
@@ -96,7 +252,7 @@
 
   installButton?.addEventListener("click", async () => {
     if (!deferredInstallPrompt) {
-      if (installHelpDialog && typeof installHelpDialog.showModal === "function") installHelpDialog.showModal();
+      showInstallHelp();
       return;
     }
 
@@ -107,7 +263,7 @@
       const choice = await promptEvent.userChoice;
       if (choice?.outcome === "accepted") installButton.hidden = true;
     } catch (_) {
-      if (installHelpDialog && typeof installHelpDialog.showModal === "function") installHelpDialog.showModal();
+      showInstallHelp();
     }
   });
 
@@ -125,52 +281,186 @@
   installHelpDialog?.addEventListener("click", (event) => {
     if (event.target === installHelpDialog) installHelpDialog.close();
   });
+  installHelpDialog?.addEventListener("close", syncDialogOpenState);
 
-  bookingForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (!bookingForm.reportValidity()) return;
+  document.querySelectorAll("[data-toggle-usual]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const service = button.dataset.service || "";
+      const savedService = readUsualService();
+      const nextService = savedService === service ? "" : service;
+      if (!writeUsualService(nextService)) {
+        if (usualServiceStatus) {
+          usualServiceStatus.textContent = currentLanguage === "hi"
+            ? "यह ब्राउज़र आपकी पसंद सेव नहीं कर पाया। आप सेवा कार्ड से फिर भी बुक कर सकते हैं।"
+            : "This browser couldn't save your choice. You can still book from the service card.";
+        }
+        return;
+      }
 
-    const formData = new FormData(bookingForm);
-    const name = String(formData.get("name") || "").trim();
-    const service = serviceSelect.options[serviceSelect.selectedIndex]?.textContent.trim() || "";
-    const date = String(formData.get("date") || "");
-    const time = String(formData.get("time") || "");
-    const notes = String(formData.get("notes") || "").trim();
-
-    const message = currentLanguage === "hi"
-      ? [
-          "नमस्ते, मैं Men's Salon में अपॉइंटमेंट का अनुरोध करना चाहता/चाहती हूँ।",
-          `नाम: ${name}`,
-          `सेवा: ${service}`,
-          `पसंदीदा तारीख: ${date}`,
-          `पसंदीदा समय: ${time}`,
-          notes ? `खास बात: ${notes}` : "कोई अतिरिक्त जानकारी नहीं।",
-          "कृपया उपलब्धता और चुनी हुई सेवा की अंतिम कीमत की पुष्टि करें।"
-        ].join("\n")
-      : [
-          "Hi, I'd like to request an appointment at Men's Salon.",
-          `Name: ${name}`,
-          `Service: ${service}`,
-          `Preferred date: ${date}`,
-          `Preferred time: ${time}`,
-          notes ? `Notes: ${notes}` : "No additional notes.",
-          "Please confirm availability and the final price for this service."
-        ].join("\n");
-
-    window.location.href = `https://wa.me/${businessPhone}?text=${encodeURIComponent(message)}`;
+      updateUsualServiceUI();
+      if (usualServiceStatus) {
+        usualServiceStatus.textContent = nextService
+          ? (currentLanguage === "hi" ? `${services[nextService].hi} आपकी इस डिवाइस पर सेव हो गई।` : `${services[nextService].en} is saved on this device.`)
+          : (currentLanguage === "hi" ? "सेव की गई सेवा हटा दी गई।" : "Your saved service was cleared.");
+      }
+    });
   });
+
+  document.querySelector("#bookUsualButton")?.addEventListener("click", (event) => {
+    const savedService = readUsualService();
+    if (savedService) openBooking(event.currentTarget, savedService);
+  });
+
+  document.querySelector("#clearUsualButton")?.addEventListener("click", () => {
+    const wasSaved = Boolean(readUsualService());
+    if (!writeUsualService("")) return;
+    updateUsualServiceUI();
+    if (usualServiceStatus) {
+      usualServiceStatus.textContent = wasSaved
+        ? (currentLanguage === "hi" ? "सेव की गई सेवा हटा दी गई।" : "Your saved service was cleared.")
+        : (currentLanguage === "hi" ? "कोई सेवा सेव नहीं थी।" : "There was no saved service to clear.");
+    }
+  });
+
+  async function copyText(text) {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const temporaryInput = document.createElement("textarea");
+    temporaryInput.value = text;
+    temporaryInput.setAttribute("readonly", "");
+    temporaryInput.style.position = "fixed";
+    temporaryInput.style.top = "-1000px";
+    document.body.appendChild(temporaryInput);
+    temporaryInput.select();
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (_) {
+      copied = false;
+    } finally {
+      temporaryInput.remove();
+    }
+    return copied;
+  }
+
+  function salonUrl() {
+    const url = new URL(window.location.href);
+    url.hash = "";
+    return url.toString();
+  }
+
+  function setVisitToolStatus(message) {
+    if (visitToolStatus) visitToolStatus.textContent = message;
+  }
+
+  document.querySelector("[data-share-salon]")?.addEventListener("click", async () => {
+    const url = salonUrl();
+    const shareData = {
+      title: "Men's Salon · Nawada",
+      text: currentLanguage === "hi"
+        ? "नवादा के सुदामा नगर में Men's Salon — सेवाएँ देखें और WhatsApp पर अपॉइंटमेंट माँगें।"
+        : "Men's Salon in Sudama Nagar, Nawada — explore services and request a WhatsApp appointment.",
+      url
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setVisitToolStatus(currentLanguage === "hi" ? "सलून लिंक शेयर किया गया।" : "Salon link shared.");
+        return;
+      }
+
+      const copied = await copyText(url);
+      setVisitToolStatus(copied
+        ? (currentLanguage === "hi" ? "सलून लिंक क्लिपबोर्ड पर कॉपी हो गया।" : "Salon link copied to your clipboard.")
+        : (currentLanguage === "hi" ? `यह लिंक शेयर करें: ${url}` : `Share this link: ${url}`));
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        setVisitToolStatus(currentLanguage === "hi"
+          ? "शेयर नहीं हो पाया। कृपया पेज का लिंक कॉपी करें।"
+          : "Sharing didn't work. Please copy the page link instead.");
+      }
+    }
+  });
+
+  document.querySelector("[data-save-contact]")?.addEventListener("click", () => {
+    const vCard = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      "FN:Men's Salon - Nawada",
+      "ORG:Men's Salon",
+      "TEL;TYPE=WORK,VOICE:+919608087035",
+      "ADR;TYPE=WORK:;;Sudama Nagar;Nawada;Bihar;805110;India",
+      `URL:${salonUrl()}`,
+      "END:VCARD",
+      ""
+    ].join("\r\n");
+    const contactBlob = new Blob([vCard], { type: "text/vcard;charset=utf-8" });
+    const downloadUrl = URL.createObjectURL(contactBlob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = "mens-salon-nawada.vcf";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1500);
+    setVisitToolStatus(currentLanguage === "hi"
+      ? "कॉन्टैक्ट कार्ड डाउनलोड हुआ — इसे अपने Contacts में इम्पोर्ट करें।"
+      : "Contact card downloaded — import it into your Contacts.");
+  });
+
+  if (bookingForm && serviceSelect) {
+    bookingForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!bookingForm.reportValidity()) return;
+
+      const formData = new FormData(bookingForm);
+      const name = String(formData.get("name") || "").trim();
+      const service = serviceSelect.options[serviceSelect.selectedIndex]?.textContent.trim() || "";
+      const date = String(formData.get("date") || "");
+      const time = String(formData.get("time") || "");
+      const notes = String(formData.get("notes") || "").trim();
+
+      const message = currentLanguage === "hi"
+        ? [
+            "नमस्ते, मैं Men's Salon में अपॉइंटमेंट का अनुरोध करना चाहता/चाहती हूँ।",
+            `नाम: ${name}`,
+            `सेवा: ${service}`,
+            `पसंदीदा तारीख: ${date}`,
+            `पसंदीदा समय: ${time}`,
+            notes ? `खास बात: ${notes}` : "कोई अतिरिक्त जानकारी नहीं।",
+            "कृपया उपलब्धता और चुनी हुई सेवा की अंतिम कीमत की पुष्टि करें।"
+          ].join("\n")
+        : [
+            "Hi, I'd like to request an appointment at Men's Salon.",
+            `Name: ${name}`,
+            `Service: ${service}`,
+            `Preferred date: ${date}`,
+            `Preferred time: ${time}`,
+            notes ? `Notes: ${notes}` : "No additional notes.",
+            "Please confirm availability and the final price for this service."
+          ].join("\n");
+
+      window.location.href = `https://wa.me/${businessPhone}?text=${encodeURIComponent(message)}`;
+    });
+  }
 
   menuToggle?.addEventListener("click", () => {
     const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
     menuToggle.setAttribute("aria-expanded", String(!isOpen));
-    menuToggle.setAttribute("aria-label", isOpen ? "Open navigation" : "Close navigation");
-    primaryNav.classList.toggle("is-open", !isOpen);
+    menuToggle.setAttribute("aria-label", currentLanguage === "hi"
+      ? (isOpen ? "नेविगेशन खोलें" : "नेविगेशन बंद करें")
+      : (isOpen ? "Open navigation" : "Close navigation"));
+    primaryNav?.classList.toggle("is-open", !isOpen);
   });
 
-  primaryNav.querySelectorAll("a").forEach((link) => {
+  primaryNav?.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", () => {
       menuToggle?.setAttribute("aria-expanded", "false");
-      menuToggle?.setAttribute("aria-label", "Open navigation");
+      menuToggle?.setAttribute("aria-label", currentLanguage === "hi" ? "नेविगेशन खोलें" : "Open navigation");
       primaryNav.classList.remove("is-open");
     });
   });

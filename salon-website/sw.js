@@ -1,15 +1,23 @@
-const CACHE_NAME = "mens-salon-shell-v1";
+const CACHE_NAME = "mens-salon-shell-v2";
 const APP_SHELL = [
   "/",
   "/index.html",
   "/styles.css",
   "/script.js",
   "/manifest.webmanifest",
+  "/app-icon.svg",
   "/icons/icon-180.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/assets/salon-interior.jpg",
-  "/assets/nitish-jatav.jpg"
+  "/assets/nitish-jatav.jpg",
+  "/assets/lucide/bookmark-plus.svg",
+  "/assets/lucide/calendar-days.svg",
+  "/assets/lucide/contact-round.svg",
+  "/assets/lucide/map-pin.svg",
+  "/assets/lucide/scissors.svg",
+  "/assets/lucide/share-2.svg",
+  "/assets/lucide/sparkles.svg"
 ];
 
 self.addEventListener("install", (event) => {
