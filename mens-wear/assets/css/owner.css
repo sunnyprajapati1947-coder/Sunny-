@@ -27,3 +27,23 @@
 .ow__empty{font-size:.8rem;color:rgba(22,22,15,.55);padding:20px 4px}
 .ow__foot{margin:0;padding:10px 18px calc(14px + env(safe-area-inset-bottom));font-size:.62rem;color:rgba(22,22,15,.45);border-top:1px solid rgba(22,22,15,.1)}
 @media (max-width:520px){.ow__chip{top:auto;bottom:calc(136px + env(safe-area-inset-bottom))}}
+
+/* owner tabs + live catalogue editor */
+.ow__tabs{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(22,22,15,.1)}
+.ow__tab{border:1px solid rgba(22,22,15,.16);background:transparent;color:#16160f;border-radius:100px;padding:7px 14px;font:inherit;font-size:.72rem;cursor:pointer;display:flex;align-items:center;gap:7px}
+.ow__tab.is-on{background:#16160f;color:#f7f2e8;border-color:#16160f}
+.ow__tab b{display:grid;place-items:center;min-width:16px;height:16px;padding:0 4px;border-radius:100px;background:#c8f24d;color:#16160f;font-size:.6rem}
+.ow__edit{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center;background:#fff;border:1px solid rgba(22,22,15,.12);border-radius:12px;padding:10px 12px}
+.ow__edit.is-hidden{opacity:.45}
+.ow__edit.is-busy{opacity:.6}
+.ow__editname b{display:block;font-size:.78rem}
+.ow__editname span{font-size:.64rem;color:rgba(22,22,15,.5)}
+.ow__price{display:flex;align-items:center;gap:4px;font-size:.78rem}
+.ow__price input{width:70px;border:1px solid rgba(22,22,15,.18);border-radius:8px;padding:5px 7px;font:inherit;font-size:.76rem}
+.ow__editacts{grid-column:1 / -1;display:flex;gap:6px}
+.ow__editacts button{font:inherit;font-size:.68rem;border:1px solid rgba(22,22,15,.16);background:transparent;border-radius:100px;padding:5px 11px;cursor:pointer}
+.ow__editacts button[data-save]{background:#16160f;color:#f7f2e8;border-color:#16160f}
+.ow__editacts button[data-hide]{color:#8a2a20;border-color:rgba(138,42,32,.32)}
+.ow__grouptitle{margin:14px 2px 4px;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(22,22,15,.45)}
+.ow__priceoff{font-size:.78rem;color:rgba(22,22,15,.5)}
+.ow__edit .ow__editacts button[data-show]{background:#c8f24d;border-color:#c8f24d;color:#16160f;font-weight:600}

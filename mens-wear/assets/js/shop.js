@@ -755,6 +755,8 @@
   window.__mwToast = toast;
   window.__MW_PRODUCTS = PRODUCTS;
   window.__MW_BASE = IMG_BASE;
+  window.__mwRebuildGrid = rebuildGrid;
+  window.__mwOpenProduct = function (id) { open(id); };
   window.__MW_CONFIG = CONFIG;
 
   function copy(text) {
@@ -789,18 +791,7 @@
       el.hidden = n === 0;
     });
   }
-  $$("[data-wish]").forEach(function (btn) {
-    paintWish(btn);
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var id = btn.getAttribute("data-wish");
-      var i = saved.indexOf(id);
-      if (i > -1) { saved.splice(i, 1); toast("Removed from wishlist"); }
-      else { saved.push(id); toast("Saved to wishlist"); track("wishlist_add", { id: id }); }
-      store("mw-saved", saved);
-      refreshWish();
-    });
-  });
+  /* wishlist buttons are bound by wireCards() so live cards get them too */
 
   /* ------------------------------------------------------------------ bag */
   var bag = store("mw-bag") || [];
@@ -990,6 +981,85 @@
     track("add_to_bag", { id: p.id, size: size, colour: colour });
     toast(p.name + " added to bag");
     return true;
+  }
+
+  /* ------------------------------------------------- live catalogue rebuild
+     catalog.js merges the owner's live rows into PRODUCTS and then asks for a
+     repaint. Only clothing is rendered: the groom-package accessories live in
+     the package band, not on the shop floor. */
+  var ACCESSORY = /mojari|safa|kalgi|brooch|turban|dupatta|stole/i;
+  var HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+  var WAICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.34M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26 9.89 9.89 0 0 1 16.88-6.99 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88M20.46 3.49A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.69 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41Z"/></svg>';
+
+  function isClothing(p) {
+    return (p.kind || (ACCESSORY.test(p.name || "") ? "accessory" : "clothing")) === "clothing";
+  }
+
+  function cardHTML(p) {
+    var img = imgSrc(p.imgs[0] || "");
+    var cat = p.cat === "wedding" ? "wedding" : p.cat || "drop";
+    var wa = "Hi Men's Wear! I would like the " + p.name + " — please share price and sizes.";
+    var badge = p.badge ? '<span class="pcard__badge">' + p.badge + "</span>" : "";
+    return (
+      '<article class="pcard" data-cat="' + cat + '" data-id="' + p.id + '" data-price="' + p.price +
+        '" data-name="' + String(p.name).replace(/"/g, "&quot;") + '">' +
+        '<div class="pcard__media">' + badge +
+          '<button class="pcard__wish" type="button" data-wish="' + p.id + '" aria-label="Save ' + p.name + ' to wishlist" aria-pressed="false">' + HEART + "</button>" +
+          '<img src="' + img + '" alt="' + p.name + " — " + (p.short || "") + '" width="800" height="1000" loading="lazy" decoding="async">' +
+          '<span class="pcard__hint">Tap for details</span>' +
+        "</div>" +
+        '<div class="pcard__body">' +
+          '<p class="pcard__brand">Men&#39;s Wear <span>· ' + (p.cat === "drop" ? "Drop 01" : (p.occasion || "Nawada")) + "</span></p>" +
+          '<h3 class="pcard__title">' + p.name + "</h3>" +
+          '<div class="pcard__price"><span class="price">' + rupee(p.price) + "</span></div>" +
+          '<p class="pcard__meta">' + (p.short || "") + "</p>" +
+          '<div class="pcard__cta">' +
+            '<button class="btn btn--gold btn--xs" type="button" data-open="' + p.id + '">View details</button>' +
+            '<a class="pcard__wa" href="https://wa.me/' + CONFIG.whatsapp + "?text=" + encodeURIComponent(wa) +
+              '" data-wa="' + wa.replace(/"/g, "&quot;") + '" target="_blank" rel="noopener" aria-label="Order ' + p.name + ' on WhatsApp">' + WAICON + "</a>" +
+          "</div>" +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function rebuildGrid() {
+    if (!grid) return;
+    var all = Object.keys(PRODUCTS).map(function (k) { return PRODUCTS[k]; }).filter(function (p) {
+      return p && p.imgs && p.imgs.length && isClothing(p);
+    });
+    all.sort(function (a, b) { return (a.price || 0) - (b.price || 0); });
+    grid.innerHTML = all.map(cardHTML).join("");
+    cards = $$(".pcard", grid);
+    wireCards();
+    refreshWish();
+    applySort();
+
+    /* Honest counts: a category chip only exists while the drop has pieces in
+       it. When the owner hides the last wedding sherwani the chip goes with it,
+       and an active filter falls back to All instead of showing an empty floor. */
+    var filters = $$(".filter[data-filter]");
+    var live = {};
+    filters.forEach(function (f) {
+      var key = f.getAttribute("data-filter");
+      if (key === "all") return;
+      live[key] = all.filter(function (p) { return (p.cat || "drop") === key; }).length;
+    });
+    filters.forEach(function (f) {
+      var n = f.querySelector("span");
+      var key = f.getAttribute("data-filter");
+      if (n) n.textContent = key === "all" ? all.length : (live[key] || 0);
+      if (key !== "all") f.hidden = !live[key];
+    });
+    if (activeCat !== "all" && !live[activeCat]) {
+      activeCat = "all";
+      filters.forEach(function (f) {
+        var on = f.getAttribute("data-filter") === "all";
+        f.classList.toggle("is-active", on);
+        f.setAttribute("aria-selected", on ? "true" : "false");
+      });
+    }
+    applyFilters(false);
   }
 
   /* --------------------------------------------------------------- filters */
@@ -1264,6 +1334,9 @@
     absorbDrop();
     var p = PRODUCTS[id];
     if (!p || !sheet) return;
+    try {
+      window.dispatchEvent(new CustomEvent("mw:product-open", { detail: { id: id } }));
+    } catch (e) {}
     opts = opts || {};
     var liked = window.__MW_YOU && window.__MW_YOU.size;
     state = {
@@ -1332,20 +1405,41 @@
   }
 
   /* ------------------------------------------------------------- wiring */
-  $$("[data-open]").forEach(function (b) {
-    b.addEventListener("click", function (e) { e.stopPropagation(); open(b.getAttribute("data-open")); });
-  });
-  cards.forEach(function (card) {
-    card.setAttribute("tabindex", "0");
-    card.setAttribute("role", "button");
-    card.addEventListener("click", function (e) {
-      if (e.target.closest("a, button")) return;
-      open(card.getAttribute("data-id"));
+  function wireCards() {
+    cards.forEach(function (card) {
+      if (card.getAttribute("data-wired")) return;
+      card.setAttribute("data-wired", "1");
+      card.setAttribute("tabindex", "0");
+      card.setAttribute("role", "button");
+      card.addEventListener("click", function (e) {
+        if (e.target.closest("a, button")) return;
+        open(card.getAttribute("data-id"));
+      });
+      card.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(card.getAttribute("data-id")); }
+      });
     });
-    card.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(card.getAttribute("data-id")); }
+    $$("[data-open]").forEach(function (b) {
+      if (b.getAttribute("data-wired-btn")) return;
+      b.setAttribute("data-wired-btn", "1");
+      b.addEventListener("click", function (e) { e.stopPropagation(); open(b.getAttribute("data-open")); });
     });
-  });
+    $$("[data-wish]").forEach(function (btn) {
+      if (btn.getAttribute("data-wired-wish")) return;
+      btn.setAttribute("data-wired-wish", "1");
+      paintWish(btn);
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = btn.getAttribute("data-wish");
+        var i = saved.indexOf(id);
+        if (i > -1) { saved.splice(i, 1); toast("Removed from wishlist"); }
+        else { saved.push(id); toast("Saved to wishlist"); track("wishlist_add", { id: id }); }
+        store("mw-saved", saved);
+        refreshWish();
+      });
+    });
+  }
+  wireCards();
 
   $$("[data-close]", sheet || document).forEach(function (b) { b.addEventListener("click", close); });
   $$("[data-close]", bagPanel || document).forEach(function (b) { b.addEventListener("click", closeBag); });

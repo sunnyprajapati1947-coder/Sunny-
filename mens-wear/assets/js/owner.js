@@ -61,6 +61,104 @@
     } catch (e) {}
   }
 
+
+  /* --------------------------------------------------- live catalogue editing
+     Writing here is what makes the shop update itself: the row lands in
+     Supabase, every open shop hears it over realtime, and the card repaints. */
+  var ACCESSORY = /mojari|safa|kalgi|brooch|turban|dupatta|stole/i;
+
+  function row(p, id, off) {
+    var price = off
+      ? '<span class="ow__priceoff">' + rupee(p.price) + "</span>"
+      : '<label class="ow__price">₹<input type="number" min="0" step="50" value="' + (p.price || 0) +
+        '" aria-label="Price for ' + esc(p.name) + '"></label>';
+    var acts = off
+      ? '<button type="button" data-show>Show in shop</button>'
+      : '<button type="button" data-save>Save</button><button type="button" data-hide>Hide</button>';
+    var tag = p.kind === "accessory" || ACCESSORY.test(p.name || "") ? " · accessory, never on the shop floor" : "";
+    return (
+      '<div class="ow__edit' + (off ? " is-hidden" : "") + '" data-id="' + esc(id) + '">' +
+        '<div class="ow__editname"><b>' + esc(p.name) + "</b><span>" + esc(p.cat || "drop") + tag + "</span></div>" +
+        price +
+        '<div class="ow__editacts">' + acts + "</div>" +
+      "</div>"
+    );
+  }
+
+  function paintShop() {
+    var box = panel.querySelector("#owShop");
+    if (!box) return;
+    var list = window.__MW_PRODUCTS || {};
+    var off = window.__MW_HIDDEN || {};
+    var ids = Object.keys(list);
+    if (!ids.length && !Object.keys(off).length) {
+      box.innerHTML = '<p class="ow__empty">The catalogue is still loading.</p>';
+      return;
+    }
+    var html = ids.map(function (id) { return row(list[id], id, false); }).join("");
+    var offIds = Object.keys(off);
+    if (offIds.length) {
+      html += '<p class="ow__grouptitle">Hidden from the shop</p>' +
+        offIds.map(function (id) { return row(off[id], id, true); }).join("");
+    }
+    box.innerHTML = html;
+
+    function send(id, patch, msg, done) {
+      var base = (window.__MW_PRODUCTS || {})[id] || (window.__MW_HIDDEN || {})[id] || {};
+      db.from("products").upsert({
+        id: id,
+        name: base.name,
+        cat: base.cat,
+        price: patch.price == null ? base.price : patch.price,
+        imgs: base.imgs,
+        cols: base.cols,
+        sizes: base.sizes,
+        short: base.short,
+        descr: base.desc,
+        fabric: base.fabric,
+        fit: base.fit,
+        occasion: base.occasion,
+        care: base.care,
+        kind: base.kind || "clothing",
+        badge: base.badge,
+        hidden: !!patch.hidden,
+      }, { onConflict: "id" }).then(function (res) {
+        if (res && res.error) {
+          if (typeof window.__mwToast === "function") window.__mwToast("Could not save: " + res.error.message);
+          return;
+        }
+        if (typeof window.__mwToast === "function") window.__mwToast(msg);
+        if (window.__mwLiveCatalogue) window.__mwLiveCatalogue.reload();
+        if (done) done();
+      });
+    }
+
+    [].slice.call(box.querySelectorAll(".ow__edit")).forEach(function (el) {
+      var id = el.getAttribute("data-id");
+      var input = el.querySelector("input");
+      var save = el.querySelector("[data-save]");
+      if (save) save.addEventListener("click", function () {
+        var price = Math.max(0, parseInt(input.value, 10) || 0);
+        el.classList.add("is-busy");
+        send(id, { price: price }, "Saved — the shop updates itself", function () { el.classList.remove("is-busy"); });
+      });
+      var hide = el.querySelector("[data-hide]");
+      if (hide) hide.addEventListener("click", function () {
+        send(id, { hidden: true }, "Hidden from the shop");
+      });
+      var show = el.querySelector("[data-show]");
+      if (show) show.addEventListener("click", function () {
+        send(id, { hidden: false }, "Back in the shop");
+      });
+    });
+  }
+
+  /* the panel repaints itself whenever the live catalogue changes */
+  document.addEventListener("mw:catalogue", function () {
+    var box = panel && panel.querySelector("#owShop");
+    if (box && !box.hidden) paintShop();
+  });
+
   /* --------------------------------------------------------------- markup */
   function build() {
     chip = document.createElement("button");
@@ -75,15 +173,31 @@
     panel.hidden = true;
     panel.innerHTML =
       '<header class="ow__head">' +
-        '<div><b>Orders</b><span>Live — updates without a refresh</span></div>' +
-        '<button type="button" class="ow__x" aria-label="Close orders">×</button>' +
+        '<div><b>Owner</b><span>Orders · live shop edits</span></div>' +
+        '<button type="button" class="ow__x" aria-label="Close panel">×</button>' +
       "</header>" +
+      '<div class="ow__tabs" role="tablist">' +
+        '<button type="button" class="ow__tab is-on" data-tab="orders" role="tab">Orders <b class="ow__count">0</b></button>' +
+        '<button type="button" class="ow__tab" data-tab="shop" role="tab">Shop</button>' +
+      "</div>" +
       '<div class="ow__list" id="owList"></div>' +
+      '<div class="ow__list ow__shop" id="owShop" hidden></div>' +
       '<p class="ow__foot">Only accounts on the owner list can see this.</p>';
     document.body.appendChild(panel);
 
     chip.addEventListener("click", toggle);
     panel.querySelector(".ow__x").addEventListener("click", toggle);
+    [].slice.call(panel.querySelectorAll("[data-tab]")).forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        var name = tab.getAttribute("data-tab");
+        [].slice.call(panel.querySelectorAll("[data-tab]")).forEach(function (t) {
+          t.classList.toggle("is-on", t === tab);
+        });
+        panel.querySelector("#owList").hidden = name !== "orders";
+        panel.querySelector("#owShop").hidden = name !== "shop";
+        if (name === "shop") paintShop();
+      });
+    });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && open) toggle();
     });

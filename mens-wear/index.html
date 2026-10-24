@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="assets/css/assistant.css">
 <link rel="stylesheet" href="assets/css/fitroom.css">
 <link rel="stylesheet" href="assets/css/owner.css">
+<link rel="stylesheet" href="assets/css/luxe.css">
 
 <!-- Local business structured data (helps Google trust + map visibility) -->
 <script type="application/ld+json">
@@ -705,9 +706,9 @@
   <div class="wrap">
     <div class="shop__head">
       <div class="section-head shop__intro">
-        <p class="eyebrow" data-reveal>Drop 01 · 2026</p>
+        <p class="eyebrow" data-reveal><span class="live-dot" aria-hidden="true"></span> Live drop · updates itself · only clothing</p>
         <h2 class="h2" data-reveal style="--d:.06s">The whole drop, <em>one scroll</em>.</h2>
-        <p class="shop__sub" data-reveal style="--d:.1s">Oversized tees, cargos, varsity and quiet-luxury basics — 26 pieces. Every card carries photo, price, fabric, size and delivery. Tap to open the full detail.</p>
+        <p class="shop__sub" data-reveal style="--d:.1s">Oversized tees, cargos, varsity and quiet-luxury basics — Every piece is clothing — no accessories padding the list. Cards carry photo, price, fabric and sizes, and the drop updates itself the moment the shop changes something.</p>
       </div>
       <div class="shop__tools" data-reveal style="--d:.12s">
         <label class="shop__search">
@@ -1234,6 +1235,23 @@
 
 <!-- ================= CRAFT ================= -->
 <!-- ================= GROOM PACKAGE ================= -->
+<section class="section trend" id="trending">
+  <div class="wrap">
+    <div class="trend__head">
+      <div>
+        <p class="eyebrow" data-reveal>Trending — this week</p>
+        <h2 class="h2" data-reveal style="--d:.06s">What Nawada is <em>actually</em> looking at.</h2>
+        <p class="shop__sub" data-reveal style="--d:.1s" id="trendNote">Ranked by real views from this site. No paid placement, no invented numbers.</p>
+      </div>
+      <a class="trend__all" href="#collection">See the whole drop →</a>
+    </div>
+    <div class="trend__live" id="trendLive" hidden>
+      <div class="trend__rail" id="trendRail"></div>
+    </div>
+    <p class="trend__empty" id="trendEmpty">Trending list appears as people start browsing — every view is counted live, so nothing is faked while it is empty.</p>
+  </div>
+</section>
+
 <section class="section groom" id="groom">
   <div class="wrap">
     <div class="groom__grid">
@@ -1732,5 +1750,7 @@
 <script src="assets/js/assistant.js" defer></script>
 <script src="assets/js/fitroom.js" defer></script>
 <script src="assets/js/owner.js" defer></script>
+<script src="assets/js/catalog.js" defer></script>
+<script src="assets/js/luxe.js" defer></script>
 </body>
 </html>
