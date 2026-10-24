@@ -43,6 +43,24 @@ const KAGE_ASSETS = [
 /* the shop shell becomes the site root; CSS/JS/images load from the CDN tag */
 const SHOP_FILES = [["index.html", "live/vercel-entry.html"]];
 
+/* the Kage shell: mounts the bundle above and gets out of the way */
+const KAGE_SHELL = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#080808" />
+    <title>Kage — Where stillness reveals the unseen</title>
+    <meta name="description" content="Kage — a ThreeUI landing page rendered from the @designcodeio/threeui KageLandingPage component." />
+    <script type="module" src="/assets/index-CD3ZoDni.js"></script>
+    <link rel="stylesheet" href="/assets/index-BneqYYAL.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+`;
+
 /* Kage's own button points at /shop/, and that URL has been shared before, so
    keep it alive as a redirect rather than a second copy of the store. */
 const SHOP_REDIRECT = `<!doctype html>
@@ -94,6 +112,8 @@ for (const [target, path] of SHOP_FILES) {
   count += 1;
 }
 await put(SHOP_REDIRECT, "shop/index.html");
+count += 1;
+await put(KAGE_SHELL, "experience/kage/index.html");
 count += 1;
 
 console.log(`build: materialised ${count} files (kage.html + fonts.css hash-verified)`);
