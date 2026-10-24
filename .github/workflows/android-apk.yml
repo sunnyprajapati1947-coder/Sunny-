@@ -1,0 +1,81 @@
+name: Build Men's Salon Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - "arena/**"
+    paths:
+      - ".github/workflows/android-apk.yml"
+      - "salon-website/**"
+      - ".gitignore"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    name: Build and verify APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: salon-website/android-app/package-lock.json
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 36
+        run: |
+          set +o pipefail
+          yes | sdkmanager --licenses >/dev/null
+          set -o pipefail
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Capacitor dependencies
+        working-directory: salon-website/android-app
+        run: npm ci --no-audit --no-fund
+
+      - name: Bundle the bilingual salon website into the app
+        working-directory: salon-website/android-app
+        run: npm run cap:sync
+
+      - name: Build debug APK
+        working-directory: salon-website/android-app/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK package and signature
+        shell: bash
+        run: |
+          apk="salon-website/android-app/android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" | grep -F "package: name='com.menssalon.nawada'"
+          mkdir -p salon-website/android-app/dist
+          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.0.apk
+          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.0.apk > SHA256SUMS)
+
+      - name: Upload APK download
+        uses: actions/upload-artifact@v4
+        with:
+          name: mens-salon-android-apk
+          path: salon-website/android-app/dist/*
+          if-no-files-found: error
+          retention-days: 30

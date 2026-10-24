@@ -5,3 +5,13 @@ youtube/projects/
 youtube/*.json
 # Temporary, generated Vercel deployment payload
 .vercel-upload/
+
+# Men's Salon Android wrapper build outputs
+salon-website/android-app/node_modules/
+salon-website/android-app/www/
+salon-website/android-app/android/.gradle/
+salon-website/android-app/android/local.properties
+salon-website/android-app/android/**/build/
+salon-website/android-app/android/app/src/main/assets/public/
+salon-website/android-app/android/capacitor-cordova-android-plugins/
+salon-website/android-app/dist/

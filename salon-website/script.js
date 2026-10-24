@@ -272,7 +272,7 @@
     if (installButton) installButton.hidden = true;
   });
 
-  if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true) {
+  if (window.SALON_NATIVE_APP || window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true) {
     if (installButton) installButton.hidden = true;
   }
 
@@ -347,6 +347,7 @@
   }
 
   function salonUrl() {
+    if (window.SALON_NATIVE_APP) return `https://wa.me/${businessPhone}`;
     const url = new URL(window.location.href);
     url.hash = "";
     return url.toString();
@@ -367,6 +368,12 @@
     };
 
     try {
+      if (window.SALON_NATIVE_APP && window.SalonAndroid?.share) {
+        window.SalonAndroid.share(shareData.title, shareData.text, shareData.url);
+        setVisitToolStatus(currentLanguage === "hi" ? "शेयर विकल्प खुल गया।" : "Share options opened.");
+        return;
+      }
+
       if (navigator.share) {
         await navigator.share(shareData);
         setVisitToolStatus(currentLanguage === "hi" ? "सलून लिंक शेयर किया गया।" : "Salon link shared.");
@@ -387,6 +394,12 @@
   });
 
   document.querySelector("[data-save-contact]")?.addEventListener("click", () => {
+    if (window.SALON_NATIVE_APP && window.SalonAndroid?.saveContact) {
+      window.SalonAndroid.saveContact();
+      setVisitToolStatus(currentLanguage === "hi" ? "कॉन्टैक्ट जोड़ने का फ़ॉर्म खुल गया।" : "The contact form opened.");
+      return;
+    }
+
     const vCard = [
       "BEGIN:VCARD",
       "VERSION:3.0",
@@ -483,7 +496,7 @@
     revealElements.forEach((element) => element.classList.add("is-visible"));
   }
 
-  if ("serviceWorker" in navigator && window.isSecureContext) {
+  if (!window.SALON_NATIVE_APP && "serviceWorker" in navigator && window.isSecureContext) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js").catch(() => {
         // The site remains fully usable when offline storage is unavailable.

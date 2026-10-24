@@ -1,0 +1,13 @@
+{
+  "appId": "com.menssalon.nawada",
+  "appName": "Men's Salon",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

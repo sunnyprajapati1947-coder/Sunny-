@@ -1,0 +1,18 @@
+{
+  "name": "mens-salon-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Android APK wrapper for the bilingual Men's Salon website",
+  "scripts": {
+    "prepare:web": "python3 prepare-web.py",
+    "cap:sync": "npm run prepare:web && cap sync android",
+    "android:debug": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

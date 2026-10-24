@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Men\'s Salon</string>
+    <string name="title_activity_main">Men\'s Salon</string>
+    <string name="package_name">com.menssalon.nawada</string>
+    <string name="custom_url_scheme">com.menssalon.nawada</string>
+</resources>

@@ -42,7 +42,24 @@ Then open `http://localhost:4173` in a browser. The site is static and needs no 
 
 ## App installation and deployment
 
-This is an installable **Progressive Web App (PWA)**, not a Play Store APK. Android browsers can install it from the in-page **Install the salon app** action; on iPhone/iPad, open it in Safari and choose **Share → Add to Home Screen**. The app shell and, after caching, the two salon photos are available offline; booking and sharing still need an internet connection. The Vercel site is uploaded directly from the static files because Vercel's GitHub connection is not enabled.
+The site remains an installable **Progressive Web App (PWA)**. Android browsers can install it from the in-page **Install the salon app** action; on iPhone/iPad, open it in Safari and choose **Share → Add to Home Screen**. Its app shell and, after caching, the two salon photos are available offline; booking and sharing still need an internet connection. The Vercel site is uploaded directly from the static files because Vercel's GitHub connection is not enabled.
+
+### Android APK
+
+- **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.0.apk)** from the public GitHub release.
+- The APK bundles the bilingual site and its salon photos locally, so browsing does not rely on the Vercel website being public. WhatsApp booking and sharing need internet access.
+- Install on Android 7.0 or newer: download the APK, open it from Downloads, allow your browser or file manager to install unknown apps if Android asks, then tap **Install**. This is a debug-signed sideload APK for direct installation/testing, not a Play Store release; installing a later release may require uninstalling an older differently signed build.
+- Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android APK** in GitHub Actions. The workflow bundles the site, builds and verifies the APK, and publishes the APK plus SHA-256 checksum as a workflow artifact; public release downloads are linked above.
+
+To build locally (Node.js 22, Java 21, Android SDK 36):
+
+```bash
+cd salon-website/android-app
+npm ci
+npm run android:debug
+```
+
+The debug APK is created at `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 After the source commit is pushed, prepare the direct Vercel bundle with:
 
@@ -63,3 +80,5 @@ This writes a temporary, ignored `.vercel-upload/` directory. It bundles CSS/Jav
 - `icons/` and `app-icon.svg` — install and home-screen icons
 - `assets/` — supplied salon/barber photos and locally bundled Lucide SVG icons
 - `THIRD_PARTY_NOTICES.md` — source and license notice for the icon assets
+- `android-app/` — Capacitor Android project, native launcher/splash branding, local web-asset packaging, and the native share/contact bridge
+- `.github/workflows/android-apk.yml` — automated Android SDK build, APK verification, and downloadable workflow artifact
