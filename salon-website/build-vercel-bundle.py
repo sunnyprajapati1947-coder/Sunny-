@@ -116,10 +116,10 @@ def make_document_shell(document_html: str, revision: str) -> str:
   <meta name='theme-color' content='#171715'>
   <meta name='description' content='Premium men’s grooming and WhatsApp booking in Sudama Nagar, Nawada.'>
   <meta property='og:title' content='Men&#39;s Salon'>
-  <meta property='og:description' content='A sharper cut, a calmer hour. Meet Nitish Jatav in Nawada.'>
+  <meta property='og:description' content='A sharper cut, a calmer hour. Meet Nitish Jatav, a barber with six years of experience, in Nawada.'>
   <meta property='og:type' content='website'>
   <meta property='og:url' content='https://mens-salon-ten.vercel.app/'>
-  <meta property='og:image' content='https://raw.githubusercontent.com/{REPOSITORY}/{revision}/salon-website/assets/salon-interior.jpg'>
+  <meta property='og:image' content='https://raw.githubusercontent.com/{REPOSITORY}/{revision}/salon-website/assets/shop-front.jpg'>
   <meta name='twitter:card' content='summary_large_image'>
   <link rel='manifest' href='/manifest.webmanifest'>
   <link rel='apple-touch-icon' href='/app-icon.svg'>
@@ -154,7 +154,7 @@ def make_document_shell(document_html: str, revision: str) -> str:
 
 def make_service_worker(photo_urls: list[str]) -> str:
     urls = json.dumps(photo_urls, separators=(",", ":"))
-    return f'''const CACHE_NAME = "mens-salon-shell-v5";
+    return f'''const CACHE_NAME = "mens-salon-shell-v6";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/app-icon.svg", "/assets/brand-mark.svg"];
 const REMOTE_MEDIA = {urls};
 
@@ -231,17 +231,17 @@ self.addEventListener("fetch", (event) => {{
 
 def main() -> None:
     revision = git_revision()
-    for photo in ("salon-interior.jpg", "nitish-jatav.jpg"):
+    for photo in ("salon-interior.jpg", "nitish-jatav.jpg", "shop-front.jpg"):
         ensure_committed_asset(revision, f"salon-website/assets/{photo}")
 
     asset_base = f"https://raw.githubusercontent.com/{REPOSITORY}/{revision}/salon-website/assets"
-    photo_urls = [f"{asset_base}/{name}" for name in ("salon-interior.jpg", "nitish-jatav.jpg")]
+    photo_urls = [f"{asset_base}/{name}" for name in ("salon-interior.jpg", "nitish-jatav.jpg", "shop-front.jpg")]
     html = (SITE_DIR / "index.html").read_text(encoding="utf-8")
 
     removals = (
         '  <link rel="stylesheet" href="styles.css">\n',
         '  <script defer src="script.js"></script>\n',
-        '  <link rel="preload" as="image" href="assets/salon-interior.jpg">\n',
+        '  <link rel="preload" as="image" href="assets/shop-front.jpg">\n',
     )
     for markup in removals:
         if html.count(markup) != 1:
@@ -250,10 +250,10 @@ def main() -> None:
 
     html = html.replace('href="icons/icon-180.png"', 'href="/app-icon.svg"', 1)
     html = html.replace(
-        f"https://raw.githubusercontent.com/{REPOSITORY}/{BRANCH_PATH}/salon-website/assets/salon-interior.jpg",
-        f"{asset_base}/salon-interior.jpg",
+        f"https://raw.githubusercontent.com/{REPOSITORY}/{BRANCH_PATH}/salon-website/assets/shop-front.jpg",
+        f"{asset_base}/shop-front.jpg",
     )
-    for name, url in zip(("salon-interior.jpg", "nitish-jatav.jpg"), photo_urls):
+    for name, url in zip(("salon-interior.jpg", "nitish-jatav.jpg", "shop-front.jpg"), photo_urls):
         html = html.replace(f'src="assets/{name}"', f'src="{url}"')
 
     def inline_icon(match: re.Match[str]) -> str:

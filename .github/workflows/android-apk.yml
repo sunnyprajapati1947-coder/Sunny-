@@ -64,10 +64,10 @@ jobs:
           test -s "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$apk"
           badging=$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk")
-          printf '%s\n' "$badging" | grep -F "package: name='com.menssalon.nawada' versionCode='2' versionName='1.0.1'"
+          printf '%s\n' "$badging" | grep -F "package: name='com.menssalon.nawada' versionCode='3' versionName='1.0.2'"
           mkdir -p salon-website/android-app/dist
-          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.1.apk
-          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.1.apk > SHA256SUMS)
+          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.2.apk
+          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.2.apk > SHA256SUMS)
 
       - name: Upload APK download
         uses: actions/upload-artifact@v4
@@ -81,19 +81,20 @@ jobs:
         if: github.ref == 'refs/heads/arena/01e737c4-sunny' || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.1
+          tag_name: v1.0.2
           target_commitish: ${{ github.sha }}
-          name: Men's Salon Android v1.0.1
+          name: Men's Salon Android v1.0.2
           body: |
             Updated Android release for Men's Salon, Nawada.
 
-            - Includes the bilingual English/Hindi salon site, new barber-shears branding, and the Help & Support panel.
-            - Browsing works offline; WhatsApp booking and sharing require internet access.
+            - Includes the bilingual English/Hindi salon site, the supplied shopfront photo, and offline-ready salon imagery.
+            - Lists ₹50/₹100 services, updated salon contact details, and six years of barbering experience.
+            - WhatsApp booking and sharing require internet access.
             - Install the debug-signed APK on Android 7.0 or later. This is a sideload build, not a Play Store release.
             - `SHA256SUMS` contains the APK checksum.
 
           files: |
-            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.1.apk
+            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.2.apk
             salon-website/android-app/dist/SHA256SUMS
           fail_on_unmatched_files: true
           overwrite_files: true

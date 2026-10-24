@@ -1,4 +1,4 @@
-const CACHE_NAME = "mens-salon-shell-v3";
+const CACHE_NAME = "mens-salon-shell-v4";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -11,6 +11,7 @@ const APP_SHELL = [
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/assets/salon-interior.jpg",
+  "/assets/shop-front.jpg",
   "/assets/nitish-jatav.jpg",
   "/assets/lucide/bookmark-plus.svg",
   "/assets/lucide/calendar-days.svg",

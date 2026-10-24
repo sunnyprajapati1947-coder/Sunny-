@@ -21,7 +21,7 @@ public final class SalonAndroidBridge {
             Intent intent = new Intent(Intent.ACTION_INSERT);
             intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
             intent.putExtra(ContactsContract.Intents.Insert.NAME, "Men's Salon - Nawada");
-            intent.putExtra(ContactsContract.Intents.Insert.PHONE, "+91 96080 87035");
+            intent.putExtra(ContactsContract.Intents.Insert.PHONE, "+91 90313 68918");
             intent.putExtra(
                 ContactsContract.Intents.Insert.PHONE_TYPE,
                 ContactsContract.CommonDataKinds.Phone.TYPE_WORK
@@ -36,7 +36,7 @@ public final class SalonAndroidBridge {
             );
             intent.putExtra(
                 ContactsContract.Intents.Insert.NOTES,
-                "Barber: Nitish Jatav. WhatsApp booking: https://wa.me/919608087035"
+                "Barber: Nitish Jatav. WhatsApp booking: https://wa.me/919031368918"
             );
             try {
                 activity.startActivity(intent);

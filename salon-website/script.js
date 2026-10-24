@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const businessPhone = "919608087035";
+  const businessPhone = "919031368918";
   const usualServiceKey = "mens-salon-usual-service";
   const bookingDialog = document.querySelector("#bookingDialog");
   const bookingForm = document.querySelector("#bookingForm");
@@ -111,8 +111,8 @@
       hi: "बुकिंग फ़ॉर्म या WhatsApp बटन से अनुरोध भेजें। समय की पुष्टि नितीश जवाब देकर करेंगे; अनुरोध पक्का अपॉइंटमेंट नहीं है।"
     },
     prices: {
-      en: "The listed starting prices are local estimates, not confirmed salon rates. Ask on WhatsApp for today's exact price before visiting.",
-      hi: "दिखाई गई शुरुआती कीमतें स्थानीय अनुमान हैं, सैलून की पक्की दरें नहीं। आने से पहले आज की सही कीमत WhatsApp पर पूछें।"
+      en: "Signature haircut and beard shape-up cost ₹50 each; fade & finish and haircut + beard cost ₹100 each. See the service menu for details.",
+      hi: "सिग्नेचर हेयरकट और बियर्ड शेप-अप की कीमत ₹50 प्रति सेवा है; फेड और फिनिश तथा हेयरकट + बियर्ड की कीमत ₹100 प्रति सेवा है। सेवा मेन्यू देखें।"
     },
     hours: {
       en: "The salon's opening days and hours have not been verified. Please call or message to check today's availability.",
@@ -409,8 +409,8 @@
 
   function aiStarterPrompt() {
     return currentLanguage === "hi"
-      ? "मुझे मेरे बालों की बनावट, चेहरे के आकार, रोज़ की देखभाल के समय और मौसम के हिसाब से पुरुषों के हेयरकट और ग्रूमिंग के 3 व्यावहारिक सुझाव दें। हर सुझाव का रखरखाव भी बताएं। मैं Men's Salon, सुदामा नगर, नवादा में नितीश जाटव (10 साल के अनुभव वाले बार्बर) से विकल्पों पर चर्चा करूँगा। कीमत या खुलने के समय का अनुमान न लगाएँ; पहले मुझसे ज़रूरी सवाल पूछें और कोई निजी जानकारी न माँगें।"
-      : "Suggest three practical men's haircut and grooming options based on my hair texture, face shape, daily maintenance time, and climate. Explain the upkeep for each. I will discuss them with Nitish Jatav, a barber with 10 years of experience at Men's Salon, Sudama Nagar, Nawada. Do not invent salon prices or opening hours; ask useful follow-up questions and do not request sensitive personal information.";
+      ? "मुझे मेरे बालों की बनावट, चेहरे के आकार, रोज़ की देखभाल के समय और मौसम के हिसाब से पुरुषों के हेयरकट और ग्रूमिंग के 3 व्यावहारिक सुझाव दें। हर सुझाव का रखरखाव भी बताएं। मैं Men's Salon, सुदामा नगर, नवादा में 6 साल के अनुभव वाले बार्बर नितीश जाटव से विकल्पों पर चर्चा करूँगा। सलून WhatsApp: +91 90313 68918। सूचीबद्ध सेवाओं की कीमत ₹50 या ₹100 है; कोई दूसरी कीमत या खुलने का समय न गढ़ें। पहले ज़रूरी सवाल पूछें और कोई निजी जानकारी न माँगें।"
+      : "Suggest three practical men's haircut and grooming options based on my hair texture, face shape, daily maintenance time, and climate. Explain the upkeep for each. I will discuss them with Nitish Jatav, a barber with 6 years of experience at Men's Salon, Sudama Nagar, Nawada. Official salon WhatsApp: +91 90313 68918. Listed services cost ₹50 or ₹100; do not invent other prices or opening hours. Ask useful follow-up questions and do not request sensitive personal information.";
   }
 
   function setAiHelperStatus(copied) {
@@ -489,7 +489,7 @@
       "VERSION:3.0",
       "FN:Men's Salon - Nawada",
       "ORG:Men's Salon",
-      "TEL;TYPE=WORK,VOICE:+919608087035",
+      "TEL;TYPE=WORK,VOICE:+919031368918",
       "ADR;TYPE=WORK:;;Sudama Nagar;Nawada;Bihar;805110;India",
       `URL:${salonUrl()}`,
       "END:VCARD",
@@ -529,7 +529,7 @@
             `पसंदीदा तारीख: ${date}`,
             `पसंदीदा समय: ${time}`,
             notes ? `खास बात: ${notes}` : "कोई अतिरिक्त जानकारी नहीं।",
-            "कृपया उपलब्धता और चुनी हुई सेवा की अंतिम कीमत की पुष्टि करें।"
+            "कृपया उपलब्धता और सेवा के बारे में बाकी जानकारी की पुष्टि करें।"
           ].join("\n")
         : [
             "Hi, I'd like to request an appointment at Men's Salon.",
@@ -538,7 +538,7 @@
             `Preferred date: ${date}`,
             `Preferred time: ${time}`,
             notes ? `Notes: ${notes}` : "No additional notes.",
-            "Please confirm availability and the final price for this service."
+            "Please confirm availability and any service details."
           ].join("\n");
 
       window.location.href = `https://wa.me/${businessPhone}?text=${encodeURIComponent(message)}`;
