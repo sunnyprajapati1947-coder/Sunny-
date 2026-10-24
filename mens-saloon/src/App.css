@@ -350,3 +350,7 @@
   .mobile-bar button { color: var(--gold-2); }
   .footer { padding-bottom: 7.5rem; }
 }
+
+/* live open/closed badge */
+.open-now { color: #2bd06f !important; }
+.closed-now { color: #ff7a72 !important; }

@@ -10,6 +10,7 @@ import {
   STYLE_MENU,
   TIME_SLOTS,
   inr,
+  isOpenNow,
   whatsappLink,
 } from './config'
 
@@ -48,11 +49,16 @@ export default function App() {
   useReveal()
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const [openNow, setOpenNow] = useState(() => isOpenNow())
+  useEffect(() => {
+    const t = setInterval(() => setOpenNow(isOpenNow()), 60_000)
+    return () => clearInterval(t)
+  }, [])
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [booking, setBooking] = useState<Booking>({
     name: '',
     phone: '',
-    serviceId: 'haircut-beard',
+    serviceId: 'haircut-shaving',
     date: todayISO(),
     time: '11:00 AM',
     notes: '',
@@ -117,7 +123,7 @@ export default function App() {
       `*Service:* ${selectedService.name} (${inr(selectedService.price)}${selectedService.priceNote ? ' ' + selectedService.priceNote : ''}, ${selectedService.duration})`,
       `*Barber:* ${BARBER.name}`,
       `*Date:* ${niceDate}`,
-      `*Preferred time:* ${booking.time} (1-hour chair)`,
+      `*Preferred time:* ${booking.time}`,
       booking.notes.trim() ? `*Note:* ${booking.notes.trim()}` : '',
       ``,
       `Please confirm my slot. Thank you!`,
@@ -207,7 +213,7 @@ export default function App() {
             </p>
             <div className="hero-ctas">
               <button className="btn btn-red btn-lg" onClick={() => scrollToId('book')}>
-                Book My 1-Hour Chair
+                Book My Chair — ₹50 Haircut
               </button>
               <a
                 className="btn btn-wa btn-lg"
@@ -223,8 +229,8 @@ export default function App() {
             </div>
             <ul className="hero-stats" aria-label="Highlights">
               <li><strong>{BARBER.experienceYears} yrs</strong><span>Master barber craft</span></li>
-              <li><strong>1 hour</strong><span>Reserved chair session</span></li>
-              <li><strong>{inr(249)}</strong><span>Haircut starts at</span></li>
+              <li><strong>7 AM–8:30 PM</strong><span>Open daily</span></li>
+              <li><strong>{inr(50)}</strong><span>Haircut · bajar price</span></li>
               <li><strong>Daily</strong><span>Open · walk-ins welcome</span></li>
             </ul>
           </div>
@@ -238,7 +244,7 @@ export default function App() {
               fetchPriority="high"
             />
             <figcaption className="hero-chip">
-              <strong>Now Open</strong>
+              <strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? '● Open Now' : '● Closed — Opens 7:00 AM'}</strong>
               <span>{BUSINESS.tagline}</span>
               <span>{BUSINESS.addressLine} · {BUSINESS.phoneDisplay}</span>
             </figcaption>
@@ -273,7 +279,7 @@ export default function App() {
             <h2>Everything a gentleman needs, honestly priced.</h2>
             <p>
               Starting prices for standard hair — your final price is always confirmed before we
-              begin. Every premium booking reserves a full <strong>1-hour chair session</strong>.
+              begin — <strong>haircut sirf {inr(50)}, haircut + shaving {inr(100)}</strong>. Facial & colour are bajar-rate “onwards” by product.
             </p>
           </header>
 
@@ -388,7 +394,7 @@ export default function App() {
             <ul>
               <li><strong>Clean & hygienic chair</strong><span>Fresh towels and sanitised tools for every customer.</span></li>
               <li><strong>Premium products</strong><span>Quality creams, oils and styling products on our shelf — see them in-store.</span></li>
-              <li><strong>No-rush 1-hour booking</strong><span>Your reserved hour means detailing is never skipped.</span></li>
+              <li><strong>WhatsApp booking = no waiting</strong><span>Book your time between 7 AM–8:30 PM and sit straight in the chair.</span></li>
               <li><strong>Honest local pricing</strong><span>Premium finish at Nawada-friendly rates, confirmed upfront.</span></li>
             </ul>
           </div>
@@ -400,7 +406,7 @@ export default function App() {
             <p className="chapter">Chapter 04 — Book Your Chair</p>
             <h2>Three steps. Zero waiting.</h2>
             <ol className="steps">
-              <li><strong>Fill the form</strong><span>Name, service, date and your preferred 1-hour slot.</span></li>
+              <li><strong>Fill the form</strong><span>Name, service, date and your preferred time (7 AM – 8:30 PM).</span></li>
               <li><strong>Send on WhatsApp</strong><span>We open WhatsApp with everything pre-filled — just press send.</span></li>
               <li><strong>We confirm</strong><span>{BARBER.name} replies on WhatsApp to lock your exact time.</span></li>
             </ol>
@@ -472,7 +478,7 @@ export default function App() {
                 {errors.date && <small className="error">{errors.date}</small>}
               </label>
               <label>
-                Preferred time (1-hr slot) *
+                Preferred time (7 AM – 8:30 PM) *
                 <select
                   value={booking.time}
                   aria-invalid={!!errors.time}
@@ -544,7 +550,7 @@ export default function App() {
             <ul className="visit-list">
               <li><span>Address</span><strong>{BUSINESS.addressLine}</strong></li>
               <li><span>Phone / WhatsApp</span><a href={`tel:${BUSINESS.phoneE164}`}><strong>{BUSINESS.phoneDisplay}</strong></a></li>
-              <li><span>Hours</span><strong>{BUSINESS.hoursLabel}</strong><small>{BUSINESS.hoursNote}</small></li>
+              <li><span>Hours</span><strong>{BUSINESS.hoursLabel}</strong><strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? '● Open Now — walk in!' : '● Closed now — opens 7:00 AM, book for tomorrow'}</strong><small>{BUSINESS.hoursNote}</small></li>
               <li><span>Barber</span><strong>{BARBER.name} · {BARBER.experienceYears} yrs experience</strong></li>
             </ul>
             <div className="hero-ctas">
