@@ -1,0 +1,6 @@
+/* Base reset — all site styling lives in App.css */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: #0d0303; }
+img { max-width: 100%; }
+button, input, select, textarea { font: inherit; }
