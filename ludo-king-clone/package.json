@@ -1,0 +1,20 @@
+{
+  "name": "ludo-royal",
+  "version": "1.0.0",
+  "description": "Free & open-source Ludo King-style Ludo game (clean-room clone) — 2-4 players, vs Computer AI, Pass N Play, animated dice, capture, safe stars, home race.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 5173"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.8"
+  }
+}
