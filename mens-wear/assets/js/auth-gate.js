@@ -19,10 +19,11 @@
 (function () {
   "use strict";
 
-  /* Publishable (anon) key: public by design, every request it makes is
-     filtered by row-level security on the database. */
+  /* The anon key is public by design: it only ever unlocks what row-level
+     security allows, and every table it can touch is owner-scoped. */
   var SUPABASE_URL = "https://zneqxctfhwehiuzibjnc.supabase.co";
-  var SUPABASE_KEY = "sb_publishable_V8Z3In2Z0a8Ids7iwMVG2A_ouLL98F9";
+  var SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpuZXF4Y3RmaHdlaGl1emliam5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4MDEzNTYsImV4cCI6MjEwODM3NzM1Nn0.LbGmxwyrbFe4kw2pTn9jJZ910YX9JGGndScxnrKhMAQ";
 
   var SKIP = "mw:guest";
   var LOCK = "mw:lock";
