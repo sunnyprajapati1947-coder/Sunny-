@@ -2,8 +2,9 @@
 """Build the compact static payload used for direct Vercel deployment.
 
 The repository's salon photos remain in GitHub and are referenced by commit SHA;
-CSS/JS and small SVG controls are bundled into the HTML so Vercel needs only four
-text files. Run after committing and pushing the source branch.
+CSS/JS and small SVG controls are bundled into the page, then the HTML is wrapped
+in a gzip bootstrap to keep direct Vercel uploads compact. Run after committing
+and pushing the source branch.
 """
 
 from __future__ import annotations
@@ -104,9 +105,117 @@ def make_loader(revision: str) -> str:
 """
 
 
+def make_document_shell(document_html: str, revision: str) -> str:
+    compressed = gzip.compress(document_html.encode("utf-8"), compresslevel=9, mtime=0)
+    payload = json.dumps(base64.b64encode(compressed).decode("ascii"))
+    source_base = json.dumps(
+        f"https://raw.githubusercontent.com/{REPOSITORY}/{revision}/salon-website"
+    )
+    return f'''<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#171715">
+  <meta name="description" content="A premium men's salon in Sudama Nagar, Nawada. Book a haircut or grooming appointment with Nitish Jatav, a barber with 10 years of experience.">
+  <meta property="og:title" content="Men's Salon">
+  <meta property="og:description" content="A sharper cut, a calmer hour. Meet Nitish Jatav and book your appointment in Sudama Nagar, Nawada.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mens-salon-ten.vercel.app/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/{REPOSITORY}/{revision}/salon-website/assets/salon-interior.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/app-icon.svg">
+  <title>Men's Salon</title>
+  <script type="application/ld+json">{{
+    "@context": "https://schema.org",
+    "@type": "BarberShop",
+    "name": "Men's Salon",
+    "telephone": "+91-96080-87035",
+    "address": {{
+      "@type": "PostalAddress",
+      "streetAddress": "Sudama Nagar",
+      "addressLocality": "Nawada",
+      "addressRegion": "Bihar",
+      "postalCode": "805110",
+      "addressCountry": "IN"
+    }},
+    "employee": {{ "@type": "Person", "name": "Nitish Jatav", "jobTitle": "Barber" }},
+    "availableLanguage": ["English", "Hindi"]
+  }}</script>
+  <style>
+    :root {{ color-scheme: dark; font-family: system-ui, sans-serif; background: #171715; color: #f2eee5; }}
+    body {{ min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 2rem; box-sizing: border-box; text-align: center; }}
+    #loader {{ max-width: 32rem; color: #c5a36a; }}
+    noscript {{ display: block; max-width: 32rem; }}
+  </style>
+</head>
+<body>
+  <main id="loader" role="status" aria-live="polite">Loading Men's Salon…</main>
+  <noscript><h1>Men's Salon</h1><p>Enable JavaScript to load the bilingual salon website and booking tools.</p></noscript>
+  <script>
+  (() => {{
+    const payload = {payload};
+    const sourceBase = {source_base};
+    const message = document.getElementById("loader");
+
+    function showError() {{
+      if (message) message.textContent = "The salon page could not load. Please check your connection and refresh.";
+    }}
+
+    function render(html) {{
+      document.open();
+      document.write(html);
+      document.close();
+    }}
+
+    function fixFallbackPaths(html) {{
+      return html
+        .replace('href="icons/icon-180.png"', 'href="/app-icon.svg"')
+        .replace('href="manifest.webmanifest"', 'href="/manifest.webmanifest"')
+        .replace('href="styles.css"', `href="${{sourceBase}}/styles.css"`)
+        .replace('src="script.js"', `src="${{sourceBase}}/script.js"`)
+        .replace(/(src|href)="assets\\/([^"]+)"/g, (_match, attribute, path) => `${{attribute}}="${{sourceBase}}/assets/${{path}}"`);
+    }}
+
+    async function loadFallback() {{
+      try {{
+        const response = await fetch(`${{sourceBase}}/index.html`);
+        if (!response.ok) throw new Error(`Source fallback returned ${{response.status}}`);
+        render(fixFallbackPaths(await response.text()));
+      }} catch (error) {{
+        console.error("Could not load the salon page.", error);
+        showError();
+      }}
+    }}
+
+    async function load() {{
+      if (!("DecompressionStream" in window)) {{
+        await loadFallback();
+        return;
+      }}
+      try {{
+        const binary = atob(payload);
+        const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+        render(await new Response(stream).text());
+      }} catch (error) {{
+        console.error("Could not unpack the salon page; trying the source fallback.", error);
+        await loadFallback();
+      }}
+    }}
+
+    load();
+  }})();
+  </script>
+</body>
+</html>
+'''
+
+
 def make_service_worker(photo_urls: list[str]) -> str:
     urls = json.dumps(photo_urls, separators=(",", ":"))
-    return f'''const CACHE_NAME = "mens-salon-shell-v3";
+    return f'''const CACHE_NAME = "mens-salon-shell-v4";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/app-icon.svg"];
 const REMOTE_MEDIA = {urls};
 
@@ -242,7 +351,7 @@ def main() -> None:
         shutil.rmtree(OUTPUT_DIR)
     OUTPUT_DIR.mkdir(parents=True)
     (OUTPUT_DIR / ".generated-by-salon-bundler").write_text("generated\n", encoding="utf-8")
-    (OUTPUT_DIR / "index.html").write_text(html, encoding="utf-8")
+    (OUTPUT_DIR / "index.html").write_text(make_document_shell(html, revision), encoding="utf-8")
     (OUTPUT_DIR / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (OUTPUT_DIR / "sw.js").write_text(make_service_worker(photo_urls), encoding="utf-8")
     shutil.copy2(SITE_DIR / "app-icon.svg", OUTPUT_DIR / "app-icon.svg")
