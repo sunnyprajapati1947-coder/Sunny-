@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/genz.css">
 <link rel="stylesheet" href="assets/css/premium.css">
+<link rel="stylesheet" href="assets/css/auth.css">
 
 <!-- Local business structured data (helps Google trust + map visibility) -->
 <script type="application/ld+json">
@@ -492,18 +493,35 @@
       <button class="enter__close" type="button" id="enterClose" aria-label="Close and browse as a guest">&#215;</button>
     </div>
     <h2 class="enter__title" id="enterTitle">Step into<br><em>the drop.</em></h2>
-    <p class="enter__sub">One minute now, faster orders later. We keep your name and size ready, so every WhatsApp message leaves already addressed.</p>
+    <p class="enter__sub">Your account keeps your name, size and number ready, so every WhatsApp message leaves already addressed — and only you can read them.</p>
 
-    <form class="enter__form" id="enterForm" novalidate>
+    <div class="enter__tabs" id="enterTabs" role="tablist" aria-label="Account">
+      <button type="button" role="tab" data-auth-mode="signup" aria-selected="true">Create account</button>
+      <button type="button" role="tab" data-auth-mode="signin" aria-selected="false">Sign in</button>
+    </div>
+
+    <form class="enter__form" id="enterForm" novalidate autocomplete="on">
       <label class="enter__field">
+        <span>Email <i>required</i></span>
+        <input id="enterEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" maxlength="160" required>
+      </label>
+      <label class="enter__field" id="enterPassField">
+        <span>Password <i id="enterPassNote">10+ characters</i></span>
+        <input id="enterPass" name="password" type="password" autocomplete="new-password" placeholder="At least 10 characters" minlength="10" maxlength="72" required>
+      </label>
+      <div class="enter__meter" id="enterMeter" hidden aria-live="polite">
+        <span class="enter__meterbar"><i></i></span>
+        <span class="enter__meterlabel" data-meter-label>Too short</span>
+      </div>
+      <label class="enter__field" data-signup-only>
         <span>Your name <i>required</i></span>
-        <input id="enterName" name="name" type="text" autocomplete="name" placeholder="Sunny Kumar" maxlength="40" required>
+        <input id="enterName" name="name" type="text" autocomplete="name" placeholder="Sunny Kumar" maxlength="80" required>
       </label>
-      <label class="enter__field">
+      <label class="enter__field" data-signup-only>
         <span>WhatsApp number <i>optional</i></span>
-        <input id="enterPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="98XXXXXXXX" maxlength="14">
+        <input id="enterPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98XXXXXXXX" maxlength="14">
       </label>
-      <div class="enter__field">
+      <div class="enter__field" data-signup-only>
         <span>Usual size <i>optional</i></span>
         <div class="enter__sizes" id="enterSizes" role="group" aria-label="Usual size">
           <button type="button" data-size="S">S</button>
@@ -513,12 +531,15 @@
           <button type="button" data-size="XXL">XXL</button>
         </div>
       </div>
-      <button class="enter__go" type="submit" id="enterGo">Enter the drop <b aria-hidden="true">&#8594;</b></button>
-      <p class="enter__err" id="enterErr" role="alert" hidden>Please add your name to continue.</p>
+      <button class="enter__go" type="submit" id="enterGo">Create account <b aria-hidden="true">&#8594;</b></button>
+      <button class="enter__forgot" type="button" id="enterForgot" hidden>Forgot password?</button>
+      <p class="enter__err" id="enterErr" role="alert" hidden></p>
+      <p class="enter__ok" id="enterOk" role="status" hidden></p>
     </form>
 
-    <button class="enter__skip" type="button" id="enterSkip">Just browsing — skip for now</button>
-    <p class="enter__note">Saved on this phone only. No password, no email, no spam.</p>
+    <button class="enter__signout" type="button" id="enterSignOut" hidden>Sign out on this device</button>
+    <button class="enter__skip" type="button" id="enterSkip">Browse without an account</button>
+    <p class="enter__note" id="enterSecurity">Passwords are hashed by Supabase Auth — we never see or store them. Your details stay in your account, private to you.</p>
   </div>
 </div>
 
@@ -1679,6 +1700,7 @@
 <script src="assets/js/drop-data.js" defer></script>
 <script src="assets/js/shop.js" defer></script>
 <script src="assets/js/drop.js" defer></script>
-<script src="assets/js/welcome.js" defer></script>
+<script src="assets/js/vendor/supabase.js" defer></script>
+<script src="assets/js/auth-gate.js" defer></script>
 </body>
 </html>

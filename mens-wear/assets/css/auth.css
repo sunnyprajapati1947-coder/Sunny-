@@ -1,0 +1,139 @@
+/* ==========================================================================
+   MEN'S WEAR — account gate additions
+   Layers on top of the .enter__* rules in premium.css: mode tabs, the password
+   strength meter, inline status messages and the account actions.
+   ========================================================================== */
+
+.enter__card { max-height: min(92vh, 780px); }
+
+.enter__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 24px 0 6px;
+  padding: 4px;
+  border: 1px solid var(--gz-hair, rgba(22, 22, 15, 0.14));
+  border-radius: 2px;
+  background: rgba(22, 22, 15, 0.04);
+}
+
+.enter__tabs button {
+  appearance: none;
+  border: 0;
+  border-radius: 1px;
+  padding: 10px 6px;
+  background: none;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gz-mute);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.enter__tabs button:hover { color: var(--gz-ink); }
+.enter__tabs button.is-on {
+  background: var(--gz-ink);
+  color: var(--gz-paper);
+}
+
+.enter__form { margin-top: 18px; }
+.enter__field[hidden],
+.enter__meter[hidden],
+.enter__err[hidden],
+.enter__ok[hidden],
+.enter__forgot[hidden],
+.enter__signout[hidden] { display: none; }
+
+/* password strength */
+.enter__meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -6px;
+}
+.enter__meterbar {
+  position: relative;
+  flex: 1;
+  height: 3px;
+  background: rgba(22, 22, 15, 0.12);
+  overflow: hidden;
+}
+.enter__meterbar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6%;
+  background: #a3361f;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+.enter__meter[data-score="1"] .enter__meterbar i { width: 30%; background: #c2643c; }
+.enter__meter[data-score="2"] .enter__meterbar i { width: 55%; background: #b08a2a; }
+.enter__meter[data-score="3"] .enter__meterbar i { width: 78%; background: #6c7f2c; }
+.enter__meter[data-score="4"] .enter__meterbar i { width: 100%; background: #3f6b34; }
+
+.enter__meterlabel {
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gz-mute);
+  white-space: nowrap;
+}
+
+/* messages */
+.enter__err,
+.enter__ok { line-height: 1.5; }
+.enter__ok {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.06em;
+  color: #3f6b34;
+}
+
+.enter__forgot {
+  justify-self: start;
+  margin-top: 2px;
+  padding: 2px 0;
+  background: none;
+  border: 0;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gz-mute);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.enter__forgot:hover { color: var(--gz-ink); }
+
+.enter__signout {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid rgba(163, 54, 31, 0.4);
+  background: none;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a3361f;
+  cursor: pointer;
+}
+.enter__signout:hover { background: rgba(163, 54, 31, 0.08); }
+
+.enter__go[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+  transform: none;
+}
+
+.enter__note { max-width: 34ch; margin-left: auto; margin-right: auto; }
+
+@media (max-width: 520px) {
+  .enter__card { max-height: 94vh; }
+  .enter__title { font-size: 1.85rem; }
+}

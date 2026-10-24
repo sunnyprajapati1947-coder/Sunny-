@@ -7,7 +7,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const KAGE = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v3/mens-wear/kage-app/dist/";
-const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v9/mens-wear/";
+const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v10/mens-wear/";
 
 const KAGE_TEXT = [
   ["assets/index-CD3ZoDni.js", null],
@@ -34,7 +34,7 @@ const KAGE_ASSETS = [
   "landing-pages/secret-pathways-assets/foreground/png/temple-wall.webp",
 ];
 
-/* the shop itself, unchanged: its CSS/JS/images already come from the CDN */
+/* the shop shell: CSS/JS/images load from the CDN tag below */
 const SHOP_FILES = [["shop/index.html", "live/vercel-entry.html"]];
 
 async function grab(url, target) {
