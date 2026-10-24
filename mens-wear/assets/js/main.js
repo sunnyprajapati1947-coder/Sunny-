@@ -11,8 +11,8 @@
      only receives the HTML/CSS/JS bundle, a missing photo automatically loads
      from this base instead — the visitor never sees a broken image. */
   var IMG_CDNS = [
-    "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v19/mens-wear/",
-    "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/app-v19/mens-wear/"
+    "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v20/mens-wear/",
+    "https://cdn.statically.io/gh/sunnyprajapati1947-coder/Sunny-/app-v20/mens-wear/"
   ];
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
