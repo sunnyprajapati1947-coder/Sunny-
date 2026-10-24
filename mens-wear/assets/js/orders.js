@@ -46,10 +46,11 @@
       status: "new",
     };
 
+    /* no .select() here on purpose: reading the row back needs SELECT rights,
+       and anonymous visitors deliberately have none on this table */
     return db
       .from("orders")
       .insert(row)
-      .select("ref")
       .then(function (res) {
         if (res && res.error) return { ok: false, error: res.error.message };
         return { ok: true, ref: row.ref };
