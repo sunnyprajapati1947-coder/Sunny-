@@ -13,6 +13,7 @@ MARKER = ".generated-by-salon-web-prepare"
 
 FILES = (
     "index.html",
+    "privacy.html",
     "styles.css",
     "script.js",
     "manifest.webmanifest",

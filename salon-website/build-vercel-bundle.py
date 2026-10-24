@@ -114,16 +114,24 @@ def make_document_shell(document_html: str, revision: str) -> str:
   <meta charset='utf-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover'>
   <meta name='theme-color' content='#171715'>
-  <meta name='description' content='Premium men’s grooming and WhatsApp booking in Sudama Nagar, Nawada.'>
-  <meta property='og:title' content='Men&#39;s Salon'>
-  <meta property='og:description' content='A sharper cut, a calmer hour. Meet Nitish Jatav, a barber with six years of experience, in Nawada.'>
+  <meta name='description' content='Men&#39;s Salon in Sudama Nagar, Nawada: haircuts and beard grooming at ₹50, fades and combos at ₹100. Meet Nitish Jatav, 6 years of experience. WhatsApp +91 90313 68918.'>
+  <meta name='robots' content='index, follow, max-image-preview:large'>
+  <meta property='og:title' content='Men&#39;s Salon Nawada | Haircuts &amp; Grooming'>
+  <meta property='og:description' content='A sharper cut, a calmer hour. Meet Nitish Jatav, a barber with six years of experience, in Sudama Nagar, Nawada.'>
   <meta property='og:type' content='website'>
   <meta property='og:url' content='https://mens-salon-ten.vercel.app/'>
   <meta property='og:image' content='https://raw.githubusercontent.com/{REPOSITORY}/{revision}/salon-website/assets/shop-front.jpg'>
+  <meta property='og:image:alt' content='Men&#39;s Salon shopfront in Sudama Nagar, Nawada'>
+  <meta property='og:locale' content='en_IN'>
   <meta name='twitter:card' content='summary_large_image'>
+  <meta name='twitter:title' content='Men&#39;s Salon Nawada | Haircuts &amp; Grooming'>
+  <meta name='twitter:description' content='Haircuts and beard grooming at ₹50, fades and combos at ₹100. Sudama Nagar, Nawada · WhatsApp +91 90313 68918.'>
+  <meta name='twitter:image' content='https://raw.githubusercontent.com/{REPOSITORY}/{revision}/salon-website/assets/shop-front.jpg'>
+  <link rel='canonical' href='https://mens-salon-ten.vercel.app/'>
+  <link rel='sitemap' type='application/xml' href='/sitemap.xml'>
   <link rel='manifest' href='/manifest.webmanifest'>
   <link rel='apple-touch-icon' href='/app-icon.svg'>
-  <title>Men&#39;s Salon</title>
+  <title>Men&#39;s Salon Nawada | Haircuts &amp; Grooming · Sudama Nagar</title>
   <style>body {{ margin: 0; min-height: 100vh; display: grid; place-items: center; background: #171715; color: #f2eee5; font: 1rem system-ui, sans-serif; }} main {{ color: #c5a36a; }}</style>
 </head>
 <body>
@@ -154,8 +162,8 @@ def make_document_shell(document_html: str, revision: str) -> str:
 
 def make_service_worker(photo_urls: list[str]) -> str:
     urls = json.dumps(photo_urls, separators=(",", ":"))
-    return f'''const CACHE_NAME = "mens-salon-shell-v6";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/app-icon.svg", "/assets/brand-mark.svg"];
+    return f'''const CACHE_NAME = "mens-salon-shell-v7";
+const APP_SHELL = ["/", "/index.html", "/privacy.html", "/manifest.webmanifest", "/app-icon.svg", "/assets/brand-mark.svg"];
 const REMOTE_MEDIA = {urls};
 
 self.addEventListener("install", (event) => {{
@@ -294,6 +302,8 @@ def main() -> None:
     (OUTPUT_DIR / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (OUTPUT_DIR / "sw.js").write_text(make_service_worker(photo_urls), encoding="utf-8")
     shutil.copy2(SITE_DIR / "app-icon.svg", OUTPUT_DIR / "app-icon.svg")
+    for static_file in ("privacy.html", "robots.txt", "sitemap.xml"):
+        shutil.copy2(SITE_DIR / static_file, OUTPUT_DIR / static_file)
     (OUTPUT_DIR / "assets").mkdir()
     shutil.copy2(SITE_DIR / "assets" / "brand-mark.svg", OUTPUT_DIR / "assets" / "brand-mark.svg")
 

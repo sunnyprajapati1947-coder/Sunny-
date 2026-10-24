@@ -1,7 +1,8 @@
-const CACHE_NAME = "mens-salon-shell-v4";
+const CACHE_NAME = "mens-salon-shell-v5";
 const APP_SHELL = [
   "/",
   "/index.html",
+  "/privacy.html",
   "/styles.css",
   "/script.js",
   "/manifest.webmanifest",

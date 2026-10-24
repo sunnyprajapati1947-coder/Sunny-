@@ -12,6 +12,7 @@
   const installButton = document.querySelector("#installAppButton");
   const installHelpDialog = document.querySelector("#installHelpDialog");
   const helpDialog = document.querySelector("#helpSupportDialog");
+  const helpDialogContent = helpDialog?.querySelector(".dialog-content");
   const helpSupportButton = document.querySelector("#helpSupportButton");
   const helpAnswer = document.querySelector("#helpAnswer");
   const aiHelperStatus = document.querySelector("#aiHelperStatus");
@@ -326,8 +327,10 @@
   helpSupportButton?.addEventListener("click", () => {
     if (!helpDialog || typeof helpDialog.showModal !== "function") return;
     lastHelpTrigger = helpSupportButton;
+    if (helpDialogContent) helpDialogContent.scrollTop = 0;
     updateHelpAnswer();
     helpDialog.showModal();
+    if (helpDialogContent) helpDialogContent.scrollTop = 0;
     syncDialogOpenState();
   });
 
