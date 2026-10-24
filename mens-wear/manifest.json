@@ -21,19 +21,19 @@
   ],
   "icons": [
     {
-      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v15/mens-wear/assets/img/app/icon-192.png",
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v16/mens-wear/assets/img/app/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v15/mens-wear/assets/img/app/icon-512.png",
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v16/mens-wear/assets/img/app/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v15/mens-wear/assets/img/app/icon-maskable-512.png",
+      "src": "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v16/mens-wear/assets/img/app/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

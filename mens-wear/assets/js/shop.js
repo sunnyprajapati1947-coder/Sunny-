@@ -859,8 +859,8 @@
     lines.push("");
     lines.push("Total: ₹" + bagTotal().toLocaleString("en-IN") +
       (CONFIG.showMrp && bagMrp() > bagTotal() ? " (MRP ₹" + bagMrp().toLocaleString("en-IN") + ")" : ""));
-    lines.push("Naam: ");
-    lines.push("Delivery address ya store pickup: ");
+    lines.push("Name: ");
+    lines.push("Delivery address or store pickup: ");
     lines.push("Payment: UPI / Card / Cash");
     lines.push("");
     lines.push("Please confirm — and share fitting and delivery details.");
