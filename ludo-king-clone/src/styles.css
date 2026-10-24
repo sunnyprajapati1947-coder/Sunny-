@@ -91,3 +91,21 @@ button{font-family:inherit;cursor:pointer} button:disabled{cursor:not-allowed;op
 .trophy{font-size:68px;animation:bob 1.6s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .ghost-btn{width:100%;margin-top:9px;border:2.5px solid #aab4ea;background:#fff;border-radius:12px;padding:11px;font-weight:900;color:#3949ab;letter-spacing:.5px}
+
+/* ── ONLINE ── */
+.mode-tile.wide{grid-column:1/-1}
+.online-card .play-btn{margin-top:10px}
+.join-row{display:flex;gap:8px;margin-top:10px}
+.join-row input{flex:1;border:2.5px solid #c5cae9;border-radius:12px;padding:12px;font-weight:900;font-size:17px;letter-spacing:3px;text-align:center;outline:none;min-width:0;color:var(--ink)}
+.join-row button{border:none;border-radius:12px;padding:12px 16px;font-weight:900;color:#fff;background:linear-gradient(#4f46e5,#312e81);box-shadow:0 4px 0 #1e1b4b}
+.online-status{margin:10px 0 0;font-weight:800;font-size:13px;color:#3949ab;text-align:center}
+.online-note{margin:9px 0 0;font-size:12px;color:#5c6bc0;line-height:1.5;text-align:center}
+.lobby-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag.gold{background:#b28704}
+.room-code-box{position:relative;z-index:2;margin-top:22px;text-align:center;background:rgba(6,10,40,.75);border:2px solid rgba(103,232,249,.55);border-radius:22px;padding:20px 14px;box-shadow:0 0 32px rgba(34,211,238,.3);backdrop-filter:blur(8px)}
+.room-code-box small{letter-spacing:2.5px;font-weight:900;color:#a5f3fc;font-size:11px}
+.room-code{font-size:52px;font-weight:900;letter-spacing:10px;color:#ffd91f;text-shadow:0 0 24px rgba(255,193,7,.6);margin:6px 0}
+.room-actions{display:flex;gap:9px;justify-content:center}
+.room-actions button{border:1.5px solid rgba(140,160,255,.6);background:rgba(79,70,229,.4);color:#fff;border-radius:11px;padding:9px 18px;font-weight:900}
+.emote-bar{position:relative;z-index:2;display:flex;gap:6px;overflow-x:auto;margin-top:9px;padding-bottom:2px}
+.emote-bar button{flex:none;border:1.5px solid rgba(140,160,255,.45);background:rgba(6,10,40,.65);color:#fff;border-radius:999px;padding:7px 12px;font-weight:800;font-size:12px}

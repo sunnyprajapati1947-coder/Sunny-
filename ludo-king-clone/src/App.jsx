@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { COLORS, META, movableIndices, applyMove, chooseAiMove } from './game/engine.js';
+import { Peer } from 'peerjs';
 
 const Board3D = lazy(() => import('./three/Board3D.jsx'));
 const Dice3D = lazy(() => import('./three/Dice3D.jsx'));
@@ -42,6 +43,22 @@ export default function App() {
   const [sound, setSound] = useState(true);
   const sfx = useSounds(sound);
   const [installEvt, setInstallEvt] = useState(null);
+  // ── Online (PeerJS room-code multiplayer) ──
+  const [onlineName, setOnlineName] = useState('Player 1');
+  const [roomCode, setRoomCode] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [myColor, setMyColor] = useState(null);
+  const [isHost, setIsHost] = useState(false);
+  const [lobby, setLobby] = useState([]);
+  const [onlineStatus, setOnlineStatus] = useState('');
+  const peerRef = useRef(null);
+  const connsRef = useRef(new Map());
+  const hostConnRef = useRef(null);
+  const applyingRemote = useRef(false);
+  const modeRef = useRef('computer');
+  const hostRef = useRef(false);
+  const configRef = useRef({});
+  const myColorRef = useRef(null);
   const [showInstallHelp, setShowInstallHelp] = useState(false);
 
   useEffect(() => {
@@ -70,6 +87,119 @@ export default function App() {
   const busy = useRef(false);
   const stateRef = useRef({ tokens, turn, activeColors });
   stateRef.current = { tokens, turn, activeColors };
+
+  modeRef.current = mode; hostRef.current = isHost; myColorRef.current = myColor;
+  configRef.current = { numPlayers, activeColors, names, onlineName };
+
+  const netSend = (msg, excludePeer = null) => {
+    try {
+      if (hostRef.current) connsRef.current.forEach((c, peerId) => { if (peerId !== excludePeer && c.open) c.send(msg); });
+      else if (hostConnRef.current?.open) hostConnRef.current.send(msg);
+    } catch { /* connection still opening */ }
+  };
+
+  const applyRemoteState = (payload) => {
+    if (!payload) return;
+    applyingRemote.current = true;
+    if (payload.names) setNames(payload.names);
+    if (payload.numPlayers) setNumPlayers(payload.numPlayers);
+    setTokens(payload.tokens); setTurn(payload.turn); setDice(payload.dice);
+    setPhase(payload.phase); setMovable(payload.movable || []); setSixes(payload.sixes || 0);
+    setWinner(payload.winner || null); if (payload.toast) setToast(payload.toast);
+    if (payload.lastEvent) { setLastEvent(payload.lastEvent); setTimeout(() => setLastEvent(''), 2600); }
+    setScreen('game');
+    setTimeout(() => { applyingRemote.current = false; }, 120);
+  };
+
+  const handleNetData = (msg, fromPeer = null) => {
+    if (!msg || typeof msg !== 'object') return;
+    if (msg.type === 'lobby') { setLobby(msg.members || []); if (msg.names) setNames(msg.names); if (msg.numPlayers) setNumPlayers(msg.numPlayers); }
+    if (msg.type === 'welcome') { setMyColor(msg.color); setOnlineStatus(`Joined as ${META[msg.color].label}. Waiting in lobby…`); }
+    if (msg.type === 'start') {
+      if (msg.names) setNames(msg.names);
+      if (msg.numPlayers) setNumPlayers(msg.numPlayers);
+      setTokens(Object.fromEntries(COLORS.map((c) => [c, [-1, -1, -1, -1]])));
+      setTurn('red'); setDice(5); setPhase('roll'); setMovable([]); setSixes(0); setWinner(null);
+      setToast('Match started — Red to move!'); setScreen('game');
+    }
+    if (msg.type === 'state') { if (hostRef.current && fromPeer) netSend(msg, fromPeer); applyRemoteState(msg.payload); }
+    if (msg.type === 'emote') {
+      if (hostRef.current && fromPeer) netSend(msg, fromPeer);
+      setLastEvent(`${msg.name}: ${msg.text}`); setTimeout(() => setLastEvent(''), 2600);
+    }
+  };
+
+  const broadcastLobby = (members) => {
+    const namesMap = { ...configRef.current.names };
+    members.forEach((m) => { namesMap[m.color] = m.name; });
+    setNames(namesMap);
+    netSend({ type: 'lobby', members, names: namesMap, numPlayers: configRef.current.numPlayers });
+  };
+
+  const destroyPeer = () => {
+    try { peerRef.current?.destroy(); } catch { /* noop */ }
+    peerRef.current = null; connsRef.current = new Map(); hostConnRef.current = null;
+  };
+
+  const leaveOnline = () => { destroyPeer(); setMyColor(null); setIsHost(false); setLobby([]); setRoomCode(''); setScreen('menu'); };
+
+  const createRoom = () => {
+    destroyPeer();
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const hostColor = 'red';
+    const me = { color: hostColor, name: onlineName.trim() || 'Player 1' };
+    setMode('online'); modeRef.current = 'online'; setIsHost(true); hostRef.current = true; setMyColor(hostColor);
+    setLobby([me]); setOnlineStatus('Creating room…');
+    setNames((n) => ({ ...n, red: me.name }));
+    const peer = new Peer(`ludo-royal-3d-${code}`);
+    peerRef.current = peer;
+    peer.on('open', () => { setRoomCode(code); setScreen('lobby'); setOnlineStatus('Room live! Share the code with friends.'); });
+    peer.on('connection', (conn) => {
+      connsRef.current.set(conn.peer, conn);
+      conn.on('data', (msg) => {
+        if (msg?.type === 'join') {
+          setLobby((prev) => {
+            const cfg = configRef.current;
+            if (prev.length >= cfg.numPlayers || prev.some((m) => m.name === msg.name && m.color !== 'red')) return prev;
+            const color = cfg.activeColors[prev.length] || 'green';
+            const members = [...prev, { color, name: String(msg.name || 'Player').slice(0, 12) }];
+            setTimeout(() => { try { conn.send({ type: 'welcome', color }); } catch { /* noop */ } broadcastLobby(members); }, 60);
+            return members;
+          });
+        } else handleNetData(msg, conn.peer);
+      });
+      conn.on('close', () => { connsRef.current.delete(conn.peer); setLobby((prev) => { const m = prev.filter((x, i) => i === 0 || connsRef.current.size >= i); broadcastLobby(m); return m; }); });
+    });
+    peer.on('error', (e) => setOnlineStatus(`Connection error: ${e.type}. Check internet and retry.`));
+  };
+
+  const joinRoom = () => {
+    const code = joinCode.trim();
+    if (!/^\d{6}$/.test(code)) { setOnlineStatus('Enter the 6-digit room code.'); return; }
+    destroyPeer();
+    setMode('online'); modeRef.current = 'online'; setIsHost(false); hostRef.current = false;
+    setOnlineStatus('Connecting to room…'); setScreen('lobby'); setRoomCode(code); setLobby([]);
+    const peer = new Peer();
+    peerRef.current = peer;
+    peer.on('open', () => {
+      const conn = peer.connect(`ludo-royal-3d-${code}`, { reliable: true });
+      hostConnRef.current = conn;
+      conn.on('open', () => { conn.send({ type: 'join', name: onlineName.trim() || 'Player' }); setOnlineStatus('Connected! Waiting for the host to start…'); });
+      conn.on('data', (msg) => handleNetData(msg));
+      conn.on('close', () => setOnlineStatus('Host disconnected.'));
+    });
+    peer.on('error', (e) => setOnlineStatus(e.type === 'peer-unavailable' ? 'Room not found. Check the code — the host must keep the lobby open.' : `Connection error: ${e.type}`));
+  };
+
+  const hostStartMatch = () => {
+    netSend({ type: 'start', names, numPlayers });
+    startGame();
+  };
+
+  const sendEmote = (text) => {
+    setLastEvent(`${names[myColor || turn]}: ${text}`); setTimeout(() => setLastEvent(''), 2400);
+    if (modeRef.current === 'online') netSend({ type: 'emote', text, name: names[myColor || turn] });
+  };
 
   const startGame = () => {
     setTokens(Object.fromEntries(COLORS.map((c) => [c, [-1, -1, -1, -1]])));
@@ -111,6 +241,7 @@ export default function App() {
 
   const rollDice = useCallback(async () => {
     if (phase !== 'roll' || rolling || busy.current || winner) return;
+    if (modeRef.current === 'online' && myColorRef.current !== color) return;
     const color = stateRef.current.turn;
     setRolling(true); sfx.dice(); vibrate(35);
     await sleep(900);
@@ -130,8 +261,16 @@ export default function App() {
     if (screen === 'game' && phase === 'roll' && isAI(turn) && !winner) { const t = setTimeout(rollDice, 950); return () => clearTimeout(t); }
   }, [screen, phase, turn, isAI, winner, rollDice]);
 
+  // sync every game change to online peers (originator broadcasts; receivers are flagged)
+  useEffect(() => {
+    if (screen !== 'game' || modeRef.current !== 'online' || applyingRemote.current) return;
+    netSend({ type: 'state', payload: { tokens, turn, dice, phase, movable, sixes, winner, toast, names, numPlayers } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokens, turn, dice, phase, movable, sixes, winner, screen]);
+
+  const isMyOnlineTurn = mode !== 'online' || myColor === turn;
   const onPawnTap = (color, idx) => {
-    if (phase === 'move' && turn === color && movable.includes(idx) && !isAI(color)) doMove(color, idx, dice);
+    if (phase === 'move' && turn === color && movable.includes(idx) && !isAI(color) && isMyOnlineTurn) doMove(color, idx, dice);
   };
 
   // ───────────── MENU ─────────────
@@ -172,6 +311,9 @@ export default function App() {
           <button className={`mode-tile ${mode === 'pass' ? 'on' : ''}`} onClick={() => setMode('pass')}>
             <span className="mt-icon">👨‍👩‍👧‍👦</span><b>PASS &amp; PLAY</b><small>Friends on one phone</small>
           </button>
+          <button className={`mode-tile wide ${mode === 'online' ? 'on' : ''}`} onClick={() => setMode('online')}>
+            <span className="mt-icon">🌐</span><b>PLAY ONLINE</b><small>Create a room code — friends join from their own phones, anywhere!</small>
+          </button>
         </div>
 
         <div className="glass-card">
@@ -188,8 +330,22 @@ export default function App() {
               </div>
             ))}
           </div>
-          <button className="play-btn" onClick={startGame}>▶ &nbsp;PLAY NOW</button>
+          {mode !== 'online' && <button className="play-btn" onClick={startGame}>▶ &nbsp;PLAY NOW</button>}
         </div>
+
+        {mode === 'online' && (
+          <div className="glass-card online-card">
+            <label>Your name</label>
+            <div className="name-row"><span className="avatar">🧑</span><input value={onlineName} onChange={(e) => setOnlineName(e.target.value.slice(0, 12))} placeholder="Your name" /></div>
+            <button className="play-btn" onClick={createRoom}>🌐 &nbsp;CREATE ROOM</button>
+            <div className="join-row">
+              <input value={joinCode} onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit code" inputMode="numeric" />
+              <button onClick={joinRoom}>JOIN ROOM</button>
+            </div>
+            {onlineStatus && <p className="online-status">{onlineStatus}</p>}
+            <p className="online-note">Free peer-to-peer online — no sign-up. Host creates a room, friends enter the code on their phones and play live on the same 3D board.</p>
+          </div>
+        )}
 
         <div className="glass-card rules">
           <h3>HOW TO PLAY</h3>
@@ -205,15 +361,47 @@ export default function App() {
     );
   }
 
+  // ───────────── ONLINE LOBBY ─────────────
+  if (screen === 'lobby') {
+    return (
+      <div className="phone menu lobby">
+        <div className="bg-grid" /><div className="bg-glow g1" /><div className="bg-glow g2" />
+        <header className="menu-top"><button className="pill btn" onClick={leaveOnline}>‹ LEAVE</button><span className="pill neon">ONLINE LOBBY</span><span className="pill">{lobby.length}/{numPlayers}</span></header>
+        <div className="room-code-box">
+          <small>ROOM CODE — SHARE WITH FRIENDS</small>
+          <div className="room-code">{roomCode || '••••••'}</div>
+          <div className="room-actions">
+            <button onClick={() => { try { navigator.clipboard.writeText(roomCode); setOnlineStatus('Code copied!'); } catch { /* noop */ } }}>📋 COPY</button>
+            <button onClick={() => { try { navigator.share({ title: 'Ludo Royal 3D', text: `Join my Ludo Royal room! Code: ${roomCode}` }); } catch { /* noop */ } }}>↗ SHARE</button>
+          </div>
+        </div>
+        <div className="glass-card">
+          <label>Players in room</label>
+          <div className="names">
+            {activeColors.map((c, i) => {
+              const member = lobby[i];
+              return <div key={c} className="name-row"><span className="avatar">{member ? AVATAR[c] : '⏳'}</span><span className={`chip chip-${c}`} /><b className="lobby-name">{member ? member.name : 'Waiting for player…'}</b>{member?.color === myColor && <span className="tag">YOU</span>}{i === 0 && <span className="tag gold">HOST</span>}</div>;
+            })}
+          </div>
+          {isHost
+            ? <button className="play-btn" disabled={lobby.length < 2} onClick={hostStartMatch}>{lobby.length < 2 ? 'WAITING FOR PLAYERS…' : `▶ START MATCH (${lobby.length} PLAYERS)`}</button>
+            : <p className="online-status">⏳ Waiting for the host to start the match…</p>}
+          {onlineStatus && <p className="online-status">{onlineStatus}</p>}
+        </div>
+        <p className="credit">Keep this screen open. Friends must open the app, tap PLAY ONLINE → enter the code.</p>
+      </div>
+    );
+  }
+
   // ───────────── GAME ─────────────
   return (
     <div className="phone game">
       <div className="bg-grid" /><div className="bg-glow g1" /><div className="bg-glow g2" />
       <header className="game-top">
-        <button className="icon-btn" onClick={() => setScreen('menu')}>‹</button>
+        <button className="icon-btn" onClick={() => (mode === 'online' ? leaveOnline() : setScreen('menu'))}>‹</button>
         <div className="game-title">LUDO <span>ROYAL</span><small>3D</small></div>
         <button className="icon-btn" onClick={() => setSound(!sound)}>{sound ? '🔊' : '🔇'}</button>
-        <button className="icon-btn" onClick={startGame}>↻</button>
+        {mode !== 'online' && <button className="icon-btn" onClick={startGame}>↻</button>}
       </header>
 
       <div className="board-stage">
@@ -239,15 +427,18 @@ export default function App() {
           <span className="cp-avatar big">{mode === 'computer' && isAI(turn) ? '🤖' : AVATAR[turn]}</span>
           <div>
             <b>{names[turn]}</b>
-            <small>{phase === 'move' ? (isAI(turn) ? 'AI is moving…' : 'Tap a glowing pawn!') : phase === 'anim' ? 'Moving…' : isAI(turn) ? 'AI is thinking…' : 'Your move — roll!'}</small>
+            <small>{mode === 'online' && !isMyOnlineTurn ? `Waiting for ${names[turn]}…` : phase === 'move' ? (isAI(turn) ? 'AI is moving…' : 'Tap a glowing pawn!') : phase === 'anim' ? 'Moving…' : isAI(turn) ? 'AI is thinking…' : 'Your move — roll!'}</small>
           </div>
         </div>
-        <button className="dice-hit" onClick={rollDice} disabled={phase !== 'roll' || isAI(turn) || rolling} aria-label="Roll the dice">
+        <button className="dice-hit" onClick={rollDice} disabled={phase !== 'roll' || isAI(turn) || !isMyOnlineTurn || rolling} aria-label="Roll the dice">
           <Suspense fallback={<div className="loading-3d">…</div>}><Dice3D value={dice} rolling={rolling} pipColor={PIP[turn]} /></Suspense>
         </button>
-        <button className="roll-btn" disabled={phase !== 'roll' || isAI(turn) || rolling} onClick={rollDice}>{rolling ? 'ROLLING…' : '🎲 ROLL'}</button>
+        <button className="roll-btn" disabled={phase !== 'roll' || isAI(turn) || !isMyOnlineTurn || rolling} onClick={rollDice}>{rolling ? 'ROLLING…' : !isMyOnlineTurn && mode === 'online' ? 'WAITING…' : '🎲 ROLL'}</button>
       </div>
 
+      {mode === 'online' && (
+        <div className="emote-bar">{['😂 LOL', '🔥 On fire!', '😱 No way!', '👏 Well played!', '😎 Too easy!', '🏆 I will win!'].map((t) => <button key={t} onClick={() => sendEmote(t)}>{t}</button>)}</div>
+      )}
       <div className="score-strip">
         {activeColors.map((c) => <span key={c} className={turn === c ? 'on' : ''}><i className={`chip chip-${c}`} />{names[c]} · {tokens[c].filter((p) => p === 56).length}⌂</span>)}
       </div>
@@ -257,8 +448,8 @@ export default function App() {
           <div className="trophy">🏆</div>
           <h2>{names[winner]} WINS!</h2>
           <p>{META[winner].label} raced all four pawns home. Champion of the board! 👑</p>
-          <button className="play-btn" onClick={startGame}>↻ &nbsp;PLAY AGAIN</button>
-          <button className="ghost-btn" onClick={() => setScreen('menu')}>MAIN MENU</button>
+          {mode !== 'online' && <button className="play-btn" onClick={startGame}>↻ &nbsp;PLAY AGAIN</button>}
+          <button className="ghost-btn" onClick={() => (mode === 'online' ? leaveOnline() : setScreen('menu'))}>MAIN MENU</button>
         </div></div>
       )}
     </div>

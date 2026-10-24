@@ -12,6 +12,12 @@ rules, rebuilt bigger and better. (That's also why ours is called *Ludo Royal*.)
 
 ## 🎮 What's inside
 
+- 🌐 **PLAY ONLINE (new!)** — create a 6-digit room code, friends join from their own
+  phones anywhere in the world and play live on the same 3D board (free peer-to-peer
+  via PeerJS, no sign-up). Includes a Ludo-King-style lobby, share/copy code and
+  in-game quick emotes. Only the player whose turn it is can roll — everyone else
+  watches the pawns move live.
+
 - 🎲 **Real 3D dice** (Three.js) — tap ROLL, it tumbles in the air and lands on the exact face
 - ♟️ **Real 3D board & pawns** — lathe-turned glossy pawns, neon-glow floating board,
   star particles, dynamic lights & shadows, gentle camera drift
@@ -25,7 +31,7 @@ rules, rebuilt bigger and better. (That's also why ours is called *Ludo Royal*.)
 ## 📲 Install on any phone
 
 ### Option 1 — APK (Android, direct)
-1. Open this repo's **Releases** → `Ludo Royal 3D APK v2.0…` → download **LudoRoyal.apk** (~7 MB)
+1. Open this repo's **Releases** → `Ludo Royal 3D ONLINE APK v3.0…` → download **LudoRoyal.apk** (~7 MB)
 2. Tap the file → **Install** → allow "Install unknown apps" if asked (debug-signed free build)
 3. Done — the 👑 icon appears on your home screen!
 

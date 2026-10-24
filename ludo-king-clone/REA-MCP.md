@@ -57,3 +57,11 @@ wala clone banane ka.
 static JS graph banaya (`graph_id: jsrg_8af35784...`, authority:
 shipped-artifact, koi code execute nahi hua). Pure folder par chalane par
 `node_modules` bhi scan hota hai, isliye `src` par chalana behtar hai.
+
+## v3.0 note — about "reverse engineer Ludo King"
+REA is plugged in this repo and was used to analyze OUR OWN app. We did not
+(and will not) point REA at the commercial Ludo King binary to extract its
+code, art or branding — that would be copyright/trademark infringement, and
+no such binary was provided anyway. Instead, every requested feature
+(online rooms, lobby, captures, bonus turns) was implemented originally
+from the public rules of Ludo. See README for the clean-room note.
