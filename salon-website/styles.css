@@ -91,18 +91,19 @@ img { display: block; max-width: 100%; }
   text-decoration: none;
 }
 .brand-mark {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid rgba(197,163,106,.75);
+  display: block;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  overflow: hidden;
   border-radius: 50%;
-  color: var(--gold-bright);
-  font-family: var(--serif);
-  font-size: 25px;
-  line-height: 1;
+  transition: filter .25s ease, transform .25s ease;
 }
-.brand-mark span { color: var(--cream); font-size: 20px; }
+.brand-mark img { width: 100%; height: 100%; object-fit: contain; }
+.brand:hover .brand-mark, .brand:focus-visible .brand-mark {
+  filter: drop-shadow(0 0 8px rgba(216,186,130,.38));
+  transform: rotate(-4deg) scale(1.04);
+}
 .brand-name {
   display: flex;
   flex-direction: column;
@@ -251,10 +252,34 @@ img { display: block; max-width: 100%; }
 .text-link span:last-child { font-size: 14px; }
 .hero-footnote { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; margin-top: clamp(46px, 7vw, 90px); color: rgba(243,239,229,.54); font-size: 10px; letter-spacing: .03em; }
 .hero-footnote-icon { color: var(--gold); font-size: 15px; }
-.install-app-link { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 10px; margin-top: 13px; padding: 0; border: 0; background: transparent; color: rgba(243,239,229,.68); cursor: pointer; font-size: 9px; font-weight: 650; letter-spacing: .05em; transition: color .2s ease; }
-.install-app-link:hover { color: var(--gold-bright); }
-.install-app-link > span:last-child { color: var(--gold-bright); font-size: 13px; }
-.install-app-icon { display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid rgba(197,163,106,.65); border-radius: 50%; color: var(--gold-bright); font-size: 13px; }
+.install-app-link {
+  position: fixed;
+  z-index: 55;
+  top: 50%;
+  right: max(10px, env(safe-area-inset-right));
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100vw - 20px);
+  padding: 10px 13px 10px 10px;
+  border: 1px solid rgba(216,186,130,.72);
+  border-radius: 999px;
+  background: rgba(23,23,21,.94);
+  box-shadow: 0 8px 26px rgba(0,0,0,.25);
+  color: var(--cream);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  backdrop-filter: blur(12px);
+  transition: color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.install-app-link:hover { border-color: var(--gold-bright); color: var(--gold-bright); transform: translate(-2px, -50%); box-shadow: 0 10px 30px rgba(0,0,0,.32); }
+.install-app-link[hidden] { display: none !important; }
+.install-app-icon { display: grid; width: 24px; height: 24px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(197,163,106,.72); border-radius: 50%; background: rgba(197,163,106,.11); color: var(--gold-bright); font-size: 15px; }
 .hero-visual { position: relative; min-height: 600px; overflow: hidden; background: #393632; }
 .hero-visual > img { width: 100%; height: 100%; min-height: inherit; object-fit: cover; object-position: 53% 54%; }
 .hero-image-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,14,13,.08) 38%, rgba(14,14,13,.67) 100%), linear-gradient(90deg, rgba(14,14,13,.08), transparent 34%); }
@@ -408,7 +433,7 @@ img { display: block; max-width: 100%; }
 .final-cta-button { flex-shrink: 0; }
 
 .site-footer { display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 32px; row-gap: 18px; padding: 42px clamp(25px, 6vw, 92px) 28px; background: var(--ink); color: var(--cream); }
-.brand-footer .brand-mark { width: 36px; height: 36px; font-size: 22px; }
+.brand-footer .brand-mark { width: 40px; height: 40px; }
 .brand-footer .brand-name { font-size: 10px; }
 .site-footer > p { margin: 0; color: rgba(243,239,229,.56); font-size: 10px; }
 .footer-links { display: flex; align-items: center; gap: 25px; }
@@ -477,7 +502,7 @@ img { display: block; max-width: 100%; }
   body { padding-bottom: 68px; }
   .announcement-bar { min-height: 31px; padding: 6px 12px; font-size: 7px; letter-spacing: .11em; }
   .site-header { position: sticky; top: 0; grid-template-columns: 1fr auto auto; min-height: 69px; padding: 0 20px; }
-  .brand-mark { width: 35px; height: 35px; font-size: 22px; }
+  .brand-mark { width: 35px; height: 35px; }
   .brand-name { font-size: 9px; }
   .brand-name small { font-size: 7px; }
   .menu-toggle { display: flex; width: 39px; height: 39px; flex-direction: column; align-items: center; justify-content: center; gap: 6px; margin-left: 12px; border: 1px solid rgba(243,239,229,.24); background: transparent; cursor: pointer; }
@@ -791,4 +816,78 @@ img { display: block; max-width: 100%; }
   .gallery-card-barber { min-height: 320px; }
   .gallery-card-barber img { min-height: 320px; }
   .gallery-card figcaption { right: 19px; bottom: 19px; left: 19px; }
+}
+
+/* Fixed, thumb-friendly help/install actions; no horizontal canvas expansion. */
+.help-launcher {
+  position: fixed;
+  z-index: 60;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 8px 15px 8px 9px;
+  border: 1px solid rgba(216,186,130,.78);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--cream);
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  transition: transform .2s ease, border-color .2s ease, color .2s ease;
+}
+.help-launcher:hover { border-color: var(--gold-bright); color: var(--gold-bright); transform: translateY(-2px); }
+.help-launcher:focus-visible, .install-app-link:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 4px; }
+.help-launcher-icon { display: grid; width: 28px; height: 28px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--gold); color: var(--ink); font-family: var(--serif); font-size: 18px; font-weight: 700; }
+.help-faq-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 18px 0 10px; }
+.help-faq-list button { min-width: 0; min-height: 42px; padding: 9px 11px; border: 1px solid rgba(34,31,25,.16); background: rgba(255,255,255,.35); color: var(--ink); cursor: pointer; font-size: 9px; line-height: 1.4; text-align: left; transition: border-color .18s, background .18s; }
+.help-faq-list button:hover, .help-faq-list button[aria-pressed="true"] { border-color: var(--gold-deep); background: rgba(197,163,106,.14); }
+.help-answer { min-height: 58px; margin: 0 0 15px; padding: 12px 14px; border-left: 2px solid var(--gold-deep); background: rgba(255,255,255,.37); color: #5b554b; font-size: 10px; line-height: 1.7; overflow-wrap: anywhere; }
+.help-contact-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.help-contact-actions .button { min-height: 45px; gap: 10px; padding: 0 11px; font-size: 8px; }
+.help-call-button { border-color: rgba(34,31,25,.28); color: var(--ink); }
+.ai-helper { margin-top: 23px; padding: 17px; border: 1px solid rgba(150,118,68,.29); background: rgba(255,255,255,.28); }
+.ai-helper .eyebrow { margin-bottom: 8px; }
+.ai-helper h3 { margin: 0; color: var(--ink); font-family: var(--serif); font-size: 24px; font-weight: 400; }
+.ai-helper > p:not(.eyebrow) { margin: 7px 0 13px; color: #686258; font-size: 9px; line-height: 1.65; }
+.ai-model-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.ai-model-links a { display: flex; align-items: center; justify-content: space-between; min-width: 0; min-height: 40px; padding: 8px 10px; border: 1px solid rgba(150,118,68,.43); background: var(--ink); color: var(--cream); font-size: 9px; font-weight: 700; text-decoration: none; transition: border-color .18s, color .18s, transform .18s; }
+.ai-model-links a:hover { border-color: var(--gold-bright); color: var(--gold-bright); transform: translateY(-1px); }
+.ai-model-links a span { color: var(--gold-bright); }
+.help-copy-prompt { margin-top: 9px; padding: 7px 0; border: 0; border-bottom: 1px solid rgba(150,118,68,.55); background: transparent; color: #6e5732; cursor: pointer; font-size: 8px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.help-copy-prompt:hover { color: var(--ink); }
+.help-model-status { min-height: 26px; margin: 8px 0 0 !important; color: #777166 !important; font-size: 8px !important; }
+.help-dialog .dialog-content { max-height: min(77vh, 680px); }
+.help-dialog .dialog-content h2 { font-size: clamp(36px, 7vw, 46px); }
+
+@media (max-width: 760px) {
+  .brand-mark { width: 38px; height: 38px; }
+  .brand-footer .brand-mark { width: 36px; height: 36px; }
+  .install-app-link { top: 70%; right: max(7px, env(safe-area-inset-right)); padding: 9px 10px 9px 8px; font-size: 8px; }
+  .install-app-icon { width: 22px; height: 22px; }
+  .help-launcher { right: max(12px, env(safe-area-inset-right)); bottom: calc(78px + env(safe-area-inset-bottom)); min-height: 45px; }
+  .help-dialog { max-height: 90vh; }
+  .help-dialog .dialog-content { max-height: calc(90vh - 62px); padding-right: 20px; padding-left: 20px; }
+}
+
+@media (max-width: 390px) {
+  .brand-mark { width: 34px; height: 34px; }
+  .brand-footer .brand-mark { width: 34px; height: 34px; }
+  .help-launcher { width: 46px; height: 46px; justify-content: center; padding: 7px; }
+  .help-launcher > span:last-child { display: none; }
+  .help-faq-list { grid-template-columns: 1fr; }
+  .help-contact-actions { grid-template-columns: 1fr; }
+  .ai-helper { padding: 13px; }
+  .ai-model-links { grid-template-columns: 1fr; }
+}
+
+/* Prevent accidental sideways page movement while retaining normal vertical reading. */
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+@supports (overflow-x: clip) {
+  html, body { overflow-x: clip; }
 }

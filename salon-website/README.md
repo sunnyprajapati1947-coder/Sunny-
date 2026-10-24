@@ -25,6 +25,9 @@ Then open `http://localhost:4173` in a browser. The site is static and needs no 
 - One-minute style finder that recommends a starting service and preselects it in booking
 - On-device “usual service” saving, with one-tap booking and no account
 - WhatsApp booking form that sends the service, name, requested date/time, and notes to **+91 96080 87035**
+- New barber-shears-and-star crest branding across the website, PWA icons, Android launcher, and splash screens
+- Fixed edge Install action, a bilingual Help & Support panel, and no sideways page overflow
+- Salon FAQs plus quick launchers for ChatGPT, Gemini, and Claude; the site copies a grooming prompt and opens the selected provider, without putting API keys in browser code
 - Share action and downloadable salon contact card (`.vcf`)
 - Direct click-to-call, Google Maps directions, service menu, barber profile, and location details
 - PWA home-screen shortcuts for booking and services, plus an offline app shell
@@ -42,14 +45,14 @@ Then open `http://localhost:4173` in a browser. The site is static and needs no 
 
 ## App installation and deployment
 
-The site remains an installable **Progressive Web App (PWA)**. Android browsers can install it from the in-page **Install the salon app** action; on iPhone/iPad, open it in Safari and choose **Share → Add to Home Screen**. Its app shell and, after caching, the two salon photos are available offline; booking and sharing still need an internet connection. The Vercel site is uploaded directly from the static files because Vercel's GitHub connection is not enabled.
+The site remains an installable **Progressive Web App (PWA)**. Android browsers can install it from the in-page **Install** action; on iPhone/iPad, open it in Safari and choose **Share → Add to Home Screen**. Its app shell and, after caching, the two salon photos are available offline; booking and sharing still need an internet connection. The Vercel site is uploaded directly from the static files because Vercel's GitHub connection is not enabled.
 
 ### Android APK
 
-- **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.0.apk)** from the public GitHub release.
+- **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.1.apk)** from the public GitHub release.
 - The APK bundles the bilingual site and its salon photos locally, so browsing does not rely on the Vercel website being public. WhatsApp booking and sharing need internet access.
 - Install on Android 7.0 or newer: download the APK, open it from Downloads, allow your browser or file manager to install unknown apps if Android asks, then tap **Install**. This is a debug-signed sideload APK for direct installation/testing, not a Play Store release; installing a later release may require uninstalling an older differently signed build.
-- Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android APK** in GitHub Actions. It bundles the site, builds and verifies the APK, and publishes the APK plus SHA-256 checksum as a workflow artifact. Successful builds from this app branch or `main` also publish/refresh the public `v1.0.0` GitHub release linked above.
+- Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android APK** in GitHub Actions. It bundles the site, builds and verifies the APK, and publishes the APK plus SHA-256 checksum as a workflow artifact. Successful builds from this app branch or `main` also publish/refresh the public `v1.0.1` GitHub release linked above.
 
 To build locally (Node.js 22, Java 21, Android SDK 36):
 

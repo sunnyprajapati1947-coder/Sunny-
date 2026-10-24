@@ -45,7 +45,7 @@ def main() -> None:
         raise SystemExit(f"Missing salon icon source: {SOURCE}")
     write_launcher_icons()
     write_splash_screens()
-    print("Generated Android launcher and splash graphics from the gold M salon logo.")
+    print("Generated Android launcher and splash graphics from the new barber shears crest.")
 
 
 if __name__ == "__main__":

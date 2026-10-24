@@ -16,7 +16,7 @@
   <meta property="og:image:alt" content="The bright, modern interior of Men's Salon in Nawada">
   <meta name="twitter:card" content="summary_large_image">
   <title>Men's Salon</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171715'/%3E%3Cpath d='M19 16h7v32h-7zm19 0h7v32h-7zM26 29h12v6H26z' fill='%23c5a36a'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="app-icon.svg">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/salon-interior.jpg">
@@ -56,7 +56,7 @@
 
   <header class="site-header">
     <a class="brand" href="#top" aria-label="Men's Salon home">
-      <span class="brand-mark" aria-hidden="true">M<span>·</span></span>
+      <span class="brand-mark"><img src="assets/brand-mark.svg" alt="" aria-hidden="true"></span>
       <span class="brand-name">MEN'S <small>SALON</small></span>
     </a>
 
@@ -107,11 +107,6 @@
           <span class="hero-footnote-icon" aria-hidden="true">✦</span>
           <span data-en="Personal attention, every appointment." data-hi="हर अपॉइंटमेंट में खास ध्यान।">Personal attention, every appointment.</span>
         </div>
-        <button class="install-app-link" id="installAppButton" type="button" aria-label="Install the salon app" data-en-aria="Install the salon app" data-hi-aria="सलून ऐप इंस्टॉल करें">
-          <span class="install-app-icon" aria-hidden="true">↓</span>
-          <span data-en="Install the salon app" data-hi="सलून ऐप इंस्टॉल करें">Install the salon app</span>
-          <span aria-hidden="true">↗</span>
-        </button>
       </div>
 
       <div class="hero-visual">
@@ -365,7 +360,7 @@
 
   <footer class="site-footer">
     <a class="brand brand-footer" href="#top" aria-label="Men's Salon home">
-      <span class="brand-mark" aria-hidden="true">M<span>·</span></span>
+      <span class="brand-mark"><img src="assets/brand-mark.svg" alt="" aria-hidden="true"></span>
       <span class="brand-name">MEN'S <small>SALON</small></span>
     </a>
     <p data-en="A sharper cut, a calmer hour. Sudama Nagar, Nawada."
@@ -393,6 +388,16 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
     <a href="tel:+919608087035" class="mobile-call"><span aria-hidden="true">☎</span><span data-en="Call" data-hi="कॉल">Call</span></a>
     <button class="button button-gold" type="button" data-open-booking><span data-en="Book on WhatsApp" data-hi="WhatsApp पर बुक करें">Book on WhatsApp</span><span class="button-arrow" aria-hidden="true">↗</span></button>
   </div>
+
+  <button class="install-app-link" id="installAppButton" type="button" aria-label="Install the salon app" data-en-aria="Install the salon app" data-hi-aria="सलून ऐप इंस्टॉल करें">
+    <span class="install-app-icon" aria-hidden="true">↓</span>
+    <span data-en="Install" data-hi="इंस्टॉल">Install</span>
+  </button>
+
+  <button class="help-launcher" id="helpSupportButton" type="button" aria-haspopup="dialog" aria-controls="helpSupportDialog" aria-label="Help and AI support" data-en-aria="Help and AI support" data-hi-aria="मदद और AI सहायता">
+    <span class="help-launcher-icon" aria-hidden="true">?</span>
+    <span data-en="Help" data-hi="मदद">Help</span>
+  </button>
 
 
   <dialog class="booking-dialog style-finder-dialog" id="styleFinderDialog" aria-labelledby="styleFinderTitle">
@@ -453,6 +458,38 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
         <p class="form-footnote" data-en="This is a booking request, not a confirmed appointment. We'll reply to confirm availability."
            data-hi="यह बुकिंग अनुरोध है, पक्का अपॉइंटमेंट नहीं। उपलब्धता की पुष्टि हम जवाब देकर करेंगे।">This is a booking request, not a confirmed appointment. We'll reply to confirm availability.</p>
       </form>
+    </div>
+  </dialog>
+
+  <dialog class="booking-dialog help-dialog" id="helpSupportDialog" aria-labelledby="helpSupportTitle">
+    <div class="dialog-topline"><span data-en="MEN'S SALON · HELP DESK" data-hi="मेन्स सलून · सहायता">MEN'S SALON · HELP DESK</span><button class="dialog-close" id="closeHelpSupport" type="button" aria-label="Close help and support" data-en-aria="Close help and support" data-hi-aria="मदद बंद करें">×</button></div>
+    <div class="dialog-content">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span><span data-en="QUICK ANSWERS · REAL SUPPORT · AI OPTIONS" data-hi="त्वरित जवाब · सीधी मदद · AI विकल्प">QUICK ANSWERS · REAL SUPPORT · AI OPTIONS</span></p>
+      <h2 id="helpSupportTitle"><span data-en="How can we help?" data-hi="हम कैसे मदद करें?">How can we help?</span></h2>
+      <p class="dialog-intro" data-en="Choose a quick question, message the salon, or open an AI assistant for general grooming ideas." data-hi="कोई सवाल चुनें, सलून को संदेश भेजें या सामान्य ग्रूमिंग सुझावों के लिए AI सहायक खोलें।">Choose a quick question, message the salon, or open an AI assistant for general grooming ideas.</p>
+      <div class="help-faq-list" role="group" aria-label="Common questions" data-en-aria="Common questions" data-hi-aria="आम सवाल">
+        <button type="button" data-help-topic="booking" data-en="How do I book?" data-hi="बुकिंग कैसे करें?">How do I book?</button>
+        <button type="button" data-help-topic="prices" data-en="What are the prices?" data-hi="कीमतें क्या हैं?">What are the prices?</button>
+        <button type="button" data-help-topic="hours" data-en="When are you open?" data-hi="सलून कब खुला रहता है?">When are you open?</button>
+        <button type="button" data-help-topic="location" data-en="Where is the salon?" data-hi="सलून कहाँ है?">Where is the salon?</button>
+      </div>
+      <p class="help-answer" id="helpAnswer" role="status" aria-live="polite"></p>
+      <div class="help-contact-actions">
+        <a class="button button-gold" href="https://wa.me/919608087035?text=Hi%2C%20I%20need%20help%20with%20Men%27s%20Salon." target="_blank" rel="noopener noreferrer"><span data-en="WhatsApp support" data-hi="WhatsApp सहायता">WhatsApp support</span><span class="button-arrow" aria-hidden="true">↗</span></a>
+        <a class="button button-outline-light help-call-button" href="tel:+919608087035"><span data-en="Call the salon" data-hi="सलून को कॉल करें">Call the salon</span><span class="button-arrow" aria-hidden="true">☎</span></a>
+      </div>
+      <section class="ai-helper" aria-labelledby="aiHelperTitle">
+        <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span><span data-en="AI GROOMING GUIDE" data-hi="AI ग्रूमिंग गाइड">AI GROOMING GUIDE</span></p>
+        <h3 id="aiHelperTitle" data-en="Choose an AI model" data-hi="AI मॉडल चुनें">Choose an AI model</h3>
+        <p data-en="We’ll copy a salon-safe starter prompt, then open your chosen provider. No API key or personal details are sent by this site." data-hi="हम सुरक्षित शुरुआती सवाल कॉपी करेंगे और चुना हुआ AI खोलेंगे। यह साइट कोई API key या निजी जानकारी नहीं भेजती।">We’ll copy a salon-safe starter prompt, then open your chosen provider. No API key or personal details are sent by this site.</p>
+        <div class="ai-model-links" aria-label="AI model providers" data-en-aria="AI model providers" data-hi-aria="AI मॉडल प्रदाता">
+          <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" data-ai-model="chatgpt">ChatGPT <span aria-hidden="true">↗</span></a>
+          <a href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer" data-ai-model="gemini">Gemini <span aria-hidden="true">↗</span></a>
+          <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer" data-ai-model="claude">Claude <span aria-hidden="true">↗</span></a>
+        </div>
+        <button class="help-copy-prompt" type="button" id="copyAiPrompt" data-en="Copy the grooming question" data-hi="ग्रूमिंग सवाल कॉपी करें">Copy the grooming question</button>
+        <p class="help-model-status" id="aiHelperStatus" role="status" aria-live="polite" data-en="AI answers are general advice; confirm prices and availability directly with Nitish." data-hi="AI के जवाब सामान्य सुझाव हैं; कीमत और उपलब्धता नितीश से सीधे पक्की करें।">AI answers are general advice; confirm prices and availability directly with Nitish.</p>
+      </section>
     </div>
   </dialog>
 

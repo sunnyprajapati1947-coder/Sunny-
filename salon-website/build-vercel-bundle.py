@@ -154,8 +154,8 @@ def make_document_shell(document_html: str, revision: str) -> str:
 
 def make_service_worker(photo_urls: list[str]) -> str:
     urls = json.dumps(photo_urls, separators=(",", ":"))
-    return f'''const CACHE_NAME = "mens-salon-shell-v4";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/app-icon.svg"];
+    return f'''const CACHE_NAME = "mens-salon-shell-v5";
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/app-icon.svg", "/assets/brand-mark.svg"];
 const REMOTE_MEDIA = {urls};
 
 self.addEventListener("install", (event) => {{
@@ -294,6 +294,8 @@ def main() -> None:
     (OUTPUT_DIR / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (OUTPUT_DIR / "sw.js").write_text(make_service_worker(photo_urls), encoding="utf-8")
     shutil.copy2(SITE_DIR / "app-icon.svg", OUTPUT_DIR / "app-icon.svg")
+    (OUTPUT_DIR / "assets").mkdir()
+    shutil.copy2(SITE_DIR / "assets" / "brand-mark.svg", OUTPUT_DIR / "assets" / "brand-mark.svg")
 
     print(f"Prepared {OUTPUT_DIR} for asset commit {revision}.")
     for path in sorted(OUTPUT_DIR.iterdir()):

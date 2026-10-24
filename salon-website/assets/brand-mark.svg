@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="brandMarkTitle">
+  <title id="brandMarkTitle">Men's Salon barber shears crest</title>
+  <circle cx="256" cy="256" r="235" fill="#171715" stroke="#c7a76c" stroke-width="9"/>
+  <circle cx="256" cy="256" r="211" fill="none" stroke="#c7a76c" stroke-width="4" stroke-dasharray="6 22" opacity=".55"/>
+  <g fill="#f4efe4">
+    <path d="M249 250 130 104c8 77 51 131 113 168l18-13z"/>
+    <path d="m263 250 119-146c-8 77-51 131-113 168l-18-13z"/>
+  </g>
+  <path d="m246 263-45 70m65-70 45 70" fill="none" stroke="#d8ba82" stroke-linecap="round" stroke-width="14"/>
+  <g fill="none" stroke="#f4efe4" stroke-width="15">
+    <path d="M202 326c-27-17-58-5-62 23-4 26 16 43 39 35 22-8 34-35 23-58z"/>
+    <path d="M310 326c27-17 58-5 62 23 4 26-16 43-39 35-22-8-34-35-23-58z"/>
+  </g>
+  <circle cx="256" cy="259" r="18" fill="#c7a76c"/>
+  <circle cx="256" cy="259" r="6" fill="#171715"/>
+  <path d="m382 157 10 21 21 10-21 10-10 21-10-21-21-10 21-10z" fill="#c7a76c"/>
+  <circle cx="132" cy="256" r="7" fill="#c7a76c"/>
+  <circle cx="380" cy="334" r="7" fill="#c7a76c"/>
+</svg>

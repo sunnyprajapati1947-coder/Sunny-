@@ -1,4 +1,4 @@
-const CACHE_NAME = "mens-salon-shell-v2";
+const CACHE_NAME = "mens-salon-shell-v3";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "/script.js",
   "/manifest.webmanifest",
   "/app-icon.svg",
+  "/assets/brand-mark.svg",
   "/icons/icon-180.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",

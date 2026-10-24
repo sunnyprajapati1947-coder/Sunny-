@@ -11,6 +11,11 @@
   const primaryNav = document.querySelector("#primaryNav");
   const installButton = document.querySelector("#installAppButton");
   const installHelpDialog = document.querySelector("#installHelpDialog");
+  const helpDialog = document.querySelector("#helpSupportDialog");
+  const helpSupportButton = document.querySelector("#helpSupportButton");
+  const helpAnswer = document.querySelector("#helpAnswer");
+  const aiHelperStatus = document.querySelector("#aiHelperStatus");
+  const copyAiPromptButton = document.querySelector("#copyAiPrompt");
   const styleFinderDialog = document.querySelector("#styleFinderDialog");
   const finderOptions = document.querySelectorAll("[data-finder-service]");
   const finderSelection = document.querySelector("#finderSelection");
@@ -20,7 +25,9 @@
   let currentLanguage = "en";
   let lastBookingTrigger = null;
   let lastFinderTrigger = null;
+  let lastHelpTrigger = null;
   let selectedFinderService = "";
+  let selectedHelpTopic = "booking";
   let deferredInstallPrompt = null;
 
   const services = {
@@ -98,8 +105,36 @@
     if (continueFromFinder) continueFromFinder.disabled = false;
   }
 
+  const helpAnswers = {
+    booking: {
+      en: "Use the booking form or WhatsApp button to send a request. Nitish will reply to confirm a time; the request is not a confirmed appointment.",
+      hi: "बुकिंग फ़ॉर्म या WhatsApp बटन से अनुरोध भेजें। समय की पुष्टि नितीश जवाब देकर करेंगे; अनुरोध पक्का अपॉइंटमेंट नहीं है।"
+    },
+    prices: {
+      en: "The listed starting prices are local estimates, not confirmed salon rates. Ask on WhatsApp for today's exact price before visiting.",
+      hi: "दिखाई गई शुरुआती कीमतें स्थानीय अनुमान हैं, सैलून की पक्की दरें नहीं। आने से पहले आज की सही कीमत WhatsApp पर पूछें।"
+    },
+    hours: {
+      en: "The salon's opening days and hours have not been verified. Please call or message to check today's availability.",
+      hi: "सलून के खुलने के दिन और समय की पुष्टि नहीं हुई है। आज की उपलब्धता जानने के लिए कॉल या संदेश करें।"
+    },
+    location: {
+      en: "Men's Salon is listed in Sudama Nagar, Nawada, Bihar 805110. The exact landmark has not been confirmed; open Maps or message before setting out.",
+      hi: "Men's Salon का पता सुदामा नगर, नवादा, बिहार 805110 है। सटीक लैंडमार्क की पुष्टि नहीं हुई; निकलने से पहले Maps खोलें या संदेश करें।"
+    }
+  };
+
+  function updateHelpAnswer(topic = selectedHelpTopic) {
+    if (!helpAnswer) return;
+    selectedHelpTopic = Object.prototype.hasOwnProperty.call(helpAnswers, topic) ? topic : "booking";
+    helpAnswer.textContent = helpAnswers[selectedHelpTopic][currentLanguage];
+    document.querySelectorAll("[data-help-topic]").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.helpTopic === selectedHelpTopic));
+    });
+  }
+
   function syncDialogOpenState() {
-    const open = [bookingDialog, installHelpDialog, styleFinderDialog].some((dialog) => dialog?.open);
+    const open = [bookingDialog, installHelpDialog, styleFinderDialog, helpDialog].some((dialog) => dialog?.open);
     document.body.classList.toggle("dialog-open", open);
   }
 
@@ -134,6 +169,7 @@
 
     updateUsualServiceUI();
     updateFinderSelection();
+    updateHelpAnswer();
 
     try {
       localStorage.setItem("mens-salon-language", currentLanguage);
@@ -149,9 +185,13 @@
   try {
     const savedLanguage = localStorage.getItem("mens-salon-language");
     if (savedLanguage === "hi" || savedLanguage === "en") setLanguage(savedLanguage);
-    else updateUsualServiceUI();
+    else {
+      updateUsualServiceUI();
+      updateHelpAnswer();
+    }
   } catch (_) {
     updateUsualServiceUI();
+    updateHelpAnswer();
     // Keep English as the default when browser storage is unavailable.
   }
 
@@ -283,6 +323,27 @@
   });
   installHelpDialog?.addEventListener("close", syncDialogOpenState);
 
+  helpSupportButton?.addEventListener("click", () => {
+    if (!helpDialog || typeof helpDialog.showModal !== "function") return;
+    lastHelpTrigger = helpSupportButton;
+    updateHelpAnswer();
+    helpDialog.showModal();
+    syncDialogOpenState();
+  });
+
+  helpDialog?.querySelector("#closeHelpSupport")?.addEventListener("click", () => helpDialog.close());
+  helpDialog?.addEventListener("click", (event) => {
+    if (event.target === helpDialog) helpDialog.close();
+  });
+  helpDialog?.addEventListener("close", () => {
+    syncDialogOpenState();
+    if (lastHelpTrigger && typeof lastHelpTrigger.focus === "function") lastHelpTrigger.focus();
+  });
+
+  document.querySelectorAll("[data-help-topic]").forEach((button) => {
+    button.addEventListener("click", () => updateHelpAnswer(button.dataset.helpTopic));
+  });
+
   document.querySelectorAll("[data-toggle-usual]").forEach((button) => {
     button.addEventListener("click", () => {
       const service = button.dataset.service || "";
@@ -345,6 +406,29 @@
     }
     return copied;
   }
+
+  function aiStarterPrompt() {
+    return currentLanguage === "hi"
+      ? "मुझे मेरे बालों की बनावट, चेहरे के आकार, रोज़ की देखभाल के समय और मौसम के हिसाब से पुरुषों के हेयरकट और ग्रूमिंग के 3 व्यावहारिक सुझाव दें। हर सुझाव का रखरखाव भी बताएं। मैं Men's Salon, सुदामा नगर, नवादा में नितीश जाटव (10 साल के अनुभव वाले बार्बर) से विकल्पों पर चर्चा करूँगा। कीमत या खुलने के समय का अनुमान न लगाएँ; पहले मुझसे ज़रूरी सवाल पूछें और कोई निजी जानकारी न माँगें।"
+      : "Suggest three practical men's haircut and grooming options based on my hair texture, face shape, daily maintenance time, and climate. Explain the upkeep for each. I will discuss them with Nitish Jatav, a barber with 10 years of experience at Men's Salon, Sudama Nagar, Nawada. Do not invent salon prices or opening hours; ask useful follow-up questions and do not request sensitive personal information.";
+  }
+
+  function setAiHelperStatus(copied) {
+    if (!aiHelperStatus) return;
+    aiHelperStatus.textContent = copied
+      ? (currentLanguage === "hi" ? "सवाल कॉपी हो गया — चुने हुए AI में पेस्ट करें।" : "Prompt copied — paste it into the AI provider you opened.")
+      : (currentLanguage === "hi" ? "सवाल कॉपी नहीं हुआ। मॉडल खोलकर ऊपर दिया सवाल कॉपी करें।" : "Couldn't copy the prompt. Open a model and copy the question above.");
+  }
+
+  document.querySelectorAll("[data-ai-model]").forEach((link) => {
+    link.addEventListener("click", () => {
+      copyText(aiStarterPrompt()).then(setAiHelperStatus).catch(() => setAiHelperStatus(false));
+    });
+  });
+
+  copyAiPromptButton?.addEventListener("click", () => {
+    copyText(aiStarterPrompt()).then(setAiHelperStatus).catch(() => setAiHelperStatus(false));
+  });
 
   function salonUrl() {
     if (window.SALON_NATIVE_APP) return `https://wa.me/${businessPhone}`;

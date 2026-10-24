@@ -63,10 +63,11 @@ jobs:
           apk="salon-website/android-app/android/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$apk"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" | grep -F "package: name='com.menssalon.nawada'"
+          badging=$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk")
+          printf '%s\n' "$badging" | grep -F "package: name='com.menssalon.nawada' versionCode='2' versionName='1.0.1'"
           mkdir -p salon-website/android-app/dist
-          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.0.apk
-          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.0.apk > SHA256SUMS)
+          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.1.apk
+          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.1.apk > SHA256SUMS)
 
       - name: Upload APK download
         uses: actions/upload-artifact@v4
@@ -80,18 +81,19 @@ jobs:
         if: github.ref == 'refs/heads/arena/01e737c4-sunny' || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
+          tag_name: v1.0.1
           target_commitish: ${{ github.sha }}
-          name: Men's Salon Android v1.0.0
+          name: Men's Salon Android v1.0.1
           body: |
-            The first downloadable Android app for Men's Salon, Nawada.
+            Updated Android release for Men's Salon, Nawada.
 
-            - Includes the bilingual English/Hindi salon site, photos, and gold M branding.
+            - Includes the bilingual English/Hindi salon site, new barber-shears branding, and the Help & Support panel.
             - Browsing works offline; WhatsApp booking and sharing require internet access.
             - Install the debug-signed APK on Android 7.0 or later. This is a sideload build, not a Play Store release.
             - `SHA256SUMS` contains the APK checksum.
+
           files: |
-            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.0.apk
+            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.1.apk
             salon-website/android-app/dist/SHA256SUMS
           fail_on_unmatched_files: true
           overwrite_files: true
