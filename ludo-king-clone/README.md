@@ -23,7 +23,29 @@ public-domain rules istemal hue hain. Naam bhi apna hai: **Ludo Royal**.
 - 🔊 Bina file ke WebAudio sounds (dice, kata, jeet)
 - 📱 Mobile + desktop dono par chalta hai
 
-## 🚀 Chalao (Run)
+## 📲 Phone Mein Install Karo (Sabse Aasan)
+
+### Tarika 1 — APK (Android, direct)
+1. Is repo ke **Releases** mein jao → `Ludo Royal APK` → **LudoRoyal.apk** download karo (phone se)
+2. File kholo → **Install** → "Unknown apps" puche to **Allow** kar do (debug-signed free app hai)
+3. Game khul jayega — bina internet ke bhi chalega! 🎲
+
+Har push par GitHub Actions (`.github/workflows/build-ludo-apk.yml`) nayi APK
+khud bana kar Release mein daal deta hai.
+
+### Tarika 2 — PWA (Android + iPhone, bina APK)
+Game ko browser mein kholo → menu se **"APP INSTALL KARO"** button dabao:
+- **Android/Chrome:** ⋮ → *Install app / Add to Home screen*
+- **iPhone/Safari:** Share → *Add to Home Screen*
+
+Home screen par Ludo Royal ka icon aa jayega, full-screen app ki tarah chalega, offline bhi.
+
+### Tarika 3 — Khud APK banao (Android Studio)
+```bash
+cd ludo-king-clone && npm install && npm run sync && npm run open:android
+```
+
+## 🚀 Developer Run
 
 ```bash
 cd ludo-king-clone

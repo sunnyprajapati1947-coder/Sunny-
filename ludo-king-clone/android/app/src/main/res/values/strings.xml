@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ludo Royal</string>
+    <string name="title_activity_main">Ludo Royal</string>
+    <string name="package_name">com.Sunny.ludoroyal</string>
+    <string name="custom_url_scheme">com.Sunny.ludoroyal</string>
+</resources>

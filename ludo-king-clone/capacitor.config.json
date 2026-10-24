@@ -1,0 +1,8 @@
+{
+  "appId": "com.Sunny.ludoroyal",
+  "appName": "Ludo Royal",
+  "webDir": "dist",
+  "backgroundColor": "#1a237e",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}

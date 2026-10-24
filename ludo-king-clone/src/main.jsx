@@ -4,3 +4,8 @@ import App from './App.jsx';
 import './styles.css';
 
 createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>);
+
+// PWA: offline ke liye service worker (sirf production/published app mein)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}

@@ -1,0 +1,71 @@
+name: Build Ludo Royal APK
+
+on:
+  push:
+    branches: ["arena/729a22e2-sunny", "main"]
+    paths:
+      - "ludo-king-clone/**"
+      - ".github/workflows/build-ludo-apk.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ludo-king-clone
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ludo-king-clone/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Android SDK 36
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Build web app + sync Android
+        run: |
+          npm ci
+          npm run build
+          npx cap sync android
+
+      - name: Build release-ready debug APK (sab phone par install hoga)
+        working-directory: ludo-king-clone/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk LudoRoyal.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LudoRoyal-APK
+          path: ludo-king-clone/LudoRoyal.apk
+          retention-days: 90
+
+      - name: Publish APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ludo-royal-v1.0.${{ github.run_number }}
+          name: "Ludo Royal APK v1.0.${{ github.run_number }}"
+          body: |
+            ## 👑 Ludo Royal — Phone mein install karo!
+            1. Neeche **LudoRoyal.apk** download karo (phone se kholo)
+            2. Install dabao — "Unknown apps allow" puche to Allow kar do (ye debug-signed free app hai)
+            3. Khelo! 🎲 Computer aur Pass-N-Play dono mode hain.
+          files: ludo-king-clone/LudoRoyal.apk
+          fail_on_unmatched_files: true
