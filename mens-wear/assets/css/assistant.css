@@ -1,0 +1,41 @@
+/* Shop assistant — sits above the bag button on mobile, bottom-right on desktop */
+.ai{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:7600;font-family:Archivo,Helvetica,Arial,sans-serif}
+.ai__fab{display:flex;align-items:center;gap:9px;border:1px solid rgba(200,242,77,.55);background:#16160f;color:#f7f2e8;border-radius:100px;padding:12px 16px;font-size:.78rem;letter-spacing:.01em;cursor:pointer;box-shadow:0 20px 40px -20px rgba(0,0,0,.65);transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s}
+.ai__fab:hover{transform:translateY(-2px)}
+.ai__fabicon{color:#c8f24d;font-size:.9rem;line-height:1}
+.ai__fabtext{font-weight:600}
+
+.ai__panel{position:absolute;right:0;bottom:calc(100% + 12px);width:min(380px,calc(100vw - 36px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#f7f2e8;color:#16160f;border:1px solid rgba(22,22,15,.14);border-radius:22px;box-shadow:0 40px 80px -30px rgba(0,0,0,.5);overflow:hidden}
+.ai__panel[hidden]{display:none}
+.ai__head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px;background:#16160f;color:#f7f2e8}
+.ai__head b{display:block;font-size:.9rem;letter-spacing:-.01em}
+.ai__head span{display:block;margin-top:3px;font-size:.66rem;letter-spacing:.04em;text-transform:uppercase;color:rgba(247,242,232,.55)}
+.ai__close{border:0;background:transparent;color:#f7f2e8;font-size:1.3rem;line-height:1;cursor:pointer;padding:0 4px}
+.ai__log{flex:1;overflow-y:auto;padding:14px 14px 6px;display:flex;flex-direction:column;gap:10px}
+.ai__msg{max-width:100%;font-size:.82rem;line-height:1.55}
+.ai__msg p{margin:0 0 8px}
+.ai__msg--me{align-self:flex-end;background:#16160f;color:#f7f2e8;border-radius:16px 16px 4px 16px;padding:8px 12px;max-width:80%}
+.ai__msg--bot{background:#fff;border:1px solid rgba(22,22,15,.1);border-radius:16px 16px 16px 4px;padding:11px 12px}
+.ai__cards{display:flex;flex-direction:column;gap:8px;margin:4px 0 10px}
+.ai-card{display:block;text-decoration:none;color:inherit;border:1px solid rgba(22,22,15,.12);border-radius:12px;padding:9px 11px;background:#fbf8f1}
+.ai-card b{display:block;font-size:.8rem}
+.ai-card__price{display:inline-block;margin-top:2px;font-weight:700;font-size:.8rem}
+.ai-card__meta{display:block;margin-top:2px;font-size:.68rem;color:rgba(22,22,15,.6);line-height:1.4}
+.ai-card__cta{display:block;margin-top:5px;font-size:.68rem;font-weight:600;color:#16160f;text-decoration:underline}
+.ai__actions{margin-top:2px}
+.ai__wa{display:inline-block;font-size:.72rem;font-weight:700;background:#c8f24d;color:#16160f;text-decoration:none;padding:8px 12px;border-radius:100px}
+.ai__chips{display:flex;gap:6px;flex-wrap:wrap;padding:8px 14px 0}
+.ai__chip{border:1px solid rgba(22,22,15,.18);background:transparent;color:#16160f;border-radius:100px;padding:6px 10px;font-size:.7rem;cursor:pointer}
+.ai__chip:hover{background:#16160f;color:#f7f2e8}
+.ai__form{display:flex;gap:8px;padding:10px 14px 6px}
+.ai__form input{flex:1;border:1px solid rgba(22,22,15,.2);border-radius:100px;padding:10px 14px;font:inherit;font-size:.8rem;background:#fff}
+.ai__form input:focus{outline:2px solid #16160f;outline-offset:1px}
+.ai__form button{border:0;background:#16160f;color:#f7f2e8;width:38px;height:38px;border-radius:50%;font-size:1rem;cursor:pointer}
+.ai__foot{margin:0;padding:0 16px 12px;font-size:.62rem;line-height:1.45;color:rgba(22,22,15,.5)}
+@media (max-width:640px){
+  .ai{right:12px;bottom:calc(84px + env(safe-area-inset-bottom))}
+  .ai__fabtext{display:none}
+  .ai__fab{padding:14px;border-radius:50%}
+  .ai__panel{position:fixed;inset:auto 8px calc(84px + env(safe-area-inset-bottom)) 8px;width:auto;max-height:70vh}
+}
+@media (prefers-reduced-motion:reduce){.ai__fab{transition:none}}

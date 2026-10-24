@@ -753,6 +753,8 @@
 
   /* the app shell can nudge the visitor (offline, saved copy, …) */
   window.__mwToast = toast;
+  window.__MW_PRODUCTS = PRODUCTS;
+  window.__MW_CONFIG = CONFIG;
 
   function copy(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -935,12 +937,24 @@
             "?text=" + encodeURIComponent(orderText(ref)));
           orderBtn.addEventListener("click", function () {
             track("bag_order", { items: bagQty(), value: total });
+            /* the message goes to WhatsApp as always; this keeps the owner's
+               panel in sync too, so nothing depends on scrolling a chat */
+            if (typeof window.__mwSaveOrder === "function") {
+              window.__mwSaveOrder({
+                ref: ref,
+                total: total,
+                items: bag.map(function (it) {
+                  var p = PRODUCTS[it.id] || {};
+                  return { name: p.name, size: it.size, colour: it.colour, qty: it.qty, price: p.price };
+                })
+              });
+            }
           });
         }
         var copyBtn = $("#bagCopy");
         if (copyBtn) {
           copyBtn.addEventListener("click", function () {
-            copy(orderText(ref)).then(function () { toast("Order details copy ho gayi"); });
+            copy(orderText(ref)).then(function () { toast("Order details copied"); });
           });
         }
       }

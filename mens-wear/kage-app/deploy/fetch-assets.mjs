@@ -4,6 +4,7 @@
      /                  the shop (shopping homepage, the thing people came for)
      /shop/             a redirect to / so every old shared link still lands right
      /experience/kage/  the Kage landing page, untouched, as its own experience
+     /admin/            the owner panel: live orders, sign-in only
 
    The deployment payload is text-only, so this step materialises the binaries:
    it pulls the Kage bundle, the authored Kage document with its assets, and the
@@ -13,7 +14,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const KAGE = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v3/mens-wear/kage-app/dist/";
-const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v14/mens-wear/";
+const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v15/mens-wear/";
 
 const KAGE_TEXT = [
   ["assets/index-CD3ZoDni.js", null],
@@ -41,7 +42,10 @@ const KAGE_ASSETS = [
 ];
 
 /* the shop shell becomes the site root; CSS/JS/images load from the CDN tag */
-const SHOP_FILES = [["index.html", "live/vercel-entry.html"]];
+const SHOP_FILES = [
+  ["index.html", "live/vercel-entry.html"],
+  ["admin/index.html", "kage-app/deploy/admin.html"],
+];
 
 /* the Kage shell: mounts the bundle above and gets out of the way */
 const KAGE_SHELL = `<!doctype html>
@@ -108,7 +112,7 @@ for (const path of KAGE_ASSETS) {
 }
 for (const [target, path] of SHOP_FILES) {
   const body = await grab(SHOP + path, target);
-  if (body.length < 2000) throw new Error(`${target}: suspiciously small (${body.length} B)`);
+  if (body.length < 900) throw new Error(`${target}: suspiciously small (${body.length} B)`);
   count += 1;
 }
 await put(SHOP_REDIRECT, "shop/index.html");
