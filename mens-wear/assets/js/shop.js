@@ -754,6 +754,7 @@
   /* the app shell can nudge the visitor (offline, saved copy, …) */
   window.__mwToast = toast;
   window.__MW_PRODUCTS = PRODUCTS;
+  window.__MW_BASE = IMG_BASE;
   window.__MW_CONFIG = CONFIG;
 
   function copy(text) {

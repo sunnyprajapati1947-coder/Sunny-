@@ -4,7 +4,8 @@
      /                  the shop (shopping homepage, the thing people came for)
      /shop/             a redirect to / so every old shared link still lands right
      /experience/kage/  the Kage landing page, untouched, as its own experience
-     /admin/            the owner panel: live orders, sign-in only
+     /admin/            retired: orders now live inside the shop, behind the
+                        owner's own sign-in (no separate login page)
 
    The deployment payload is text-only, so this step materialises the binaries:
    it pulls the Kage bundle, the authored Kage document with its assets, and the
@@ -14,7 +15,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const KAGE = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v3/mens-wear/kage-app/dist/";
-const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v17/mens-wear/";
+const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v18/mens-wear/";
 
 const KAGE_TEXT = [
   ["assets/index-CD3ZoDni.js", null],
@@ -42,10 +43,7 @@ const KAGE_ASSETS = [
 ];
 
 /* the shop shell becomes the site root; CSS/JS/images load from the CDN tag */
-const SHOP_FILES = [
-  ["index.html", "live/vercel-entry.html"],
-  ["admin/index.html", "kage-app/deploy/admin.html"],
-];
+const SHOP_FILES = [["index.html", "live/vercel-entry.html"]];
 
 /* the Kage shell: mounts the bundle above and gets out of the way */
 const KAGE_SHELL = `<!doctype html>
@@ -116,6 +114,8 @@ for (const [target, path] of SHOP_FILES) {
   count += 1;
 }
 await put(SHOP_REDIRECT, "shop/index.html");
+count += 1;
+await put(SHOP_REDIRECT, "admin/index.html");
 count += 1;
 await put(KAGE_SHELL, "experience/kage/index.html");
 count += 1;
