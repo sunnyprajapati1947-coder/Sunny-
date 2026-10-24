@@ -1,13 +1,19 @@
 /* Vercel build step for nawada-menswear-shop.
+
+   Site layout
+     /                  the shop (shopping homepage, the thing people came for)
+     /shop/             a redirect to / so every old shared link still lands right
+     /experience/kage/  the Kage landing page, untouched, as its own experience
+
    The deployment payload is text-only, so this step materialises the binaries:
    it pulls the Kage bundle, the authored Kage document with its assets, and the
-   existing shop entry, then hash-checks the files that must stay identical. */
+   shop entry, then hash-checks the files that must stay identical. */
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const KAGE = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@kage-v3/mens-wear/kage-app/dist/";
-const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v13/mens-wear/";
+const SHOP = "https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v14/mens-wear/";
 
 const KAGE_TEXT = [
   ["assets/index-CD3ZoDni.js", null],
@@ -34,8 +40,26 @@ const KAGE_ASSETS = [
   "landing-pages/secret-pathways-assets/foreground/png/temple-wall.webp",
 ];
 
-/* the shop shell: CSS/JS/images load from the CDN tag below */
-const SHOP_FILES = [["shop/index.html", "live/vercel-entry.html"]];
+/* the shop shell becomes the site root; CSS/JS/images load from the CDN tag */
+const SHOP_FILES = [["index.html", "live/vercel-entry.html"]];
+
+/* Kage's own button points at /shop/, and that URL has been shared before, so
+   keep it alive as a redirect rather than a second copy of the store. */
+const SHOP_REDIRECT = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Men's Wear — Nawada</title>
+<link rel="canonical" href="/">
+<meta name="robots" content="noindex,follow">
+<meta http-equiv="refresh" content="0; url=/">
+</head>
+<body style="font-family:system-ui,sans-serif;padding:24px">
+<p>The shop now opens at the front of the site. <a href="/">Continue to Men's Wear</a>.</p>
+</body>
+</html>
+`;
 
 async function grab(url, target) {
   const res = await fetch(url);
@@ -44,6 +68,11 @@ async function grab(url, target) {
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, body);
   return body;
+}
+
+async function put(text, target) {
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, text);
 }
 
 let count = 0;
@@ -64,4 +93,7 @@ for (const [target, path] of SHOP_FILES) {
   if (body.length < 2000) throw new Error(`${target}: suspiciously small (${body.length} B)`);
   count += 1;
 }
+await put(SHOP_REDIRECT, "shop/index.html");
+count += 1;
+
 console.log(`build: materialised ${count} files (kage.html + fonts.css hash-verified)`);

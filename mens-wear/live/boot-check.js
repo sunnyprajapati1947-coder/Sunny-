@@ -7,5 +7,5 @@
   var boot = document.getElementById("boot");
   if (!boot) return;
   boot.innerHTML =
-    '<div><p>The app could not load.</p><p><a href="https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v13/mens-wear/live/index.html">Open the store here</a></p></div>';
+    '<div><p>The app could not load.</p><p><a href="https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@app-v14/mens-wear/live/index.html">Open the store here</a></p></div>';
 })();
