@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>FF MAX UNIVERSE — Maps, Agents, Weapons &amp; Esports Hub</title>
+<meta name="description" content="A fast, offline-friendly fan hub for Free Fire Max: maps, meta agents, weapon classes, esports calendar, loadout builder and a redeem-code format checker. Unofficial fan project." />
+<meta name="theme-color" content="#07090e" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ============ Notice bar ============ -->
+<div class="notice" role="note">
+  <span class="notice-dot"></span>
+  <p><b>Unofficial fan project.</b> Not affiliated with, endorsed by or sponsored by Garena. No APKs, no account logins, no diamond selling.</p>
+</div>
+
+<!-- ============ Nav ============ -->
+<header class="nav" id="nav">
+  <a class="brand" href="#top" aria-label="FF Max Universe home">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="20" height="20"><path fill="currentColor" d="M16 2 4 9v14l12 7 12-7V9L16 2Zm0 3.4 8.6 5v11.2L16 26.6 7.4 21.6V10.4L16 5.4Z"/><path fill="currentColor" d="M16 10l4.6 2.7v5.4L16 20.8l-4.6-2.7v-5.4L16 10Z"/></svg>
+    </span>
+    <span class="brand-text">FF<span class="brand-accent">MAX</span> <em>UNIVERSE</em></span>
+  </a>
+
+  <nav class="nav-links" id="navLinks" aria-label="Primary">
+    <a href="#maps" data-nav>Maps</a>
+    <a href="#agents" data-nav>Agents</a>
+    <a href="#weapons" data-nav>Weapons</a>
+    <a href="#esports" data-nav>Esports</a>
+    <a href="#redeem" data-nav>Redeem</a>
+    <a href="#sources" data-nav>Downloads</a>
+  </nav>
+
+  <div class="nav-right">
+    <button class="loadout-btn" id="loadoutBtn" aria-haspopup="dialog">
+      <span aria-hidden="true">★</span> Loadout <b id="loadoutCount">0</b>
+    </button>
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <span id="top"></span>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <img src="assets/hero.jpg" alt="" fetchpriority="high" decoding="async" />
+      <div class="hero-scrim"></div>
+      <div class="hero-scan"></div>
+    </div>
+
+    <div class="hero-inner">
+      <p class="kicker"><span class="k-line"></span> BATTLE ROYALE · 50 PLAYERS · ONE BOOYAH</p>
+      <h1>DROP IN.<br /><span>TAKE THE ISLAND.</span></h1>
+      <p class="hero-lede">
+        Maps, meta agents, weapon classes, esports calendar aur loadout builder — sab ek jagah.
+        <b>Fast</b>, mobile-first, offline-friendly. Built to run from your phone.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#maps">Explore the maps <span class="arw">→</span></a>
+        <a class="btn btn-line" href="#esports">Esports calendar</a>
+      </div>
+
+      <ul class="hero-stats">
+        <li><b data-count="6">0</b><span>Maps covered</span></li>
+        <li><b data-count="18">0</b><span>Agents tracked</span></li>
+        <li><b data-count="12">0</b><span>Weapon classes</span></li>
+        <li><b data-count="50">0</b><span>Players per match</span></li>
+      </ul>
+    </div>
+
+    <a class="scroll-cue" href="#maps" aria-label="Scroll to maps"><span></span></a>
+  </section>
+
+  <!-- ============ MAPS ============ -->
+  <section class="section" id="maps">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 01 — BATTLEGROUNDS</p>
+      <h2>Know the ground before the drop</h2>
+      <p class="sec-sub">Har map ka apna rotation logic hai. Card pe tap karo — hot drops, loot quality aur rotation notes khul jayenge.</p>
+    </header>
+
+    <div class="map-grid" id="mapGrid"></div>
+  </section>
+
+  <!-- ============ AGENTS ============ -->
+  <section class="section" id="agents">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 02 — CHARACTERS</p>
+      <h2>Meta agents, role by role</h2>
+      <p class="sec-sub">18 popular picks, role ke hisaab se. Filter lagao aur apni squad comp plan karo. Abilities ka short fan-note — exact numbers patch se badalte hain.</p>
+    </header>
+
+    <figure class="agent-banner">
+      <img src="assets/agents.jpg" alt="Three illustrated battle-royale agents: a hacker, a sniper and a shield-carrying support operative" loading="lazy" decoding="async" />
+      <figcaption>
+        <span class="ab-kicker">SQUAD COMP</span>
+        <h3>1 Rusher · 2 Support · 1 Flex</h3>
+        <p>Balanced comp ka simple rule: entry, sustain, aur ek flexible slot jo circle ke hisaab se badle.</p>
+      </figcaption>
+    </figure>
+
+    <div class="agent-toolbar">
+      <div class="chips" id="agentFilters" role="group" aria-label="Filter agents by role">
+        <button class="chip is-active" data-role="All">All <i>18</i></button>
+        <button class="chip" data-role="Rusher">Rusher</button>
+        <button class="chip" data-role="Support">Support</button>
+        <button class="chip" data-role="Sniper">Sniper</button>
+        <button class="chip" data-role="Intel">Intel</button>
+        <button class="chip" data-role="Defender">Defender</button>
+      </div>
+      <label class="search">
+        <span class="srch-ico" aria-hidden="true">⌕</span>
+        <input type="search" id="agentSearch" placeholder="Search agent…" aria-label="Search agents" />
+      </label>
+    </div>
+    <div class="agent-grid" id="agentGrid"></div>
+    <p class="empty" id="agentEmpty" hidden>Koi agent match nahi hua — filter reset karo.</p>
+  </section>
+
+  <!-- ============ WEAPONS ============ -->
+  <section class="section" id="weapons">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 03 — ARSENAL</p>
+      <h2>Weapon classes at a glance</h2>
+      <p class="sec-sub">Class chuno — range, fire rate, control aur mobility ke archetype bars update ho jayenge.</p>
+    </header>
+
+    <div class="weapon-wrap">
+      <div class="weapon-visual">
+        <img src="assets/weapons.jpg" alt="Illustration of an assault rifle, sniper rifle and SMG on a dark background" loading="lazy" decoding="async" />
+        <span class="weapon-tag">INVENTORY · CLASS ARCHETYPES</span>
+      </div>
+
+      <div class="weapon-panel">
+        <div class="wc-tabs" id="wcTabs" role="tablist" aria-label="Weapon classes"></div>
+        <div class="wc-body" id="wcBody" role="tabpanel" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ESPORTS ============ -->
+  <section class="section" id="esports">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 04 — COMPETITIVE</p>
+      <h2>From ranked lobby to main stage</h2>
+      <p class="sec-sub">Ek squad se pro stage tak ka path — aur is season ka indicative calendar. Official dates ke liye hamesha tournament organiser ka page check karo.</p>
+    </header>
+
+    <div class="esports">
+      <figure class="esports-media">
+        <img src="assets/esports.jpg" alt="Esports arena with stage lights and a silhouetted mobile-gaming crowd" loading="lazy" decoding="async" />
+        <figcaption>Arena nights · mobile-first competition</figcaption>
+      </figure>
+
+      <div class="esports-main">
+        <ol class="path">
+          <li><b>01</b><div><h3>Ranked grind</h3><p>Heroic + squad discipline. Yahan se scrims ka invite milta hai.</p></div></li>
+          <li><b>02</b><div><h3>Open qualifiers</h3><p>Custom rooms, points system, top squads bracket me jaate hain.</p></div></li>
+          <li><b>03</b><div><h3>League stage</h3><p>Fixed weekly lobbies, VOD review, aur consistent rotations.</p></div></li>
+          <li><b>04</b><div><h3>Grand finals</h3><p>Booyah pressure — end-circle calls hi match decide karte hain.</p></div></li>
+        </ol>
+
+        <div class="calendar">
+          <div class="cal-head"><h3>Indicative season calendar</h3><span class="badge badge-soft">Dates vary by region</span></div>
+          <ul class="cal-list" id="calList"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REDEEM ============ -->
+  <section class="section" id="redeem">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 05 — SAFE CODES</p>
+      <h2>Redeem code checker</h2>
+      <p class="sec-sub">Sirf <b>format</b> validate karta hai — yeh tool kisi server se connect nahi hota, code ko redeem nahi karta, aur kabhi bhi UID/password nahi maangta.</p>
+    </header>
+
+    <div class="redeem">
+      <div class="redeem-card">
+        <label class="field">
+          <span>Redeem code</span>
+          <input id="codeInput" type="text" inputmode="text" autocomplete="off" spellcheck="false"
+                 placeholder="e.g. FFMAX-2026-BO0YAH" maxlength="24" aria-describedby="codeHint" />
+        </label>
+        <p class="hint" id="codeHint">8–20 characters · letters, numbers aur dash (-) allowed.</p>
+        <div class="redeem-actions">
+          <button class="btn btn-primary" id="checkCode">Check format</button>
+          <button class="btn btn-line" id="clearCode" type="button">Clear</button>
+        </div>
+        <output class="code-out" id="codeOut" aria-live="polite" hidden></output>
+      </div>
+
+      <aside class="safety">
+        <h3><span aria-hidden="true">⚠</span> Scam se bacho</h3>
+        <ul>
+          <li>Redeem sirf <b>official redeem page</b> pe karo — kisi DM/Telegram link se nahi.</li>
+          <li>Koi bhi "free diamonds generator" <b>login maange = scam</b>.</li>
+          <li>APK sirf Play Store / App Store / official site se. Modded APK = ban risk.</li>
+          <li>Code expire ho sakta hai — region aur account eligibility matter karti hai.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ SOURCES / DOWNLOAD ============ -->
+  <section class="section" id="sources">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 06 — OFFICIAL SOURCES ONLY</p>
+      <h2>Download &amp; verify</h2>
+      <p class="sec-sub">Yeh site koi file host nahi karti. Game ke liye sirf official channels use karo.</p>
+    </header>
+
+    <div class="sources">
+      <a class="source" href="https://ff.garena.com/" target="_blank" rel="noopener noreferrer">
+        <span class="src-ico" aria-hidden="true">◈</span>
+        <div><h3>Official website</h3><p>ff.garena.com — news, events, official redeem page</p></div>
+        <span class="src-arw" aria-hidden="true">↗</span>
+      </a>
+      <a class="source" href="https://play.google.com/store/apps/details?id=com.dts.freefiremax" target="_blank" rel="noopener noreferrer">
+        <span class="src-ico" aria-hidden="true">▶</span>
+        <div><h3>Google Play · Free Fire MAX</h3><p>Android — official package, verified publisher</p></div>
+        <span class="src-arw" aria-hidden="true">↗</span>
+      </a>
+      <a class="source" href="https://apps.apple.com/app/id1480513944" target="_blank" rel="noopener noreferrer">
+        <span class="src-ico" aria-hidden="true"></span>
+        <div><h3>App Store · Free Fire MAX</h3><p>iOS — official listing</p></div>
+        <span class="src-arw" aria-hidden="true">↗</span>
+      </a>
+    </div>
+
+    <p class="disclaimer">
+      <b>Disclaimer:</b> FF MAX UNIVERSE ek independent, unofficial fan project hai. "Free Fire", "Free Fire MAX", Garena aur related marks unke respective owners ke trademarks hain. Yeh site kisi bhi tarah se Garena se affiliated, endorsed ya sponsored nahi hai. Saare illustrations original artwork hain; koi game asset, logo ya copyrighted screenshot use nahi kiya gaya. Game stats aur meta patch ke saath badalte rehte hain — official info ke liye Garena ke channels follow karo.
+    </p>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="foot-brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="18" height="18"><path fill="currentColor" d="M16 2 4 9v14l12 7 12-7V9L16 2Zm0 3.4 8.6 5v11.2L16 26.6 7.4 21.6V10.4L16 5.4Z"/></svg>
+    </span>
+    <div>
+      <p><b>FF MAX UNIVERSE</b> · unofficial fan hub</p>
+      <p class="muted tiny">Runs on Termux · <span id="year">2026</span> · Made for the squad</p>
+    </div>
+  </div>
+  <nav class="foot-links" aria-label="Footer">
+    <a href="#maps">Maps</a><a href="#agents">Agents</a><a href="#weapons">Weapons</a><a href="#esports">Esports</a><a href="#redeem">Redeem</a>
+  </nav>
+</footer>
+
+<!-- ============ Loadout drawer ============ -->
+<div class="drawer" id="drawer" hidden>
+  <div class="drawer-scrim" data-close></div>
+  <aside class="drawer-card" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-head">
+      <h2 id="drawerTitle">Your loadout</h2>
+      <button class="x" data-close aria-label="Close loadout">✕</button>
+    </div>
+    <p class="muted tiny">Agent, weapon aur map pin karo. Browser me save rehta hai — sirf is device pe.</p>
+    <div class="loadout-list" id="loadoutList"></div>
+    <button class="btn btn-line btn-block" id="clearLoadout">Clear loadout</button>
+  </aside>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
