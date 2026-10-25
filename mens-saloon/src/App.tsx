@@ -16,6 +16,15 @@ import {
   FAQ_HI,
   STYLE_HINT_HI,
 } from './config'
+import {
+  saveBooking,
+  fetchMyBookings,
+  fetchAdminBookings,
+  setBookingStatus,
+  changeAdminPin,
+  type DbBooking,
+  type BookingStatus,
+} from './db'
 
 /* ---------- small helpers ---------- */
 
@@ -36,6 +45,7 @@ function scrollToId(id: string) {
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
+const todayIST = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
 
 type Booking = {
   name: string
@@ -152,6 +162,83 @@ const T = {
 
 type BeforeInstallPromptEvent = Event & { prompt: () => Promise<void> }
 
+
+/* ---------- History / Shop Panel copy (EN / हिंदी) ---------- */
+const HT = {
+  en: {
+    chapter: 'Booking History — Cloud Record',
+    h2: 'Your visits, remembered.',
+    sub: 'Every website booking is saved securely in our cloud database. Check your history anytime — from any phone, forever.',
+    custTitle: '📖 My Bookings',
+    custSub: 'Enter the same mobile number you booked with — all your past & upcoming salon bookings will appear instantly.',
+    phoneLabel: 'Mobile number',
+    phonePh: '10-digit mobile number',
+    showBtn: 'Show My History',
+    searching: 'Searching…',
+    enterPhone: 'Please enter a valid 10-digit mobile number.',
+    noRows: 'No booking found for this number yet. Book above — it will appear right here!',
+    errNet: 'Network issue — please check internet and try again.',
+    adminTitle: '🔐 Shop Panel (Owner Only)',
+    adminSub: 'For the shop owner — enter the secret Admin PIN to see every booking, confirm chairs and mark visits done.',
+    pinLabel: 'Admin PIN',
+    pinPh: 'Secret PIN',
+    openBtn: 'Open Shop Panel',
+    opening: 'Opening…',
+    totalL: 'Total bookings',
+    todayL: "Today's",
+    pendingL: 'Waiting confirm',
+    refresh: '↻ Refresh',
+    logout: 'Lock Panel',
+    allEmpty: 'No bookings in the record yet. (If bookings exist but this looks empty, the PIN may be wrong.)',
+    panelNote: 'Data is stored in the Men’s Saloon cloud database (Supabase). Only the correct PIN can open this record — keep it secret.',
+    callL: 'Call',
+    stPending: '⏳ Waiting', stConfirmed: '✅ Confirmed', stDone: '💈 Done', stCancelled: '✖ Cancelled',
+    actConfirm: 'Confirm', actDone: 'Done', actCancel: 'Cancel',
+    newPinLabel: 'Change Admin PIN (type new PIN)',
+    changePinBtn: 'Set New PIN',
+    pinChanged: '✓ PIN changed. Next time use the new PIN.',
+    pinTooShort: 'PIN must be at least 4 characters.',
+    dbSaved: '✓ Saved in the shop cloud record — see it anytime in “My Bookings” below.',
+    dbFailed: '(Network was slow — your booking still went on WhatsApp. Cloud copy will save with your next booking.)',
+  },
+  hi: {
+    chapter: 'बुकिंग इतिहास — क्लाउड रिकॉर्ड',
+    h2: 'आपकी विज़िट्स, हमेशा याद।',
+    sub: 'हर वेबसाइट बुकिंग हमारे क्लाउड डेटाबेस में सुरक्षित सेव होती है। अपना इतिहास कभी भी, किसी भी फ़ोन से देखिए।',
+    custTitle: '📖 मेरी बुकिंग्स',
+    custSub: 'वही मोबाइल नंबर डालो जिससे बुकिंग की थी — आपकी सारी पुरानी और आने वाली बुकिंग तुरंत दिख जाएगी।',
+    phoneLabel: 'मोबाइल नंबर',
+    phonePh: '10 अंकों का मोबाइल नंबर',
+    showBtn: 'मेरा इतिहास दिखाओ',
+    searching: 'ढूँढ रहे हैं…',
+    enterPhone: 'सही 10 अंकों का मोबाइल नंबर डालो।',
+    noRows: 'इस नंबर पर अभी कोई बुकिंग नहीं मिली। ऊपर बुक करो — तुरंत यहीं दिखेगी!',
+    errNet: 'नेटवर्क की दिक्कत है — इंटरनेट चेक करके फिर कोशिश करो।',
+    adminTitle: '🔐 दुकान पैनल (केवल मालिक)',
+    adminSub: 'दुकान मालिक के लिए — गुप्त Admin PIN डालकर सारी बुकिंग देखो, कुर्सी कन्फ़र्म करो और विज़िट पूरी मार्क करो।',
+    pinLabel: 'Admin PIN',
+    pinPh: 'गुप्त PIN',
+    openBtn: 'दुकान पैनल खोलो',
+    opening: 'खुल रहा है…',
+    totalL: 'कुल बुकिंग',
+    todayL: 'आज की',
+    pendingL: 'कन्फ़र्म बाकी',
+    refresh: '↻ रिफ़्रेश',
+    logout: 'पैनल बंद करो',
+    allEmpty: 'रिकॉर्ड में अभी कोई बुकिंग नहीं है। (अगर बुकिंग है फिर भी खाली दिखे तो PIN गलत हो सकता है।)',
+    panelNote: 'डेटा Men’s Saloon के क्लाउड डेटाबेस (Supabase) में रहता है। सही PIN से ही यह रिकॉर्ड खुलता है — PIN गुप्त रखो।',
+    callL: 'कॉल',
+    stPending: '⏳ इंतज़ार में', stConfirmed: '✅ कन्फ़र्म', stDone: '💈 हो गया', stCancelled: '✖ कैंसल',
+    actConfirm: 'कन्फ़र्म', actDone: 'हो गया', actCancel: 'कैंसल',
+    newPinLabel: 'Admin PIN बदलो (नया PIN लिखो)',
+    changePinBtn: 'नया PIN सेट करो',
+    pinChanged: '✓ PIN बदल गया। अगली बार नया PIN डालना।',
+    pinTooShort: 'PIN कम से कम 4 अक्षरों का होना चाहिए।',
+    dbSaved: '✓ दुकान के क्लाउड रिकॉर्ड में सेव हो गया — “मेरी बुकिंग्स” में कभी भी दिखेगा।',
+    dbFailed: '(नेटवर्क धीमा था — आपकी बुकिंग WhatsApp पर चली गई है। क्लाउड कॉपी अगली बुकिंग पर सेव होगी।)',
+  },
+} as const
+
 /* ---------- app ---------- */
 
 export default function App() {
@@ -198,6 +285,81 @@ export default function App() {
   })
   const [errors, setErrors] = useState<Partial<Record<keyof Booking, string>>>({})
   const [sent, setSent] = useState(false)
+  const ht = HT[lang]
+  const [dbState, setDbState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle')
+  const [histPhone, setHistPhone] = useState('')
+  const [histRows, setHistRows] = useState<DbBooking[] | null>(null)
+  const [histBusy, setHistBusy] = useState(false)
+  const [histMsg, setHistMsg] = useState('')
+  const [pinInput, setPinInput] = useState('')
+  const [adminPin, setAdminPin] = useState<string>(() => {
+    try { return sessionStorage.getItem('mens-saloon-admin-pin') ?? '' } catch { return '' }
+  })
+  const [adminRows, setAdminRows] = useState<DbBooking[] | null>(null)
+  const [adminBusy, setAdminBusy] = useState(false)
+  const [adminMsg, setAdminMsg] = useState('')
+  const [newPin, setNewPin] = useState('')
+
+  /* Prefill history search with the last number booked on this device. */
+  useEffect(() => {
+    try {
+      const prev = JSON.parse(localStorage.getItem('mens-saloon-bookings') ?? '[]') as Booking[]
+      if (prev.length) setHistPhone(prev[prev.length - 1].phone)
+    } catch { /* ignore */ }
+  }, [])
+
+  const loadAdmin = async (pin: string) => {
+    setAdminBusy(true); setAdminMsg('')
+    try {
+      const rows = await fetchAdminBookings(pin)
+      setAdminRows(rows); setAdminPin(pin)
+      try { sessionStorage.setItem('mens-saloon-admin-pin', pin) } catch { /* ignore */ }
+    } catch { setAdminMsg(ht.errNet) }
+    setAdminBusy(false)
+  }
+
+  /* Re-open the Shop Panel automatically if PIN was entered this session. */
+  useEffect(() => {
+    if (adminPin) void loadAdmin(adminPin)
+  }, []) // first mount only — loadAdmin is intentionally not a dependency
+
+  const lookupHistory = async (ev: FormEvent) => {
+    ev.preventDefault()
+    const digits = histPhone.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '')
+    if (!/^\d{10}$/.test(digits)) { setHistMsg(ht.enterPhone); setHistRows(null); return }
+    setHistBusy(true); setHistMsg('')
+    try {
+      const rows = await fetchMyBookings(digits)
+      setHistRows(rows)
+      if (!rows.length) setHistMsg(ht.noRows)
+    } catch { setHistMsg(ht.errNet); setHistRows(null) }
+    setHistBusy(false)
+  }
+
+  const changeStatus = async (id: string, status: BookingStatus) => {
+    try {
+      const ok = await setBookingStatus(adminPin, id, status)
+      if (ok) setAdminRows((rs) => rs?.map((r) => (r.id === id ? { ...r, status } : r)) ?? rs)
+    } catch { setAdminMsg(ht.errNet) }
+  }
+
+  const submitPinChange = async (ev: FormEvent) => {
+    ev.preventDefault()
+    if (newPin.length < 4) { setAdminMsg(ht.pinTooShort); return }
+    try {
+      const ok = await changeAdminPin(adminPin, newPin)
+      if (ok) {
+        setAdminPin(newPin); setNewPin(''); setAdminMsg(ht.pinChanged)
+        try { sessionStorage.setItem('mens-saloon-admin-pin', newPin) } catch { /* ignore */ }
+      } else setAdminMsg(ht.errNet)
+    } catch { setAdminMsg(ht.errNet) }
+  }
+
+  const statusLabel = (st: BookingStatus) =>
+    ({ pending: ht.stPending, confirmed: ht.stConfirmed, done: ht.stDone, cancelled: ht.stCancelled })[st]
+  const fmtDate = (d: string | null) =>
+    d ? new Date(d + 'T00:00:00').toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+
   const formRef = useRef<HTMLFormElement>(null)
 
   const selectedService = useMemo(
@@ -271,6 +433,21 @@ export default function App() {
     } catch {
       /* local copy is a nicety — WhatsApp is the real booking channel */
     }
+    /* Cloud database me bhi save karo — fail ho to bhi WhatsApp booking rukti nahi. */
+    setDbState('saving')
+    saveBooking({
+      name: booking.name.trim(),
+      phone: booking.phone.trim(),
+      service: selectedService.name,
+      price: selectedService.price,
+      appt_date: booking.date,
+      appt_time: booking.time,
+      notes: booking.notes.trim(),
+    })
+      .then(() => setDbState('saved'))
+      .catch(() => setDbState('failed'))
+    setHistPhone(booking.phone)
+
     setSent(true)
     window.open(whatsappLink(message), '_blank', 'noopener')
   }
@@ -299,6 +476,7 @@ export default function App() {
             [t.navStyles, 'styles'],
             [t.navVisit, 'visit'],
             [t.navFaq, 'faq'],
+            [lang === 'hi' ? 'मेरी बुकिंग' : 'My Bookings', 'history'],
           ].map(([label, id]) => (
             <a
               key={id}
@@ -750,7 +928,155 @@ export default function App() {
                 .
               </p>
             )}
+            {sent && dbState === 'saved' && <p className="form-note">{ht.dbSaved}</p>}
+            {sent && dbState === 'failed' && <p className="form-note">{ht.dbFailed}</p>}
           </form>
+        </section>
+
+
+        {/* ===== Booking History + Shop Panel (cloud database) ===== */}
+        <section className="section history" id="history">
+          <header className="section-head reveal">
+            <p className="chapter">{ht.chapter}</p>
+            <h2>{ht.h2}</h2>
+            <p>{ht.sub}</p>
+          </header>
+
+          <div className="hist-grid">
+            {/* --- customer: apni history --- */}
+            <div className="hist-card reveal">
+              <h3>{ht.custTitle}</h3>
+              <p className="hist-sub">{ht.custSub}</p>
+              <form className="hist-form" onSubmit={lookupHistory}>
+                <label>
+                  {ht.phoneLabel}
+                  <input
+                    className="db-input"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder={ht.phonePh}
+                    value={histPhone}
+                    onChange={(e) => setHistPhone(e.target.value)}
+                  />
+                </label>
+                <button className="btn btn-red btn-block" type="submit" disabled={histBusy}>
+                  {histBusy ? ht.searching : ht.showBtn}
+                </button>
+              </form>
+              {histMsg && <p className="hist-msg" role="status">{histMsg}</p>}
+              {histRows && histRows.length > 0 && (
+                <ul className="hist-list">
+                  {histRows.map((r) => (
+                    <li className="hist-row" key={r.id}>
+                      <div>
+                        <strong>{r.service}</strong>
+                        <span>{fmtDate(r.appt_date)} · {r.appt_time ?? '—'}{r.price ? ` · ${inr(r.price)}` : ''}</span>
+                        {r.notes && <small>{r.notes}</small>}
+                      </div>
+                      <span className={`st st-${r.status}`}>{statusLabel(r.status)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* --- owner: shop panel --- */}
+            <div className="hist-card admin reveal">
+              <h3>{ht.adminTitle}</h3>
+              <p className="hist-sub">{ht.adminSub}</p>
+              {adminRows === null ? (
+                <form
+                  className="hist-form"
+                  onSubmit={(ev) => { ev.preventDefault(); if (pinInput) void loadAdmin(pinInput) }}
+                >
+                  <label>
+                    {ht.pinLabel}
+                    <input
+                      className="db-input"
+                      type="password"
+                      inputMode="numeric"
+                      placeholder={ht.pinPh}
+                      value={pinInput}
+                      onChange={(e) => setPinInput(e.target.value)}
+                    />
+                  </label>
+                  <button className="btn btn-ghost btn-block" type="submit" disabled={adminBusy}>
+                    {adminBusy ? ht.opening : ht.openBtn}
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <div className="admin-stats">
+                    <div><strong>{adminRows.length}</strong><span>{ht.totalL}</span></div>
+                    <div><strong>{adminRows.filter((r) => r.appt_date === todayIST()).length}</strong><span>{ht.todayL}</span></div>
+                    <div><strong>{adminRows.filter((r) => r.status === 'pending').length}</strong><span>{ht.pendingL}</span></div>
+                  </div>
+                  <div className="admin-actions">
+                    <button className="btn btn-ghost" onClick={() => void loadAdmin(adminPin)} disabled={adminBusy}>
+                      {adminBusy ? '…' : ht.refresh}
+                    </button>
+                    <button
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        setAdminPin(''); setAdminRows(null); setPinInput('')
+                        try { sessionStorage.removeItem('mens-saloon-admin-pin') } catch { /* ignore */ }
+                      }}
+                    >
+                      {ht.logout}
+                    </button>
+                  </div>
+                  {adminRows.length === 0 ? (
+                    <p className="hist-msg">{ht.allEmpty}</p>
+                  ) : (
+                    <ul className="hist-list">
+                      {adminRows.map((r) => {
+                        const last10 = r.phone.replace(/\D/g, '').slice(-10)
+                        return (
+                          <li className="hist-row admin-row" key={r.id}>
+                            <div>
+                              <strong>{r.name}</strong>
+                              <span>{r.service}{r.price ? ` · ${inr(r.price)}` : ''}</span>
+                              <span>{fmtDate(r.appt_date)} · {r.appt_time ?? '—'}</span>
+                              {r.notes && <small>“{r.notes}”</small>}
+                              <span className="admin-contact">
+                                <a href={`tel:+91${last10}`}>☎ {ht.callL}</a>
+                                <a href={`https://wa.me/91${last10}`} target="_blank" rel="noreferrer">WhatsApp</a>
+                                <span>{r.phone}</span>
+                              </span>
+                            </div>
+                            <div className="admin-status">
+                              <span className={`st st-${r.status}`}>{statusLabel(r.status)}</span>
+                              <div className="admin-btns">
+                                {r.status !== 'confirmed' && <button onClick={() => void changeStatus(r.id, 'confirmed')}>{ht.actConfirm}</button>}
+                                {r.status !== 'done' && <button onClick={() => void changeStatus(r.id, 'done')}>{ht.actDone}</button>}
+                                {r.status !== 'cancelled' && <button onClick={() => void changeStatus(r.id, 'cancelled')}>{ht.actCancel}</button>}
+                              </div>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
+                  <form className="hist-form pin-change" onSubmit={submitPinChange}>
+                    <label>
+                      {ht.newPinLabel}
+                      <input
+                        className="db-input"
+                        type="password"
+                        inputMode="numeric"
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value)}
+                      />
+                    </label>
+                    <button className="btn btn-ghost btn-block" type="submit">{ht.changePinBtn}</button>
+                  </form>
+                </>
+              )}
+              {adminMsg && <p className="hist-msg" role="status">{adminMsg}</p>}
+              <p className="form-note">{ht.panelNote}</p>
+            </div>
+          </div>
         </section>
 
         {/* ===== FAQ ===== */}
