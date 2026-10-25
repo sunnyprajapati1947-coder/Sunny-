@@ -9,3 +9,6 @@ logs/audit.jsonl
 logs/server.log
 **/__pycache__/
 .pytest_cache/
+
+# CI-generated release keystore (never commit key material)
+apps/jarvis-app/.signing/

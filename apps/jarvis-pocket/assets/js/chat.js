@@ -423,6 +423,14 @@
       return Promise.resolve('Task queued: "' + task.title + '" (id ' + task.id +
         '). Steps khud banenge, fail hone par retry hoga, aur Tasks tab me progress dikhega.');
     }
+    if (name === 'video_create') {
+      if (!window.JarvisVideo) return Promise.resolve('Video studio load nahi hua.');
+      return window.JarvisVideo.create(String(tool.prompt || tool.text || tool.goal || '')).then(function (out) {
+        return 'Video ban gaya: "' + out.title + '" — phone gallery (Movies/JARVIS) me save ho gaya.';
+      }).catch(function (error) {
+        return 'Video nahi bana: ' + error.message;
+      });
+    }
     if (name === 'task_status') {
       var queue = window.JarvisTasks ? window.JarvisTasks.list() : [];
       if (tool.id) queue = queue.filter(function (row) { return row.id === tool.id; });

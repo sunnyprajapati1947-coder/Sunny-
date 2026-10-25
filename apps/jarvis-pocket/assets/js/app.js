@@ -38,7 +38,7 @@
     if (path === '/library' || path.indexOf('/pack/') === 0 || path.indexOf('/item/') === 0 ||
       path.indexOf('/collection/') === 0 || path === '/saved' || path === '/search') return 'library';
     if (path === '/tasks') return 'tasks';
-    if (path === '/connections') return 'settings';
+    if (path === '/connections' || path === '/video') return 'settings';
     if (path === '/memory') return 'memory';
     if (path === '/settings' || path === '/about') return 'settings';
     return 'chat';
@@ -114,6 +114,8 @@
         html = window.JarvisTasks.screen();
       } else if (path === '/connections') {
         html = window.JarvisConnections.screen();
+      } else if (path === '/video') {
+        html = window.JarvisVideo.screen();
       } else if (path === '/memory') {
         html = memoryScreen();
       } else if (path === '/settings') {
@@ -140,6 +142,7 @@
       else if (path.indexOf('/collection/') === 0) Lib.mountCollection(decodeURIComponent(path.slice(12)));
       else if (path === '/tasks') window.JarvisTasks.mount();
       else if (path === '/connections') window.JarvisConnections.mount();
+      else if (path === '/video') window.JarvisVideo.mount();
       else if (path === '/memory') mountMemory();
       else if (path === '/settings') mountSettings();
       else if (path === '/about') mountAbout();

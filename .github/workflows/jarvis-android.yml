@@ -8,6 +8,8 @@ on:
       - 'apps/jarvis-pocket/assets/**'
       - 'apps/jarvis-pocket/icons/**'
       - '.github/workflows/jarvis-android.yml'
+  schedule:
+    - cron: '0 4 * * 1'
   workflow_dispatch:
     inputs:
       version:
@@ -24,6 +26,7 @@ concurrency:
 
 jobs:
   apk:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -69,6 +72,13 @@ jobs:
           echo "JARVIS_VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
           echo "Publishing JARVIS $version (versionCode ${{ github.run_number }})"
 
+      - name: Restore release signing key
+        id: signing-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: apps/jarvis-app/.signing
+          key: jarvis-signing-v2
+
       - name: Prepare release signing
         env:
           JARVIS_RELEASE_KEYSTORE_BASE64: ${{ secrets.JARVIS_RELEASE_KEYSTORE_BASE64 }}
@@ -78,6 +88,13 @@ jobs:
           SPDYI_RELEASE_STORE_PASSWORD: ${{ secrets.SPDYI_RELEASE_STORE_PASSWORD }}
           SPDYI_RELEASE_KEY_ALIAS: ${{ secrets.SPDYI_RELEASE_KEY_ALIAS }}
         run: bash apps/jarvis-app/scripts/prepare-signing.sh
+
+      - name: Save release signing key
+        if: steps.signing-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: apps/jarvis-app/.signing
+          key: jarvis-signing-v2
 
       - name: Assemble release APK
         working-directory: apps/jarvis-app/android
@@ -105,6 +122,7 @@ jobs:
             exit 1
           fi
           grep -q "package: name='com.sunnyai.jarvis'" dist/BADGING.txt
+          grep -m1 'Signer #1 certificate SHA-256 digest' dist/SIGNATURE.txt | sed 's/.*digest: *//' > dist/.fingerprint
           name="JARVIS-${{ steps.version.outputs.name }}.apk"
           cp "$apk" "dist/$name"
           (cd dist && sha256sum "$name" > SHA256SUMS.txt)
@@ -120,18 +138,22 @@ jobs:
           2. Open **JARVIS**, paste a free Gemini key in Settings, and chat.
           3. The 1,899-skill library is bundled and works offline.
 
-          **New in 0.2.0**
-          - **Tasks tab** — bolo kaam, JARVIS plan banata hai, step-by-step chalata hai, fail hone par retry karta hai, aur app band hone ke baad bhi pending kaam resume hota hai.
-          - **Chat tools** — `task_create` / `task_status`, so chat se hi kaam queue ho jata hai.
-          - **Connections tab** — YouTube Data API key test + in-app YouTube search, share sheet (WhatsApp/Instagram/X/YouTube), caption copy, device-health card.
-          - **In-app updater download** — update banner ab app ke andar download karta hai (install prompt ke saath).
-          - Background foreground-service notification for running tasks.
+          **New in 0.3.0**
+          - **Tasks tab** — bolo kaam, JARVIS plan banata hai, step-by-step chalata hai, fail hone par retry karta hai, aur app band hone ke baad pending kaam resume hota hai.
+          - **Chat tools** — `task_create`, `task_status`, `video_create`, so chat se hi kaam queue ho jata hai.
+          - **Video studio** — prompt se vertical/square/landscape video (AI script + animated scenes, WebM) jo phone gallery me `Movies/JARVIS` me khud save hota hai.
+          - **Connections tab** — YouTube Data API key test, in-app YouTube search, share sheet (WhatsApp/Instagram/X/YouTube), caption copy, device-health card.
+          - **In-app updater** — update banner app ke andar naya APK download karta hai, phir install prompt deta hai.
+          - Background foreground-service notification while tasks run.
 
           This build is signed for in-place updates: when a newer `jarvis-v*` release appears, the app shows an update banner.
           If Android says "App not installed", the signing key changed — uninstall the old JARVIS once and install this build.
 
           Honest limits: the assistant needs a model key (or you can use the offline library), and the phone must stay on while long tasks run. No analytics, no hidden uploads.
           NOTES
+          cert=$(cat dist/.fingerprint 2>/dev/null || echo unknown)
+          printf '\n**Signer certificate SHA-256:** `%s`\n' "$cert" >> /tmp/notes.md
+          printf '\nIf Android says \"App not installed\", your old JARVIS was signed with a different key: uninstall it once, then install this APK. Later updates install in place.\n' >> /tmp/notes.md
           gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "JARVIS ${{ steps.version.outputs.name }} — Android APK" --latest=false \
             --notes-file /tmp/notes.md dist/*
@@ -141,3 +163,22 @@ jobs:
           name: JARVIS-apk
           path: dist/
           retention-days: 30
+
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Touch the signing cache
+        id: signing-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: apps/jarvis-app/.signing
+          key: jarvis-signing-v2
+      - name: Report
+        run: |
+          if [ "${{ steps.signing-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "Signing key cache is alive."
+          else
+            echo "::warning::Signing cache is missing; the next APK build will create a new signing key."
+          fi

@@ -1,6 +1,6 @@
 {
   "name": "jarvis-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "JARVIS \u2014 installable Android app (Capacitor shell around the offline skill library)",

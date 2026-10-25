@@ -975,3 +975,9 @@ body.is-locked { overflow: hidden; }
 .task-step-t { line-height: 1.35; }
 .task-step-r { grid-column: 2; color: var(--muted); font-size: .86em; margin-top: 2px; white-space: pre-wrap; }
 .btn-sm { padding: 8px 12px; font-size: .82em; }
+
+/* video studio */
+.video-bar { margin: .6rem 0 .2rem; height: 6px; border-radius: 999px; background: rgba(148,163,184,.18); overflow: hidden; }
+.video-bar span { display: block; height: 100%; width: 0; background: var(--accent, #38bdf8); transition: width .18s linear; }
+.video-canvas, .video-result { width: 100%; border-radius: 14px; background: #05060a; display: block; margin: .6rem 0; }
+.video-canvas { max-height: 60vh; object-fit: contain; }
