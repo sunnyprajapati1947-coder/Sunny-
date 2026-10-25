@@ -59,7 +59,6 @@ The immersive frame is the **real** `<KageLandingPage />` from
 exact configured props in `src/Scene.tsx`. Its canonical document and all
 14 binary assets are served byte-for-byte from `public/landing-pages/` —
 every SHA-256 matches the registered ThreeUI source bundle. Full proof:
-[KAGE_SOURCE.md](KAGE_SOURCE.md).
 
 ## Structure
 
@@ -124,3 +123,9 @@ gold accent + banner apne-aap badalta hai. Shop Panel se band bhi ho sakta hai.
 **Search (SEO):** `index.html` me BarberShop + FAQ schema, `public/robots.txt`,
 `sitemap.xml`, IndexNow key file (`public/7f3a…c2e.txt`, Bing ke liye).
 Google par upar aane ka roadmap: `GOOGLE_BUSINESS_GUIDE.md` (Part 3).
+
+> **Note (25 Oct 2026):** Owner ke kehne par ThreeUI **Kage experience hata diya gaya**
+> (customer confuse hota tha). Ussi jagah ab **Smart Chair** hai — live bheed-meter
+> (`slot_rush` RPC) + Combo Builder. Har booking (form/combo/style) ab naam +
+> mobile number ke saath hi hoti hai, taaki shop customer ko call/WhatsApp kar sake
+> (Shop Panel me har booking par Call/WhatsApp/Confirm button hai).

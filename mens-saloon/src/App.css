@@ -1,6 +1,6 @@
 /* ============================================================
-   MEN'S SALOON — luxury dark theme in the Kage visual language
-   Board colours: deep maroon + gold · Kage accent: vermilion
+   MEN'S SALOON — luxury dark premium theme
+   Board colours: deep maroon + gold · accent: vermilion
    ============================================================ */
 :root {
   --bg: #0d0303;
@@ -135,20 +135,6 @@
 }
 .hero-chip strong { color: var(--gold-2); letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.75rem; }
 .hero-chip span { color: var(--muted); font-size: 0.86rem; }
-
-/* ---------- kage frame ---------- */
-.kage-section { padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 3rem); max-width: 1440px; margin: 0 auto; }
-.kage-head { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
-.kage-head p { color: var(--muted); max-width: 46rem; margin-top: 0.8rem; }
-.shader-frame {
-  height: min(92svh, 980px); min-height: 620px;
-  border-radius: 22px; overflow: hidden;
-  border: 1px solid var(--line);
-  box-shadow: 0 40px 110px rgba(0, 0, 0, 0.65), 0 0 90px rgba(224, 35, 28, 0.12);
-  background: #080808;
-}
-.shader-frame > div { width: 100%; height: 100%; }
-.kage-hint { color: var(--faint); font-size: 0.9rem; text-align: center; margin-top: 0.9rem; }
 
 /* ---------- sections ---------- */
 .section { padding: clamp(3rem, 7vw, 5.5rem) clamp(1rem, 5vw, 4rem); max-width: 1360px; margin: 0 auto; scroll-margin-top: 84px; }
@@ -333,7 +319,6 @@
   .topbar { position: sticky; }
   .hero-stats { grid-template-columns: repeat(2, 1fr); }
   .service-grid, .combo-grid, .style-grid, .why ul, .form-row { grid-template-columns: 1fr; }
-  .shader-frame { min-height: 540px; height: 86svh; }
   .wa-float { bottom: 5.4rem; }
   .mobile-bar {
     display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 60;
@@ -467,3 +452,34 @@
 .area-chips span{border:1px solid var(--gold);color:var(--gold-2);border-radius:999px;padding:.5rem 1rem;font-weight:600;background:rgba(201,162,75,.08)}
 .btn:disabled{opacity:.55;pointer-events:none}
 @media (max-width:640px){.svc-row{grid-template-columns:1fr 80px 80px auto auto}.season-strip{font-size:.85rem}}
+
+/* ===== Smart Chair: live bheed-meter + combo builder ===== */
+.smart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start}
+.smart-card{border:1px solid var(--gold);border-radius:22px;padding:clamp(1.3rem,3vw,1.8rem);background:linear-gradient(165deg,var(--panel),var(--bg-2));display:grid;gap:.9rem}
+.smart-card h3{font-size:1.3rem}
+.rush-days{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.rush-days .opt{border:1px solid var(--line);background:rgba(245,237,225,.04);color:var(--ink);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-weight:600}
+.rush-days .opt.active{background:linear-gradient(135deg,#f03329,var(--vermilion));border-color:var(--vermilion);color:#fff}
+.rush-date{color:var(--gold-2);font-weight:600}
+.slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.55rem}
+.slot{display:grid;gap:.1rem;border:1px solid var(--line);border-radius:12px;padding:.55rem .4rem;background:rgba(245,237,225,.03);color:var(--ink);cursor:pointer;text-align:center}
+.slot strong{font-size:.92rem}
+.slot small{font-size:.72rem;color:var(--muted)}
+.slot.free{border-color:rgba(80,200,120,.45)}
+.slot.one{border-color:rgba(230,180,60,.55)}
+.slot.busy{border-color:rgba(224,35,28,.6)}
+.slot.sel{border-color:var(--gold);background:rgba(201,162,75,.14);box-shadow:0 0 0 1px var(--gold)}
+.slot:disabled{opacity:.38;cursor:not-allowed}
+.preset-chip{display:flex;align-items:center;justify-content:space-between;gap:.6rem;border:1px solid var(--gold);border-radius:12px;padding:.6rem .8rem;background:rgba(201,162,75,.1);font-weight:600}
+.builder-list{display:grid;gap:.45rem;max-height:300px;overflow:auto;padding-right:.2rem}
+.builder-item{display:flex;align-items:center;gap:.6rem;border:1px solid var(--line);border-radius:12px;padding:.55rem .8rem;cursor:pointer;background:rgba(245,237,225,.03)}
+.builder-item span{flex:1}
+.builder-item strong{color:var(--gold-2)}
+.builder-item input{width:18px;height:18px;accent-color:var(--vermilion)}
+.builder-item.on{border-color:var(--gold);background:rgba(201,162,75,.1)}
+.builder-total{display:flex;align-items:baseline;gap:.8rem;border-top:1px dashed var(--line);padding-top:.8rem}
+.builder-total strong{font-size:1.5rem;color:var(--gold-2)}
+.builder-total small{margin-left:auto;color:var(--muted)}
+.phone-help{color:var(--gold-2);font-size:.8rem;font-weight:400}
+@media (max-width:1020px){.smart-grid{grid-template-columns:1fr}}
+button.style-card{font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}

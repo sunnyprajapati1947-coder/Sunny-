@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import './App.css'
-import { Scene } from './Scene'
 import {
   BARBER,
   BUSINESS,
@@ -27,6 +26,7 @@ import {
   fetchSiteSettings,
   adminSaveServices,
   adminSaveSettings,
+  fetchSlotRush,
   type DbBooking,
   type BookingStatus,
   type DbService,
@@ -54,6 +54,16 @@ function scrollToId(id: string) {
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 const todayIST = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+const istNow = () => new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
+const tomorrowIST = () => { const d = istNow(); d.setDate(d.getDate() + 1); return d.toLocaleDateString('en-CA') }
+const slotToMins = (slot: string) => {
+  const m = slot.match(/^(\d+):(\d+)\s*(AM|PM)$/i)
+  if (!m) return 0
+  let h = Number(m[1]) % 12
+  if (m[3].toUpperCase() === 'PM') h += 12
+  return h * 60 + Number(m[2])
+}
+const nowMinsIST = () => { const d = istNow(); return d.getHours() * 60 + d.getMinutes() }
 
 type Booking = {
   name: string
@@ -230,6 +240,23 @@ const HT = {
     seasonLabel: 'Season theme auto (Diwali / Holi / Shaadi rang apne-aap)',
     setSave: '💾 Settings Save Karo',
     setSaved: '✓ Settings live ho gayi!',
+    smartChapter: 'Smart Chair — Live & Advanced',
+    smartH2: 'Khali time dekho, apna combo banao.',
+    smartSub: 'Live bheed-meter se best time chuno, services tick karke apna combo banao — naam aur number do, kursi pakki. No waiting drama.',
+    rushTitle: '🕒 Live Bheed-Meter',
+    todayB: 'Aaj', tomorrowB: 'Kal',
+    free: '🟢 Khali', oneBooked: '🟡 1 booking', busy: '🔴 Bheed hai', past: 'Time gaya',
+    rushNote: 'Ye live count website bookings se aata hai. Final confirmation WhatsApp par milega.',
+    builderTitle: '🧮 Mera Combo Banao',
+    builderSub: 'Jo service chahiye tick karo — total apne-aap jud jayega.',
+    totalL2: 'Total',
+    bName: 'Your name *', bPhone: 'Mobile number (WhatsApp) *',
+    phoneHelp: '📞 Shop isi number par call/WhatsApp karke booking confirm karegi — sahi number daalna.',
+    bBook: 'Book on WhatsApp →',
+    bNeed: 'Pehle kam se kam ek service ya combo chuno.',
+    bInvalid: 'Naam aur sahi 10-digit mobile number daalo — shop aapko isi number par confirm karegi.',
+    bSaved: '✓ WhatsApp khula hai — wahan Send dabao. Booking shop ke record me bhi save ho gayi hai.',
+    comboBook: 'Book This Combo →',
     dbSaved: '✓ Saved in the shop cloud record — see it anytime in “My Bookings” below.',
     dbFailed: '(Network was slow — your booking still went on WhatsApp. Cloud copy will save with your next booking.)',
   },
@@ -287,6 +314,23 @@ const HT = {
     seasonLabel: 'सीज़न थीम ऑटो (दिवाली/होली/शादी रंग अपने-आप)',
     setSave: '💾 सेटिंग सेव करो',
     setSaved: '✓ सेटिंग लाइव हो गई!',
+    smartChapter: 'स्मार्ट कुर्सी — लाइव व एडवांस्ड',
+    smartH2: 'खाली समय देखो, अपना कॉम्बो बनाओ।',
+    smartSub: 'लाइव भीड़-मीटर से बेस्ट टाइम चुनो, सर्विस टिक करके अपना कॉम्बो बनाओ — नाम और नंबर दो, कुर्सी पक्की।',
+    rushTitle: '🕒 लाइव भीड़-मीटर',
+    todayB: 'Aaj', tomorrowB: 'Kal',
+    free: '🟢 खाली', oneBooked: '🟡 1 बुकिंग', busy: '🔴 भीड़ है', past: 'समय गया',
+    rushNote: 'यह लाइव काउंट वेबसाइट बुकिंग से आता है। फ़ाइनल कन्फ़र्मेशन WhatsApp पर मिलेगा।',
+    builderTitle: '🧮 मेरा कॉम्बो बनाओ',
+    builderSub: 'जो सर्विस चाहिए टिक करो — टोटल अपने-आप जुड़ जाएगा।',
+    totalL2: 'कुल',
+    bName: 'आपका नाम *', bPhone: 'मोबाइल नंबर (WhatsApp) *',
+    phoneHelp: '📞 दुकान इसी नंबर पर कॉल/WhatsApp करके बुकिंग कन्फ़र्म करेगी — सही नंबर डालना।',
+    bBook: 'WhatsApp पर बुक करो →',
+    bNeed: 'पहले कम से कम एक सर्विस या कॉम्बो चुनो।',
+    bInvalid: 'नाम और सही 10 अंकों का मोबाइल नंबर डालो — दुकान इसी नंबर पर कन्फ़र्म करेगी।',
+    bSaved: '✓ WhatsApp खुल गया है — वहाँ Send दबाओ। बुकिंग दुकान के रिकॉर्ड में भी सेव हो गई है।',
+    comboBook: 'यह कॉम्बो बुक करो →',
     dbSaved: '✓ दुकान के क्लाउड रिकॉर्ड में सेव हो गया — “मेरी बुकिंग्स” में कभी भी दिखेगा।',
     dbFailed: '(नेटवर्क धीमा था — आपकी बुकिंग WhatsApp पर चली गई है। क्लाउड कॉपी अगली बुकिंग पर सेव होगी।)',
   },
@@ -374,6 +418,64 @@ export default function App() {
   const [errors, setErrors] = useState<Partial<Record<keyof Booking, string>>>({})
   const [sent, setSent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  /* ---- Smart Chair: live bheed-meter + combo builder ---- */
+  const [comboPreset, setComboPreset] = useState<{ name: string; price: number } | null>(null)
+  const [builderSel, setBuilderSel] = useState<string[]>([])
+  const [builderDate, setBuilderDate] = useState<string>(() => todayIST())
+  const [builderTime, setBuilderTime] = useState('11:00 AM')
+  const [rushDay, setRushDay] = useState<'today' | 'tomorrow'>('today')
+  const [rush, setRush] = useState<Record<string, number>>({})
+  const [builderBusy, setBuilderBusy] = useState(false)
+  const [builderMsg, setBuilderMsg] = useState('')
+  useEffect(() => {
+    let live = true
+    fetchSlotRush(builderDate)
+      .then((rows) => { if (live) setRush(Object.fromEntries(rows.map((r) => [r.appt_time, r.bookings]))) })
+      .catch(() => { /* rush na mile to sab khali dikhega — booking phir bhi chalegi */ })
+    return () => { live = false }
+  }, [builderDate])
+  const builderItems = services.filter((sv) => builderSel.includes(sv.id))
+  const builderTotal = builderItems.reduce((a, sv) => a + sv.price, 0) + (comboPreset?.price ?? 0)
+
+  const submitBuilder = (ev: FormEvent) => {
+    ev.preventDefault()
+    const items = [...(comboPreset ? [comboPreset.name] : []), ...builderItems.map((sv) => sv.name)]
+    if (!items.length) { setBuilderMsg(ht.bNeed); return }
+    const digits = booking.phone.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '')
+    if (booking.name.trim().length < 3 || !/^[6-9]\d{9}$/.test(digits)) { setBuilderMsg(ht.bInvalid); return }
+    if (builderBusy) return
+    setBuilderBusy(true); setBuilderMsg('')
+    const label = items.join(' + ')
+    const msg = [
+      `Hello Men's Saloon! Main apna combo book karna chahta hoon.`, ``,
+      `*Name:* ${booking.name.trim()}`,
+      `*Mobile:* ${booking.phone.trim()}`,
+      `*Combo:* ${label}`,
+      `*Total:* ${inr(builderTotal)}`,
+      `*Barber:* ${BARBER.name}`,
+      `*Date:* ${fmtDate(builderDate)}`,
+      `*Time:* ${builderTime}`, ``,
+      `Please confirm my slot. Thank you!`,
+    ].join('\n')
+    saveBooking({
+      name: booking.name.trim(), phone: booking.phone.trim(),
+      service: label.slice(0, 118), price: builderTotal,
+      appt_date: builderDate, appt_time: builderTime, notes: 'Smart Combo Builder se booking',
+    })
+      .then(() => {
+        setBuilderMsg(ht.bSaved)
+        fetchSlotRush(builderDate).then((rows) => setRush(Object.fromEntries(rows.map((r) => [r.appt_time, r.bookings])))).catch(() => { /* ignore */ })
+      })
+      .catch(() => setBuilderMsg(ht.bSaved))
+    try {
+      const key = 'mens-saloon-bookings'
+      const prev = JSON.parse(localStorage.getItem(key) ?? '[]') as Booking[]
+      localStorage.setItem(key, JSON.stringify([...prev, { ...booking, serviceId: builderItems[0]?.id ?? booking.serviceId, date: builderDate, time: builderTime, at: new Date().toISOString() }]))
+    } catch { /* ignore */ }
+    setHistPhone(booking.phone)
+    window.open(whatsappLink(msg), '_blank', 'noopener')
+    window.setTimeout(() => setBuilderBusy(false), 1500)
+  }
   const ht = HT[lang]
   const [dbState, setDbState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle')
   const [histPhone, setHistPhone] = useState('')
@@ -504,13 +606,10 @@ export default function App() {
   }
 
   function chooseCombo(name: string, price: number) {
-    window.open(
-      quickBook(
-        `Hello Men's Saloon! I want to book the *${name}* (${inr(price)}). Please share the best available time today.`,
-      ),
-      '_blank',
-      'noopener',
-    )
+    /* Combo bhi ab naam+number ke saath book hoga — taaki shop customer ko call kar sake. */
+    setComboPreset({ name, price })
+    setBuilderSel([])
+    scrollToId('smart-book')
   }
 
   function validate(b: Booking) {
@@ -724,25 +823,88 @@ export default function App() {
           </div>
         </div>
 
-        {/* ===== Kage experience (exact ThreeUI component) ===== */}
-        <section className="kage-section" id="experience" aria-label="Immersive experience">
-          <div className="kage-head reveal">
-            <div>
-              <p className="chapter">The Experience — Scroll Inside</p>
-              <h2>Stillness before the sharpness.</h2>
-              <p>
-                Our website opens with the complete <strong>Kage</strong> interactive experience by
-                ThreeUI — the exact authored page, its Three.js world, scroll scenes and typography,
-                preserved byte-for-byte. Scroll inside the frame, then continue below for services,
-                prices and booking.
-              </p>
+        {/* ===== Smart Chair — live bheed-meter + combo builder ===== */}
+        <section className="section smart" id="smart-book">
+          <header className="section-head reveal">
+            <p className="chapter">{ht.smartChapter}</p>
+            <h2>{ht.smartH2}</h2>
+            <p>{ht.smartSub}</p>
+          </header>
+
+          <div className="smart-grid">
+            {/* live bheed-meter */}
+            <div className="smart-card reveal">
+              <h3>{ht.rushTitle}</h3>
+              <div className="rush-days">
+                <button type="button" className={`opt ${rushDay === 'today' ? 'active' : ''}`}
+                  aria-pressed={rushDay === 'today'}
+                  onClick={() => { setRushDay('today'); setBuilderDate(todayIST()) }}>{ht.todayB}</button>
+                <button type="button" className={`opt ${rushDay === 'tomorrow' ? 'active' : ''}`}
+                  aria-pressed={rushDay === 'tomorrow'}
+                  onClick={() => { setRushDay('tomorrow'); setBuilderDate(tomorrowIST()) }}>{ht.tomorrowB}</button>
+                <span className="rush-date">{fmtDate(builderDate)}</span>
+              </div>
+              <div className="slot-grid">
+                {TIME_SLOTS.map((slot) => {
+                  const c = rush[slot] ?? 0
+                  const past = builderDate === todayIST() && slotToMins(slot) <= nowMinsIST()
+                  const cls = past ? 'past' : c >= 2 ? 'busy' : c === 1 ? 'one' : 'free'
+                  return (
+                    <button key={slot} type="button" disabled={past}
+                      className={`slot ${cls} ${builderTime === slot ? 'sel' : ''}`}
+                      aria-pressed={builderTime === slot}
+                      onClick={() => setBuilderTime(slot)}>
+                      <strong>{slot}</strong>
+                      <small>{past ? ht.past : c >= 2 ? ht.busy : c === 1 ? ht.oneBooked : ht.free}</small>
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="form-note">{ht.rushNote}</p>
             </div>
-            <a className="btn btn-ghost" href="/landing-pages/kage.html" target="_blank" rel="noreferrer">
-              Open Full Screen ↗
-            </a>
+
+            {/* combo builder */}
+            <div className="smart-card reveal">
+              <h3>{ht.builderTitle}</h3>
+              <p className="hist-sub">{ht.builderSub}</p>
+              {comboPreset && (
+                <div className="preset-chip">
+                  <span>🎁 {comboPreset.name} · {inr(comboPreset.price)}</span>
+                  <button type="button" className="mini-btn danger" aria-label="Remove combo" onClick={() => setComboPreset(null)}>✕</button>
+                </div>
+              )}
+              <div className="builder-list">
+                {services.map((sv) => (
+                  <label key={sv.id} className={`builder-item ${builderSel.includes(sv.id) ? 'on' : ''}`}>
+                    <input type="checkbox" checked={builderSel.includes(sv.id)}
+                      onChange={(e) => setBuilderSel((sel) => e.target.checked ? [...sel, sv.id] : sel.filter((x) => x !== sv.id))} />
+                    <span>{sv.name}</span>
+                    <strong>{inr(sv.price)}{sv.priceNote ? '+' : ''}</strong>
+                  </label>
+                ))}
+              </div>
+              <div className="builder-total" aria-live="polite">
+                <span>{ht.totalL2}</span>
+                <strong>{inr(builderTotal)}</strong>
+                <small>{fmtDate(builderDate)} · {builderTime}</small>
+              </div>
+              <form className="hist-form" onSubmit={submitBuilder}>
+                <label>
+                  {ht.bName}
+                  <input className="db-input" type="text" autoComplete="name" placeholder="e.g. Rahul Kumar"
+                    value={booking.name} onChange={(e) => setBooking({ ...booking, name: e.target.value })} />
+                </label>
+                <label>
+                  {ht.bPhone}
+                  <input className="db-input" type="tel" inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number"
+                    value={booking.phone} onChange={(e) => setBooking({ ...booking, phone: e.target.value })} />
+                  <small className="phone-help">{ht.phoneHelp}</small>
+                </label>
+                <button className="btn btn-wa btn-lg btn-block" type="submit" disabled={builderBusy}>{ht.bBook}</button>
+              </form>
+              {builderMsg && <p className="hist-msg" role="status">{builderMsg}</p>}
+            </div>
           </div>
-          <Scene />
-          <p className="kage-hint">Tip: scroll <strong>inside</strong> the frame to walk the Kage chapters — the salon menu continues below.</p>
         </section>
 
         {/* ===== Chapter 01 — services ===== */}
@@ -789,7 +951,7 @@ export default function App() {
                 <p className="combo-price">{inr(c.price)} <span>· {c.duration}</span></p>
                 <ul>{c.items.map((it) => <li key={it}>{it}</li>)}</ul>
                 <button className="btn btn-red" onClick={() => chooseCombo(c.name, c.price)}>
-                  {t.bookWhats}
+                  {ht.comboBook}
                 </button>
               </article>
             ))}
@@ -902,10 +1064,12 @@ export default function App() {
                   <button className="btn btn-red" onClick={() => chooseService(finderResult.serviceId)}>
                     {lang === 'hi' ? 'यही लुक बुक करो' : 'Book This Look'}
                   </button>
-                  <a className="btn btn-wa" target="_blank" rel="noreferrer"
-                    href={quickBook(`Hello Men's Saloon! Style Finder ne mere liye *${finderResult.style}* suggest kiya hai. Mujhe yehi look chahiye — kab aaun?`)}>
-                    WhatsApp
-                  </a>
+                  <button type="button" className="btn btn-wa" onClick={() => {
+                    setBooking((b) => ({ ...b, serviceId: finderResult.serviceId, notes: `Style Finder wala look: ${finderResult.style}` }))
+                    scrollToId('book')
+                  }}>
+                    WhatsApp Booking →
+                  </button>
                 </div>
               </div>
             ) : (
@@ -919,23 +1083,25 @@ export default function App() {
           <header className="section-head reveal">
             <p className="chapter">{t.stylesChapter}</p>
             <h2>{t.stylesH2}</h2>
-            <p>Tap a style to ask for it on WhatsApp — or bring any photo and we will match it to your face shape and hair type.</p>
+            <p>{lang === 'hi' ? 'Style par tap karo — booking form me wo style note ho jayega. Ya koi bhi photo lao, hum tumhare face shape aur hair type ke hisaab se match kar denge.' : 'Tap a style — it lands in your booking form with your number, so the shop can confirm you. Or bring any photo and we will match it to your face shape and hair type.'}</p>
           </header>
           <div className="style-grid">
             {STYLE_MENU.map((st, i) => (
-              <a
+              <button
+                type="button"
                 className="style-card reveal"
                 key={st.name}
-                href={quickBook(`Hello Men's Saloon! I want the *${st.name}* look (${st.hint}). When can I come?`)}
-                target="_blank"
-                rel="noreferrer"
+                onClick={() => {
+                  setBooking((b) => ({ ...b, notes: `Style chahiye: ${st.name} (${st.hint})` }))
+                  scrollToId('book')
+                }}
                 style={{ transitionDelay: `${(i % 4) * 60}ms` }}
               >
                 <span className="style-no">{String(i + 1).padStart(2, '0')}</span>
                 <strong>{st.name}</strong>
                 <small>{lang === 'hi' ? (STYLE_HINT_HI[st.name] ?? st.hint) : st.hint}</small>
                 <span className="style-cta">{t.askStyle}</span>
-              </a>
+              </button>
             ))}
           </div>
 
@@ -999,6 +1165,7 @@ export default function App() {
                 onChange={(e) => setBooking({ ...booking, phone: e.target.value })}
               />
               {errors.phone && <small className="error">{errors.phone}</small>}
+              {!errors.phone && <small className="phone-help">{ht.phoneHelp}</small>}
             </label>
 
             <label>
@@ -1425,11 +1592,11 @@ export default function App() {
           <a href="#services" onClick={(e) => { e.preventDefault(); scrollToId('services') }}>Services & Prices</a>
           <a href="#book" onClick={(e) => { e.preventDefault(); scrollToId('book') }}>Book Appointment</a>
           <a href="#visit" onClick={(e) => { e.preventDefault(); scrollToId('visit') }}>Visit Us</a>
-          <a href="/landing-pages/kage.html" target="_blank" rel="noreferrer">Kage Experience ↗</a>
+          <a href="#smart-book" onClick={(e) => { e.preventDefault(); scrollToId('smart-book') }}>Smart Booking</a>
         </nav>
         <p className="footer-note">
-          © {new Date().getFullYear()} {BUSINESS.name}, {BUSINESS.city}. Crafted with the Kage
-          experience by ThreeUI (MIT). Prices are starting prices — confirmed before your service begins.
+          © {new Date().getFullYear()} {BUSINESS.name}, {BUSINESS.city}. Sudama Nagar ka apna premium
+          gents saloon. Prices are starting prices — confirmed before your service begins.
         </p>
       </footer>
 

@@ -157,3 +157,9 @@ export function adminSaveServices(pin: string, items: DbService[]): Promise<bool
 export function adminSaveSettings(pin: string, data: SiteSettings): Promise<boolean> {
   return rpc<boolean>('admin_save_settings', { p_pin: pin, p_data: data })
 }
+
+/** Live bheed-meter — kisi date par har slot me kitni bookings (sirf count, personal data nahi). */
+export type SlotRush = { appt_time: string; bookings: number }
+export function fetchSlotRush(date: string): Promise<SlotRush[]> {
+  return rpc<SlotRush[]>('slot_rush', { p_date: date })
+}
