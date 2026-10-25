@@ -3,10 +3,17 @@
 
   const businessPhone = "919031368918";
   const usualServiceKey = "mens-salon-usual-service";
+  const bookingHistoryKey = "mens-salon-booking-history-v1";
+  const maxBookingHistory = 30;
   const bookingDialog = document.querySelector("#bookingDialog");
   const bookingForm = document.querySelector("#bookingForm");
   const serviceSelect = document.querySelector("#serviceSelect");
   const bookingDate = document.querySelector("#bookingDate");
+  const bookingHistoryDialog = document.querySelector("#bookingHistoryDialog");
+  const bookingHistoryList = document.querySelector("#bookingHistoryList");
+  const bookingHistoryEmpty = document.querySelector("#bookingHistoryEmpty");
+  const bookingHistoryStatus = document.querySelector("#bookingHistoryStatus");
+  const clearBookingHistoryButton = document.querySelector("#clearBookingHistory");
   const menuToggle = document.querySelector(".menu-toggle");
   const primaryNav = document.querySelector("#primaryNav");
   const installButton = document.querySelector("#installAppButton");
@@ -27,6 +34,7 @@
   let lastBookingTrigger = null;
   let lastFinderTrigger = null;
   let lastHelpTrigger = null;
+  let lastHistoryTrigger = null;
   let selectedFinderService = "";
   let selectedHelpTopic = "booking";
   let deferredInstallPrompt = null;
@@ -47,7 +55,18 @@
     combo: {
       en: "Haircut + beard",
       hi: "हेयरकट + बियर्ड"
+    },
+    consultation: {
+      en: "Not sure yet · ask on WhatsApp",
+      hi: "अभी तय नहीं · WhatsApp पर बताइए"
     }
+  };
+
+  const servicePrices = {
+    signature: 50,
+    fade: 100,
+    beard: 50,
+    combo: 100
   };
 
   function readUsualService() {
@@ -67,6 +86,126 @@
     } catch (_) {
       return false;
     }
+  }
+
+  function readBookingHistory() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(bookingHistoryKey) || "[]");
+      if (!Array.isArray(stored)) return [];
+
+      return stored.filter((entry) => {
+        if (!entry || typeof entry !== "object") return false;
+        if (!Object.prototype.hasOwnProperty.call(services, entry.service)) return false;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.time)) return false;
+        if (!Number.isFinite(Date.parse(entry.createdAt))) return false;
+        const [year, month, day] = entry.date.split("-").map(Number);
+        const requestedDate = new Date(year, month - 1, day);
+        return requestedDate.getFullYear() === year
+          && requestedDate.getMonth() === month - 1
+          && requestedDate.getDate() === day;
+      }).slice(0, maxBookingHistory).map((entry) => ({
+        service: entry.service,
+        date: entry.date,
+        time: entry.time,
+        createdAt: entry.createdAt
+      }));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveBookingHistory(service, date, time) {
+    if (!Object.prototype.hasOwnProperty.call(services, service)) return false;
+    const createdAt = new Date().toISOString();
+    const entry = { service, date, time, createdAt };
+
+    try {
+      const history = [entry, ...readBookingHistory()].slice(0, maxBookingHistory);
+      localStorage.setItem(bookingHistoryKey, JSON.stringify(history));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function formatHistoryDateTime(date, time) {
+    const requested = new Date(`${date}T${time}:00`);
+    return new Intl.DateTimeFormat(currentLanguage === "hi" ? "hi-IN" : "en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    }).format(requested);
+  }
+
+  function historyFollowUpMessage(entry) {
+    const serviceName = services[entry.service]?.[currentLanguage] || entry.service;
+    const price = servicePrices[entry.service];
+    const serviceLabel = price ? `${serviceName} · ₹${price}` : serviceName;
+    const requestedAt = formatHistoryDateTime(entry.date, entry.time);
+
+    return currentLanguage === "hi"
+      ? `नमस्ते, मेरे पास इस पहले के अपॉइंटमेंट अनुरोध का रिकॉर्ड है: ${serviceLabel}, ${requestedAt}। क्या आप कृपया बता सकते हैं कि अनुरोध मिला था और अपॉइंटमेंट की पुष्टि हुई है या नहीं?`
+      : `Hi, I have a record of this earlier appointment request: ${serviceLabel}, ${requestedAt}. Could you please check whether it was received and whether the appointment was confirmed?`;
+  }
+
+  function updateBookingHistoryUI() {
+    if (!bookingHistoryList || !bookingHistoryEmpty) return;
+    const history = readBookingHistory();
+    bookingHistoryList.replaceChildren();
+    bookingHistoryList.hidden = history.length === 0;
+    bookingHistoryEmpty.hidden = history.length > 0;
+    if (clearBookingHistoryButton) clearBookingHistoryButton.disabled = history.length === 0;
+    if (bookingHistoryStatus) bookingHistoryStatus.textContent = "";
+
+    const locale = currentLanguage === "hi" ? "hi-IN" : "en-IN";
+    history.forEach((entry) => {
+      const item = document.createElement("li");
+      item.className = "booking-history-item";
+
+      const heading = document.createElement("div");
+      heading.className = "booking-history-heading";
+      const serviceTitle = document.createElement("strong");
+      serviceTitle.textContent = services[entry.service]?.[currentLanguage] || entry.service;
+      heading.appendChild(serviceTitle);
+
+      const price = servicePrices[entry.service];
+      if (price) {
+        const priceLabel = document.createElement("span");
+        priceLabel.className = "booking-history-price";
+        priceLabel.textContent = `₹${price}`;
+        heading.appendChild(priceLabel);
+      }
+
+      const requested = document.createElement("p");
+      requested.className = "booking-history-meta";
+      requested.textContent = currentLanguage === "hi"
+        ? `माँगा गया समय: ${formatHistoryDateTime(entry.date, entry.time)}`
+        : `Requested for: ${formatHistoryDateTime(entry.date, entry.time)}`;
+
+      const saved = document.createElement("p");
+      saved.className = "booking-history-saved";
+      saved.textContent = currentLanguage === "hi"
+        ? `इस डिवाइस पर सेव: ${new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(entry.createdAt))}`
+        : `Saved on this device: ${new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(entry.createdAt))}`;
+
+      const status = document.createElement("p");
+      status.className = "booking-history-status";
+      status.textContent = currentLanguage === "hi"
+        ? "यह अनुरोध का रिकॉर्ड है; ऐप यह नहीं जान सकता कि WhatsApp संदेश भेजा गया या सलून ने पुष्टि की।"
+        : "This is a request record; the app cannot tell whether WhatsApp was sent or the salon confirmed it.";
+
+      const followUp = document.createElement("a");
+      followUp.className = "button button-outline-light booking-history-followup";
+      followUp.href = `https://wa.me/${businessPhone}?text=${encodeURIComponent(historyFollowUpMessage(entry))}`;
+      followUp.target = "_blank";
+      followUp.rel = "noopener noreferrer";
+      followUp.textContent = currentLanguage === "hi" ? "WhatsApp पर स्थिति पूछें" : "Ask the salon on WhatsApp";
+
+      item.append(heading, requested, saved, status, followUp);
+      bookingHistoryList.appendChild(item);
+    });
   }
 
   function updateUsualServiceUI() {
@@ -122,6 +261,10 @@
     location: {
       en: "Men's Salon is listed in Sudama Nagar, Nawada, Bihar 805110. The exact landmark has not been confirmed; open Maps or message before setting out.",
       hi: "Men's Salon का पता सुदामा नगर, नवादा, बिहार 805110 है। सटीक लैंडमार्क की पुष्टि नहीं हुई; निकलने से पहले Maps खोलें या संदेश करें।"
+    },
+    history: {
+      en: "Open My booking history above to see request summaries saved on this device. The app cannot tell whether WhatsApp sent a message or Nitish confirmed an appointment.",
+      hi: "इस डिवाइस पर सेव अनुरोध देखने के लिए ऊपर 'मेरी बुकिंग हिस्ट्री' खोलें। ऐप यह नहीं जान सकता कि WhatsApp संदेश भेजा गया या नितीश ने अपॉइंटमेंट की पुष्टि की।"
     }
   };
 
@@ -135,7 +278,7 @@
   }
 
   function syncDialogOpenState() {
-    const open = [bookingDialog, installHelpDialog, styleFinderDialog, helpDialog].some((dialog) => dialog?.open);
+    const open = [bookingDialog, installHelpDialog, styleFinderDialog, helpDialog, bookingHistoryDialog].some((dialog) => dialog?.open);
     document.body.classList.toggle("dialog-open", open);
   }
 
@@ -171,6 +314,7 @@
     updateUsualServiceUI();
     updateFinderSelection();
     updateHelpAnswer();
+    updateBookingHistoryUI();
 
     try {
       localStorage.setItem("mens-salon-language", currentLanguage);
@@ -189,10 +333,12 @@
     else {
       updateUsualServiceUI();
       updateHelpAnswer();
+      updateBookingHistoryUI();
     }
   } catch (_) {
     updateUsualServiceUI();
     updateHelpAnswer();
+    updateBookingHistoryUI();
     // Keep English as the default when browser storage is unavailable.
   }
 
@@ -341,6 +487,50 @@
   helpDialog?.addEventListener("close", () => {
     syncDialogOpenState();
     if (lastHelpTrigger && typeof lastHelpTrigger.focus === "function") lastHelpTrigger.focus();
+  });
+
+  function openBookingHistory(trigger) {
+    if (!bookingHistoryDialog || typeof bookingHistoryDialog.showModal !== "function") return;
+    lastHistoryTrigger = trigger || document.activeElement;
+    updateBookingHistoryUI();
+    bookingHistoryDialog.showModal();
+    syncDialogOpenState();
+    window.setTimeout(() => bookingHistoryDialog.querySelector("#closeBookingHistory")?.focus(), 20);
+  }
+
+  document.querySelectorAll("[data-open-history]").forEach((button) => {
+    button.addEventListener("click", () => openBookingHistory(button));
+  });
+
+  bookingHistoryDialog?.querySelector("#closeBookingHistory")?.addEventListener("click", () => bookingHistoryDialog.close());
+  bookingHistoryDialog?.querySelector("#closeHistoryButton")?.addEventListener("click", () => bookingHistoryDialog.close());
+  bookingHistoryDialog?.addEventListener("click", (event) => {
+    if (event.target === bookingHistoryDialog) bookingHistoryDialog.close();
+  });
+  bookingHistoryDialog?.addEventListener("close", () => {
+    syncDialogOpenState();
+    if (lastHistoryTrigger && typeof lastHistoryTrigger.focus === "function") lastHistoryTrigger.focus();
+  });
+
+  clearBookingHistoryButton?.addEventListener("click", () => {
+    const history = readBookingHistory();
+    if (!history.length || !bookingHistoryStatus) return;
+    const confirmMessage = currentLanguage === "hi"
+      ? "इस डिवाइस से आपकी सभी सेव की गई बुकिंग हिस्ट्री हटाएँ?"
+      : "Clear all saved booking history from this device?";
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      localStorage.removeItem(bookingHistoryKey);
+      updateBookingHistoryUI();
+      bookingHistoryStatus.textContent = currentLanguage === "hi"
+        ? "इस डिवाइस की बुकिंग हिस्ट्री हटा दी गई।"
+        : "Booking history cleared from this device.";
+    } catch (_) {
+      bookingHistoryStatus.textContent = currentLanguage === "hi"
+        ? "हिस्ट्री नहीं हट सकी। कृपया ऐप/ब्राउज़र डेटा साफ़ करें।"
+        : "History could not be cleared. Please clear the app/browser storage.";
+    }
   });
 
   document.querySelectorAll("[data-help-topic]").forEach((button) => {
@@ -523,6 +713,9 @@
       const date = String(formData.get("date") || "");
       const time = String(formData.get("time") || "");
       const notes = String(formData.get("notes") || "").trim();
+
+      // Save only a minimal request summary locally; name and notes go only to WhatsApp.
+      saveBookingHistory(serviceSelect.value, date, time);
 
       const message = currentLanguage === "hi"
         ? [

@@ -96,7 +96,7 @@ jobs:
           unzip -tq "$aab"
           jarsigner -verify -certs "$aab"
           mkdir -p salon-website/android-app/dist
-          cp "$aab" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.aab
+          cp "$aab" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.5.aab
 
       - name: Build debug APK for direct installation
         working-directory: salon-website/android-app/android
@@ -110,17 +110,17 @@ jobs:
           test -s "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$apk"
           badging=$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk")
-          printf '%s\n' "$badging" | grep -F "package: name='com.menssalon.nawada' versionCode='5' versionName='1.0.4'"
+          printf '%s\n' "$badging" | grep -F "package: name='com.menssalon.nawada' versionCode='6' versionName='1.0.5'"
           mkdir -p salon-website/android-app/dist
-          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.apk
-          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.4.apk > SHA256SUMS)
+          cp "$apk" salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.5.apk
+          (cd salon-website/android-app/dist && sha256sum Mens-Salon-Nawada-v1.0.5.apk > SHA256SUMS)
 
       - name: Upload APK download
         uses: actions/upload-artifact@v4
         with:
-          name: mens-salon-android-apk-v1.0.4
+          name: mens-salon-android-apk-v1.0.5
           path: |
-            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.apk
+            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.5.apk
             salon-website/android-app/dist/SHA256SUMS
           if-no-files-found: error
           retention-days: 30
@@ -129,8 +129,8 @@ jobs:
         if: steps.play-signing.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: mens-salon-play-aab-v1.0.4
-          path: salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.aab
+          name: mens-salon-play-aab-v1.0.5
+          path: salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.5.aab
           if-no-files-found: error
           retention-days: 30
 
@@ -138,20 +138,21 @@ jobs:
         if: github.ref == 'refs/heads/arena/01e737c4-sunny' || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.4
+          tag_name: v1.0.5
           target_commitish: ${{ github.sha }}
-          name: Men's Salon Android v1.0.4
+          name: Men's Salon Android v1.0.5
           body: |
             Updated Android release for Men's Salon, Nawada.
 
             - Includes the bilingual English/Hindi salon site, booking/support tools, privacy policy, supplied shopfront photo, and offline-ready salon imagery.
+            - Adds up to 30 local booking-request summaries on this device only; no account or cloud sync, and no claim of WhatsApp delivery or salon confirmation.
             - Lists ₹50/₹100 services, updated salon contact details, and six years of barbering experience.
             - WhatsApp booking and sharing require internet access.
             - The debug-signed APK is for direct installation, not a Play Store upload.
             - A signed Play App Bundle is attached only when the owner-configured upload key is available. Google Play Console submission is not automated by this release.
             - `SHA256SUMS` contains the APK checksum.
           files: |
-            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.apk
+            salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.5.apk
             salon-website/android-app/dist/SHA256SUMS
           fail_on_unmatched_files: true
           overwrite_files: true
@@ -161,4 +162,4 @@ jobs:
         if: steps.play-signing.outputs.configured == 'true' && (github.ref == 'refs/heads/arena/01e737c4-sunny' || github.ref == 'refs/heads/main')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload v1.0.4 salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.4.aab --clobber
+        run: gh release upload v1.0.5 salon-website/android-app/dist/Mens-Salon-Nawada-v1.0.5.aab --clobber

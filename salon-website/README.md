@@ -29,13 +29,17 @@ The two allowed price points were provided without a service-by-service rate car
 - Responsive, premium editorial design with no horizontal page overflow and a mobile-friendly, independently scrollable Help & Support dialog
 - English / Hindi language toggle, with the selection remembered in the browser
 - The supplied real shopfront photo in the hero and gallery; salon-interior and Nitish Jatav photos remain in the studio/gallery sections
-- One-minute style finder, on-device “usual service” saving, WhatsApp booking, direct call, Maps search, share, and downloadable contact card
+- One-minute style finder, on-device “usual service” saving and up-to-30 request-history summaries, WhatsApp booking, direct call, Maps search, share, and downloadable contact card
 - Bilingual Help & Support, FAQs, and safe handoff links for ChatGPT, Gemini, and Claude
 - Privacy policy in English and Hindi, linked from the site and bundled in the Android app
 - The supplied salon and barber photos precached for offline PWA use and copied locally into the Android app
 - LocalBusiness/BarberShop structured data, canonical/social metadata, `robots.txt`, and `sitemap.xml`
 - Shears-and-star branding across the website, PWA icons, Android launcher, and splash screens
 - Reduced-motion support, keyboard-accessible controls, and the pinned Lucide icon license notice
+
+## Booking request history and storage
+
+The booking form still only prepares a WhatsApp request; the customer must send it, and Nitish confirms availability separately. The “My booking history” dialog shows up to 30 recent request summaries saved in `localStorage` on the same browser or Android app and device. Each summary contains only service, requested date/time, and the local save time—no name or notes. It does not prove that WhatsApp delivered the message or that an appointment was confirmed. The site/app does not upload or sync this history to an account or salon database; Android app-data backup is disabled, while browser/OS backup behavior may follow device-provider settings. Customers can clear entries in the dialog, clear site/app storage, or uninstall the Android app; clearing is irreversible. If local storage is unavailable, a request may not be recorded. The public privacy page repeats these details in English and Hindi.
 
 ## Google Search visibility
 
@@ -64,9 +68,9 @@ The site is an installable **Progressive Web App (PWA)**. Android browsers can u
 
 ### Android APK
 
-- **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.4.apk)** from the public GitHub release.
-- Release version: **1.0.4** (version code 5), package `com.menssalon.nawada`.
-- The APK bundles the bilingual site, privacy policy, and salon photos locally. WhatsApp booking and sharing need internet access.
+- **[Download the Android app](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/latest/download/Mens-Salon-Nawada-v1.0.5.apk)** from the public GitHub release.
+- Release version: **1.0.5** (version code 6), package `com.menssalon.nawada`.
+- The APK bundles the bilingual site, privacy policy, and salon photos locally. It includes the device-only request history described above. WhatsApp booking and sharing need internet access.
 - Install on Android 7.0 or newer. The debug-signed APK is for direct installation only, not a Play Store upload; follow Google Play Protect's scan recommendation if shown.
 - Each push to `main` or an `arena/**` branch runs **Build Men's Salon Android release** in GitHub Actions. Successful builds from this app branch or `main` publish the APK and SHA-256 checksum as a GitHub release.
 

@@ -466,8 +466,9 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
         </div>
         <label class="form-field"><span data-en="Anything you'd like us to know? (optional)" data-hi="कोई खास बात? (वैकल्पिक)">Anything you'd like us to know? (optional)</span><textarea name="notes" rows="3" maxlength="300" data-en-placeholder="Preferred style, reference photo, or a question…" data-hi-placeholder="पसंदीदा स्टाइल, रेफरेंस फोटो या कोई सवाल…" placeholder="Preferred style, reference photo, or a question…"></textarea></label>
         <button class="button button-gold dialog-submit" type="submit"><span data-en="Send request on WhatsApp" data-hi="WhatsApp पर अनुरोध भेजें">Send request on WhatsApp</span><span class="button-arrow" aria-hidden="true">↗</span></button>
-        <p class="form-footnote" data-en="This is a booking request, not a confirmed appointment. We'll reply to confirm availability."
-           data-hi="यह बुकिंग अनुरोध है, पक्का अपॉइंटमेंट नहीं। उपलब्धता की पुष्टि हम जवाब देकर करेंगे।">This is a booking request, not a confirmed appointment. We'll reply to confirm availability.</p>
+        <p class="form-footnote" data-en="This is a request, not a confirmed appointment. If device storage is available, a small summary is saved in My History on this device."
+           data-hi="यह अनुरोध है, पक्का अपॉइंटमेंट नहीं। डिवाइस स्टोरेज उपलब्ध होने पर छोटा रिकॉर्ड इसी डिवाइस की बुकिंग हिस्ट्री में सेव होगा।">This is a request, not a confirmed appointment. If device storage is available, a small summary is saved in My History on this device.</p>
+        <button class="text-link booking-history-link" type="button" data-open-history aria-haspopup="dialog" aria-controls="bookingHistoryDialog" data-en="View saved history" data-hi="सेव हिस्ट्री देखें">View saved history</button>
       </form>
     </div>
   </dialog>
@@ -478,11 +479,17 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
       <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span><span data-en="QUICK ANSWERS · REAL SUPPORT · AI OPTIONS" data-hi="त्वरित जवाब · सीधी मदद · AI विकल्प">QUICK ANSWERS · REAL SUPPORT · AI OPTIONS</span></p>
       <h2 id="helpSupportTitle"><span data-en="How can we help?" data-hi="हम कैसे मदद करें?">How can we help?</span></h2>
       <p class="dialog-intro" data-en="Choose a quick question, message the salon, or open an AI assistant for general grooming ideas." data-hi="कोई सवाल चुनें, सलून को संदेश भेजें या सामान्य ग्रूमिंग सुझावों के लिए AI सहायक खोलें।">Choose a quick question, message the salon, or open an AI assistant for general grooming ideas.</p>
+      <button class="button button-gold history-open-button" type="button" data-open-history aria-haspopup="dialog" aria-controls="bookingHistoryDialog">
+        <span data-en="My booking history" data-hi="मेरी बुकिंग हिस्ट्री">My booking history</span><span class="button-arrow" aria-hidden="true">↗</span>
+      </button>
+      <p class="history-entry-note" data-en="Only request summaries saved on this device. WhatsApp requests are not confirmed appointments."
+         data-hi="सिर्फ़ इस डिवाइस पर सेव अनुरोध। WhatsApp अनुरोध पक्का अपॉइंटमेंट नहीं होता।">Only request summaries saved on this device. WhatsApp requests are not confirmed appointments.</p>
       <div class="help-faq-list" role="group" aria-label="Common questions" data-en-aria="Common questions" data-hi-aria="आम सवाल">
         <button type="button" data-help-topic="booking" data-en="How do I book?" data-hi="बुकिंग कैसे करें?">How do I book?</button>
         <button type="button" data-help-topic="prices" data-en="What are the prices?" data-hi="कीमतें क्या हैं?">What are the prices?</button>
         <button type="button" data-help-topic="hours" data-en="When are you open?" data-hi="सलून कब खुला रहता है?">When are you open?</button>
         <button type="button" data-help-topic="location" data-en="Where is the salon?" data-hi="सलून कहाँ है?">Where is the salon?</button>
+        <button type="button" data-help-topic="history" data-en="Where can I find my history?" data-hi="मेरी हिस्ट्री कहाँ मिलेगी?">Where can I find my history?</button>
       </div>
       <p class="help-answer" id="helpAnswer" role="status" aria-live="polite"></p>
       <div class="help-contact-actions">
@@ -501,6 +508,31 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
         <button class="help-copy-prompt" type="button" id="copyAiPrompt" data-en="Copy the grooming question" data-hi="ग्रूमिंग सवाल कॉपी करें">Copy the grooming question</button>
         <p class="help-model-status" id="aiHelperStatus" role="status" aria-live="polite" data-en="AI answers are general advice; check the listed prices and confirm availability directly with Nitish." data-hi="AI के जवाब सामान्य सुझाव हैं; सूची में कीमत देखें और उपलब्धता नितीश से सीधे पक्की करें।">AI answers are general advice; check the listed prices and confirm availability directly with Nitish.</p>
       </section>
+    </div>
+  </dialog>
+
+  <dialog class="booking-dialog booking-history-dialog" id="bookingHistoryDialog" aria-labelledby="bookingHistoryTitle">
+    <div class="dialog-topline"><span data-en="MEN'S SALON · ON THIS DEVICE" data-hi="मेन्स सलून · इसी डिवाइस पर">MEN'S SALON · ON THIS DEVICE</span><button class="dialog-close" id="closeBookingHistory" type="button" aria-label="Close booking history" data-en-aria="Close booking history" data-hi-aria="बुकिंग हिस्ट्री बंद करें">×</button></div>
+    <div class="dialog-content">
+      <p class="eyebrow eyebrow-dark"><span class="eyebrow-line"></span><span data-en="YOUR REQUESTS · NOT CONFIRMATIONS" data-hi="आपके अनुरोध · पुष्टि नहीं">YOUR REQUESTS · NOT CONFIRMATIONS</span></p>
+      <h2 id="bookingHistoryTitle"><span data-en="My history." data-hi="मेरी हिस्ट्री।">My history.</span></h2>
+      <p class="dialog-intro" data-en="The latest 30 request summaries saved on this device. They are not confirmed appointments."
+         data-hi="इस डिवाइस पर सेव किए गए हाल के 30 अनुरोध। ये पक्के अपॉइंटमेंट नहीं हैं।">The latest 30 request summaries saved on this device. They are not confirmed appointments.</p>
+      <p class="booking-history-empty" id="bookingHistoryEmpty" data-en="No saved requests yet. Submit the booking form to create a local request record."
+         data-hi="अभी कोई अनुरोध सेव नहीं है। लोकल रिकॉर्ड बनाने के लिए बुकिंग फ़ॉर्म भेजें।">No saved requests yet. Submit the booking form to create a local request record.</p>
+      <ul class="booking-history-list" id="bookingHistoryList" aria-label="Saved booking requests" data-en-aria="Saved booking requests" data-hi-aria="सेव किए गए बुकिंग अनुरोध" hidden></ul>
+      <div class="booking-history-storage">
+        <strong data-en="Where is it stored?" data-hi="यह कहाँ सेव होता है?">Where is it stored?</strong>
+        <p data-en="In this browser or app's local storage on this device. This site/app does not upload the history to an account or salon database and has no cloud-sync feature. Automatic Android app backup is disabled; browser/OS backup behavior, if enabled, is controlled by your device provider. The history stores service, requested date and time, and when the request record was saved—not your name, notes, or delivery/confirmation status. If device storage is unavailable, a request may not be saved."
+           data-hi="इसी डिवाइस के इस ब्राउज़र या ऐप के लोकल स्टोरेज में। यह साइट/ऐप हिस्ट्री को किसी अकाउंट या सलून डेटाबेस पर अपलोड नहीं करती और इसमें क्लाउड-सिंक नहीं है। Android ऐप का ऑटोमैटिक बैकअप बंद है; ब्राउज़र/OS बैकअप, अगर चालू हो, आपके डिवाइस प्रदाता के नियंत्रण में है। हिस्ट्री में सेवा, माँगी गई तारीख़ और समय, और रिकॉर्ड सेव होने का समय रहता है—आपका नाम, नोट या भेजने/पुष्टि की स्थिति नहीं। डिवाइस स्टोरेज उपलब्ध न हो तो अनुरोध सेव नहीं हो सकता।">In this browser or app's local storage on this device. This site/app does not upload the history to an account or salon database and has no cloud-sync feature. Automatic Android app backup is disabled; browser/OS backup behavior, if enabled, is controlled by your device provider. The history stores service, requested date and time, and when the request record was saved—not your name, notes, or delivery/confirmation status. If device storage is unavailable, a request may not be saved.</p>
+        <p data-en="Clear it here, clear this site/app's storage in your device settings, or uninstall the app. Clearing may be permanent; saved history is limited to 30 requests."
+           data-hi="इसे यहाँ से, डिवाइस सेटिंग में इस साइट/ऐप का डेटा साफ़ करके, या ऐप हटाकर मिटाएँ। हटाई गई हिस्ट्री वापस नहीं लाई जा सकती; अधिकतम 30 अनुरोध रखे जाते हैं।">Clear it here, clear this site/app's storage in your device settings, or uninstall the app. Clearing may be permanent; saved history is limited to 30 requests.</p>
+      </div>
+      <div class="booking-history-actions">
+        <button class="button button-outline-light" id="clearBookingHistory" type="button" disabled><span data-en="Clear saved history" data-hi="सेव हिस्ट्री मिटाएँ">Clear saved history</span></button>
+        <button class="button button-gold" id="closeHistoryButton" type="button"><span data-en="Done" data-hi="हो गया">Done</span><span class="button-arrow" aria-hidden="true">✓</span></button>
+      </div>
+      <p class="booking-history-live" id="bookingHistoryStatus" role="status" aria-live="polite"></p>
     </div>
   </dialog>
 

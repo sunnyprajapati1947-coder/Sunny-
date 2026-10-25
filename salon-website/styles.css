@@ -472,6 +472,32 @@ dialog.booking-dialog[open] { display: flex; flex-direction: column; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .dialog-submit { width: 100%; margin-top: 4px; }
 .form-footnote { margin: 0; color: #817b70; font-size: 9px; line-height: 1.6; text-align: center; }
+.booking-history-link { align-self: center; margin-top: -5px; color: var(--gold-deep); }
+.history-open-button { width: 100%; justify-content: space-between; margin: 0 0 7px; }
+.history-entry-note { margin: 0 0 16px; color: #777166; font-size: 9px; line-height: 1.6; }
+.booking-history-dialog { width: min(680px, calc(100% - 28px)); max-width: 680px; }
+.booking-history-dialog .dialog-content { max-height: min(78vh, 740px); }
+.booking-history-empty { margin: 0; padding: 18px; border: 1px dashed rgba(34,31,25,.24); color: var(--body); font-size: 11px; line-height: 1.7; }
+.booking-history-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.booking-history-list[hidden] { display: none; }
+.booking-history-item { min-width: 0; padding: 15px; border: 1px solid rgba(150,118,68,.34); background: rgba(255,255,255,.38); overflow-wrap: anywhere; }
+.booking-history-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--ink); font-size: 12px; }
+.booking-history-price { flex: 0 0 auto; color: var(--gold-deep); font-family: var(--serif); font-size: 17px; }
+.booking-history-item p { margin: 8px 0 0; font-size: 9px; line-height: 1.65; }
+.booking-history-meta { color: var(--body); }
+.booking-history-saved { color: #817b70; }
+.booking-history-status { color: #7b5c29; }
+.booking-history-followup { width: 100%; min-height: 42px; margin-top: 12px; border-color: rgba(34,31,25,.28); color: var(--ink); font-size: 8px; }
+.booking-history-storage { display: grid; gap: 7px; margin-top: 18px; padding: 14px 15px; border-left: 2px solid var(--gold-deep); background: rgba(255,255,255,.38); }
+.booking-history-storage strong { color: var(--ink); font-size: 10px; letter-spacing: .06em; }
+.booking-history-storage p { margin: 0; color: var(--body); font-size: 9px; line-height: 1.7; }
+.booking-history-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 15px; }
+.booking-history-actions .button { min-width: 0; min-height: 44px; gap: 8px; padding: 8px 12px; font-size: 8px; text-align: center; }
+.booking-history-actions .button-outline-light { border-color: rgba(34,31,25,.28); color: var(--ink); }
+.booking-history-actions .button-outline-light:hover { border-color: var(--gold-deep); color: var(--gold-deep); }
+.booking-history-actions .button:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+.booking-history-live { min-height: 16px; margin: 9px 0 0; color: #65512f; font-size: 9px; line-height: 1.5; text-align: center; }
+.booking-history-live:empty { display: none; }
 .install-instructions { display: grid; gap: 10px; margin: 23px 0; }
 .install-instructions p { display: grid; gap: 5px; margin: 0; padding: 13px 14px; border: 1px solid rgba(34,31,25,.13); background: rgba(255,255,255,.32); }
 .install-instructions strong { color: var(--gold-deep); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
@@ -873,8 +899,9 @@ dialog.booking-dialog[open] { display: flex; flex-direction: column; }
   .install-app-link { top: 70%; right: max(7px, env(safe-area-inset-right)); padding: 9px 10px 9px 8px; font-size: 8px; }
   .install-app-icon { width: 22px; height: 22px; }
   .help-launcher { right: max(12px, env(safe-area-inset-right)); bottom: calc(78px + env(safe-area-inset-bottom)); min-height: 45px; }
-  .help-dialog { max-height: 90vh; }
-  .help-dialog .dialog-content { max-height: calc(90vh - 62px); padding-right: 20px; padding-left: 20px; }
+  .help-dialog, .booking-history-dialog { max-height: 90vh; }
+  .help-dialog .dialog-content, .booking-history-dialog .dialog-content { max-height: calc(90vh - 62px); padding-right: 20px; padding-left: 20px; }
+  .booking-history-actions { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 390px) {
