@@ -138,7 +138,7 @@ jobs:
           2. Open **JARVIS**, paste a free Gemini key in Settings, and chat.
           3. The 1,899-skill library is bundled and works offline.
 
-          **New in 0.3.0**
+          **New in 0.3.x**
           - **Tasks tab** — bolo kaam, JARVIS plan banata hai, step-by-step chalata hai, fail hone par retry karta hai, aur app band hone ke baad pending kaam resume hota hai.
           - **Chat tools** — `task_create`, `task_status`, `video_create`, so chat se hi kaam queue ho jata hai.
           - **Video studio** — prompt se vertical/square/landscape video (AI script + animated scenes, WebM) jo phone gallery me `Movies/JARVIS` me khud save hota hai.
@@ -147,7 +147,6 @@ jobs:
           - Background foreground-service notification while tasks run.
 
           This build is signed for in-place updates: when a newer `jarvis-v*` release appears, the app shows an update banner.
-          If Android says "App not installed", the signing key changed — uninstall the old JARVIS once and install this build.
 
           Honest limits: the assistant needs a model key (or you can use the offline library), and the phone must stay on while long tasks run. No analytics, no hidden uploads.
           NOTES
