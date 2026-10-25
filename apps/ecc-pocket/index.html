@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ECC Pocket — the agent harness OS, in your pocket</title>
+<meta name="description" content="A fast, offline-friendly reader for the ECC repository: 311 skills, 71 agents, 97 commands and 121 rules for Claude Code, Codex, Kimi and more.">
+<meta name="theme-color" content="#0b0d10" id="themeColor">
+<meta name="color-scheme" content="dark light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ECC Pocket">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="ECC Pocket">
+<meta property="og:description" content="Every ECC skill, agent, command and rule — readable on any phone, online or offline.">
+<meta property="og:type" content="website">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/app.css">
+<script>
+  /* Set the theme before first paint so there is no flash. */
+  (function () {
+    try {
+      var theme = JSON.parse(localStorage.getItem('eccpocket.theme') || '"system"');
+      var light = theme === 'light' || (theme !== 'dark' &&
+        window.matchMedia('(prefers-color-scheme: light)').matches);
+      document.documentElement.dataset.theme = light ? 'light' : 'dark';
+      document.documentElement.style.colorScheme = light ? 'light' : 'dark';
+      var size = JSON.parse(localStorage.getItem('eccpocket.textSize') || '"m"');
+      document.documentElement.dataset.textSize = /^(s|m|l|xl)$/.test(size) ? size : 'm';
+    } catch (error) { /* localStorage may be blocked */ }
+  })();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#view">Skip to content</a>
+
+<div class="boot" id="boot" aria-live="polite">
+  <div class="boot-mark" aria-hidden="true">
+    <svg viewBox="0 0 64 64" class="boot-logo"><rect width="64" height="64" rx="15" fill="#11161e"/><path d="M21 20l12 12-12 12" fill="none" stroke="#e07856" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M38 44h11" fill="none" stroke="#f5b893" stroke-width="5.5" stroke-linecap="round"/></svg>
+  </div>
+  <p class="boot-title">ECC Pocket</p>
+  <p class="boot-sub" id="bootSub">Opening the harness…</p>
+  <div class="boot-bar"><span></span></div>
+  <noscript>
+    <p class="boot-noscript">ECC Pocket needs JavaScript to render the content pack. Enable JavaScript, then reload this page.</p>
+  </noscript>
+</div>
+
+<div class="shell" id="shell" hidden>
+  <aside class="sidebar">
+    <a class="brand" href="#/" aria-label="ECC Pocket home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#11161e"/><path d="M21 20l12 12-12 12" fill="none" stroke="#e07856" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M38 44h11" fill="none" stroke="#f5b893" stroke-width="5.5" stroke-linecap="round"/></svg>
+      </span>
+      <span class="brand-text"><strong>ECC Pocket</strong><small>the harness OS, pocket-sized</small></span>
+    </a>
+    <nav class="side-nav" aria-label="Sections">
+      <a href="#/" data-nav="home"><svg class="icon"><use href="#i-home"></use></svg>Home</a>
+      <a href="#/browse/skill" data-nav="skill"><svg class="icon"><use href="#i-layers"></use></svg>Skills</a>
+      <a href="#/browse/agent" data-nav="agent"><svg class="icon"><use href="#i-bot"></use></svg>Agents</a>
+      <a href="#/browse/command" data-nav="command"><svg class="icon"><use href="#i-terminal"></use></svg>Commands</a>
+      <a href="#/browse/rule" data-nav="rule"><svg class="icon"><use href="#i-code"></use></svg>Rules</a>
+      <a href="#/browse/doc" data-nav="doc"><svg class="icon"><use href="#i-book"></use></svg>Guides</a>
+      <a href="#/search" data-nav="search"><svg class="icon"><use href="#i-search"></use></svg>Search</a>
+      <a href="#/bookmarks" data-nav="bookmarks"><svg class="icon"><use href="#i-bookmark"></use></svg>Bookmarks</a>
+      <div class="side-sep" role="presentation"></div>
+      <a href="#/install" data-nav="install"><svg class="icon"><use href="#i-download"></use></svg>Install ECC</a>
+      <a href="#/settings" data-nav="settings"><svg class="icon"><use href="#i-sliders"></use></svg>Settings</a>
+      <a href="#/about" data-nav="about"><svg class="icon"><use href="#i-info"></use></svg>About</a>
+    </nav>
+    <div class="side-foot">
+      <span class="dot"></span>
+      <span>Built from <a href="https://github.com/affaan-m/ECC" target="_blank" rel="noopener">affaan-m/ECC</a></span>
+    </div>
+  </aside>
+
+  <div class="page">
+    <header class="topbar" id="topbar">
+      <button class="icon-btn back-btn" id="backBtn" type="button" aria-label="Go back" hidden>
+        <svg class="icon"><use href="#i-arrow-left"></use></svg>
+      </button>
+      <div class="topbar-title">
+        <span class="eyebrow" id="topEyebrow">ECC Pocket</span>
+        <h1 id="topTitle">Home</h1>
+      </div>
+      <div class="topbar-actions">
+        <a class="icon-btn" href="#/search" aria-label="Search" id="topSearch"><svg class="icon"><use href="#i-search"></use></svg></a>
+        <button class="icon-btn theme-btn" id="themeBtn" type="button" aria-label="Toggle theme">
+          <svg class="icon icon-sun"><use href="#i-sun"></use></svg>
+          <svg class="icon icon-moon"><use href="#i-moon"></use></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="view" id="view" tabindex="-1">
+      <div class="skeleton-wrap" aria-hidden="true">
+        <div class="sk sk-hero"></div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line short"></div>
+        <div class="sk-grid"><div class="sk sk-card"></div><div class="sk sk-card"></div></div>
+      </div>
+    </main>
+
+    <nav class="tabbar" aria-label="Primary">
+      <a href="#/" data-tab="home"><svg class="icon"><use href="#i-home"></use></svg><span>Home</span></a>
+      <a href="#/browse/skill" data-tab="skill"><svg class="icon"><use href="#i-layers"></use></svg><span>Skills</span></a>
+      <a href="#/browse/agent" data-tab="agent"><svg class="icon"><use href="#i-bot"></use></svg><span>Agents</span></a>
+      <a href="#/browse/command" data-tab="command"><svg class="icon"><use href="#i-terminal"></use></svg><span>Commands</span></a>
+      <a href="#/more" data-tab="more"><svg class="icon"><use href="#i-grid"></use></svg><span>More</span></a>
+    </nav>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-grab" aria-hidden="true"></div>
+  <header class="sheet-head">
+    <h2 id="sheetTitle">Menu</h2>
+    <button class="icon-btn" id="sheetClose" type="button" aria-label="Close"><svg class="icon"><use href="#i-x"></use></svg></button>
+  </header>
+  <div class="sheet-body" id="sheetBody"></div>
+</section>
+
+<!-- Icon sprite -------------------------------------------------------- -->
+<svg xmlns="http://www.w3.org/2000/svg" class="icon-sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.4 12 4l9 7.4V20a1 1 0 0 1-1 1h-5.2v-6.2H9.2V21H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 12.2l9 5 9-5"/><path d="M3 16.4l9 5 9-5"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3.2"/><path d="M12 4v4"/><circle cx="9" cy="13.5" r="1.3"/><circle cx="15" cy="13.5" r="1.3"/><path d="M9.5 17h5"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.4"/><path d="M7 9.4 10.6 12.5 7 15.6"/><path d="M13 15.6h4"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.6 16.6 4.4 4.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 13.6A8.6 8.6 0 1 1 10.4 3.5a6.9 6.9 0 0 0 10.1 10.1Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6.5 3h11a1 1 0 0 1 1 1v17l-6.5-4L5.5 21V4a1 1 0 0 1 1-1Z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><path d="m8.4 10.8 7.2-4M8.4 13.2l7.2 4"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4 10.5 13.5"/><path d="M19 14.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4.5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 5.5v-.9a1.6 1.6 0 0 0-1.6-1.6H5.6A1.6 1.6 0 0 0 4 4.6v8.3a1.6 1.6 0 0 0 1.6 1.6h.9"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6.5-11 11-5-5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4.8-3.4 7.9-8 9-4.6-1.1-8-4.2-8-9V6Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M18.5 15.5 19.4 18l2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9Z"/></symbol>
+    <symbol id="i-layout" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.4"/><path d="M3 9h18"/><path d="M9 9v11"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/><path d="M4 11.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 2.5v3M14 2.5v3M10 18.5v3M14 18.5v3M2.5 10h3M2.5 14h3M18.5 10h3M18.5 14h3"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5a4.2 4.2 0 0 1 .2-8.4 6 6 0 0 1 11.5-1.7A4.4 4.4 0 0 1 18 18.5Z"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.2"/><path d="M8 7V5.2A2.2 2.2 0 0 1 10.2 3h3.6A2.2 2.2 0 0 1 16 5.2V7"/><path d="M3 12.5h18"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6.5A2.5 2.5 0 0 0 4 5.5v13A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V9Z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></symbol>
+    <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M6 8.4v7.2"/><path d="M18 8.4v1.1A4.5 4.5 0 0 1 13.5 14H8.4"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.2A2.8 2.8 0 0 1 6.8 16.4H20"/><path d="M6.8 2.8H20v18.4H6.8A2.8 2.8 0 0 1 4 18.4V5.6a2.8 2.8 0 0 1 2.8-2.8Z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.6h.01"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10.5 5 5 5-5"/><path d="M4 20h16"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.4 5.7"/><path d="M20 4v7h-7"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/><path d="M6.5 7l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9L17.5 7"/><path d="M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3"/><path d="M16 22v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+    <symbol id="i-command" viewBox="0 0 24 24"><path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3Z"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 22 20H2Z"/><path d="M12 9.5v4.5"/><path d="M12 17.2h.01"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3"/></symbol>
+    <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M3 5l18 14"/><path d="M8.5 13.5a5 5 0 0 1 4.8-1.3"/><path d="M5 9.8a10.5 10.5 0 0 1 4.5-2.3"/><path d="M14.6 8.1a10.5 10.5 0 0 1 4.4 2.2"/><path d="M2.5 6.3A14 14 0 0 1 6 4"/><path d="M10.3 20h.01"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 6.2C10 4.4 7 4 4.5 5.2v13c2.5-1.2 5.5-.8 7.5 1 2-1.8 5-2.2 7.5-1v-13C17 4 14 4.4 12 6.2Z"/><path d="M12 6.2V19"/></symbol>
+  </defs>
+</svg>
+
+<script src="assets/js/vendor/marked.js"></script>
+<script src="assets/js/vendor/purify.min.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/markdown.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

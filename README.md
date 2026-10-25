@@ -13,3 +13,7 @@ The registry separates text/coding, image, video, audio, embedding, research, co
 ## Important
 
 Model availability can depend on the Google account, API project, quota, region, preview status, and current Google API lifecycle. A model being listed in the registry does not guarantee access.
+
+## Apps
+
+- [`apps/ecc-pocket`](apps/ecc-pocket) — ECC Pocket: a phone-first, offline-capable reader/PWA that turns the [affaan-m/ECC](https://github.com/affaan-m/ECC) skills, agents, commands and rules into a searchable installable app.
