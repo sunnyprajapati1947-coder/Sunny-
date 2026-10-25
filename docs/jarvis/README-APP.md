@@ -46,17 +46,18 @@ Browser mein `http://127.0.0.1:8787/?token=...` kholo — token start hote waqt 
 Koi bhi feature "working" sirf tab likha hai jab test ya real call se verify hua. Jo verify nahi hua,
 wahan "untested" likha hai.
 
-**Android APK (0.3.4)** — `jarvis-v0.3.4` release: `JARVIS-0.3.4.apk` (9.99 MB), `com.sunnyai.jarvis`,
+**Android APK (0.3.5)** — `jarvis-v0.3.5` release: `JARVIS-0.3.5.apk` (9.99 MB), `com.sunnyai.jarvis`,
 non-debuggable, release-signed. Ismein tasks queue, chat tools, video studio, connections hub, in-app
 updater aur foreground-service notification sab bundle hain. Neeche section 1.5 dekho.
 
 | App feature | Status | Verify kaise hua |
 |---|---|---|
-| Installable APK (Capacitor shell + native bridge) | **WORKING** | GitHub releases `jarvis-v0.3.3` + `jarvis-v0.3.4`, CI runs success (`JARVIS Android APK`) |
+| Installable APK (Capacitor shell + native bridge) | **WORKING** | GitHub releases `jarvis-v0.3.3` → `jarvis-v0.3.5`, CI runs success (`JARVIS Android APK`) |
 | Tasks tab: plan → steps → retry (2x) → resume after restart | **WORKING** | jsdom smoke: 2-step task DONE, failure path FAILED→retry DONE, `jp.tasks` persist |
 | Chat tools `task_create` / `task_status` / `video_create` | **WORKING** | smoke: tool tag se task bana aur Tasks screen me dikha |
 | Video studio: prompt → WebM slideshow → gallery auto-save | **WORKING (WebM slideshow)** | smoke: plan parse, record, `saveToGallery` mime `video/webm`, 1.2 KB base64 payload |
 | Connections hub: YouTube key test + in-app search + share sheet | **WORKING** | smoke: key save, search result sheet, share/copy buttons |
+| First-run Setup wizard (notifications, updates permission, AI key) | **WORKING** | jsdom smoke: wizard renders, key save+test, finish flag |
 | In-app updater (download APK + install notification) | **WORKING (code)** | `downloadUpdate` → DownloadManager → FileProvider install intent |
 | "Jarvis ready hai boss" + self-check on start | **WORKING (code)** | `native.js` boot: info → selfCheck → update check → toast/TTS |
 | Real AI video footage (Veo/Runway) | **NOT IMPLEMENTED** | paid API key chahiye; abhi sirf slideshow video |
@@ -70,17 +71,18 @@ updater aur foreground-service notification sab bundle hain. Neeche section 1.5 
 
 Phone par bas ek file install karni hai. Termux, Python, `git` — kuch nahi chahiye.
 
-1. Phone ke browser me release page kholo:
-   `https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/jarvis-v0.3.4`
-2. **JARVIS-0.3.4.apk** tap karo → "Install unknown apps" allow karo (sirf browser/Files app ke liye).
+0. **Sabse aasan:** `https://jarvis-pocket-red.vercel.app/install.html` — ek button, QR aur 4-step setup wala page.
+1. Ya seedha release page kholo:
+   `https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/jarvis-v0.3.5`
+2. **JARVIS-0.3.5.apk** tap karo → "Install unknown apps" allow karo (sirf browser/Files app ke liye).
 3. App kholo → Settings → **AI provider** me apni Gemini (ya OpenAI-compatible) key daalo.
    Bina key ke bhi 1,899-skill library, tasks ke local steps aur video script ka offline fallback chalta hai.
 4. Pehli baar notification permission maangega — allow karo, warna task-done alerts nahi aayenge.
 
 **Pehli baar ek extra step:** `0.1.0` ek throwaway signing key se bana tha, isliye agar woh install hai to
-Android "App not installed" bolega — purana JARVIS uninstall karke `0.3.4` install karo.
-`0.3.3` se signing key fix hai aur CI use Actions cache se reuse karta hai; `0.3.3` aur `0.3.4` ka
-signer certificate SHA-256 same hai (`fc37b697…`), isliye aage ke updates seedhe install ho jayenge.
+Android "App not installed" bolega — purana JARVIS uninstall karke `0.3.5` install karo.
+`0.3.3` se signing key fix hai aur CI use Actions cache se reuse karta hai; `0.3.3`, `0.3.4` aur
+`0.3.5` ka signer certificate SHA-256 same hai (`fc37b697…`), isliye aage ke updates seedhe install ho jayenge.
 (Wohi fingerprint har release ke notes me likha hota hai — mismatch matlab key rotate, tab uninstall karna padega.)
 
 **Andar kya hai**
@@ -496,7 +498,7 @@ UI ka apna smoke test jsdom se chalta hai (repo ke bahar, dev-only):
 # memory, tasks, tools, local-brain card, settings, lock
 JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 
-# 22/22 checks for the phone app UI (tabs, task queue + retries, chat tools,
+# 26/26 checks for the phone app UI (tabs, task queue + retries, chat tools,
 # Connections, video studio + gallery save). Stubbed LLM, real jsdom DOM.
 cd tools/pocket-smoke && npm install && npm test
 ```
