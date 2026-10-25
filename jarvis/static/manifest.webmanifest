@@ -1,0 +1,19 @@
+{
+  "name": "JARVIS",
+  "short_name": "JARVIS",
+  "description": "Local-first personal AI assistant — Hindi/Hinglish chat, memory, tasks and permissioned tools.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#05070c",
+  "theme_color": "#05070c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
