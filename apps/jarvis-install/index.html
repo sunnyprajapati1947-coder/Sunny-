@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JARVIS — install on your phone</title>
+<meta name="theme-color" content="#07080d">
+<meta name="description" content="JARVIS Android app: download the APK, install, and set up in two minutes. No terminal, no account.">
+<style>
+  :root { color-scheme: dark; --bg:#07080d; --card:#0f121b; --line:#1f2635; --ink:#e8edf7; --muted:#98a3b8; --accent:#38bdf8; --ok:#34d399; --warn:#fbbf24; }
+  * { box-sizing: border-box; }
+  body { margin:0; background: radial-gradient(900px 500px at 80% -10%, #12203c 0%, var(--bg) 60%); color:var(--ink);
+         font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 28px 18px 56px; }
+  .brand { display:flex; align-items:center; gap:12px; margin-bottom: 26px; }
+  .mark { width:44px; height:44px; border-radius:14px; background:linear-gradient(160deg,#0ea5e9,#7c3aed); display:grid; place-items:center;
+          font-weight:800; font-size:20px; color:#fff; box-shadow:0 8px 26px rgba(56,189,248,.28); }
+  .brand b { font-size:18px; letter-spacing:.4px; }
+  .brand small { display:block; color:var(--muted); font-size:12.5px; letter-spacing:.2px; }
+  h1 { font-size: 30px; line-height:1.2; margin: 0 0 10px; letter-spacing:-.4px; }
+  h1 span { color: var(--accent); }
+  .lead { color: var(--muted); margin: 0 0 22px; font-size: 15.5px; }
+  .card { background: linear-gradient(180deg, rgba(20,26,38,.9), rgba(13,17,26,.9)); border:1px solid var(--line);
+          border-radius: 18px; padding: 18px; margin: 0 0 16px; }
+  .cta { display:block; text-align:center; text-decoration:none; background: linear-gradient(160deg,#22d3ee,#3b82f6);
+         color:#04121f; font-weight:800; font-size:17px; padding:16px 18px; border-radius:14px; letter-spacing:.2px;
+         box-shadow: 0 12px 30px rgba(59,130,246,.28); }
+  .cta:active { transform: translateY(1px); }
+  .meta { display:flex; flex-wrap:wrap; gap:8px 14px; justify-content:center; color:var(--muted); font-size:12.5px; margin-top:12px; }
+  .meta b { color: var(--ink); font-weight:600; }
+  .steps { counter-reset: s; list-style:none; padding:0; margin:0; }
+  .steps li { position:relative; padding: 0 0 16px 42px; }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li::before { counter-increment: s; content: counter(s); position:absolute; left:0; top:-2px; width:28px; height:28px;
+        border-radius:50%; background:rgba(56,189,248,.14); color:var(--accent); border:1px solid rgba(56,189,248,.35);
+        display:grid; place-items:center; font-weight:700; font-size:13px; }
+  .steps b { display:block; font-size:15px; }
+  .steps p { margin:2px 0 0; color:var(--muted); font-size:13.5px; }
+  .note { border-left:3px solid var(--warn); background:rgba(251,191,36,.07); padding:12px 14px; border-radius:10px; color:#f4e3b8; font-size:13.5px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; padding:0; margin:0; list-style:none; }
+  .chips li { border:1px solid var(--line); background:#0c111a; color:#cdd6e6; border-radius:999px; padding:6px 12px; font-size:12.5px; }
+  .qr { display:flex; gap:16px; align-items:center; }
+  .qr img { width:132px; height:132px; border-radius:12px; background:#fff; padding:8px; }
+  .qr p { margin:0; color:var(--muted); font-size:13px; }
+  footer { color:#6f7c92; font-size:12px; margin-top:26px; text-align:center; line-height:1.7; }
+  code { font-size:11.5px; color:#9fb3cc; word-break:break-all; }
+  h2 { font-size:15px; margin:0 0 10px; letter-spacing:.2px; }
+  .pill { display:inline-block; font-size:11px; padding:3px 9px; border-radius:999px; border:1px solid var(--line); color:var(--muted); vertical-align:middle; }
+  .pill.ok { color:var(--ok); border-color:rgba(52,211,153,.35); background:rgba(52,211,153,.1); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="mark">J</div>
+    <div><b>JARVIS</b><small>phone app · no terminal · no account</small></div>
+  </div>
+
+  <h1>Ek APK. <span>Bas install karo.</span></h1>
+  <p class="lead">1,899 skills, tasks jo retry karte hain, video studio jo gallery me save karta hai — sab phone ke andar.</p>
+
+  <div class="card">
+    <a class="cta" id="download" href="https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/jarvis-v0.3.5/JARVIS-0.3.5.apk" rel="noopener">
+      Download APK
+    </a>
+    <div class="meta">
+      <span id="version">latest release</span>
+      <span>·</span><span id="size">~10 MB</span>
+      <span>·</span><span>Android 8+</span>
+    </div>
+    <p class="note" style="margin-top:14px">Agar pehle koi JARVIS install hai (0.1.0 / 0.3.0 / 0.3.2), use <b>uninstall</b> karke ye install karo — 
+    purane builds doosri signing key se bane the. 0.3.3 se aage update seedha install hota hai.</p>
+  </div>
+
+  <div class="card">
+    <h2>Setup — 2 minute</h2>
+    <ol class="steps">
+      <li><b>APK download karo</b><p>Button dabao. Chrome "file download karne do?" poochhega — Allow.</p></li>
+      <li><b>Install karo</b><p>Download complete hone par tap → "Install unknown apps" me Chrome/Files ko allow karo.</p></li>
+      <li><b>App kholo</b><p>Pehli baar Setup wizard khulega: notifications, updates, AI brain — 3 tap.</p></li>
+      <li><b>AI key daalo</b><p>Free Gemini key: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:#7dd3fc">aistudio.google.com/apikey</a> → paste → Save &amp; test. Key bina bhi library chalti hai.</p></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Andar kya hai</h2>
+    <ul class="chips">
+      <li>1899 skills offline</li>
+      <li>Task queue + retry</li>
+      <li>Prompt → video</li>
+      <li>Gallery auto-save</li>
+      <li>YouTube search</li>
+      <li>Share sheet</li>
+      <li>In-app update</li>
+      <li>Hindi / Hinglish</li>
+      <li>Voice in + out</li>
+    </ul>
+  </div>
+
+  <div class="card qr">
+    <img id="qr" alt="QR code" src="" hidden>
+    <div>
+      <h2 style="margin-bottom:6px">Phone se scan karo</h2>
+      <p>QR ko phone ke camera se scan karo — seedha APK download khulega.</p>
+      <p id="qrFallback" style="margin-top:8px">Ya <a href="https://github.com/sunnyprajapati1947-coder/Sunny-/releases" style="color:#7dd3fc" rel="noopener">releases page</a> kholo.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Saaf baat</h2>
+    <p style="margin:0;color:var(--muted);font-size:13.5px">
+      Koi analytics nahi, koi hidden upload nahi. API keys phone me rehti hain aur request seedha provider ko jaati hai.
+      Video abhi AI script + animated scenes ka WebM hai (real AI footage ke liye paid API chahiye).
+      Auto-post bina tap nahi hota — content gallery me save hota hai aur share sheet se post karte ho.
+    </p>
+  </div>
+
+  <footer>
+    <div>Built for one phone. Open source: <a href="https://github.com/sunnyprajapati1947-coder/Sunny-" style="color:#8fb4d9" rel="noopener">sunnyprajapati1947-coder/Sunny-</a></div>
+    <div style="margin-top:6px">Signer SHA-256 · <code id="fingerprint">fc37b697…</code></div>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var API = 'https://api.github.com/repos/sunnyprajapati1947-coder/Sunny-/releases?per_page=30';
+    var fallback = 'https://github.com/sunnyprajapati1947-coder/Sunny-/releases';
+
+    function bytes(size) {
+      if (!size) return '~10 MB';
+      return (size / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(function (response) { return response.ok ? response.json() : []; })
+      .then(function (releases) {
+        if (!Array.isArray(releases)) return;
+        for (var i = 0; i < releases.length; i += 1) {
+          var release = releases[i];
+          var tag = String(release.tag_name || '');
+          if (tag.indexOf('jarvis-v') !== 0) continue;
+          var apk = (release.assets || []).filter(function (asset) { return /\.apk$/i.test(asset.name || ''); })[0];
+          if (!apk) continue;
+          document.getElementById('download').href = apk.browser_download_url;
+          document.getElementById('version').textContent = 'v' + tag.replace('jarvis-v', '');
+          document.getElementById('size').textContent = bytes(apk.size);
+          var qr = document.getElementById('qr');
+          if (qr.getAttribute('src')) {
+            qr.hidden = false;
+            var fallbackNote = document.getElementById('qrFallback');
+            if (fallbackNote) fallbackNote.style.display = 'none';
+          }
+          return;
+        }
+      })
+      .catch(function () { /* static link still works */ });
+
+    document.getElementById('download').addEventListener('click', function () {
+      var meta = document.getElementById('version');
+      if (meta) meta.textContent = 'download shuru…';
+    });
+  })();
+</script>
+</body>
+</html>

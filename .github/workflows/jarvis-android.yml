@@ -144,13 +144,14 @@ jobs:
           2. Open **JARVIS**, paste a free Gemini key in Settings, and chat.
           3. The 1,899-skill library is bundled and works offline.
 
-          **New in 0.3.x**
+          **New in 0.3.5**
           - **Tasks tab** — bolo kaam, JARVIS plan banata hai, step-by-step chalata hai, fail hone par retry karta hai, aur app band hone ke baad pending kaam resume hota hai.
           - **Chat tools** — `task_create`, `task_status`, `video_create`, so chat se hi kaam queue ho jata hai.
           - **Video studio** — prompt se vertical/square/landscape video (AI script + animated scenes, WebM) jo phone gallery me `Movies/JARVIS` me khud save hota hai.
           - **Connections tab** — YouTube Data API key test, in-app YouTube search, share sheet (WhatsApp/Instagram/X/YouTube), caption copy, device-health card.
           - **In-app updater** — update banner app ke andar naya APK download karta hai, phir install prompt deta hai.
           - Background foreground-service notification while tasks run.
+          - **First-run Setup wizard** — notifications, update permission, AI key aur YouTube, 2 minute me. App khud wizard kholta hai jab key set na ho.
 
           This build is signed for in-place updates: when a newer `jarvis-v*` release appears, the app shows an update banner.
 

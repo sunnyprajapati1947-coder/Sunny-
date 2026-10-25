@@ -167,6 +167,22 @@ check("video recorded and auto-saved to gallery", saved.length === 1 && saved[0]
   JSON.stringify(saved.map((x) => ({ mime: x.mime, len: x.base64.length, head: x.base64.slice(0, 30) }))));
 check("video result panel shown", !document.getElementById("videoResult").hidden && /Test reel/.test(document.getElementById("videoResult").textContent));
 
+// first-run setup wizard
+window.location.hash = "#/setup";
+await until("setup screen", () => q("#setupSaveKey"));
+check("setup wizard renders four steps", /1\. Notifications/.test(text("#view")) && /4\. YouTube/.test(text("#view")));
+window.localStorage.removeItem("jp.setup.done");
+window.localStorage.setItem("jp.llm", JSON.stringify({ provider: "gemini", key: "", model: "gemini-2.5-flash", stream: true }));
+check("setup auto-opens when no key", window.JarvisSetup.shouldAutoOpen() === true);
+document.getElementById("setupKey").value = "test-key-2";
+q("#setupSaveKey").click();
+await until("setup key saved", () => window.JarvisLLM.isReady(), 8000);
+check("setup saves and tests the key", window.JarvisLLM.isReady());
+await until("setup finish", () => q("#setupFinish"));
+document.getElementById("setupFinish").click();
+await until("chat opened", () => window.location.hash === "#/" || window.location.hash === "", 4000);
+check("setup marks itself done", window.JarvisUI.storeGet("setup.done", false) === true);
+
 window.location.hash = "#/settings";
 await until("settings", () => q("#keyInput"));
 check("settings links connections", /Connections/.test(text("#view")));

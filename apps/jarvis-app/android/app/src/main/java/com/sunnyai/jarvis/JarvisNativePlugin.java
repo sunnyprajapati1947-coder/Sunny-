@@ -103,6 +103,24 @@ public class JarvisNativePlugin extends Plugin {
     }
 
     @PluginMethod
+    public void openInstallSettings(PluginCall call) {
+        try {
+            Intent intent = new Intent();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                intent.setAction(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+            } else {
+                intent.setAction(Settings.ACTION_SECURITY_SETTINGS);
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
+            call.resolve();
+        } catch (Exception error) {
+            call.reject("settings unavailable: " + error.getMessage(), error);
+        }
+    }
+
+    @PluginMethod
     public void requestNotifications(PluginCall call) {
         if (Build.VERSION.SDK_INT >= 33 &&
                 ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS)
