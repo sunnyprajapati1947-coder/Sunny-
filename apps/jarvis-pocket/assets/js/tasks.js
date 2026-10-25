@@ -149,7 +149,7 @@
     var task = find(id);
     if (!task) return Promise.resolve(null);
     if (!LLM.isReady()) {
-      patch(id, { status: 'BLOCKED', error: 'AI key set nahi hai — Settings → AI provider.' });
+      patch(id, { status: 'BLOCKED', error: 'No AI key set — Settings → AI provider.' });
       render();
       return Promise.resolve(null);
     }
@@ -161,7 +161,7 @@
       });
       patch(id, { status: 'RUNNING', error: '', steps: steps });
       render();
-      background(true, 'Task chal raha hai: ' + fresh.title);
+      background(true, 'Task running: ' + fresh.title);
       var chain = Promise.resolve();
       fresh.steps.forEach(function (step, index) {
         chain = chain.then(function () {
@@ -186,7 +186,7 @@
         var failedIndex = current.steps.map(function (row) { return row.status; }).indexOf('pending');
         if (failedIndex >= 0) current.steps[failedIndex].status = 'failed';
         patch(id, { status: 'FAILED', error: String(error && error.message || error).slice(0, 300), steps: current.steps });
-        notify('JARVIS task failed', fresh.title + ' — retry karo');
+        notify('JARVIS task failed', fresh.title + ' — retry');
         return find(id);
       }).then(function (result) {
         background(false);
@@ -247,15 +247,15 @@
   function screen() {
     var items = list();
     var form = '<div class="card">' +
-      '<div class="card-head"><h2>' + UI.icon('spark') + 'Naya kaam</h2></div>' +
-      '<label class="field"><span>Kya karna hai?</span>' +
-      '<textarea id="taskGoal" rows="2" placeholder="Jaise: is hafte ke liye 3 YouTube video ideas banao aur unke titles + hooks likho"></textarea></label>' +
+      '<div class="card-head"><h2>' + UI.icon('spark') + 'New task</h2></div>' +
+      '<label class="field"><span>What should it do?</span>' +
+      '<textarea id="taskGoal" rows="2" placeholder="For example: create 3 YouTube video ideas for this week with titles and hooks"></textarea></label>' +
       '<div class="card-actions">' +
       '<button class="btn btn-primary" id="taskAdd">' + UI.icon('bolt') + 'Plan & start</button>' +
       (items.some(function (t) { return t.status === 'FAILED'; })
         ? '<button class="btn btn-ghost" id="taskRetryAll">Retry failed</button>' : '') +
       '</div>' +
-      (LLM.isReady() ? '' : '<p class="muted small">Planning ke liye Settings me AI key daalo. Bina key ke task ek hi step me chalega.</p>') +
+      (LLM.isReady() ? '' : '<p class="muted small">Add an AI key in Settings for planning. Without a key the task runs as a single step.</p>') +
       '</div>';
 
     var rows = items.map(function (task) {
@@ -285,10 +285,10 @@
 
     return '<section class="screen tasks-screen">' +
       '<div class="screen-head"><h1>Tasks</h1>' +
-      '<p>Bolo kya karna hai — JARVIS steps banata hai, chalata hai, fail ho to dobara try karta hai.</p></div>' +
+      '<p>Say what needs doing — JARVIS plans the steps, runs them, and retries when something fails.</p></div>' +
       form +
       (rows || '<div class="empty-block">' + UI.icon('clock') +
-        '<h3>Abhi koi task nahi</h3><p>Upar goal likho aur “Plan & start” dabao.</p></div>') +
+        '<h3>No tasks yet</h3><p>Write a goal above and tap “Plan &amp; start”.</p></div>') +
       '</section>';
   }
 
@@ -303,7 +303,7 @@
         var goal = document.getElementById('taskGoal');
         var text = goal ? goal.value.trim() : '';
         if (!text) {
-          UI.toast('Pehle batao kya karna hai', { tone: 'warn' });
+          UI.toast('Tell me what needs doing first', { tone: 'warn' });
           return;
         }
         var task = create(text);

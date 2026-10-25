@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const appRoot = resolve(here, "..");
 const src = resolve(appRoot, "..", "jarvis-pocket");
 const out = join(appRoot, "www");
-const ITEMS = ["index.html", "assets", "icons", "data", "manifest.webmanifest", "sw.js"];
+const ITEMS = ["index.html", "assets", "icons", "data", "vendor", "manifest.webmanifest", "sw.js"];
 
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });

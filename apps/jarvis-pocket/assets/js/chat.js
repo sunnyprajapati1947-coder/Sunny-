@@ -92,21 +92,21 @@
     var ready = LLM.isReady();
     var stats = Pack.stats();
     var suggestions = [
-      'Tu kya kya kar sakta hai?',
-      'Mere liye ek voice assistant ka plan banao',
-      'Best 3 skills batao coding ke liye',
-      'Library me memory ke baare me kya hai?'
+      'What can you do?',
+      'Make me a plan for a voice assistant',
+      'Name the 3 best skills for coding',
+      'What does the library say about memory?'
     ];
     return '' +
       '<div class="empty-chat">' +
         '<div class="orb orb-lg" aria-hidden="true"></div>' +
-        '<h1>Namaste, main Jarvis hoon</h1>' +
+        '<h1>Hello, I am Jarvis</h1>' +
         '<p>' + (ready
-          ? 'Poocho kuch bhi — main aapke ' + stats.packs + ' repos ki ' + stats.items + ' skills, agents aur guides se jawab dunga.'
-          : 'Main library se jawab de sakta hoon. Poora AI jawab ke liye ek API key chahiye — Gemini ka free tier kaafi hai.') + '</p>' +
+          ? 'Ask me anything — I answer from ' + stats.items + ' skills, agents and guides across your ' + stats.packs + ' repos.'
+          : 'I can answer from the library. For full AI answers you need an API key — the Gemini free tier is enough.') + '</p>' +
         (ready ? '' :
           '<a class="btn btn-primary" href="#/settings">' +
-            UI.icon('key') + 'AI key add karo</a>') +
+            UI.icon('key') + 'add an AI key</a>') +
         '<div class="suggestions">' + suggestions.map(function (text) {
           return '<button class="suggestion" data-suggest="' + UI.esc(text) + '">' + UI.esc(text) + '</button>';
         }).join('') + '</div>' +
@@ -143,7 +143,7 @@
         '<div class="bubble md">' + body + '</div>' +
         '<div class="msg-actions">' +
           '<button data-act="copy" data-index="' + index + '">' + UI.icon('copy') + '<span>Copy</span></button>' +
-          '<button data-act="speak" data-index="' + index + '">' + UI.icon('volume') + '<span>Bol</span></button>' +
+          '<button data-act="speak" data-index="' + index + '">' + UI.icon('volume') + '<span>Speak</span></button>' +
           '<button data-act="share" data-index="' + index + '">' + UI.icon('share') + '<span>Share</span></button>' +
         '</div>' +
         sourceChips(message.src) +
@@ -200,12 +200,12 @@
         '<div class="chat-scroll" id="chatScroll" role="log" aria-live="polite"></div>' +
         '<div class="composer">' +
           '<div class="composer-inner">' +
-            '<textarea id="chatInput" rows="1" placeholder="Jarvis se kuch bhi poocho…" enterkeyhint="send" autocomplete="off"></textarea>' +
+            '<textarea id="chatInput" rows="1" placeholder="Ask Jarvis anything…" enterkeyhint="send" autocomplete="off"></textarea>' +
             '<button class="composer-btn" id="micBtn" aria-label="Voice input">' + UI.icon('mic') + '</button>' +
             '<button class="send-btn" id="sendBtn" aria-label="Send message">' + UI.icon('send') + '</button>' +
           '</div>' +
           '<div class="composer-foot">' +
-            '<label class="switch"><input type="checkbox" id="speakToggle"><span>' + UI.icon('volume') + 'Bol ke jawab</span></label>' +
+            '<label class="switch"><input type="checkbox" id="speakToggle"><span>' + UI.icon('volume') + 'Speak answers</span></label>' +
             '<span class="composer-hint" id="composerHint">Voice · markdown · offline</span>' +
           '</div>' +
         '</div>' +
@@ -416,25 +416,25 @@
     }
     if (name === 'task_create') {
       var Tasks = window.JarvisTasks;
-      if (!Tasks) return Promise.resolve('Task engine load nahi hua.');
+      if (!Tasks) return Promise.resolve('The task engine did not load.');
       var task = Tasks.create(tool.goal || tool.text || '', { title: tool.title || '' });
-      if (!task) return Promise.resolve('Goal khali hai — kya karna hai batao.');
+      if (!task) return Promise.resolve('The goal is empty — tell me what to do.');
       Tasks.run(task.id);
       return Promise.resolve('Task queued: "' + task.title + '" (id ' + task.id +
-        '). Steps khud banenge, fail hone par retry hoga, aur Tasks tab me progress dikhega.');
+        '). Steps are planned automatically, failures are retried, and progress is shown in the Tasks tab.');
     }
     if (name === 'video_create') {
-      if (!window.JarvisVideo) return Promise.resolve('Video studio load nahi hua.');
+      if (!window.JarvisVideo) return Promise.resolve('The video studio did not load.');
       return window.JarvisVideo.create(String(tool.prompt || tool.text || tool.goal || '')).then(function (out) {
-        return 'Video ban gaya: "' + out.title + '" — phone gallery (Movies/JARVIS) me save ho gaya.';
+        return 'Video created: "' + out.title + '" — saved to the phone gallery (Movies/JARVIS).';
       }).catch(function (error) {
-        return 'Video nahi bana: ' + error.message;
+        return 'The video was not created: ' + error.message;
       });
     }
     if (name === 'task_status') {
       var queue = window.JarvisTasks ? window.JarvisTasks.list() : [];
       if (tool.id) queue = queue.filter(function (row) { return row.id === tool.id; });
-      if (!queue.length) return Promise.resolve('Koi task nahi mila.');
+      if (!queue.length) return Promise.resolve('No tasks found.');
       return Promise.resolve(queue.slice(0, 8).map(function (task) {
         return '- ' + task.id + ' | ' + task.status + ' | ' + task.title;
       }).join('\n'));
@@ -484,7 +484,7 @@
       lastRenderAt = now;
       var node = els.scroll && els.scroll.querySelector('[data-mid="' + liveIndex + '"] .bubble');
       if (node) {
-        node.innerHTML = liveText ? MD.render(stripTools(liveText), null) : '<p class="muted">Soch raha hoon…</p>';
+        node.innerHTML = liveText ? MD.render(stripTools(liveText), null) : '<p class="muted">Thinking…</p>';
         scrollBottom(false);
       }
     }
@@ -496,7 +496,7 @@
       if (error) {
         chat.messages[liveIndex] = { r: 'e', t: error, ts: Date.now() };
       } else if (!cleaned) {
-        chat.messages[liveIndex] = { r: 'e', t: 'Koi jawab nahi mila. Dobara try karo ya doosra model chuno.', ts: Date.now() };
+        chat.messages[liveIndex] = { r: 'e', t: 'No answer came back. Try again or pick another model.', ts: Date.now() };
       } else {
         chat.messages[liveIndex] = { r: 'a', t: cleaned, ts: Date.now(), src: chat._src || [] };
       }
@@ -522,7 +522,7 @@
         paint(true);
         finish(text);
       }).catch(function () {
-        finish('', 'Offline library bhi load nahi ho payi. Page refresh karke try karo.');
+        finish('', 'The offline library could not load either. Refresh the page and try again.');
       });
       return;
     }
@@ -535,7 +535,7 @@
       var system = LLM.buildSystem({ context: context, memory: Memory.list() });
       var messages = modelMessages(chat, liveIndex);
       if (!messages.length) {
-        finish('', 'Message history khali hai — dobara bhejo.');
+        finish('', 'Message history is empty — send it again.');
         return;
       }
 
@@ -585,16 +585,16 @@
           if (error && error.name === 'AbortError') {
             var partial = stripTools(liveText);
             if (partial) finish(partial + '\n\n_stopped_');
-            else finish('', 'Rok diya. Dobara bhejo jab ready ho.');
+            else finish('', 'Stopped. Send it again when you are ready.');
             return;
           }
-          finish('', error.message || 'Request fail ho gayi.');
+          finish('', error.message || 'The request failed.');
         });
       }
 
       next();
     }).catch(function () {
-      finish('', 'Library load nahi ho payi.');
+      finish('', 'The library could not load.');
     });
   }
 
@@ -676,7 +676,7 @@
   function askAbout(itemId) {
     var item = Pack.getItem(itemId);
     if (!item) return;
-    state.pending = 'Is library item ko samjhao aur batao main ise kaise use karun: "' + item.t + '" (id: ' + item.i + ')';
+    state.pending = 'Explain this library item and tell me how to use it: "' + item.t + '" (id: ' + item.i + ')';
     if (location.hash === '#/' || location.hash === '') {
       if (els.scroll) {
         var text = state.pending;

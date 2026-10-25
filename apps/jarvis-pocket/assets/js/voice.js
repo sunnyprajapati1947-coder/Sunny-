@@ -51,7 +51,7 @@
 
   function start(options) {
     if (!sttSupported()) {
-      UI.toast('Is browser me voice input nahi hai. Chrome ya Safari try karo.', { tone: 'warn' });
+      UI.toast('This browser has no voice input. Try Chrome or Safari.', { tone: 'warn' });
       return false;
     }
     if (listening) stop();
@@ -59,7 +59,7 @@
     try {
       recognition = new Recognition();
     } catch (error) {
-      UI.toast('Mic start nahi ho paya', { tone: 'warn' });
+      UI.toast('The microphone did not start', { tone: 'warn' });
       return false;
     }
     recognition.lang = handlers.lang || 'en-IN';
@@ -89,11 +89,11 @@
       listening = false;
       var code = event.error || 'error';
       var message = code === 'not-allowed' || code === 'service-not-allowed'
-        ? 'Mic permission chahiye. Browser settings me allow karo.'
+        ? 'Microphone permission is needed. Allow it in browser settings.'
         : code === 'no-speech'
-          ? 'Kuch sunai nahi diya — dobara bolo.'
+          ? 'I did not hear anything — say it again.'
           : code === 'network'
-            ? 'Voice ke liye internet chahiye (browser ka speech service).'
+            ? 'Voice input needs internet (the browser speech service).'
             : 'Voice error: ' + code;
       if (handlers.onError) handlers.onError(message, code);
     };
@@ -107,7 +107,7 @@
       return true;
     } catch (error) {
       listening = false;
-      UI.toast('Mic start nahi ho paya', { tone: 'warn' });
+      UI.toast('The microphone did not start', { tone: 'warn' });
       return false;
     }
   }
@@ -136,7 +136,7 @@
 
   function speak(text, options) {
     if (!ttsSupported()) {
-      UI.toast('Is browser me voice output nahi hai.', { tone: 'warn' });
+      UI.toast('This browser has no voice output.', { tone: 'warn' });
       return false;
     }
     var plain = stripForSpeech(text);

@@ -1,5 +1,9 @@
 # JARVIS — phone par chalne wala app (Hinglish guide)
 
+> The Android app UI is English. For the English app guide (install, on-device Qwen3.5 brain,
+> tasks, video studio, connections, updates, troubleshooting) see [`APP-GUIDE.md`](APP-GUIDE.md).
+> This file documents the Python/Termux side and is being migrated to English.
+
 Ye woh **asli app** hai jise tumne maanga tha: Python backend + mobile dashboard, dono ek hi repo mein,
 **zero third-party packages**. Plan nahi, chalta hua code.
 
@@ -169,7 +173,7 @@ python3 run_jarvis.py --help           # commands list
 
 Verify: `/api/status` mein `provider.active = "gemini"`.
 
-### Option B — local Qwen3 4B brain (offline, free, tumhare phone par)
+### Option B — local Qwen3.5 4B brain (offline, free, tumhare phone par)
 
 Ye wahi cheez hai jo tumne maangi thi: **Qwen3 4B (Q4_K_M)** JARVIS ka dimaag ban jata hai, sab kuch
 phone par, koi cloud nahi. Model file **2.5 GB** hai, RAM mein ~4 GB leta hai, licence Apache-2.0.
@@ -178,7 +182,7 @@ phone par, koi cloud nahi. Model file **2.5 GB** hai, RAM mein ~4 GB leta hai, l
 
 ```bash
 python3 run_jarvis.py model list                  # 3 models, size + RAM
-python3 run_jarvis.py model download              # default: Qwen3-4B-Instruct-2507 Q4_K_M (2.5 GB)
+python3 run_jarvis.py model download              # default: Qwen3.5-4B Q4_K_M (2.74 GB)
 python3 run_jarvis.py model start                 # llama-server + auto-activate
 ```
 
@@ -205,9 +209,9 @@ Build slow lage to Hugging Face/llama.cpp releases se ARM64 binary bhi le sakte 
 
 | id | file | size | RAM | kab |
 |---|---|---|---|---|
-| `qwen3-4b-instruct-q4` *(default)* | `Qwen3-4B-Instruct-2507-Q4_K_M.gguf` | 2.5 GB | ~4.0 GB | normal chat + tool calling |
-| `qwen3-4b-q4` | `Qwen3-4B-Q4_K_M.gguf` | 2.5 GB | ~4.5 GB | sochta hai pehle, phone par slow |
-| `qwen3-1.7b-q4` | `Qwen3-1.7B-Q4_K_M.gguf` | ~1.1 GB | ~2.2 GB | kam RAM, halka kaam |
+| `qwen3.5-4b-q4` *(default)* | `Qwen3.5-4B-Q4_K_M.gguf` | 2.74 GB | ~4.5 GB | normal chat + tool calling (latest Qwen) |
+| `qwen3.5-4b-light` | `Qwen3.5-4B-UD-IQ2_XXS.gguf` | 1.52 GB | ~2.5 GB | kam RAM, halka kaam |
+| `qwen3.5-4b-q8` | `Qwen3.5-4B-Q8_0.gguf` | 4.48 GB | ~6.5 GB | best answers, 8 GB+ phone |
 
 - **10 GB hard cap:** `config.toml` mein `[models] max_gb = 10.0`. Cap se bada download shuru hi nahi hota,
   aur agar server galat size bhejne lage to adhoora `.part` file delete kar diya jata hai. Cap 0.5–64 GB
@@ -265,7 +269,7 @@ Iska matlab: model koi aur file/command chupke se nahi chala sakta.
 
 ---
 
-## 5. Skills — GitHub ki 1,889 skills
+## 5. Skills — GitHub ki 1,899 skills
 
 Skill library repo ke andar hi hai (`apps/jarvis-pocket/data`, 23 packs), download ki zaroorat nahi:
 
@@ -465,9 +469,9 @@ python3 run_jarvis.py memory [--search nova] [--add "yaad rakho ..."] [--forget 
 python3 run_jarvis.py skills [--sync] [--atlas] [--search TEXT] [--limit 8]
 python3 run_jarvis.py model list
 python3 run_jarvis.py model status
-python3 run_jarvis.py model download [qwen3-1.7b-q4] [--url ...]   # resume + 10 GB cap
+python3 run_jarvis.py model download [qwen3.5-4b-light] [--url ...]  # resume + 10 GB cap
 python3 run_jarvis.py model start [--port 8081] [--context 4096] [--threads 3]
-python3 run_jarvis.py model use qwen3-4b-instruct-q4                # lane switch
+python3 run_jarvis.py model use qwen3.5-4b-q4                        # lane switch
 python3 run_jarvis.py model stop
 python3 run_jarvis.py model logs [--lines 40]
 ```
@@ -498,7 +502,7 @@ UI ka apna smoke test jsdom se chalta hai (repo ke bahar, dev-only):
 # memory, tasks, tools, local-brain card, settings, lock
 JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 
-# 26/26 checks for the phone app UI (tabs, task queue + retries, chat tools,
+# 30/30 checks for the phone app UI (tabs, task queue + retries, chat tools,
 # Connections, video studio + gallery save). Stubbed LLM, real jsdom DOM.
 cd tools/pocket-smoke && npm install && npm test
 ```
@@ -520,7 +524,7 @@ cd tools/pocket-smoke && npm install && npm test
 | `model start` → "llama-server not found" | llama.cpp build karo ya `JARVIS_LLAMA_SERVER` set karo; doctor dekho |
 | `model start` → "port ... busy" | `model stop`, ya `--port 8082` (aur `local.fast_url` khud badal jayega) |
 | Download beech mein ruk gaya | wahi command dobara — `.part` se resume hoga, zero se nahi |
-| "over the ... limit" | `[models] max_gb` badhao (max 64) ya chhota `qwen3-1.7b-q4` lo |
+| "over the ... limit" | `[models] max_gb` badhao (max 64) ya chhota `qwen3.5-4b-light` lo |
 | Local model bahut slow | `--context 2048 --threads 2`, ya 1.7B model; phone garam hoga to break do |
 | Model download ke baad bhi "offline" | `model use <id>` ya dashboard → Local brain → Use |
 

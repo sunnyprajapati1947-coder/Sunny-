@@ -158,7 +158,7 @@ def _gguf(settings):
     manager = ModelManager(settings)
     installed = [row for row in manager.catalog() if row["installed"]]
     if not installed:
-        return False, "none downloaded", "python3 run_jarvis.py model download qwen3-4b-instruct-q4 (2.5 GB)"
+        return False, "none downloaded", "python3 run_jarvis.py model download qwen3.5-4b-q4 (2.74 GB)"
     total = sum(row["bytes"] for row in installed)
     names = ", ".join(row["id"] for row in installed)
     return True, f"{names} ({total / 1e9:.1f} GB)", ""

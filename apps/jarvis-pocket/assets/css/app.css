@@ -984,3 +984,8 @@ body.is-locked { overflow: hidden; }
 .video-bar span { display: block; height: 100%; width: 0; background: var(--accent, #38bdf8); transition: width .18s linear; }
 .video-canvas, .video-result { width: 100%; border-radius: 14px; background: #05060a; display: block; margin: .6rem 0; }
 .video-canvas { max-height: 60vh; object-fit: contain; }
+
+
+/* local brain */
+.brain-card.is-selected { border-color: color-mix(in srgb, var(--accent, #38bdf8) 45%, transparent); }
+.brain-screen .video-bar { margin: .5rem 0 .4rem; }

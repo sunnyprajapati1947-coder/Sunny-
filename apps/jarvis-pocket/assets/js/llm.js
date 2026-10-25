@@ -6,6 +6,14 @@
   var Pack = window.JarvisPack;
 
   var PROVIDERS = {
+    local: {
+      label: 'On-device (Qwen)',
+      kind: 'local',
+      base: '',
+      models: ['qwen3.5-0.8b'],
+      keys: 'https://huggingface.co/onnx-community/Qwen3.5-0.8B-Text-ONNX',
+      note: 'Qwen3.5 runs inside the phone, even without internet. Download the model first (Settings → Local brain).'
+    },
     gemini: {
       label: 'Google Gemini',
       kind: 'gemini',
@@ -102,19 +110,23 @@
 
   function isReady(config) {
     var settingsNow = config || settings();
+    var provider = providerOf(settingsNow);
+    if (provider.kind === 'local') {
+      return !!(window.JarvisLocalBrain && window.JarvisLocalBrain.isReady());
+    }
     return !!(settingsNow.key && settingsNow.model && baseUrl(settingsNow));
   }
 
   function friendlyError(error, config) {
     var message = String((error && error.message) || error || 'Unknown error');
     var status = error && error.status;
-    if (status === 401 || status === 403) return 'API key rejected. Settings me key dobara check karo.';
-    if (status === 404) return 'Model "' + (config ? config.model : '') + '" nahi mila. Settings me model name badlo.';
-    if (status === 429) return 'Rate limit lag gaya. Thodi der baad try karo ya doosra model chuno.';
+    if (status === 401 || status === 403) return 'The API key was rejected. Check the key again in Settings.';
+    if (status === 404) return 'Model "' + (config ? config.model : '') + '" was not found. Change the model name in Settings.';
+    if (status === 429) return 'Rate limit hit. Try again in a moment or pick another model.';
     if (status === 400) return 'Request reject hui: ' + message;
-    if (status >= 500) return 'Provider down hai (' + status + '). Baad me try karo.';
+    if (status >= 500) return 'The provider is down (' + status + '). Try again later.';
     if (/Failed to fetch|fetch failed|NetworkError|Load failed|ECONNREFUSED|ERR_NETWORK/i.test(message)) {
-      return 'Network/CORS block. Ya to internet check karo, ya OpenRouter provider use karo (browser-friendly).';
+      return 'Network/CORS block. Either check the internet connection or use the OpenRouter provider (browser-friendly).';
     }
     return message;
   }
@@ -305,8 +317,21 @@
     var wantStream = options.stream !== false && config.stream !== false;
     var provider = providerOf(config);
 
+    if (provider.kind === 'local') {
+      if (!window.JarvisLocalBrain) {
+        return Promise.reject(new Error('The local brain module did not load.'));
+      }
+      return window.JarvisLocalBrain.generate({
+        system: system,
+        messages: messages,
+        onDelta: onDelta,
+        maxTokens: Math.min(768, config.maxTokens || 512),
+        temperature: typeof config.temperature === 'number' ? config.temperature : 0.5
+      });
+    }
+
     if (!config.key || !config.model) {
-      return Promise.reject(new Error('No API key yet. Settings me apni key add karo.'));
+      return Promise.reject(new Error('No API key yet. Add your key in Settings.'));
     }
 
     var body = payload(config, system, messages, wantStream);
@@ -351,6 +376,14 @@
   }
 
   function testConnection() {
+    var provider = providerOf(settings());
+    if (provider.kind === 'local') {
+      if (!window.JarvisLocalBrain) return Promise.reject(new Error('The local brain module did not load.'));
+      return window.JarvisLocalBrain.ensureLoaded()
+        .then(function () { return window.JarvisLocalBrain.generate({ system: 'Reply with exactly: ready', messages: [{ role: 'user', content: 'ping' }], maxTokens: 24, temperature: 0 }); })
+        .then(function (text) { return { ok: true, text: (text || '').slice(0, 80) }; })
+        .catch(function (error) { return { ok: false, error: error.message }; });
+    }
     return complete({
       system: 'Reply with exactly: ready',
       messages: [{ role: 'user', content: 'ping' }],
@@ -418,18 +451,18 @@
     return Pack.contextFor(question, 4).then(function (context) {
       var hits = Pack.searchScored(question, 5);
       if (!hits.length) {
-        return 'Main abhi **offline library mode** me hoon (AI key set nahi hai).\n\n' +
-          'Is sawaal ka jawab library me nahi mila. **Settings → AI provider** me apni key daalo (Gemini free hai), ' +
-          'phir main poora jawab de paunga.\n\n' +
-          'Tab tak library me search karo: **Library → Search**.';
+        return 'I am in **offline library mode** right now (no AI key set).\n\n' +
+          'This question is not answered by the library. Add your key in **Settings → AI provider** ' +
+          '(the Gemini free tier is enough) and I can give a full answer.\n\n' +
+          'Meanwhile you can search the library: **Library → Search**.';
       }
-      var lines = ['Main abhi **offline library mode** me hoon (AI key set nahi hai), isliye library se seedha jawab de raha hoon:\n'];
+      var lines = ['I am in **offline library mode** right now (no AI key set), so here is a direct answer from the library:\n'];
       hits.forEach(function (hit, index) {
         var pack = Pack.packOf(hit.item);
         lines.push((index + 1) + '. **' + hit.item.t + '** — ' + (pack ? pack.name : '') + ' · ' + Pack.typeOf(hit.item) +
-          '\n   ' + (hit.item.d || '').slice(0, 160) + '\n   [Kholo](#/item/' + encodeURIComponent(hit.item.i) + ')');
+          '\n   ' + (hit.item.d || '').slice(0, 160) + '\n   [Open](#/item/' + encodeURIComponent(hit.item.i) + ')');
       });
-      lines.push('\nPoora AI jawab chahiye? **Settings → AI provider** me key add karo (Gemini ka free tier kaafi hai).');
+      lines.push('\nWant a full AI answer? Add a key in **Settings → AI provider** (the Gemini free tier is enough).');
       return { text: lines.join('\n'), context: context, offline: true };
     });
   }

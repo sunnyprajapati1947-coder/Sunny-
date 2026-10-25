@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Jarvis Pocket — AI assistant with an agent library",
   "short_name": "Jarvis",
-  "description": "A pocket AI assistant grounded in 23 open-source agent repos: 1,800+ skills, agents, commands and guides, with voice, memory and offline reading.",
+  "description": "A pocket AI assistant with Qwen3.5 running on the phone, 1,899 skills from 23 open-source agent repos, tasks with retries, video creation and offline reading.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

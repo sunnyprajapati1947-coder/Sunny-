@@ -38,7 +38,7 @@
     if (path === '/library' || path.indexOf('/pack/') === 0 || path.indexOf('/item/') === 0 ||
       path.indexOf('/collection/') === 0 || path === '/saved' || path === '/search') return 'library';
     if (path === '/tasks') return 'tasks';
-    if (path === '/connections' || path === '/video' || path === '/setup') return 'settings';
+    if (path === '/connections' || path === '/video' || path === '/setup' || path === '/local') return 'settings';
     if (path === '/memory') return 'memory';
     if (path === '/settings' || path === '/about') return 'settings';
     return 'chat';
@@ -81,7 +81,7 @@
     if (!Pack.loaded()) {
       view.innerHTML = bootError
         ? '<section class="screen"><div class="empty-block">' + UI.icon('alert') +
-          '<h3>Library load nahi hui</h3><p>' + UI.esc(bootError) + '</p>' +
+          '<h3>The library could not load</h3><p>' + UI.esc(bootError) + '</p>' +
           '<button class="btn btn-primary" id="retryBoot">Retry</button></div></section>'
         : skeleton();
       var retry = document.getElementById('retryBoot');
@@ -118,6 +118,8 @@
         html = window.JarvisVideo.screen();
       } else if (path === '/setup') {
         html = window.JarvisSetup.screen();
+      } else if (path === '/local') {
+        html = window.JarvisBrainUI.screen();
       } else if (path === '/memory') {
         html = memoryScreen();
       } else if (path === '/settings') {
@@ -130,7 +132,7 @@
       }
     } catch (error) {
       html = '<section class="screen"><div class="empty-block">' + UI.icon('alert') +
-        '<h3>Kuch galat ho gaya</h3><p>' + UI.esc(error.message) + '</p><a class="btn btn-ghost" href="#/">Home</a></div></section>';
+        '<h3>Something went wrong</h3><p>' + UI.esc(error.message) + '</p><a class="btn btn-ghost" href="#/">Home</a></div></section>';
     }
 
     view.innerHTML = html;
@@ -146,6 +148,7 @@
       else if (path === '/connections') window.JarvisConnections.mount();
       else if (path === '/video') window.JarvisVideo.mount();
       else if (path === '/setup') window.JarvisSetup.mount();
+      else if (path === '/local') window.JarvisBrainUI.mount();
       else if (path === '/memory') mountMemory();
       else if (path === '/settings') mountSettings();
       else if (path === '/about') mountAbout();
@@ -165,9 +168,9 @@
     return '' +
       '<section class="screen memory-screen">' +
         '<div class="screen-head"><h1>Memory</h1>' +
-          '<p>Jo yahan likha hai, Jarvis har chat me yaad rakhega — sirf is phone pe.</p></div>' +
+          '<p>Everything you write here is remembered in every chat — on this phone only.</p></div>' +
         '<form class="memory-form" id="memoryForm">' +
-          '<textarea id="memoryInput" rows="2" placeholder="Yaad rakho: mera naam Sunny hai, main Android apps banata hoon…"></textarea>' +
+          '<textarea id="memoryInput" rows="2" placeholder="Remember: my name is Sunny and I build Android apps…"></textarea>' +
           '<button class="btn btn-primary" type="submit">' + UI.icon('plus') + 'Save</button>' +
         '</form>' +
         (rows.length
@@ -180,8 +183,8 @@
             '</div>';
           }).join('') + '</div>' +
             '<button class="btn btn-ghost btn-block" id="memoryClear">' + UI.icon('trash') + 'Clear all memories</button>'
-          : '<div class="empty-block">' + UI.icon('brain') + '<h3>Memory khaali hai</h3>' +
-            '<p>Naam, city, project, pasand — kuch bhi likho. Jarvis isse context me use karega.</p></div>') +
+          : '<div class="empty-block">' + UI.icon('brain') + '<h3>Memory is empty</h3>' +
+            '<p>Name, city, project, preferences — write anything. Jarvis will use it as context.</p></div>') +
       '</section>';
   }
 
@@ -212,7 +215,7 @@
       clear.addEventListener('click', function () {
         Memory.clear();
         render();
-        UI.toast('Memory clear ho gayi');
+        UI.toast('Memory cleared');
       });
     }
   }
@@ -233,12 +236,20 @@
 
     return '' +
       '<section class="screen settings-screen">' +
-        '<div class="screen-head"><h1>Settings</h1><p>Sab kuch is device pe rehta hai — koi account nahi.</p></div>' +
+        '<div class="screen-head"><h1>Settings</h1><p>Everything stays on this device — no account needed.</p></div>' +
+        '<a class="card card-link" href="#/local"><div class="card-head"><h2>' +
+          UI.icon('brain') + 'Local brain (Qwen3.5)</h2><span class="row-chev">' + UI.icon('chevron') + '</span></div>' +
+          '<p class="muted small">' + ((window.JarvisLocalBrain && window.JarvisLocalBrain.isReady())
+            ? 'Loaded — offline chat is ready.'
+            : 'Run Qwen3.5 inside the phone — download once, then use it without internet.') + '</p></a>' +
+        '<a class="card card-link" href="#/setup"><div class="card-head"><h2>' +
+          UI.icon('spark') + 'Setup wizard</h2><span class="row-chev">' + UI.icon('chevron') + '</span></div>' +
+          '<p class="muted small">Notifications, updates, brain — the phone is ready in 2 minutes.</p></a>' +
 
         '<section class="card">' +
           '<div class="card-head"><h2>' + UI.icon('key') + 'AI provider</h2>' +
             '<span class="pill ' + (LLM.isReady(config) ? 'pill-ok' : 'pill-warn') + '">' + (LLM.isReady(config) ? 'connected' : 'library mode') + '</span></div>' +
-          '<p class="muted small">Key sirf aapke browser me save hoti hai aur seedha provider ko jaati hai. Hamara koi server nahi.</p>' +
+          '<p class="muted small">The key is stored only in your browser and goes straight to the provider. There is no server in between.</p>' +
           '<div class="chips-wrap" id="providerChips">' + providerChips + '</div>' +
           '<label class="field"><span>API key</span>' +
             '<div class="field-row">' +
@@ -246,7 +257,7 @@
               '<button class="icon-btn" id="showKey" aria-label="Show key">' + UI.icon('eye') + '</button>' +
             '</div>' +
           '</label>' +
-          (provider.keys ? '<p class="muted small">Key yahan se: <a href="' + UI.esc(provider.keys) + '" target="_blank" rel="noopener noreferrer">' + UI.esc(provider.keys.replace(/^https?:\/\//, '')) + '</a></p>' : '') +
+          (provider.keys ? '<p class="muted small">Get a key here: <a href="' + UI.esc(provider.keys) + '" target="_blank" rel="noopener noreferrer">' + UI.esc(provider.keys.replace(/^https?:\/\//, '')) + '</a></p>' : '') +
           '<label class="field"><span>Model</span>' +
             '<input id="modelInput" type="text" autocomplete="off" spellcheck="false" value="' + UI.esc(config.model) + '" placeholder="model name">' +
           '</label>' +
@@ -279,14 +290,14 @@
             '</select>' +
           '</label>' +
           '<label class="field"><span>Extra instructions (persona)</span>' +
-            '<textarea id="personaInput" rows="3" placeholder="e.g. Mujhe short answers do, code ke saath.">' + UI.esc(config.persona) + '</textarea>' +
+            '<textarea id="personaInput" rows="3" placeholder="e.g. Give me short answers with code.">' + UI.esc(config.persona) + '</textarea>' +
           '</label>' +
         '</section>' +
 
         '<section class="card">' +
           '<div class="card-head"><h2>' + UI.icon('volume') + 'Voice</h2>' +
             '<span class="pill">' + (Voice.ttsSupported() ? 'TTS ready' : 'no TTS') + '</span></div>' +
-          '<label class="switch"><input type="checkbox" id="speakToggle2" ' + (UI.storeGet('voice.speak', false) ? 'checked' : '') + '><span>Bol ke jawab do</span></label>' +
+          '<label class="switch"><input type="checkbox" id="speakToggle2" ' + (UI.storeGet('voice.speak', false) ? 'checked' : '') + '><span>Speak answers aloud</span></label>' +
           '<label class="field"><span>Voice</span><select id="voiceSelect"></select></label>' +
           '<label class="field"><span>Speed · <b id="rateValue">' + Number(UI.storeGet('voice.rate', 1)).toFixed(1) + '</b></span>' +
             '<input id="rateInput" type="range" min="0.7" max="1.5" step="0.1" value="' + Number(UI.storeGet('voice.rate', 1)) + '">' +
@@ -300,7 +311,7 @@
               option('en-GB', 'English (UK)', UI.storeGet('voice.lang', '')) +
             '</select>' +
           '</label>' +
-          '<label class="switch"><input type="checkbox" id="autoSend" ' + (UI.storeGet('voice.autoSend', true) ? 'checked' : '') + '><span>Voice ke baad auto-send</span></label>' +
+          '<label class="switch"><input type="checkbox" id="autoSend" ' + (UI.storeGet('voice.autoSend', true) ? 'checked' : '') + '><span>Auto-send after voice</span></label>' +
           '<button class="btn btn-ghost" id="testVoice">' + UI.icon('volume') + 'Test voice</button>' +
         '</section>' +
 
@@ -318,7 +329,7 @@
     var stats = Pack.stats();
     return '' +
           '</div>' +
-          '<p class="muted small">' + stats.items + ' items · ' + UI.formatBytes(stats.bytes) + ' of markdown. Save all tab pe download kar sakte ho.</p>' +
+          '<p class="muted small">' + stats.items + ' items · ' + UI.formatBytes(stats.bytes) + ' of markdown. The Save all tab lets you download them.</p>' +
           '<button class="btn btn-primary btn-block" id="saveAll">' + UI.icon('download') + 'Save all for offline</button>' +
           '<p class="muted small" id="storageNote">Storage: checking…</p>' +
         '</section>' +
@@ -382,7 +393,7 @@
         var provider = LLM.PROVIDERS[key];
         LLM.save({
           provider: key,
-          model: (provider.models && provider.models[0]) || '',
+          model: (provider.models && provider.models[0]) || (provider.kind === 'local' ? 'qwen3.5-0.8b' : ''),
           base: ''
         });
         render();
@@ -477,7 +488,7 @@
       setTimeout(fillVoices, 700);
       voiceSelect.addEventListener('change', function () {
         UI.storeSet('voice.uri', voiceSelect.value);
-        Voice.speak('Namaste, main ' + LLM.settings().assistantName + ' hoon. Aap kaise hain?', { voiceURI: voiceSelect.value });
+        Voice.speak('Hello, this is ' + LLM.settings().assistantName + ' mode. How are you?', { voiceURI: voiceSelect.value });
       });
     }
     var rateInput = document.getElementById('rateInput');
@@ -499,7 +510,7 @@
     var testVoice = document.getElementById('testVoice');
     if (testVoice) {
       testVoice.addEventListener('click', function () {
-        Voice.speak('Namaste! Main ' + LLM.settings().assistantName + ' hoon, aapka phone assistant.', {
+        Voice.speak('Hello! I am ' + LLM.settings().assistantName + ', your phone assistant.', {
           voiceURI: UI.storeGet('voice.uri', ''),
           rate: Number(UI.storeGet('voice.rate', 1))
         });
@@ -517,8 +528,8 @@
         }).then(function (result) {
           saveAll.disabled = false;
           saveAll.innerHTML = UI.icon('check') + 'Saved for offline';
-          UI.toast(result.failed ? (result.total - result.failed) + '/' + result.total + ' saved (kuch fail hue)'
-            : 'Poori library offline save ho gayi', { tone: result.failed ? 'warn' : 'ok', icon: 'check' });
+          UI.toast(result.failed ? (result.total - result.failed) + '/' + result.total + ' saved (some items failed)'
+            : 'The whole library was saved offline', { tone: result.failed ? 'warn' : 'ok', icon: 'check' });
         });
       });
     }
@@ -562,7 +573,7 @@
       clearChats.addEventListener('click', function () {
         UI.storeRemove('chats');
         Chat.newChat(false);
-        UI.toast('Saari chats delete ho gayi');
+        UI.toast('All chats were deleted');
         render();
       });
     }
@@ -570,7 +581,7 @@
     if (clearMemory) {
       clearMemory.addEventListener('click', function () {
         Memory.clear();
-        UI.toast('Memory clear ho gayi');
+        UI.toast('Memory cleared');
       });
     }
     var resetAll = document.getElementById('resetAll');
@@ -582,7 +593,7 @@
             return Promise.all(keys.map(function (key) { return caches.delete(key); }));
           }).catch(function () { /* ignore */ });
         }
-        UI.toast('Reset ho gaya — reload kar raha hoon');
+        UI.toast('Reset done — reloading now');
         setTimeout(function () { location.reload(); }, 700);
       });
     }
@@ -598,16 +609,16 @@
         '<div class="about-hero">' +
           '<div class="orb orb-lg" aria-hidden="true"></div>' +
           '<h1>Jarvis Pocket</h1>' +
-          '<p>Ek offline-first AI assistant jo ' + stats.packs + ' open-source agent repos ki ' + stats.items +
-            ' skills, agents, commands aur guides ko ek phone app me laata hai.</p>' +
+          '<p>An offline-first AI assistant that brings ' + stats.packs + ' open-source agent repos and ' + stats.items +
+            ' skills, agents, commands and guides into one phone app.</p>' +
         '</div>' +
         '<section class="card">' +
-          '<div class="card-head"><h2>Kaise kaam karta hai</h2></div>' +
+          '<div class="card-head"><h2>How it works</h2></div>' +
           '<ul class="about-list">' +
-            '<li><b>Bring your own key.</b> Aapki API key sirf is device pe rehti hai aur seedha provider ko jaati hai — beech me hamara koi server nahi.</li>' +
-            '<li><b>Library grounding.</b> Har sawaal pe app apne pack se sabse relevant docs dhundh ke model ko deta hai, isliye jawab aapke repos se aate hain.</li>' +
-            '<li><b>Tools.</b> Model khud library search kar sakta hai, poora doc padh sakta hai aur memory me kuch save kar sakta hai.</li>' +
-            '<li><b>Offline.</b> Poora pack download karne ke baad bina internet padh sakte ho; chat ke liye internet chahiye.</li>' +
+            '<li><b>Bring your own key.</b> Your API key stays on this device and goes straight to the provider — no server in between.</li>' +
+            '<li><b>Library grounding.</b> For every question the app finds the most relevant docs in its packs and gives them to the model, so answers come from your own repositories.</li>' +
+            '<li><b>Tools.</b> The model can search the library itself, read a full document and save something to memory.</li>' +
+            '<li><b>Offline.</b> After downloading a pack you can read it without internet; chat itself needs internet (or the on-device brain).</li>' +
           '</ul>' +
         '</section>' +
         '<section class="card">' +
@@ -621,8 +632,8 @@
         '</section>' +
         '<section class="card">' +
           '<div class="card-head"><h2>Credits & license</h2></div>' +
-          '<p class="muted small">Saara content unke original authors ka hai aur har pack ke apne license ke under hai (MIT / Apache-2.0 etc.). ' +
-            'App sirf unhe readable banata hai. Har item ke reader me "View source on GitHub" link hai.</p>' +
+          '<p class="muted small">All content belongs to its original authors and each pack keeps its own license (MIT / Apache-2.0 and so on). ' +
+            'This app only makes them readable. Every item has a "View source on GitHub" link in its reader.</p>' +
           '<p class="muted small">App shell: vanilla JS, marked (MIT) + DOMPurify (MPL-2.0), no tracking, no analytics.</p>' +
         '</section>' +
         '<p class="muted center small">v1.0 · pack built ' + UI.esc(stats.built || '') + '</p>' +

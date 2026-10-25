@@ -140,22 +140,34 @@ jobs:
           cat > /tmp/notes.md <<'NOTES'
           Install the APK on your Android phone — no terminal, no Termux.
 
-          1. Tap the `.apk` below and allow "install unknown apps" for your browser/Files app.
-          2. Open **JARVIS**, paste a free Gemini key in Settings, and chat.
-          3. The 1,899-skill library is bundled and works offline.
+          1. Tap the `.apk` below and allow "install unknown apps" for your browser or Files app.
+          2. Open **JARVIS**. The Setup wizard walks through notifications, updates, the AI brain and YouTube.
+          3. Optional: open **Settings → Local brain (Qwen3.5)** and download the on-device model (~470 MB) to chat with no internet.
+             Without any key the 1,899-skill library and all on-device features still work.
 
-          **New in 0.3.5**
-          - **Tasks tab** — bolo kaam, JARVIS plan banata hai, step-by-step chalata hai, fail hone par retry karta hai, aur app band hone ke baad pending kaam resume hota hai.
-          - **Chat tools** — `task_create`, `task_status`, `video_create`, so chat se hi kaam queue ho jata hai.
-          - **Video studio** — prompt se vertical/square/landscape video (AI script + animated scenes, WebM) jo phone gallery me `Movies/JARVIS` me khud save hota hai.
-          - **Connections tab** — YouTube Data API key test, in-app YouTube search, share sheet (WhatsApp/Instagram/X/YouTube), caption copy, device-health card.
-          - **In-app updater** — update banner app ke andar naya APK download karta hai, phir install prompt deta hai.
-          - Background foreground-service notification while tasks run.
-          - **First-run Setup wizard** — notifications, update permission, AI key aur YouTube, 2 minute me. App khud wizard kholta hai jab key set na ho.
+          **New in 0.4.0**
+          - **On-device Qwen3.5 brain (the latest Qwen generation).** Transformers.js + ONNX Runtime Web are bundled inside the app,
+            so the model runs on the phone itself. WebGPU is used when the phone has it, otherwise CPU/WASM. Download once, then chat offline.
+          - **English interface.** Every screen, message, error and the install page are now in English.
+          - **Local provider** in Settings (chat and setup wizard) with a real test button and a "free memory" control.
+          - **Self-contained engine.** The JS engine is bundled locally (no package-name import, no CDN), plus the ONNX Runtime WASM file,
+            so the offline brain no longer depends on a CDN being reachable.
+          - Fixed: the local brain screen is now reachable (Settings card, `#/local` route) and staging copies the engine files into the APK.
 
-          This build is signed for in-place updates: when a newer `jarvis-v*` release appears, the app shows an update banner.
+          **Still true from 0.3.5**
+          - Tasks tab: plan → run → retry → resume after the app is closed.
+          - Chat tools (`task_create`, `task_status`, `video_create`, library search).
+          - Video studio: prompt → script + animated scenes → WebM saved to `Movies/JARVIS`.
+          - Connections tab: YouTube Data API test and search, share sheet, caption copy, device health.
+          - In-app updater, foreground-service notification, first-run setup.
 
-          Honest limits: the assistant needs a model key (or you can use the offline library), and the phone must stay on while long tasks run. No analytics, no hidden uploads.
+          **Honest limits**
+          - The on-device model is small (0.8B). On a phone it answers at roughly 2–6 tokens/second on the CPU; WebGPU is faster.
+            It needs ~1.4 GB of free RAM. A big 10 GB model cannot run inside a browser/WebView — that needs llama.cpp on a computer.
+          - Cloud answers (Gemini/OpenRouter/local Ollama) need a key; the offline library needs none.
+          - Real AI footage (Veo/Runway) is a paid external API; the built-in video studio renders script + animated scenes.
+          - Nothing is posted automatically without a tap: content is saved to the gallery and shared through the share sheet.
+          - The phone must stay awake while long tasks run (foreground service notification).
           NOTES
           cert=$(cat dist/.fingerprint 2>/dev/null || echo unknown)
           printf '\n**Signer certificate SHA-256:** `%s`\n' "$cert" >> /tmp/notes.md

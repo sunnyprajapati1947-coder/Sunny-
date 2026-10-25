@@ -1,7 +1,7 @@
 /* Jarvis Pocket — offline app shell + knowledge pack cache. */
 'use strict';
 
-const VERSION = 'jarvis-v1';
+const VERSION = 'jarvis-v2';
 const SHELL_CACHE = VERSION + '-shell';
 const DATA_CACHE = VERSION + '-data';
 const IMAGE_CACHE = VERSION + '-img';
@@ -20,6 +20,13 @@ const SHELL_ASSETS = [
   'assets/js/chat.js',
   'assets/js/library.js',
   'assets/js/app.js',
+  'assets/js/local-brain.js',
+  'assets/js/brain.js',
+  'assets/js/tasks.js',
+  'assets/js/connections.js',
+  'assets/js/video.js',
+  'assets/js/setup.js',
+  'assets/js/native.js',
   'assets/js/vendor/marked.js',
   'assets/js/vendor/purify.min.js',
   'icons/favicon.svg',

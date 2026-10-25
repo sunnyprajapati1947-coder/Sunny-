@@ -443,7 +443,7 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/api/models/"):
             action = path.rsplit("/", 1)[-1]
             if action == "download":
-                model_id = str(body.get("model_id") or "qwen3-4b-instruct-q4")
+                model_id = str(body.get("model_id") or "qwen3.5-4b-q4")
                 self.start_model_job("downloading", model_id,
                                      lambda progress: app.models.download(
                                          model_id, url=str(body.get("url") or ""), progress=progress))

@@ -1,4 +1,4 @@
-/* JARVIS — prompt se vertical video: script, animated scenes, gallery auto-save. */
+/* JARVIS — prompt to vertical video: script, animated scenes, gallery auto-save. */
 (function () {
   'use strict';
 
@@ -38,8 +38,8 @@
 
   function planVideo(prompt) {
     var text = String(prompt || '').trim();
-    if (!text) return Promise.reject(new Error('Video ka topic batao.'));
-    if (!LLM.isReady()) return Promise.reject(new Error('Video script ke liye Settings me AI key daalo.'));
+    if (!text) return Promise.reject(new Error('Tell me the video topic.'));
+    if (!LLM.isReady()) return Promise.reject(new Error('Add an AI key in Settings for the video script.'));
     var system = 'You write short vertical-video scripts for a phone assistant. ' +
       'Reply with JSON only: {"title":"<=60 chars","scenes":[{"text":"onscreen line, <=90 chars","seconds":3}]}. ' +
       'Use 4 to 7 scenes, 2-6 seconds each, no markdown, no extra keys, no tool tags. ' +
@@ -140,7 +140,7 @@
     return new Promise(function (resolve, reject) {
       var mime = pickMime();
       if (!mime) {
-        reject(new Error('Is browser/WebView me video recording support nahi hai.'));
+        reject(new Error('This browser/WebView cannot record video.'));
         return;
       }
       var canvas = document.createElement('canvas');
@@ -148,7 +148,7 @@
       canvas.height = size.h;
       var ctx = canvas.getContext('2d');
       if (!ctx) {
-        reject(new Error('Canvas render nahi ho paya.'));
+        reject(new Error('The canvas could not render.'));
         return;
       }
       var stage = document.getElementById('videoStage');
@@ -162,14 +162,14 @@
 
       var stream = canvas.captureStream ? canvas.captureStream(30) : null;
       if (!stream) {
-        reject(new Error('Canvas stream support nahi hai.'));
+        reject(new Error('Canvas streams are not supported here.'));
         return;
       }
       var recorder;
       try {
         recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2500000 });
       } catch (error) {
-        reject(new Error('Recorder start nahi hua: ' + error.message));
+        reject(new Error('The recorder did not start: ' + error.message));
         return;
       }
       var chunks = [];
@@ -190,7 +190,7 @@
         state.recorder = null;
         try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (error) { /* ignore */ }
         if (state.cancel) {
-          reject(new Error('Video cancel ho gaya.'));
+          reject(new Error('Video cancelled.'));
           return;
         }
         var blob = new Blob(chunks, { type: mime.split(';')[0] });
@@ -260,7 +260,7 @@
       return toBase64(blob).then(function (data) {
         return N.saveToGallery({ base64: data, filename: name, mime: blob.type || 'video/webm' });
       }).then(function (result) {
-        UI.toast('Gallery me save ho gaya ✅', { tone: 'ok' });
+        UI.toast('Saved to the gallery ✅', { tone: 'ok' });
         return result && result.uri ? result.uri : name;
       });
     }
@@ -272,7 +272,7 @@
     link.click();
     link.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-    UI.toast('Video download ho gaya (browser mode)', { tone: 'ok' });
+    UI.toast('Video downloaded (browser mode)', { tone: 'ok' });
     return Promise.resolve(name);
   }
 
@@ -314,11 +314,11 @@
     if (shareBtn) {
       shareBtn.addEventListener('click', function () {
         if (N.available && N.share) {
-          N.share('JARVIS se bana video').catch(function () {});
+          N.share('Video made with JARVIS').catch(function () {});
         } else if (navigator.share) {
           navigator.share({ title: title, text: 'JARVIS video' }).catch(function () {});
         } else {
-          UI.toast('Share is device par available nahi', { tone: 'warn' });
+          UI.toast('Sharing is not available on this device', { tone: 'warn' });
         }
       });
     }
@@ -329,16 +329,16 @@
   function create(prompt, options) {
     options = options || {};
     var size = SIZES[options.size] || SIZES.vertical;
-    if (state.busy) return Promise.reject(new Error('Ek video pehle se ban raha hai.'));
-    if (!LLM.isReady()) return Promise.reject(new Error('Settings → AI provider me key daalo.'));
+    if (state.busy) return Promise.reject(new Error('A video is already being made.'));
+    if (!LLM.isReady()) return Promise.reject(new Error('Add an AI key in Settings → AI provider.'));
     state.busy = true;
     state.blob = null;
     var result = document.getElementById('videoResult');
     if (result) result.hidden = true;
-    status('<p class="muted small">Script likh raha hoon…</p>');
+    status('<p class="muted small">Writing the script…</p>');
     return planVideo(prompt).then(function (plan) {
       state.scenes = plan.scenes;
-      status('<p class="muted small">' + plan.scenes.length + ' scenes render ho rahe hain…</p>');
+      status('<p class="muted small">' + plan.scenes.length + ' rendering scenes…</p>');
       return record(plan.scenes, size, progress).then(function (blob) {
         return saveToGallery(blob, plan.title).then(function () {
           return { blob: blob, title: plan.title, plan: plan };
@@ -370,24 +370,24 @@
     var ready = canRecord();
     return '<section class="screen video-screen">' +
       '<div class="screen-head"><h1>Video studio</h1>' +
-      '<p>Prompt do — script, scenes aur video ban jayega, gallery me khud save hoga.</p></div>' +
-      '<div class="card"><div class="card-head"><h2>' + UI.icon('play') + 'Naya video</h2></div>' +
-      '<label class="field"><span>Video kis baare me hai?</span>' +
-      '<textarea id="videoPrompt" rows="3" placeholder="Jaise: 5 tips jo har student ko exam se pehle pata hone chahiye"></textarea></label>' +
+      '<p>Give a prompt — the script, scenes and video are built and saved to the gallery automatically.</p></div>' +
+      '<div class="card"><div class="card-head"><h2>' + UI.icon('play') + 'New video</h2></div>' +
+      '<label class="field"><span>What is the video about?</span>' +
+      '<textarea id="videoPrompt" rows="3" placeholder="For example: 5 tips every student should know before an exam"></textarea></label>' +
       '<label class="field"><span>Size</span><select id="videoSize">' +
       Object.keys(SIZES).map(function (key) {
         return '<option value="' + key + '">' + UI.esc(SIZES[key].label) + '</option>';
       }).join('') + '</select></label>' +
-      '<div class="card-actions"><button class="btn btn-primary" id="videoStart">' + UI.icon('bolt') + 'Video banao</button>' +
+      '<div class="card-actions"><button class="btn btn-primary" id="videoStart">' + UI.icon('bolt') + 'Create video</button>' +
       '<button class="btn btn-ghost" id="videoStop" hidden>Stop</button></div>' +
       '<div class="video-bar"><span id="videoBar"></span></div>' +
       '<div id="videoStatus"></div>' +
       '<div id="videoStage" hidden></div></div>' +
       '<div id="videoResult" hidden></div>' +
-      (ready ? '' : '<div class="card"><p class="muted small">Is WebView me video recording support nahi mila. Android app build me ye kaam karta hai.</p></div>') +
-      '<div class="card"><div class="card-head"><h2>' + UI.icon('info') + 'Seedhi baat</h2></div>' +
-      '<p class="small muted">Ye slideshow-style video hai: AI script + animated text scenes + WebM output, phone gallery me ' +
-      'Movies/JARVIS me save. Real AI footage (jaise Veo/Runway) ke liye alag paid API key chahiye — tabhi sach me footage banega.</p></div>' +
+      (ready ? '' : '<div class="card"><p class="muted small">This WebView cannot record video. The Android app build can.</p></div>') +
+      '<div class="card"><div class="card-head"><h2>' + UI.icon('info') + 'Straight talk</h2></div>' +
+      '<p class="small muted">This is a slideshow-style video: AI script + animated text scenes + WebM output, saved in the phone gallery under ' +
+      'Movies/JARVIS. Real AI footage (like Veo/Runway) needs a separate paid API key — only then is it real footage.</p></div>' +
       '</section>';
   }
 
@@ -399,7 +399,7 @@
       var prompt = (document.getElementById('videoPrompt') || {}).value || '';
       var size = (document.getElementById('videoSize') || {}).value || 'vertical';
       if (!prompt.trim()) {
-        UI.toast('Pehle topic likho', { tone: 'warn' });
+        UI.toast('Write the topic first', { tone: 'warn' });
         return;
       }
       start.disabled = true;

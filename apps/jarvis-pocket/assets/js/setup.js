@@ -39,18 +39,18 @@
   function steps() {
     return [
       { id: 'notify', title: 'Notifications', done: notified(),
-        hint: 'Task poora hone par alert milega.' },
+        hint: 'You will get an alert when the task finishes.' },
       { id: 'install', title: 'App updates', done: canInstall(),
-        hint: 'Naya version app ke andar install ho sake.' },
-      { id: 'brain', title: 'AI brain', done: LLM.isReady(),
-        hint: 'Gemini ya koi OpenAI-compatible key. Iske bina sirf 1,899-skill library chalti hai.' },
+        hint: 'A new version can install itself inside the app.' },
+      { id: 'brain', title: 'AI brain', done: LLM.isReady() || (window.JarvisLocalBrain && window.JarvisLocalBrain.isReady()),
+        hint: 'Gemini or any OpenAI-compatible key. Without it only the 1,899-skill library works.' },
       { id: 'youtube', title: 'YouTube (optional)', done: ytReady(),
-        hint: 'Video search aur channel kaam ke liye Data API key.' }
+        hint: 'Data API key for video search and channel work.' }
     ];
   }
 
   function badge(done) {
-    return '<span class="pill ' + (done ? 'pill-ok' : 'pill-warn') + '">' + (done ? 'ho gaya' : 'baaki') + '</span>';
+    return '<span class="pill ' + (done ? 'pill-ok' : 'pill-warn') + '">' + (done ? 'done' : 'left') + '</span>';
   }
 
   function screen() {
@@ -61,20 +61,26 @@
 
     return '<section class="screen setup-screen">' +
       '<div class="screen-head"><h1>Setup</h1>' +
-      '<p>Char chhote step — 2 minute. Sab kuch is phone me rehta hai.</p></div>' +
-      '<div class="card"><div class="card-head"><h2>' + UI.icon('check') + done + '/4 taiyar</h2>' +
+      '<p>Four short steps — 2 minutes. Everything stays inside this phone.</p></div>' +
+      '<div class="card"><div class="card-head"><h2>' + UI.icon('check') + done + '/4 ready</h2>' +
       '<span class="pill">' + (done === 4 ? 'ready' : 'in progress') + '</span></div>' +
       '<div class="video-bar"><span id="setupBar" style="width:' + Math.round((done / 4) * 100) + '%"></span></div></div>' +
 
       '<div class="card"><div class="card-head"><h2>' + UI.icon('alert') + '1. Notifications</h2>' + badge(notified()) + '</div>' +
       '<p class="muted small">' + list[0].hint + '</p>' +
-      '<div class="card-actions"><button class="btn btn-ghost btn-sm" id="setupNotify">Allow karo</button></div></div>' +
+      '<div class="card-actions"><button class="btn btn-ghost btn-sm" id="setupNotify">Allow</button></div></div>' +
 
       '<div class="card"><div class="card-head"><h2>' + UI.icon('download') + '2. App updates</h2>' + badge(canInstall()) + '</div>' +
       '<p class="muted small">' + list[1].hint + '</p>' +
-      '<div class="card-actions"><button class="btn btn-ghost btn-sm" id="setupInstall">Permission do</button></div></div>' +
+      '<div class="card-actions"><button class="btn btn-ghost btn-sm" id="setupInstall">Grant permission</button></div></div>' +
 
-      '<div class="card"><div class="card-head"><h2>' + UI.icon('spark') + '3. AI brain</h2>' + badge(LLM.isReady()) + '</div>' +
+      '<div class="card"><div class="card-head"><h2>' + UI.icon('brain') + '3a. On-device brain (offline)</h2>' +
+      badge(!!(window.JarvisLocalBrain && window.JarvisLocalBrain.isReady())) + '</div>' +
+      '<p class="muted small">Qwen3.5 inside the phone — one download (~490 MB), then answers with no internet.</p>' +
+      '<div class="card-actions"><a class="btn btn-ghost btn-sm" href="#/local">Open local brain</a></div></div>' +
+
+      '<div class="card"><div class="card-head"><h2>' + UI.icon('spark') + '3b. Cloud AI brain (optional)</h2>' +
+      badge(LLM.isReady() && LLM.providerOf(LLM.settings()).kind !== 'local') + '</div>' +
       '<p class="muted small">' + list[2].hint + '</p>' +
       '<label class="field"><span>API key</span>' +
       '<div class="field-row"><input id="setupKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key" value="' + UI.esc(config.key) + '">' +
@@ -85,12 +91,12 @@
 
       '<div class="card"><div class="card-head"><h2>' + UI.icon('play') + '4. YouTube (optional)</h2>' + badge(ytReady()) + '</div>' +
       '<p class="muted small">' + list[3].hint + '</p>' +
-      '<div class="card-actions"><a class="btn btn-ghost btn-sm" href="#/connections">Connections kholo</a></div></div>' +
+      '<div class="card-actions"><a class="btn btn-ghost btn-sm" href="#/connections">Open connections</a></div></div>' +
 
-      '<div class="card"><div class="card-head"><h2>' + UI.icon('check') + 'Ho gaya?</h2></div>' +
-      '<p class="muted small">Chat kholo aur bolo "mere phone ka checkup karo" ya koi bhi kaam.</p>' +
-      '<div class="card-actions"><button class="btn btn-primary" id="setupFinish">Chat shuru karo</button>' +
-      '<button class="btn btn-ghost" id="setupLater">Baad me</button></div></div>' +
+      '<div class="card"><div class="card-head"><h2>' + UI.icon('check') + 'All done?</h2></div>' +
+      '<p class="muted small">Open chat and say "check up my phone" or give it any task.</p>' +
+      '<div class="card-actions"><button class="btn btn-primary" id="setupFinish">Start chatting</button>' +
+      '<button class="btn btn-ghost" id="setupLater">Later</button></div></div>' +
       '</section>';
   }
 
@@ -108,10 +114,10 @@
     if (install) install.addEventListener('click', function () {
       if (N.available && N.call) {
         N.call('openInstallSettings').catch(function () {
-          UI.toast('Settings me "Install unknown apps" se allow karo', { tone: 'warn' });
+          UI.toast('Allow it in Settings under "Install unknown apps"', { tone: 'warn' });
         });
       } else {
-        UI.toast('Android app me hi kaam karta hai', { tone: 'warn' });
+        UI.toast('Works in the Android app only', { tone: 'warn' });
       }
       setTimeout(function () { refreshCheck().then(refresh); }, 900);
     });
@@ -126,12 +132,12 @@
     if (save) save.addEventListener('click', function () {
       var value = keyInput ? keyInput.value.trim() : '';
       if (!value) {
-        UI.toast('Pehle key paste karo', { tone: 'warn' });
+        UI.toast('Paste the key first', { tone: 'warn' });
         return;
       }
       LLM.save({ key: value });
       var note = document.getElementById('setupKeyNote');
-      if (note) note.textContent = 'Check ho raha hai…';
+      if (note) note.textContent = 'Checking…';
       save.disabled = true;
       LLM.testConnection().then(function () {
         UI.toast('AI brain ready ✅', { tone: 'ok' });
@@ -139,7 +145,7 @@
         refresh();
       }).catch(function (error) {
         UI.toast('Key fail: ' + error.message, { tone: 'warn' });
-        if (note) note.textContent = 'Key save hai, par test fail: ' + error.message;
+        if (note) note.textContent = 'Key saved, but the test failed: ' + error.message;
       }).then(function () { save.disabled = false; });
     });
 

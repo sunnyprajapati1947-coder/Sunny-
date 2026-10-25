@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -102,7 +102,7 @@ check("connections loaded", !!window.JarvisConnections);
 
 window.location.hash = "#/tasks";
 await until("tasks screen", () => q("#taskGoal"));
-check("tasks screen renders", /Naya kaam/.test(text("#view")));
+check("tasks screen renders", /New task/.test(text("#view")));
 
 q("#taskGoal").value = "Test goal: do steps";
 q("#taskAdd").click();
@@ -183,9 +183,46 @@ document.getElementById("setupFinish").click();
 await until("chat opened", () => window.location.hash === "#/" || window.location.hash === "", 4000);
 check("setup marks itself done", window.JarvisUI.storeGet("setup.done", false) === true);
 
+// local brain (Qwen3.5 on device)
+window.location.hash = "#/local";
+await until("local brain screen", () => q("[data-prepare]"));
+check("local brain catalog has Qwen3.5", window.JarvisLocalBrain.catalog().some((m) => /Qwen3\.5/.test(m.label)) &&
+  window.JarvisLocalBrain.catalog().length >= 1);
+check("local brain screen renders models", /Qwen3\.5 0\.8B/.test(text("#view")) && /Download & load/.test(text("#view")));
+const realGenerate = window.JarvisLocalBrain.generate;
+const realReady = window.JarvisLocalBrain.isReady;
+window.JarvisLocalBrain.generate = (opts) => { if (opts.onDelta) opts.onDelta("hello "); if (opts.onDelta) opts.onDelta("boss"); return Promise.resolve("hello boss"); };
+window.JarvisLocalBrain.isReady = () => true;
+window.JarvisLLM.save({ provider: "local", model: "qwen3.5-0.8b" });
+check("local provider is ready without a key", window.JarvisLLM.isReady() === true);
+let deltas = "";
+const localReply = await window.JarvisLLM.complete({ system: "sys", messages: [{ role: "user", content: "hi" }], onDelta: (t) => { deltas += t; } });
+check("local provider streams through JarvisLocalBrain", localReply === "hello boss" && deltas === "hello boss", `${localReply}/${deltas}`);
+window.JarvisLocalBrain.generate = realGenerate;
+window.JarvisLocalBrain.isReady = realReady;
+window.JarvisLLM.save({ provider: "gemini", model: "gemini-2.5-flash" });
+
 window.location.hash = "#/settings";
 await until("settings", () => q("#keyInput"));
 check("settings links connections", /Connections/.test(text("#view")));
+check("settings links the local brain", /Local brain/.test(text("#view")) && !!q('[href="#/local"]'));
+
+// --- on-device engine wiring (static files, no network) --------------------
+const vendor = join(ROOT, "vendor", "transformers");
+const engineFiles = ["transformers.web.min.js.gz", "ort.bundle.min.mjs",
+  "ort-wasm-simd-threaded.jsep.mjs", "ort-wasm-simd-threaded.jsep.wasm"];
+check("local engine files are vendored", engineFiles.every((f) => existsSync(join(vendor, f))),
+  engineFiles.filter((f) => !existsSync(join(vendor, f))).join(", "));
+const gzHead = readFileSync(join(vendor, "transformers.web.min.js.gz")).subarray(0, 2);
+check("engine file is gzip", gzHead[0] === 0x1f && gzHead[1] === 0x8b, [...gzHead].join(","));
+const brainSrc = readFileSync(join(ROOT, "assets", "js", "local-brain.js"), "utf8");
+check("engine loader rewrites both onnxruntime specifiers",
+  brainSrc.includes('from"onnxruntime-common"') && brainSrc.includes("onnxruntime-web\\/webgpu"));
+check("engine loader decompresses and imports a blob", brainSrc.includes("DecompressionStream") &&
+  brainSrc.includes("URL.createObjectURL"));
+const indexHtml = readFileSync(join(ROOT, "index.html"), "utf8");
+check("no stale import map in index.html", !indexHtml.includes('type="importmap"'));
+
 check("no JS errors", errors.length === 0, errors.join(" | "));
 
 const failed = results.filter((r) => !r.ok);

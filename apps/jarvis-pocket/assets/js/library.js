@@ -153,7 +153,7 @@
     if (title) title.textContent = listTitle();
     if (count) count.textContent = rows.length + ' items';
     if (!rows.length) {
-      list.innerHTML = emptyResults('Kuch nahi mila', listState.query ? 'Query chhoti karo ya pack badlo.' : 'Try another filter.');
+      list.innerHTML = emptyResults('Nothing found', listState.query ? 'Shorten the query or change the pack.' : 'Try another filter.');
       if (more) more.hidden = true;
       return;
     }
@@ -247,7 +247,7 @@
     }
     var hits = Pack.search(query, { type: type || null, limit: 60 });
     if (!hits.length) {
-      host.innerHTML = emptyResults('No match for "' + query + '"', 'Spelling check karo ya chhota keyword use karo.');
+      host.innerHTML = emptyResults('No match for "' + query + '"', 'Check the spelling or use a shorter keyword.');
       return;
     }
     host.innerHTML = '<p class="muted list-count">' + hits.length + ' results</p>' + hits.map(function (item) {
@@ -349,7 +349,7 @@
       ask.addEventListener('click', function () {
         var pack = Pack.packs().filter(function (row) { return row.id === packId; })[0];
         if (!pack) return;
-        window.JarvisChat.askAboutText('Repo "' + pack.name + '" (' + pack.repo + ') ka structure aur sabse useful skills samjhao — main ise phone se kaise use karun?');
+        window.JarvisChat.askAboutText('Repo "' + pack.name + '" (' + pack.repo + ') explain its structure and the most useful skills — how do I use it from the phone?');
       });
     }
   }
@@ -426,7 +426,7 @@
         }
       });
     }).catch(function () {
-      body.innerHTML = '<p class="muted">Content load nahi hui. Internet check karke reload karo.</p>';
+      body.innerHTML = '<p class="muted">Content did not load. Check the internet connection and reload.</p>';
     });
 
     var saveButton = document.querySelector('[data-item-save]');
@@ -444,7 +444,7 @@
       tocButton.addEventListener('click', function () {
         var list = MD.toc(markdown);
         if (!list.length) {
-          UI.toast('Is doc me headings nahi hain', { tone: 'warn' });
+          UI.toast('This document has no headings', { tone: 'warn' });
           return;
         }
         var host = UI.sheet('On this page', '<div class="toc-list">' + list.map(function (heading, index) {
@@ -468,7 +468,7 @@
     if (copyButton) {
       copyButton.addEventListener('click', function () {
         if (!markdown) {
-          UI.toast('Content load ho rahi hai…');
+          UI.toast('Loading content…');
           return;
         }
         UI.copyText(markdown).then(function () {
@@ -520,7 +520,7 @@
             var item = Pack.getItem(id);
             return item ? itemRow(item, '') : '';
           }).filter(Boolean).join('') + '</div>'
-          : '<div class="empty-block">' + UI.icon('bookmark') + '<h3>Kuch save nahi kiya</h3><p>Reader me bookmark icon dabao — yahan aa jayega.</p><a class="btn btn-ghost" href="#/library">Browse library</a></div>') +
+          : '<div class="empty-block">' + UI.icon('bookmark') + '<h3>Nothing saved yet</h3><p>Tap the bookmark icon in a reader — it will show up here.</p><a class="btn btn-ghost" href="#/library">Browse library</a></div>') +
       '</section>';
   }
 
@@ -543,7 +543,7 @@
     button.addEventListener('click', function () {
       var collection = Pack.collections().filter(function (row) { return row.id === collectionId; })[0];
       if (!collection) return;
-      window.JarvisChat.askAboutText('Mujhe "' + collection.title + '" ka 5-step learning plan do, sirf in library items ko use karke: ' +
+      window.JarvisChat.askAboutText('Give me a 5-step learning plan for "' + collection.title + '" using only these library items: ' +
         collection.items.slice(0, 8).map(function (id) {
           var item = Pack.getItem(id);
           return item ? item.t + ' (' + id + ')' : '';

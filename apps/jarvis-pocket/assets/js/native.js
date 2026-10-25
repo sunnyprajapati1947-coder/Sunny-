@@ -124,7 +124,7 @@
   function saveImage(img) {
     var src = img.currentSrc || img.src;
     if (!src) return;
-    toast('Gallery mein save ho raha hai…');
+    toast('Saving to the gallery…');
     fetch(src, { mode: 'cors' })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -141,8 +141,8 @@
           });
         });
       })
-      .then(function () { toast('Gallery mein save ho gaya ✅', 'ok'); })
-      .catch(function (error) { toast('Save nahi hua: ' + error.message, 'warn'); });
+      .then(function () { toast('Saved to the gallery ✅', 'ok'); })
+      .catch(function (error) { toast('Save failed: ' + error.message, 'warn'); });
   }
 
   function decorateImages() {
@@ -185,7 +185,7 @@
       'z-index:60;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;' +
       'background:linear-gradient(135deg,#233,#122);border:1px solid rgba(120,255,190,.35);' +
       'color:#eafff4;font:600 13px/1.3 system-ui;box-shadow:0 10px 30px rgba(0,0,0,.45)';
-    bar.innerHTML = '<span style="flex:1">Naya version ' + release + ' ready hai</span>' +
+    bar.innerHTML = '<span style="flex:1">A new version ' + release + ' is ready</span>' +
       '<button id="jarvisUpdateGo" style="border:0;border-radius:10px;padding:8px 12px;background:#3fe08a;color:#04140b;font-weight:800">Update</button>' +
       '<button id="jarvisUpdateX" aria-label="Dismiss" style="border:0;background:transparent;color:#9fb;font-size:18px">×</button>';
     document.body.appendChild(bar);
@@ -193,13 +193,13 @@
     document.getElementById('jarvisUpdateGo').addEventListener('click', function () {
       call('downloadUpdate', { url: apkUrl, version: release })
         .then(function () {
-          toast('Download shuru — notification se install karo', 'ok');
+          toast('Download started — install from the notification', 'ok');
         })
         .catch(function () {
           call('openUrl', { url: apkUrl }).catch(function () {
             window.open(apkUrl, '_blank');
           });
-          toast('Browser se download — install tap karo', 'ok');
+          toast('Downloaded in the browser — tap install', 'ok');
         });
       bar.remove();
     });
@@ -239,7 +239,7 @@
     if (!available) return;
     if (on && !backgroundOn) {
       backgroundOn = true;
-      call('backgroundStart', { text: text || 'Kaam chal raha hai…' }).catch(function () { backgroundOn = false; });
+      call('backgroundStart', { text: text || 'Working…' }).catch(function () { backgroundOn = false; });
     } else if (!on && backgroundOn) {
       backgroundOn = false;
       call('backgroundStop').catch(function () {});
@@ -255,8 +255,8 @@
       localStorage.setItem(key, version);
     } catch (error) { /* storage may be blocked */ }
     call('notify', {
-      title: 'JARVIS ready hai boss ✅',
-      body: 'Version ' + version + ' — bolo ya likho, kaam shuru.'
+      title: 'Jarvis ready hai boss ✅',
+      body: 'Version ' + version + ' — speak or type, and the work starts.'
     }).catch(function () {});
   }
 

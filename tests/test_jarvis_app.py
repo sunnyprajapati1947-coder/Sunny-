@@ -143,7 +143,7 @@ class ModelTests(Base):
         self.assertEqual(len(rows), len(CATALOG))
         default = [row for row in rows if row["recommended"]]
         self.assertEqual(len(default), 1)
-        self.assertEqual(default[0]["id"], "qwen3-4b-instruct-q4")
+        self.assertEqual(default[0]["id"], "qwen3.5-4b-q4")
         self.assertLessEqual(default[0]["size"], 3 * 2**30)
         self.assertIn("Q4", default[0]["quant"])
         for row in rows:
@@ -195,7 +195,7 @@ class ModelTests(Base):
         os.environ.pop("NOVA_LLAMA_SERVER", None)
         with mock.patch("jarvis.models.find_llama_server", return_value=""):
             with self.assertRaises(ModelError) as caught:
-                self.models.start("qwen3-4b-instruct-q4")
+                self.models.start("qwen3.5-4b-q4")
         self.assertIn("llama-server not found", str(caught.exception))
         self.assertNotIn("Traceback", str(caught.exception))
 
@@ -218,7 +218,7 @@ class ModelTests(Base):
             "ThreadingHTTPServer(('127.0.0.1', port), H).serve_forever()\n"
         )
         script.chmod(0o755)
-        model_path = self.models.path_of("qwen3-1.7b-q4")
+        model_path = self.models.path_of("qwen3.5-4b-light")
         model_path.parent.mkdir(parents=True, exist_ok=True)
         model_path.write_bytes(b"GGUF fake weights")
         port = free_port()
@@ -227,13 +227,13 @@ class ModelTests(Base):
         with mock.patch.dict(os.environ, {"JARVIS_LLAMA_SERVER": str(script)}):
             result = self.models.start(port=port, threads=1)
             self.assertTrue(result["ok"])
-            self.assertEqual(result["model"], "qwen3-1.7b-q4")
+            self.assertEqual(result["model"], "qwen3.5-4b-light")
             self.assertEqual(result["port"], port)
             self.assertTrue(self.models.running()["alive"])
             self.assertTrue(self.models.running()["healthy"])
             reloaded = config_module.load(self.home)
             self.assertEqual(reloaded.provider_mode, "local")
-            self.assertEqual(reloaded.fast_model, "qwen3-1.7b-q4")
+            self.assertEqual(reloaded.fast_model, "qwen3.5-4b-light")
             self.assertTrue(reloaded.fast_url.endswith(f":{port}/v1"))
             stop = self.models.stop()
             self.assertTrue(stop["stopped"])

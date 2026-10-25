@@ -1,9 +1,9 @@
 """Local brain management: download a GGUF, run llama.cpp, switch JARVIS over.
 
 Why this exists
-    A 4B model makes JARVIS work with no API key and no internet. Qwen3-4B-
-    Instruct-2507 Q4_K_M is ~2.5 GB on disk (default here) and needs ~4 GB of
-    RAM while running, comfortably inside the 10 GB budget.
+    A 4B model makes JARVIS work with no API key and no internet. Qwen3.5-4B
+    Q4_K_M (the latest Qwen generation) is ~2.74 GB on disk (default here) and
+    needs ~4.5 GB of RAM while running, comfortably inside the 10 GB budget.
 
 What it does
     list       known models with sizes, RAM needs and install state
@@ -42,44 +42,44 @@ class ModelError(RuntimeError):
 
 
 CATALOG = {
-    "qwen3-4b-instruct-q4": {
-        "label": "Qwen3 4B Instruct 2507 · Q4_K_M",
-        "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
-        "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
-        "size": 2_497_280_480,
-        "size_text": "2.5 GB",
-        "ram_gb": 4.0,
-        "quant": "Q4_K_M",
-        "context": 262144,
-        "license": "Apache-2.0",
-        "recommended": True,
-        "note": "Default brain. ChatML, non-thinking, good tool use.",
-    },
-    "qwen3-4b-q4": {
-        "label": "Qwen3 4B (thinking) · Q4_K_M",
-        "repo": "Qwen/Qwen3-4B-GGUF",
-        "file": "Qwen3-4B-Q4_K_M.gguf",
-        "size": 2_497_280_480,
-        "size_text": "2.5 GB",
+    "qwen3.5-4b-q4": {
+        "label": "Qwen3.5 4B \u00b7 Q4_K_M",
+        "repo": "unsloth/Qwen3.5-4B-GGUF",
+        "file": "Qwen3.5-4B-Q4_K_M.gguf",
+        "size": 2_740_937_888,
+        "size_text": "2.74 GB",
         "ram_gb": 4.5,
-        "quant": "Q4_K_M",
-        "context": 40960,
-        "license": "Apache-2.0",
-        "recommended": False,
-        "note": "Thinks before answering; slower on a phone.",
-    },
-    "qwen3-1.7b-q4": {
-        "label": "Qwen3 1.7B · Q4_K_M (light)",
-        "repo": "Qwen/Qwen3-1.7B-GGUF",
-        "file": "Qwen3-1.7B-Q4_K_M.gguf",
-        "size": 0,                       # verified from the response, not hard-coded
-        "size_text": "≈1.1 GB",
-        "ram_gb": 2.2,
         "quant": "Q4_K_M",
         "context": 32768,
         "license": "Apache-2.0",
+        "recommended": True,
+        "note": "Default brain. Latest Qwen family (Qwen3.5), good tool use.",
+    },
+    "qwen3.5-4b-light": {
+        "label": "Qwen3.5 4B \u00b7 UD-IQ2_XXS (light)",
+        "repo": "unsloth/Qwen3.5-4B-GGUF",
+        "file": "Qwen3.5-4B-UD-IQ2_XXS.gguf",
+        "size": 1_520_217_248,
+        "size_text": "1.52 GB",
+        "ram_gb": 2.5,
+        "quant": "UD-IQ2_XXS",
+        "context": 32768,
+        "license": "Apache-2.0",
         "recommended": False,
-        "note": "For 4 GB RAM phones; smaller brain, faster replies.",
+        "note": "Lowest RAM. Weaker reasoning, best for small phones.",
+    },
+    "qwen3.5-4b-q8": {
+        "label": "Qwen3.5 4B \u00b7 Q8_0 (max quality)",
+        "repo": "unsloth/Qwen3.5-4B-GGUF",
+        "file": "Qwen3.5-4B-Q8_0.gguf",
+        "size": 4_482_403_488,
+        "size_text": "4.48 GB",
+        "ram_gb": 6.5,
+        "quant": "Q8_0",
+        "context": 32768,
+        "license": "Apache-2.0",
+        "recommended": False,
+        "note": "Best answers, needs an 8 GB+ phone.",
     },
 }
 
@@ -375,7 +375,7 @@ class ModelManager:
         for model_id in CATALOG:
             if self.installed(model_id)["installed"]:
                 return model_id
-        raise ModelError("no model downloaded yet: run `model download qwen3-4b-instruct-q4`")
+        raise ModelError("no model downloaded yet: run `model download qwen3.5-4b-q4`")
 
     def _activate(self, model_id: str, port: int) -> None:
         from . import config as config_module
@@ -474,11 +474,11 @@ def cli(settings, args) -> int:
             flag = " ← recommended" if row["recommended"] else ""
             print(f"{row['id']:<24} {row['size_text']:>9}  RAM≈{row['ram_gb']} GB  [{mark}]{flag}")
             print(f"  {row['label']} · {row['quant']} · {row['repo']}")
-        print("\nrun: python3 run_jarvis.py model download qwen3-4b-instruct-q4")
+        print("\nrun: python3 run_jarvis.py model download qwen3.5-4b-q4")
         return 0
 
     if action == "download":
-        model_id = args.model_id or "qwen3-4b-instruct-q4"
+        model_id = args.model_id or "qwen3.5-4b-q4"
         last = {"percent": -10}
 
         def progress(state):
