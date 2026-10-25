@@ -1,0 +1,24 @@
+name: Spdyi checks
+on:
+  push:
+    paths: ['spdyi/**', '.github/workflows/spdyi.yml']
+  pull_request:
+    paths: ['spdyi/**', '.github/workflows/spdyi.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spdyi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: spdyi/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

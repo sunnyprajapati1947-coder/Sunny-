@@ -1,0 +1,7 @@
+{
+  "appId": "com.spdyi.lab",
+  "appName": "Spdyi",
+  "webDir": "dist",
+  "android": { "allowMixedContent": false, "backgroundColor": "#0b0c10" },
+  "server": { "androidScheme": "https" }
+}

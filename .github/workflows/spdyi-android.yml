@@ -1,0 +1,42 @@
+name: Spdyi Android APK
+on:
+  push:
+    branches: ['arena/a2d03b08-sunny']
+    paths: ['spdyi/**', '.github/workflows/spdyi-android.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: spdyi/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: Install SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Web tests and production bundle
+        working-directory: spdyi
+        run: npm ci && npm test && npm run android:sync
+      - name: Assemble and lint Android app
+        working-directory: spdyi/android
+        run: chmod +x gradlew && ./gradlew :app:assembleDebug :app:lintDebug --no-daemon
+      - name: Name APK and record hash
+        run: |
+          mkdir -p apk
+          cp spdyi/android/app/build/outputs/apk/debug/app-debug.apk apk/Spdyi-Pro-debug.apk
+          cd apk && sha256sum Spdyi-Pro-debug.apk > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spdyi-Pro-Android-debug
+          path: apk/
+          retention-days: 14
