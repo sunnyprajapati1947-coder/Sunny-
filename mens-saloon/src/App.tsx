@@ -90,7 +90,7 @@ const T = {
     formH3: 'Book an Appointment', fName: '{t.fName}', fPhone: '{t.fPhone}', fService: '{t.fService}',
     fDate: '{t.fDate}', fTime: '{t.fTime}', fNotes: '{t.fNotes}',
     fSubmit: '{t.fSubmit}',
-    fNote: 'No advance payment. Pay at the saloon after your service. Your details open directly in WhatsApp — nothing is stored on a server.',
+    fNote: 'No advance payment. Pay at the saloon after your service. Your booking is saved in our secure cloud record (see it anytime in “My Bookings” below) and opened in WhatsApp for confirmation.',
     faqChapter: 'Good Questions', faqH2: 'Before you visit',
     visitChapter: 'Chapter 05 — Visit Us',
     vAddress: 'Address', vPhone: 'Phone / WhatsApp', vHours: 'Hours', vBarber: 'Barber',
