@@ -33,7 +33,7 @@ export function mountTouch(root,{signal,onSave,toast}) {
  const canvas=root.querySelector('canvas'),ctx=canvas.getContext('2d');
  const observer=new ResizeObserver(()=>{const r=canvas.getBoundingClientRect();canvas.width=Math.round(r.width*devicePixelRatio);canvas.height=Math.round(r.height*devicePixelRatio);ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);});observer.observe(canvas);
  function point(e){const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top,width:r.width,height:r.height,t:e.timeStamp};}
- function mark(p){const index=Math.min(8,Math.max(0,Math.floor(p.y/p.height*3)*3+Math.floor(p.x/p.width*3)));cells.add(index);root.querySelector(`[data-cell="${index}"]`).classList.add('visited');}
+ function mark(p){if(p.x<0||p.y<0||p.x>=p.width||p.y>=p.height)return;const index=Math.min(8,Math.max(0,Math.floor(p.y/p.height*3)*3+Math.floor(p.x/p.width*3)));cells.add(index);root.querySelector(`[data-cell="${index}"]`).classList.add('visited');}
  function draw(){const r=canvas.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);for(const a of active.values()){ctx.strokeStyle='#f34866';ctx.lineWidth=3;ctx.beginPath();a.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();const p=a.points.at(-1);ctx.beginPath();ctx.arc(p.x,p.y,17,0,Math.PI*2);ctx.fillStyle='#f3486644';ctx.fill();ctx.stroke();}}
  function update(){root.querySelector('#swipe-count').textContent=`${swipes.length} / 5`;root.querySelector('#touch-active').textContent=active.size;root.querySelector('#touch-max').textContent=maxPointers;
   const report=summarizeSwipes(swipes,maxPointers,[...cells]);const mouse=swipes.some(s=>s.pointerType==='mouse');

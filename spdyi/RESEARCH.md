@@ -52,3 +52,8 @@ Train with a stable frame rate, consistent weapon/attachments/distance and repea
 - No guaranteed headshots, “perfect sensitivity”, ban-proof promises, FPS improvements, recoil scripts or auto-aim.
 - No exhaustive verified settings for every model. Device names come from a separate catalog with its own provenance in `CATALOG.md`.
 - Sources are reviewed references, not proof that every section of a community article is correct. Re-review after game changes and use the actual in-game scale and menu labels.
+
+
+## Pro 2.0 extension
+
+The community tables above remain starting references, **not evidence for the new personalization heuristics**. Engine v3 can instead anchor to six user-entered current values and propose one bounded 3/5-point trial based on reported gameplay and swipe consistency. Diagnostics provide contextual facts, not a model/Hz/DPI-to-game-response formula. Full definitions, the editorial CV threshold, evidence-completeness labels, reference-project review and Android/browser limitations are documented in [PRO.md](PRO.md). No claims of physical-device benchmarking or measured in-game accuracy have been added.

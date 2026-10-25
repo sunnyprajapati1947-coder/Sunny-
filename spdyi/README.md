@@ -1,6 +1,6 @@
-# Spdyi — Sensitivity Lab
+# Spdyi Pro — Sensitivity & Device Lab
 
-Standalone mobile-first Free Fire MAX companion PWA. The original Python project at the repository root is unchanged.
+Mobile-first Free Fire MAX companion with a PWA and a packaged Capacitor Android project. The original Python project at the repository root is unchanged.
 
 ## Run
 
@@ -22,13 +22,23 @@ Deploy `spdyi/dist` to a static HTTPS host, with `spdyi` as the project root, `n
 
 ## Install as an app
 
-The manifest, PNG icons and production-only service worker support home-screen installation and offline revisits after the first full load. Use Chrome's Install app menu on Android or Safari's Share → Add to Home Screen on iOS. HTTPS and a supported browser are required. PWA installation is not a native APK; a Play Store package would require a separate signing/packaging process.
+The manifest, PNG icons and production-only service worker support home-screen installation and offline revisits after the first full load. Use Chrome's Install app menu on Android or Safari's Share → Add to Home Screen on iOS. HTTPS and a supported browser are required. PWA installation is separate from the native Android project. See [PRO.md](PRO.md) for the APK build, read-only Android diagnostics, platform limitations and the distinction between testing builds and production releases.
+
+## Pro modules
+
+Read-only device scanner, cancellable app frame-pacing trial, multitouch/9-zone canvas, swipe consistency report, gameplay feedback, optional current settings, evidence labels, old/new charts, JSON export and a local ten-profile vault. Unknown hardware information is visibly unavailable, never replaced by a fake scan. All sensitivity values stay within 0–200.
+
+```sh
+npm run android:build  # needs JDK 21 / Android SDK 35
+```
+
+The Android workflow uploads a debug-signed APK for testing, not a Play Store production release. Full native metrics require the Android build; the browser preview deliberately exposes less. Read the architecture, references, privacy and calibration rules in [PRO.md](PRO.md).
 
 ## Catalog and research
 
 - **11,662 device names across 56 brands**, searchable by name/model code, plus manual brand/model entry for any missing phone. No claim of exhaustive coverage or game compatibility.
 - Names/codes are bundled offline, sourced from a pinned Apache-2.0 community mapping and Apple's model-name reference. See [CATALOG.md](CATALOG.md) for attribution, normalization and reproducible import.
-- Both sensitivity profiles use cited community 0–200 touch ranges with visible ranges and midpoint starting values. These are not official presets or measured per-phone benchmarks. See [RESEARCH.md](RESEARCH.md) for the source review, limitations, conflicting HUD advice and exact methodology.
+- Without user settings/feedback, both profiles use cited community 0–200 touch ranges and midpoint starting values. Feedback trials can move outside those starting ranges but remain within 0–200. These are not official presets or measured per-phone benchmarks. See [RESEARCH.md](RESEARCH.md) for the source review, limitations, conflicting HUD advice and exact methodology.
 - Fire-button size, grip-specific range, placement sketch, ±2 size trials, and per-slider ±5 training adjustments. Copy/save includes final size and values. Adjustments never control the game.
 - No RAM/Hz-to-perfect-sensitivity formula. Optional specs are user-entered reference information, not invented device specifications. No universal DPI recommendation; default display settings are recommended.
 - Result screen and footer link to sources with review date, separating official game information from community suggestions.
@@ -47,6 +57,7 @@ npx playwright install chromium
 npm run preview -- --port 5173
 # In a second terminal:
 npm run test:browser
+npm run test:browser:pro
 ```
 
 `TEST_BASE_URL` overrides the preview origin, `BROWSER_EXECUTABLE_PATH` uses an existing Chromium binary, and `SCREENSHOT_DIR` optionally writes desktop/mobile screenshots outside source control. The browser checks exercise catalog/model-code search, manual entry, both profiles, fire-size edits, individual sensitivity tuning, clipboard/source links, save/reload, iPhone DPI guard, canceled analysis animations, mobile overflow and offline PWA generation.
