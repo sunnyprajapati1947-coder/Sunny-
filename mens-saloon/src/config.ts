@@ -160,6 +160,14 @@ export const FAQS = [
     q: 'Can I show a hairstyle photo?',
     a: 'Yes — that is the best way. Bring a photo or send it on WhatsApp before your visit, and Nitish will match the style to your hair type and face shape.',
   },
+  {
+    q: 'Which saloon is best near me in Sudama Nagar, Nawada?',
+    a: "Men's Saloon is Sudama Nagar's own premium gents saloon — haircut sirf ₹50, haircut + shaving ₹100, master barber Nitish Jatav (10 years experience), open daily 7:00 AM to 8:30 PM. Agar aap 'saloon near me' ya 'Nawada saloon' dhoondh rahe hain, to WhatsApp par kursi book karke seedha aa jaiye — no waiting.",
+  },
+  {
+    q: 'Sudama Nagar me haircut kitne ka hai?',
+    a: "Men's Saloon, Sudama Nagar (Nawada) me haircut sirf ₹50 ka hai. Clean shaving ₹50, aur haircut + shaving dono saath me sirf ₹100 — imandaar bajar bhav, kaam shuru hone se pehle pakka karke.",
+  },
 ] as const
 
 export function whatsappLink(message: string): string {
@@ -197,6 +205,8 @@ export const FAQ_HI: { q: string; a: string }[] = [
   { q: 'WhatsApp पर बुकिंग कैसे करें?', a: 'इस पेज का बुकिंग फ़ॉर्म भरो (या कोई भी WhatsApp बटन दबाओ), बना-बनाया मैसेज चेक करके Send दबा दो। हम WhatsApp पर जवाब देकर आपका समय पक्का कर देंगे।' },
   { q: 'दुकान ठीक कहाँ है?', a: 'हम Sudama Nagar, Nawada (Bihar) में हैं। Visit सेक्शन में "Get Directions" दबाओ — Google Maps खुल जाएगा, या +91 90313 68918 पर कॉल करो, हम रास्ता बता देंगे।' },
   { q: 'क्या हेयरस्टाइल की फ़ोटो दिखा सकते हैं?', a: 'बिल्कुल — यही सबसे अच्छा तरीक़ा है। फ़ोटो लेकर आओ या पहले WhatsApp पर भेज दो, नितीश आपके बाल और चेहरे के हिसाब से वैसा ही स्टाइल बना देगा।' },
+  { q: 'Sudama Nagar, नवादा में मेरे पास सबसे अच्छा सैलून कौन सा है?', a: 'Men’s Saloon सुधामा नगर का अपना प्रीमियम जेंट्स सैलून है — हेयरकट सिर्फ़ ₹50, हेयरकट + शेविंग ₹100, मास्टर बार्बर नितीश जाटव (10 साल अनुभव), रोज़ सुबह 7 बजे से रात 8:30 तक खुला। WhatsApp पर कुर्सी बुक करके आओ — इंतज़ार नहीं करना पड़ेगा।' },
+  { q: 'Sudama Nagar me haircut kitne ka hai?', a: 'Men’s Saloon, Sudama Nagar (नवादा) में हेयरकट सिर्फ़ ₹50 का है। क्लीन शेविंग ₹50, और हेयरकट + शेविंग दोनों साथ में सिर्फ़ ₹100 — ईमानदार बाज़ार भाव।' },
 ]
 
 export const STYLE_HINT_HI: Record<string, string> = {

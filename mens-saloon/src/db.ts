@@ -105,3 +105,55 @@ export function setBookingStatus(pin: string, id: string, status: BookingStatus)
 export function changeAdminPin(oldPin: string, newPin: string): Promise<boolean> {
   return rpc<boolean>('admin_change_pin', { p_old: oldPin, p_new: newPin })
 }
+
+/* ---------- Live site config (services + settings) ----------
+   Owner Shop Panel se jo badlega (price, service, notice),
+   wahi website + installed app me turant dikhega — bina
+   website dobara banaye. Public sirf padh sakta hai;
+   badlav sirf sahi Admin PIN wale RPC se hota hai. */
+
+export type DbService = {
+  id: string
+  name: string
+  desc_en: string
+  desc_hi: string
+  price: number
+  price_note: string | null
+  duration: string
+  tag: string | null
+  sort: number
+  active: boolean
+}
+
+export type SiteSettings = {
+  announcement: string
+  closed_today: boolean
+  closed_message: string
+  season_auto: boolean
+}
+
+async function getJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${SUPABASE_URL}${path}`, { headers: headers() })
+  return parse<T>(res)
+}
+
+/** Database wali live price-list (khali/fail ho to site config.ts wali default chalegi). */
+export function fetchSiteServices(): Promise<DbService[]> {
+  return getJson<DbService[]>('/rest/v1/site_services?select=*&order=sort.asc')
+}
+
+/** Owner notice / aaj-band / season setting. */
+export async function fetchSiteSettings(): Promise<SiteSettings | null> {
+  const rows = await getJson<{ data: SiteSettings }[]>('/rest/v1/site_settings?select=data&id=eq.1')
+  return rows[0]?.data ?? null
+}
+
+/** Shop Panel: poori price-list save karo (sirf sahi PIN). */
+export function adminSaveServices(pin: string, items: DbService[]): Promise<boolean> {
+  return rpc<boolean>('admin_save_services', { p_pin: pin, p_items: items })
+}
+
+/** Shop Panel: notice / aaj-band / season setting save karo (sirf sahi PIN). */
+export function adminSaveSettings(pin: string, data: SiteSettings): Promise<boolean> {
+  return rpc<boolean>('admin_save_settings', { p_pin: pin, p_data: data })
+}

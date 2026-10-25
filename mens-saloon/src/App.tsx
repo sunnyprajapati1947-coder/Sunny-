@@ -15,6 +15,7 @@ import {
   SERVICE_DESC_HI,
   FAQ_HI,
   STYLE_HINT_HI,
+  type Service,
 } from './config'
 import {
   saveBooking,
@@ -22,9 +23,16 @@ import {
   fetchAdminBookings,
   setBookingStatus,
   changeAdminPin,
+  fetchSiteServices,
+  fetchSiteSettings,
+  adminSaveServices,
+  adminSaveSettings,
   type DbBooking,
   type BookingStatus,
+  type DbService,
+  type SiteSettings,
 } from './db'
+import { getSeason } from './season'
 
 /* ---------- small helpers ---------- */
 
@@ -55,6 +63,9 @@ type Booking = {
   time: string
   notes: string
 }
+
+/** Service jo screen par dikhegi — database se live, warna config.ts default. */
+type LiveService = Service & { descHi?: string }
 
 
 /* ---------- English / हिंदी toggle (copied from the earlier salon site) ---------- */
@@ -198,6 +209,27 @@ const HT = {
     changePinBtn: 'Set New PIN',
     pinChanged: '✓ PIN changed. Next time use the new PIN.',
     pinTooShort: 'PIN must be at least 4 characters.',
+    bookAgain: '↩ Book Again',
+    closedTodayTxt: '● Closed Today',
+    confirmMsgL: '✉ Send Confirm',
+    copyToday: "📋 Copy Today's List",
+    copied: '✓ List copied! WhatsApp par paste karke bhej do.',
+    svcEditTitle: '✏️ Prices & Services — Live Edit',
+    svcEditSub: 'Yahan jo badloge wahi website aur installed app par turant live dikhega. OFF wali service site par nahi dikhegi.',
+    svcOn: 'ON',
+    svcAdd: '＋ Add Service',
+    svcSave: '💾 Save & Live Karo',
+    svcSaved: '✓ Price-list live ho gayi!',
+    svcNamePh: 'Service name', svcPricePh: '₹ Price', svcDurPh: '~30 min',
+    setTitle: '📢 Shop Notice & Settings',
+    annLabel: 'Top notice line (khali chhodo = purani line)',
+    annPh: 'e.g. Aaj shaam 6 baje ke baad hi booking milegi',
+    closedLabel: 'Aaj dukaan BAND hai (site par band dikhega)',
+    closedMsgLabel: 'Band ka message',
+    closedMsgPh: 'e.g. ● Aaj Chhath ki chhutti — kal subah 7 baje khulega',
+    seasonLabel: 'Season theme auto (Diwali / Holi / Shaadi rang apne-aap)',
+    setSave: '💾 Settings Save Karo',
+    setSaved: '✓ Settings live ho gayi!',
     dbSaved: '✓ Saved in the shop cloud record — see it anytime in “My Bookings” below.',
     dbFailed: '(Network was slow — your booking still went on WhatsApp. Cloud copy will save with your next booking.)',
   },
@@ -234,6 +266,27 @@ const HT = {
     changePinBtn: 'नया PIN सेट करो',
     pinChanged: '✓ PIN बदल गया। अगली बार नया PIN डालना।',
     pinTooShort: 'PIN कम से कम 4 अक्षरों का होना चाहिए।',
+    bookAgain: '↩ फिर से बुक करो',
+    closedTodayTxt: '● आज बंद है',
+    confirmMsgL: '✉ कन्फ़र्म भेजो',
+    copyToday: '📋 आज की लिस्ट कॉपी',
+    copied: '✓ लिस्ट कॉपी हो गई! WhatsApp पर पेस्ट करके भेज दो।',
+    svcEditTitle: '✏️ दाम व सर्विस — लाइव एडिट',
+    svcEditSub: 'यहाँ जो बदलोगे वही वेबसाइट और ऐप पर तुरंत दिखेगा। OFF वाली सर्विस साइट पर नहीं दिखेगी।',
+    svcOn: 'ON',
+    svcAdd: '＋ नई सर्विस जोड़ो',
+    svcSave: '💾 सेव करके लाइव करो',
+    svcSaved: '✓ प्राइस-लिस्ट लाइव हो गई!',
+    svcNamePh: 'सर्विस का नाम', svcPricePh: '₹ दाम', svcDurPh: '~30 min',
+    setTitle: '📢 दुकान नोटिस व सेटिंग',
+    annLabel: 'ऊपर वाली नोटिस लाइन (खाली = पुरानी लाइन)',
+    annPh: 'जैसे: आज शाम 6 बजे के बाद ही बुकिंग मिलेगी',
+    closedLabel: 'आज दुकान बंद है (साइट पर बंद दिखेगा)',
+    closedMsgLabel: 'बंद का मैसेज',
+    closedMsgPh: 'जैसे: ● आज छठ की छुट्टी — कल सुबह 7 बजे खुलेगा',
+    seasonLabel: 'सीज़न थीम ऑटो (दिवाली/होली/शादी रंग अपने-आप)',
+    setSave: '💾 सेटिंग सेव करो',
+    setSaved: '✓ सेटिंग लाइव हो गई!',
     dbSaved: '✓ दुकान के क्लाउड रिकॉर्ड में सेव हो गया — “मेरी बुकिंग्स” में कभी भी दिखेगा।',
     dbFailed: '(नेटवर्क धीमा था — आपकी बुकिंग WhatsApp पर चली गई है। क्लाउड कॉपी अगली बुकिंग पर सेव होगी।)',
   },
@@ -269,11 +322,46 @@ export default function App() {
     return { style: 'Textured Crop', serviceId: 'signature-haircut', en: 'Short, modern and easy — fresh everyday style in 30 minutes.', hi: 'छोटा, मॉडर्न और आसान — 30 मिनट में रोज़ का फ्रेश स्टाइल।' }
   })()
   const [menuOpen, setMenuOpen] = useState(false)
+  /* ---- Live config (cloud DB): owner ke badlav turant website + app par ---- */
+  const [dbServices, setDbServices] = useState<DbService[] | null>(null)
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({ announcement: '', closed_today: false, closed_message: '', season_auto: true })
+  const season = useMemo(() => getSeason(), [])
+  useEffect(() => {
+    fetchSiteServices().then((rows) => { if (rows.length) setDbServices(rows) }).catch(() => { /* config.ts defaults chalenge */ })
+    fetchSiteSettings().then((st) => { if (st) setSiteSettings(st) }).catch(() => { /* defaults */ })
+  }, [])
+  useEffect(() => {
+    if (!siteSettings.season_auto) return
+    const r = document.documentElement.style
+    r.setProperty('--gold', season.vars.gold)
+    r.setProperty('--gold-2', season.vars.gold2)
+    r.setProperty('--season-accent', season.vars.accent)
+  }, [season, siteSettings.season_auto])
+  const services: LiveService[] = useMemo(() => {
+    if (!dbServices) return SERVICES
+    const active = dbServices.filter((r) => r.active)
+    if (!active.length) return SERVICES
+    return active.map((r) => {
+      const base = SERVICES.find((x) => x.id === r.id)
+      return {
+        id: r.id,
+        name: r.name,
+        desc: r.desc_en || base?.desc || '',
+        descHi: r.desc_hi || SERVICE_DESC_HI[r.id] || '',
+        price: r.price,
+        priceNote: r.price_note ?? undefined,
+        duration: r.duration || base?.duration || '',
+        tag: r.tag ?? undefined,
+      }
+    })
+  }, [dbServices])
+
   const [openNow, setOpenNow] = useState(() => isOpenNow())
   useEffect(() => {
     const t = setInterval(() => setOpenNow(isOpenNow()), 60_000)
     return () => clearInterval(t)
   }, [])
+  const shopOpen = openNow && !siteSettings.closed_today
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [booking, setBooking] = useState<Booking>({
     name: '',
@@ -285,6 +373,7 @@ export default function App() {
   })
   const [errors, setErrors] = useState<Partial<Record<keyof Booking, string>>>({})
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const ht = HT[lang]
   const [dbState, setDbState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle')
   const [histPhone, setHistPhone] = useState('')
@@ -299,12 +388,49 @@ export default function App() {
   const [adminBusy, setAdminBusy] = useState(false)
   const [adminMsg, setAdminMsg] = useState('')
   const [newPin, setNewPin] = useState('')
+  const [svcDraft, setSvcDraft] = useState<DbService[] | null>(null)
+  const [setDraft, setSetDraft] = useState<SiteSettings | null>(null)
+  const updSvc = (i: number, patch: Partial<DbService>) =>
+    setSvcDraft((ds) => ds?.map((d, j) => (j === i ? { ...d, ...patch } : d)) ?? ds)
+  const saveSvcDraft = async () => {
+    if (!svcDraft) return
+    setAdminBusy(true)
+    try {
+      const ok = await adminSaveServices(adminPin, svcDraft)
+      if (ok) { setAdminMsg(ht.svcSaved); fetchSiteServices().then(setDbServices).catch(() => { /* ignore */ }) }
+      else setAdminMsg(ht.errNet)
+    } catch { setAdminMsg(ht.errNet) }
+    setAdminBusy(false)
+  }
+  const saveSetDraft = async () => {
+    if (!setDraft) return
+    setAdminBusy(true)
+    try {
+      const ok = await adminSaveSettings(adminPin, setDraft)
+      if (ok) { setSiteSettings(setDraft); setAdminMsg(ht.setSaved) } else setAdminMsg(ht.errNet)
+    } catch { setAdminMsg(ht.errNet) }
+    setAdminBusy(false)
+  }
+  const copyTodayList = async () => {
+    if (!adminRows) return
+    const todays = adminRows.filter((r) => r.appt_date === todayIST() && r.status !== 'cancelled')
+    const txt = [
+      `*Men's Saloon — Aaj ki Bookings (${fmtDate(todayIST())})*`, '',
+      ...todays.map((r, i) => `${i + 1}. ${r.appt_time ?? ''} — ${r.name} · ${r.service}${r.price ? ` (${inr(r.price)})` : ''} · ${r.phone}`),
+      ...(todays.length ? [] : ['Aaj koi booking nahi hai.']),
+    ].join('\n')
+    try { await navigator.clipboard.writeText(txt); setAdminMsg(ht.copied) } catch { setAdminMsg(ht.errNet) }
+  }
 
   /* Prefill history search with the last number booked on this device. */
   useEffect(() => {
     try {
       const prev = JSON.parse(localStorage.getItem('mens-saloon-bookings') ?? '[]') as Booking[]
-      if (prev.length) setHistPhone(prev[prev.length - 1].phone)
+      if (prev.length) {
+        const last = prev[prev.length - 1]
+        setHistPhone(last.phone)
+        setBooking((b) => ({ ...b, name: b.name || last.name, phone: b.phone || last.phone }))
+      }
     } catch { /* ignore */ }
   }, [])
 
@@ -313,6 +439,8 @@ export default function App() {
     try {
       const rows = await fetchAdminBookings(pin)
       setAdminRows(rows); setAdminPin(pin)
+      fetchSiteServices().then((svc) => setSvcDraft(svc.map((r) => ({ ...r, desc_hi: r.desc_hi || SERVICE_DESC_HI[r.id] || '' })))).catch(() => { /* ignore */ })
+      fetchSiteSettings().then((st) => { if (st) { setSetDraft(st); setSiteSettings(st) } }).catch(() => { /* ignore */ })
       try { sessionStorage.setItem('mens-saloon-admin-pin', pin) } catch { /* ignore */ }
     } catch { setAdminMsg(ht.errNet) }
     setAdminBusy(false)
@@ -363,8 +491,8 @@ export default function App() {
   const formRef = useRef<HTMLFormElement>(null)
 
   const selectedService = useMemo(
-    () => SERVICES.find((s) => s.id === booking.serviceId) ?? SERVICES[0],
-    [booking.serviceId],
+    () => services.find((s) => s.id === booking.serviceId) ?? SERVICES.find((s) => s.id === booking.serviceId) ?? SERVICES[0],
+    [booking.serviceId, services],
   )
 
   const quickBook = (message: string) => whatsappLink(message)
@@ -404,6 +532,9 @@ export default function App() {
       formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
       return
     }
+    if (submitting) return
+    setSubmitting(true)
+    window.setTimeout(() => setSubmitting(false), 4000)
     const niceDate = new Date(booking.date + 'T00:00:00').toLocaleDateString('en-IN', {
       weekday: 'long',
       day: 'numeric',
@@ -456,8 +587,15 @@ export default function App() {
     <div className="site" lang={lang}>
       <div className="announcement">
         <span className="announce-dot" aria-hidden="true" />
-        <p>{t.announce}</p>
+        <p>{siteSettings.announcement || t.announce}</p>
       </div>
+      {siteSettings.season_auto && (
+        <div className="season-strip" data-season={season.id}>
+          <span aria-hidden="true">{season.emoji}</span>
+          <p>{lang === 'hi' ? season.hi : season.en}</p>
+          <span aria-hidden="true">{season.emoji}</span>
+        </div>
+      )}
       {/* ===== top bar ===== */}
       <header className="topbar">
         <a className="brand" href="#top" onClick={(e) => { e.preventDefault(); scrollToId('top') }}>
@@ -565,7 +703,7 @@ export default function App() {
               fetchPriority="high"
             />
             <figcaption className="hero-chip">
-              <strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? t.openNow : t.closedNow}</strong>
+              <strong className={shopOpen ? 'open-now' : 'closed-now'}>{siteSettings.closed_today ? (siteSettings.closed_message || ht.closedTodayTxt) : openNow ? t.openNow : t.closedNow}</strong>
               <span>{BUSINESS.tagline}</span>
               <span>{BUSINESS.addressLine} · {BUSINESS.phoneDisplay}</span>
             </figcaption>
@@ -619,17 +757,17 @@ export default function App() {
           </header>
 
           <div className="service-grid">
-            {SERVICES.map((s, i) => (
+            {services.map((s, i) => (
               <article className="service-card reveal" key={s.id} style={{ transitionDelay: `${(i % 3) * 70}ms` }}>
                 {s.tag && <span className="tag">{s.tag}</span>}
                 <h3>{s.name}</h3>
-                <p>{lang === 'hi' ? (SERVICE_DESC_HI[s.id] ?? s.desc) : s.desc}</p>
+                <p>{lang === 'hi' ? (s.descHi || SERVICE_DESC_HI[s.id] || s.desc) : s.desc}</p>
                 <div className="service-meta">
                   <span className="price">{inr(s.price)}{s.priceNote ? <small> {s.priceNote}</small> : null}</span>
                   <span className="duration">◷ {s.duration}</span>
                 </div>
                 <button className="btn btn-card" onClick={() => chooseService(s.id)}>
-                  Book This →
+                  {t.bookThis}
                 </button>
               </article>
             ))}
@@ -757,8 +895,8 @@ export default function App() {
                 <strong>{finderResult.style}</strong>
                 <p>{lang === 'hi' ? finderResult.hi : finderResult.en}</p>
                 <p className="finder-price">
-                  {(SERVICES.find((x) => x.id === finderResult.serviceId)?.name)} · {inr(SERVICES.find((x) => x.id === finderResult.serviceId)?.price ?? 50)}
-                  {SERVICES.find((x) => x.id === finderResult.serviceId)?.priceNote ? ' onwards' : ''}
+                  {(services.find((x) => x.id === finderResult.serviceId)?.name)} · {inr(services.find((x) => x.id === finderResult.serviceId)?.price ?? 50)}
+                  {services.find((x) => x.id === finderResult.serviceId)?.priceNote ? ' onwards' : ''}
                 </p>
                 <div className="hero-ctas">
                   <button className="btn btn-red" onClick={() => chooseService(finderResult.serviceId)}>
@@ -869,7 +1007,7 @@ export default function App() {
                 value={booking.serviceId}
                 onChange={(e) => setBooking({ ...booking, serviceId: e.target.value })}
               >
-                {SERVICES.map((s) => (
+                {services.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} — {inr(s.price)}{s.priceNote ? ' ' + s.priceNote : ''} ({s.duration})
                   </option>
@@ -912,7 +1050,7 @@ export default function App() {
               />
             </label>
 
-            <button className="btn btn-wa btn-lg btn-block" type="submit">
+            <button className="btn btn-wa btn-lg btn-block" type="submit" disabled={submitting}>
               Confirm on WhatsApp →
             </button>
             <p className="form-note">
@@ -974,7 +1112,14 @@ export default function App() {
                         <span>{fmtDate(r.appt_date)} · {r.appt_time ?? '—'}{r.price ? ` · ${inr(r.price)}` : ''}</span>
                         {r.notes && <small>{r.notes}</small>}
                       </div>
-                      <span className={`st st-${r.status}`}>{statusLabel(r.status)}</span>
+                      <div className="row-side">
+                        <span className={`st st-${r.status}`}>{statusLabel(r.status)}</span>
+                        <button type="button" className="mini-btn" onClick={() => {
+                          const match = services.find((sv) => sv.name === r.service)
+                          setBooking((b) => ({ ...b, serviceId: match?.id ?? b.serviceId, name: r.name, phone: r.phone }))
+                          scrollToId('book')
+                        }}>{ht.bookAgain}</button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -1016,6 +1161,7 @@ export default function App() {
                     <button className="btn btn-ghost" onClick={() => void loadAdmin(adminPin)} disabled={adminBusy}>
                       {adminBusy ? '…' : ht.refresh}
                     </button>
+                    <button className="btn btn-ghost" onClick={() => void copyTodayList()}>{ht.copyToday}</button>
                     <button
                       className="btn btn-ghost"
                       onClick={() => {
@@ -1042,6 +1188,9 @@ export default function App() {
                               <span className="admin-contact">
                                 <a href={`tel:+91${last10}`}>☎ {ht.callL}</a>
                                 <a href={`https://wa.me/91${last10}`} target="_blank" rel="noreferrer">WhatsApp</a>
+                                {r.status !== 'cancelled' && (
+                                  <a href={`https://wa.me/91${last10}?text=${encodeURIComponent(`Namaste ${r.name} ji 🙏 Men's Saloon (Sudama Nagar, Nawada) se aapki booking CONFIRM hai ✅\n✂️ Service: ${r.service}\n📅 Date: ${fmtDate(r.appt_date)}\n⏰ Time: ${r.appt_time ?? ''}\nSamay par aa jaiye — aapki kursi ready rahegi. Dhanyavaad!`)}`} target="_blank" rel="noreferrer">{ht.confirmMsgL}</a>
+                                )}
                                 <span>{r.phone}</span>
                               </span>
                             </div>
@@ -1071,6 +1220,66 @@ export default function App() {
                     </label>
                     <button className="btn btn-ghost btn-block" type="submit">{ht.changePinBtn}</button>
                   </form>
+                  {/* --- live price/service editor --- */}
+                  {svcDraft && (
+                    <div className="svc-editor">
+                      <h4>{ht.svcEditTitle}</h4>
+                      <p className="hist-sub">{ht.svcEditSub}</p>
+                      {svcDraft.map((sv, idx) => (
+                        <div className="svc-row" key={`${sv.id}-${idx}`}>
+                          <input className="db-input svc-name" value={sv.name} placeholder={ht.svcNamePh} aria-label={ht.svcNamePh}
+                            onChange={(e) => updSvc(idx, { name: e.target.value })} />
+                          <input className="db-input svc-price" type="number" min={0} value={sv.price} placeholder={ht.svcPricePh} aria-label={ht.svcPricePh}
+                            onChange={(e) => updSvc(idx, { price: Math.max(0, Number(e.target.value) || 0) })} />
+                          <input className="db-input svc-dur" value={sv.duration} placeholder={ht.svcDurPh} aria-label={ht.svcDurPh}
+                            onChange={(e) => updSvc(idx, { duration: e.target.value })} />
+                          <label className="svc-active">
+                            <input type="checkbox" checked={sv.active}
+                              onChange={(e) => updSvc(idx, { active: e.target.checked })} /> {ht.svcOn}
+                          </label>
+                          <button type="button" className="mini-btn danger" aria-label="Delete service"
+                            onClick={() => setSvcDraft((ds) => ds?.filter((_, j) => j !== idx) ?? ds)}>✕</button>
+                        </div>
+                      ))}
+                      <div className="admin-actions">
+                        <button type="button" className="btn btn-ghost" onClick={() => setSvcDraft((ds) => [...(ds ?? []), {
+                          id: `svc-${Date.now()}`, name: 'New Service', desc_en: '', desc_hi: '',
+                          price: 100, price_note: null, duration: '~30 min', tag: null,
+                          sort: ((ds?.length ?? 0) + 1) * 10, active: true,
+                        }])}>{ht.svcAdd}</button>
+                        <button type="button" className="btn btn-red" disabled={adminBusy} onClick={() => void saveSvcDraft()}>{ht.svcSave}</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- shop notice & settings --- */}
+                  {setDraft && (
+                    <div className="svc-editor">
+                      <h4>{ht.setTitle}</h4>
+                      <div className="hist-form">
+                        <label>
+                          {ht.annLabel}
+                          <input className="db-input" value={setDraft.announcement} placeholder={ht.annPh}
+                            onChange={(e) => setSetDraft({ ...setDraft, announcement: e.target.value })} />
+                        </label>
+                        <label className="check-row">
+                          <input type="checkbox" checked={setDraft.closed_today}
+                            onChange={(e) => setSetDraft({ ...setDraft, closed_today: e.target.checked })} /> {ht.closedLabel}
+                        </label>
+                        <label>
+                          {ht.closedMsgLabel}
+                          <input className="db-input" value={setDraft.closed_message} placeholder={ht.closedMsgPh}
+                            onChange={(e) => setSetDraft({ ...setDraft, closed_message: e.target.value })} />
+                        </label>
+                        <label className="check-row">
+                          <input type="checkbox" checked={setDraft.season_auto}
+                            onChange={(e) => setSetDraft({ ...setDraft, season_auto: e.target.checked })} /> {ht.seasonLabel}
+                        </label>
+                        <button type="button" className="btn btn-red" disabled={adminBusy} onClick={() => void saveSetDraft()}>{ht.setSave}</button>
+                      </div>
+                    </div>
+                  )}
+
                 </>
               )}
               {adminMsg && <p className="hist-msg" role="status">{adminMsg}</p>}
@@ -1109,7 +1318,7 @@ export default function App() {
             <ul className="visit-list">
               <li><span>{t.vAddress}</span><strong>{BUSINESS.addressLine}</strong></li>
               <li><span>{t.vPhone}</span><a href={`tel:${BUSINESS.phoneE164}`}><strong>{BUSINESS.phoneDisplay}</strong></a></li>
-              <li><span>{t.vHours}</span><strong>{BUSINESS.hoursLabel}</strong><strong className={openNow ? 'open-now' : 'closed-now'}>{openNow ? t.vOpen : t.vClosed}</strong><small>{BUSINESS.hoursNote}</small></li>
+              <li><span>{t.vHours}</span><strong>{BUSINESS.hoursLabel}</strong><strong className={shopOpen ? 'open-now' : 'closed-now'}>{siteSettings.closed_today ? (siteSettings.closed_message || ht.closedTodayTxt) : openNow ? t.vOpen : t.vClosed}</strong><small>{BUSINESS.hoursNote}</small></li>
               <li><span>{t.vBarber}</span><strong>{BARBER.name} · {BARBER.experienceYears} yrs experience</strong></li>
             </ul>
             <div className="qr-card">
@@ -1139,6 +1348,23 @@ export default function App() {
           </figure>
         </section>
 
+
+
+        {/* ===== local areas — "saloon near me" / Sudama Nagar / Nawada searches ===== */}
+        <section className="section alt areas">
+          <header className="section-head reveal">
+            <p className="chapter">{lang === 'hi' ? 'आपके पास — सुधामा नगर, नवादा' : 'Near You — Sudama Nagar, Nawada'}</p>
+            <h2>{lang === 'hi' ? '“मेरे पास का सैलून” ढूँढ रहे हो?' : 'Searching “saloon near me” in Nawada?'}</h2>
+            <p>{lang === 'hi'
+              ? 'Men’s Saloon यहीं सुधामा नगर में है — नवादा का अपना प्रीमियम जेंट्स सैलून। हेयरकट सिर्फ़ ₹50, हेयरकट + शेविंग ₹100, रोज़ सुबह 7 बजे से रात 8:30 तक खुला। सुधामा नगर और नवादा के आस-पास के इलाकों से लोग यहीं आते हैं — WhatsApp पर कुर्सी बुक करो, बिना लाइन लगे सीधा स्टाइल में बैठो।'
+              : 'Men’s Saloon is right here in Sudama Nagar — Nawada ka apna premium gents saloon. Haircut sirf ₹50, Haircut + Shaving ₹100, open every day 7:00 AM to 8:30 PM. Sudama Nagar aur Nawada ke aas-paas ke ilaakon se log yahi aate hain — WhatsApp par kursi book karo aur bina line lage seedha style me baitho.'}</p>
+          </header>
+          <div className="area-chips reveal">
+            {['Sudama Nagar', 'Nawada', 'Haircut ₹50', 'Haircut + Shaving ₹100', 'Open Daily · 7 AM – 8:30 PM'].map((a) => (
+              <span key={a}>📍 {a}</span>
+            ))}
+          </div>
+        </section>
 
         {/* ===== reviews (copied: "A good name is built one visit at a time") ===== */}
         <section className="section reviews" id="reviews">

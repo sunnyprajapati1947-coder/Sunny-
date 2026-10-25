@@ -107,3 +107,20 @@ project to `sunnyprajapati1947-coder/Sunny-` with root directory
   site shows a live "Open Now / Closed" badge (Indian time).
 - Next growth step: follow `GOOGLE_BUSINESS_GUIDE.md` to appear in
   "salon near me" searches, and stick the QR poster on the shop board.
+
+## Live updates — bina redeploy (database se)
+
+Price-list, dukaan notice, "aaj band" aur season theme ab **Supabase database**
+se live aate hain (`src/db.ts` → tables `site_services`, `site_settings`).
+Owner website ke **Shop Panel** (Admin PIN) se jo badlega wahi website +
+installed PWA app par turant dikhega — code/deploy chhoone ki zaroorat nahi.
+Database na mile to `src/config.ts` wali default price-list apne-aap chalti hai,
+site kabhi khali nahi dikhegi.
+
+**Seasonal UI:** `src/season.ts` — Diwali/Chhath 🪔 (15 Oct–15 Nov),
+Shaadi season 💍, Holi 🎨, Summer ☀️, Monsoon 🌧️, New Year 🎉 ke hisaab se
+gold accent + banner apne-aap badalta hai. Shop Panel se band bhi ho sakta hai.
+
+**Search (SEO):** `index.html` me BarberShop + FAQ schema, `public/robots.txt`,
+`sitemap.xml`, IndexNow key file (`public/7f3a…c2e.txt`, Bing ke liye).
+Google par upar aane ka roadmap: `GOOGLE_BUSINESS_GUIDE.md` (Part 3).

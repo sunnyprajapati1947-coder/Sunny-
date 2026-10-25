@@ -95,3 +95,18 @@ grant execute on function public.my_bookings(text) to anon, authenticated;
 grant execute on function public.admin_bookings(text) to anon, authenticated;
 grant execute on function public.admin_set_status(text, uuid, text) to anon, authenticated;
 grant execute on function public.admin_change_pin(text, text) to anon, authenticated;
+
+-- ============================================================
+--  LIVE SITE CONFIG (auto-update system)
+--  site_services : price-list jo website/app par dikhti hai.
+--                  Public sirf padh sakta hai; badlav sirf
+--                  admin_save_services(pin, items) se.
+--  site_settings : {announcement, closed_today,
+--                   closed_message, season_auto} — owner
+--                  Shop Panel se badalta hai, site turant
+--                  update ho jati hai (bina redeploy).
+--  Poori SQL ke liye git history / Supabase dashboard dekho —
+--  tables: public.site_services, public.site_settings
+--  RPCs:   public.admin_save_services(text, jsonb),
+--          public.admin_save_settings(text, jsonb)
+-- ============================================================
