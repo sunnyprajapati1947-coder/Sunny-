@@ -9,7 +9,7 @@
 <meta name="color-scheme" content="dark light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="appleStatusBar">
 <meta name="apple-mobile-web-app-title" content="ECC Pocket">
 <meta name="format-detection" content="telephone=no">
 <meta property="og:title" content="ECC Pocket">
@@ -31,6 +31,10 @@
       document.documentElement.style.colorScheme = light ? 'light' : 'dark';
       var size = JSON.parse(localStorage.getItem('eccpocket.textSize') || '"m"');
       document.documentElement.dataset.textSize = /^(s|m|l|xl)$/.test(size) ? size : 'm';
+      var themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeMeta) themeMeta.setAttribute('content', light ? '#faf7f3' : '#0b0d10');
+      var statusBar = document.getElementById('appleStatusBar');
+      if (statusBar) statusBar.setAttribute('content', light ? 'default' : 'black-translucent');
     } catch (error) { /* localStorage may be blocked */ }
   })();
 </script>

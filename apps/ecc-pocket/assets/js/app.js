@@ -176,6 +176,8 @@
     document.documentElement.dataset.theme = effective;
     var meta = document.getElementById('themeColor');
     if (meta) meta.setAttribute('content', THEME_COLORS[effective]);
+    var statusBar = document.getElementById('appleStatusBar');
+    if (statusBar) statusBar.setAttribute('content', effective === 'light' ? 'default' : 'black-translucent');
     document.documentElement.style.colorScheme = effective;
     document.querySelectorAll('[data-theme-choice]').forEach(function (btn) {
       var active = btn.getAttribute('data-theme-choice') === value;
