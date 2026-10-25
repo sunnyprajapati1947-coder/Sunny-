@@ -67,7 +67,7 @@ const slotToMins = (slot: string) => {
 }
 const nowMinsIST = () => { const d = istNow(); return d.getHours() * 60 + d.getMinutes() }
 /** Ek time slot me zyada-se-zyada itni website bookings — phir FULL. */
-const SLOT_CAP = 3
+const SLOT_CAP = 1
 /** Aaj ka agla khali time (beeta hua time kabhi default select nahi hoga). */
 const nextSlot = () => TIME_SLOTS.find((sl) => slotToMins(sl) > nowMinsIST()) ?? null
 
@@ -252,7 +252,7 @@ const HT = {
     rushTitle: '🕒 Live Bheed-Meter',
     todayB: 'Aaj', tomorrowB: 'Kal',
     free: '🟢 Khali', oneBooked: '🟡 1 booking', busy: '🔴 Bheed hai', past: 'Time gaya',
-    rushNote: 'Ye live count website bookings se aata hai. Final confirmation WhatsApp par milega.',
+    rushNote: '🟢 Khali = kursi free hai · 🔴 Bhara hua = us time par booking ho chuki. Final confirmation WhatsApp par milega.',
     builderTitle: '🧮 Mera Combo Banao',
     builderSub: 'Jo service chahiye tick karo — total apne-aap jud jayega.',
     totalL2: 'Total',
@@ -263,8 +263,9 @@ const HT = {
     bInvalid: 'Naam aur sahi 10-digit mobile number daalo — shop aapko isi number par confirm karegi.',
     bSaved: '✓ WhatsApp khula hai — wahan Send dabao. Booking shop ke record me bhi save ho gayi hai.',
     comboBook: 'Book This Combo →',
-    full: '🔴 FULL',
+    full: '🔴 Bhara hua',
     bookingWord: 'booking hai',
+    slotBhara: '⛔ Ye time bhara hua hai — upar wale meter se koi khali time chuno.',
     liveTxt: 'Live — auto update',
     dbQueued: '✓ Booking mil gayi! Net slow hai — record phone me safe hai, net aate hi shop ke cloud me sync ho jayega.',
     pickHint: '👆 Upar list se service tick karo',
@@ -336,7 +337,7 @@ const HT = {
     rushTitle: '🕒 लाइव भीड़-मीटर',
     todayB: 'Aaj', tomorrowB: 'Kal',
     free: '🟢 खाली', oneBooked: '🟡 1 बुकिंग', busy: '🔴 भीड़ है', past: 'समय गया',
-    rushNote: 'यह लाइव काउंट वेबसाइट बुकिंग से आता है। फ़ाइनल कन्फ़र्मेशन WhatsApp पर मिलेगा।',
+    rushNote: '🟢 खाली = कुर्सी फ़्री है · 🔴 भरा हुआ = उस समय बुकिंग हो चुकी। फ़ाइनल कन्फ़र्मेशन WhatsApp पर मिलेगा।',
     builderTitle: '🧮 मेरा कॉम्बो बनाओ',
     builderSub: 'जो सर्विस चाहिए टिक करो — टोटल अपने-आप जुड़ जाएगा।',
     totalL2: 'कुल',
@@ -347,8 +348,9 @@ const HT = {
     bInvalid: 'नाम और सही 10 अंकों का मोबाइल नंबर डालो — दुकान इसी नंबर पर कन्फ़र्म करेगी।',
     bSaved: '✓ WhatsApp खुल गया है — वहाँ Send दबाओ। बुकिंग दुकान के रिकॉर्ड में भी सेव हो गई है।',
     comboBook: 'यह कॉम्बो बुक करो →',
-    full: '🔴 FULL',
+    full: '🔴 भरा हुआ',
     bookingWord: 'बुकिंग है',
+    slotBhara: '⛔ यह समय भरा हुआ है — ऊपर मीटर से कोई खाली समय चुनो।',
     liveTxt: 'लाइव — ऑटो अपडेट',
     dbQueued: '✓ बुकिंग मिल गई! नेट धीमा है — रिकॉर्ड फ़ोन में सुरक्षित है, नेट आते ही दुकान के क्लाउड में सिंक हो जाएगा।',
     pickHint: '👆 ऊपर लिस्ट से सर्विस टिक करो',
@@ -462,6 +464,27 @@ export default function App() {
   const formRush = rushByDate[booking.date] ?? {}
   useEffect(() => { loadRush(builderDate) }, [builderDate, loadRush])
   useEffect(() => { loadRush(booking.date) }, [booking.date, loadRush])
+  /* Bhara-slot safety: chuna hua time bhara ho jaye (ya page khulte hi default
+     time bhara nikle) to selection khud agle khali time par chali jaye —
+     bhare hue time par booking ho hi nahi payegi. */
+  useEffect(() => {
+    const counts = rushByDate[builderDate]
+    if (!counts) return
+    const isToday = builderDate === todayIST()
+    const avail = (sl: string) => (counts[sl] ?? 0) < SLOT_CAP && !(isToday && slotToMins(sl) <= nowMinsIST())
+    if (avail(builderTime)) return
+    const free = TIME_SLOTS.find(avail)
+    if (free) setBuilderTime(free)
+  }, [rushByDate, builderDate, builderTime])
+  useEffect(() => {
+    const counts = rushByDate[booking.date]
+    if (!counts) return
+    const isToday = booking.date === todayIST()
+    const avail = (sl: string) => (counts[sl] ?? 0) < SLOT_CAP && !(isToday && slotToMins(sl) <= nowMinsIST())
+    if (avail(booking.time)) return
+    const free = TIME_SLOTS.find(avail)
+    if (free) setBooking((b) => ({ ...b, time: free }))
+  }, [rushByDate, booking.date, booking.time])
   /* LIVE system: har 30 sec + tab focus + net wapas aane par meter fresh,
      aur pending offline bookings cloud me sync. */
   useEffect(() => {
@@ -489,6 +512,11 @@ export default function App() {
     }
     const digits = booking.phone.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '')
     if (booking.name.trim().length < 3 || !/^[6-9]\d{9}$/.test(digits)) { setBuilderMsg(ht.bInvalid); return }
+    if ((rush[builderTime] ?? 0) >= SLOT_CAP || (builderDate === todayIST() && slotToMins(builderTime) <= nowMinsIST())) {
+      setBuilderMsg(ht.slotBhara)
+      document.querySelector('.slot-grid')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
     if (builderBusy) return
     setBuilderBusy(true); setBuilderMsg('')
     const label = items.join(' + ')
@@ -517,7 +545,6 @@ export default function App() {
       const prev = JSON.parse(localStorage.getItem(key) ?? '[]') as Booking[]
       localStorage.setItem(key, JSON.stringify([...prev, { ...booking, serviceId: builderItems[0]?.id ?? booking.serviceId, date: builderDate, time: builderTime, at: new Date().toISOString() }]))
     } catch { /* ignore */ }
-    setHistPhone(booking.phone)
     window.open(whatsappLink(msg), '_blank', 'noopener')
     window.setTimeout(() => setBuilderBusy(false), 1500)
   }
@@ -570,17 +597,8 @@ export default function App() {
     try { await navigator.clipboard.writeText(txt); setAdminMsg(ht.copied) } catch { setAdminMsg(ht.errNet) }
   }
 
-  /* Prefill history search with the last number booked on this device. */
-  useEffect(() => {
-    try {
-      const prev = JSON.parse(localStorage.getItem('mens-saloon-bookings') ?? '[]') as Booking[]
-      if (prev.length) {
-        const last = prev[prev.length - 1]
-        setHistPhone(last.phone)
-        setBooking((b) => ({ ...b, name: b.name || last.name, phone: b.phone || last.phone }))
-      }
-    } catch { /* ignore */ }
-  }, [])
+  /* NOTE: naam/phone kabhi khud se nahi bharte — form hamesha khali aati hai,
+     customer khud bharta hai (owner ki requirement). */
 
   const loadAdmin = async (pin: string) => {
     setAdminBusy(true); setAdminMsg('')
@@ -684,6 +702,9 @@ export default function App() {
   function submitBooking(ev: FormEvent) {
     ev.preventDefault()
     const e = validate(booking)
+    if (!e.time && ((formRush[booking.time] ?? 0) >= SLOT_CAP || (booking.date === todayIST() && slotToMins(booking.time) <= nowMinsIST()))) {
+      e.time = 'This time is full / no longer available — please pick another time.'
+    }
     setErrors(e)
     if (Object.keys(e).length > 0) {
       formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
@@ -736,7 +757,6 @@ export default function App() {
       setDbState(res === 'saved' ? 'saved' : 'queued')
       if (res === 'saved') loadRush(booking.date)
     })
-    setHistPhone(booking.phone)
 
     setSent(true)
     window.open(whatsappLink(message), '_blank', 'noopener')
@@ -909,14 +929,14 @@ export default function App() {
                   const c = rush[slot] ?? 0
                   const past = builderDate === todayIST() && slotToMins(slot) <= nowMinsIST()
                   const full = c >= SLOT_CAP
-                  const cls = past ? 'past' : full ? 'full' : c >= 1 ? 'one' : 'free'
+                  const cls = past ? 'past' : full ? 'full' : 'free'
                   return (
                     <button key={slot} type="button" disabled={past || full}
                       className={`slot ${cls} ${builderTime === slot ? 'sel' : ''}`}
                       aria-pressed={builderTime === slot}
                       onClick={() => setBuilderTime(slot)}>
                       <strong>{slot}</strong>
-                      <small>{past ? ht.past : full ? ht.full : c >= 1 ? `🟡 ${c} ${ht.bookingWord}` : ht.free}</small>
+                      <small>{past ? ht.past : full ? ht.full : ht.free}</small>
                     </button>
                   )
                 })}
@@ -1267,7 +1287,7 @@ export default function App() {
                     const dis = c >= SLOT_CAP || (booking.date === todayIST() && slotToMins(slotOpt) <= nowMinsIST())
                     return (
                       <option key={slotOpt} value={slotOpt} disabled={dis}>
-                        {slotOpt}{c >= SLOT_CAP ? ` — ${ht.full}` : c >= 1 ? ` · ${c} ${ht.bookingWord}` : ''}
+                        {slotOpt}{c >= SLOT_CAP ? ` — ${ht.full}` : ''}
                       </option>
                     )
                   })}
@@ -1353,7 +1373,7 @@ export default function App() {
                         <span className={`st st-${r.status}`}>{statusLabel(r.status)}</span>
                         <button type="button" className="mini-btn" onClick={() => {
                           const match = services.find((sv) => sv.name === r.service)
-                          setBooking((b) => ({ ...b, serviceId: match?.id ?? b.serviceId, name: r.name, phone: r.phone }))
+                          setBooking((b) => ({ ...b, serviceId: match?.id ?? b.serviceId }))
                           scrollToId('book')
                         }}>{ht.bookAgain}</button>
                       </div>

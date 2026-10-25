@@ -489,3 +489,9 @@ button.style-card{font:inherit;color:inherit;text-align:left;cursor:pointer;widt
 .live-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#37d67a;margin-left:.5rem;vertical-align:middle;animation:pulse 2s infinite}
 a.mini-btn{text-decoration:none;display:inline-block;text-align:center}
 @media (max-width:640px){.admin-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* === Bhara hua slot: solid filled look — booked time ek nazar mein dikhe === */
+.slot.full{background:linear-gradient(160deg,rgba(170,28,20,.55),rgba(115,17,13,.55));border-color:#ff7a6e}
+.slot.full:disabled{opacity:1}
+.slot.full strong{color:#ffe4e0}
+.slot.full small{color:#ffbdb4;font-weight:700}

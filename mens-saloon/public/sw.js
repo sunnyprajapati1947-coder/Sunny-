@@ -1,5 +1,5 @@
 /* Men's Saloon service worker — offline shell (adapted from the earlier salon-website PWA). */
-const CACHE_NAME = 'mens-saloon-shell-v3';
+const CACHE_NAME = 'mens-saloon-shell-v4';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',
