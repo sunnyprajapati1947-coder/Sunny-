@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sunny — Guild Officer · Free Fire Max Squad Command</title>
+<meta name="description" content="Free Fire Max guild officer profile and squad management dashboard: roster, roles, attendance, scrim schedule and tryouts." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== Background layers ===== -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="bg-hero"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-vignette"></div>
+  <div class="embers" id="embers"></div>
+</div>
+
+<!-- ===== Nav ===== -->
+<header class="nav" id="nav">
+  <a class="brand" href="#top">
+    <span class="brand-mark">◈</span>
+    <span class="brand-text">SUNNY<span class="brand-accent">·FF</span></span>
+  </a>
+  <nav class="nav-links" id="navLinks">
+    <a href="#profile" data-nav>Officer</a>
+    <a href="#roster" data-nav>Roster</a>
+    <a href="#schedule" data-nav>Scrims</a>
+    <a href="#tryout" data-nav>Tryout</a>
+  </nav>
+  <div class="nav-right">
+    <span class="live-pill"><i class="dot"></i> Squad Online</span>
+    <button class="btn btn-ghost nav-cta" id="openAddTop">+ Add Member</button>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow reveal"><span class="bar"></span> OFFICER · GUILD COMMAND</p>
+      <h1 class="reveal">
+        Sunny
+        <span class="h1-sub">Free Fire Max Guild Officer</span>
+      </h1>
+      <p class="lede reveal">
+        Squad ko lead karna sirf rush karna nahi — <strong>rotation, discipline aur attendance</strong> ka game hai.
+        Yeh dashboard aapke roster, roles, scrim schedule aur tryouts — sab ek jagah rakhta hai.
+      </p>
+      <div class="hero-actions reveal">
+        <a href="#roster" class="btn btn-primary">Manage Roster <span class="arrow">→</span></a>
+        <a href="#schedule" class="btn btn-ghost">Scrim Schedule</a>
+      </div>
+      <dl class="hero-facts reveal">
+        <div><dt>Guild</dt><dd>NOVA SYNDICATE</dd></div>
+        <div><dt>Region</dt><dd>South Asia · IN</dd></div>
+        <div><dt>Officer since</dt><dd>Season 32</dd></div>
+      </dl>
+    </div>
+
+    <!-- Officer ID card -->
+    <aside class="idcard reveal" aria-label="Officer ID card">
+      <div class="idcard-glow"></div>
+      <div class="idcard-top">
+        <span class="tag">GUILD OFFICER</span>
+        <span class="serial">ID · NS-0142</span>
+      </div>
+      <div class="idcard-body">
+        <div class="avatar">
+          <span>S</span>
+          <i class="avatar-ring"></i>
+        </div>
+        <div class="idcard-meta">
+          <h2>SUNNY 亗</h2>
+          <p class="muted">IGN · Sunny亗Officer</p>
+          <div class="chips">
+            <span class="chip chip-role">Officer</span>
+            <span class="chip">IGL / Rusher</span>
+            <span class="chip">LV 78</span>
+          </div>
+        </div>
+      </div>
+      <div class="idcard-stats">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="Attendance 94 percent">
+            <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+            <circle class="ring-fill" cx="60" cy="60" r="52" style="--pct:94"></circle>
+          </svg>
+          <div class="ring-label"><strong>94%</strong><span>Attendance</span></div>
+        </div>
+        <ul class="mini-stats">
+          <li><span>K/D</span><b>4.12</b></li>
+          <li><span>Win rate</span><b>38%</b></li>
+          <li><span>Matches</span><b>1,246</b></li>
+        </ul>
+      </div>
+      <div class="idcard-foot">
+        <span>◈ Verified officer</span>
+        <span class="muted">Season 32 · 2026</span>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ===== STAT STRIP ===== -->
+  <section class="stats" aria-label="Guild stats">
+    <div class="stat reveal"><b data-count="42">0</b><span>Squad members</span></div>
+    <div class="stat reveal"><b data-count="6">0</b><span>Scrims this week</span></div>
+    <div class="stat reveal"><b data-count="3" data-decimal="1">0</b><span>Avg. placement</span></div>
+    <div class="stat reveal"><b data-count="76" data-suffix="%">0</b><span>Top-10 rate</span></div>
+  </section>
+
+  <!-- ===== OFFICER PROFILE / DUTIES ===== -->
+  <section class="section" id="profile">
+    <div class="section-head">
+      <p class="eyebrow"><span class="bar"></span> THE OFFICER</p>
+      <h2>Kaam kya hai, on paper</h2>
+      <p class="section-sub">Officer = leader ke baad command ka doosra step. Roster, discipline, scrims aur recruitment — sab accountable.</p>
+    </div>
+    <div class="duty-grid">
+      <article class="duty reveal">
+        <span class="duty-ico">⚔</span>
+        <h3>Squad rotation</h3>
+        <p>Drop spot, zone rotation aur end-circle calls — rush se pehle plan. Har match ka call ek hi IGL se.</p>
+      </article>
+      <article class="duty reveal">
+        <span class="duty-ico">◎</span>
+        <h3>Attendance &amp; discipline</h3>
+        <p>Scrim timing, mic discipline, no-show tracking. 3 missed scrims = auto review.</p>
+      </article>
+      <article class="duty reveal">
+        <span class="duty-ico">✦</span>
+        <h3>Recruitment &amp; tryouts</h3>
+        <p>Tryout screening, K/D + game-sense test, aur 7-day trial period ka ownership.</p>
+      </article>
+      <article class="duty reveal">
+        <span class="duty-ico">◈</span>
+        <h3>Tournament entry</h3>
+        <p>Scout, registration, slot booking, aur match-day coordination with full squad.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== ROSTER ===== -->
+  <section class="section" id="roster">
+    <div class="section-head">
+      <p class="eyebrow"><span class="bar"></span> ROSTER COMMAND</p>
+      <h2>Squad management</h2>
+      <p class="section-sub">Members add karo, role change karo, attendance mark karo — sab browser me save hota hai.</p>
+    </div>
+
+    <div class="roster-toolbar">
+      <div class="filters" id="filters" role="group" aria-label="Filter roster">
+        <button class="pill is-active" data-filter="All">All <i>12</i></button>
+        <button class="pill" data-filter="Leader">Leader</button>
+        <button class="pill" data-filter="Officer">Officer</button>
+        <button class="pill" data-filter="Member">Member</button>
+        <button class="pill" data-filter="Recruit">Recruit</button>
+      </div>
+      <div class="toolbar-right">
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" id="search" placeholder="Search IGN…" aria-label="Search members" />
+        </label>
+        <button class="btn btn-primary" id="openAdd">+ Add member</button>
+      </div>
+    </div>
+
+    <div class="roster-grid" id="rosterGrid"></div>
+    <p class="empty" id="emptyState" hidden>Koi member match nahi hua. Filter clear karo ya naya member add karo.</p>
+    <div class="roster-footer">
+      <p class="muted"><span id="rosterCount">12</span> members shown · data local browser me saved</p>
+      <button class="btn btn-ghost btn-sm" id="resetRoster">Reset to defaults</button>
+    </div>
+  </section>
+
+  <!-- ===== SCHEDULE ===== -->
+  <section class="section" id="schedule">
+    <div class="section-head">
+      <p class="eyebrow"><span class="bar"></span> WEEKLY SCRIMS</p>
+      <h2>Scrim schedule</h2>
+      <p class="section-sub">Timings IST. Reporting 15 min pehle — late entry = slot loss.</p>
+    </div>
+    <div class="table-wrap reveal">
+      <table class="table">
+        <thead>
+          <tr><th>Day</th><th>Time (IST)</th><th>Type</th><th>Map pool</th><th>Slots</th><th>Status</th></tr>
+        </thead>
+        <tbody id="scrimBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== TRYOUT ===== -->
+  <section class="section" id="tryout">
+    <div class="tryout">
+      <div>
+        <p class="eyebrow"><span class="bar"></span> OPEN TRYOUTS</p>
+        <h2>Recruit slot khaali hai</h2>
+        <p class="section-sub">Ek entry-fragger chahiye — push ke time ka drop, aur comms clear. Neeche eligibility check karo, phir apply.</p>
+        <ul class="checklist">
+          <li>Minimum K/D <b>2.5+</b> with 200+ matches</li>
+          <li>Level <b>60+</b>, no active ban history</li>
+          <li>Availability: <b>3 scrims/week</b>, 9–11 PM IST</li>
+          <li>Working mic + Discord, zero toxicity</li>
+        </ul>
+        <div class="hero-actions">
+          <a class="btn btn-primary" id="tryoutApply" href="#">Apply for tryout <span class="arrow">→</span></a>
+          <a class="btn btn-ghost" href="#roster">See current roster</a>
+        </div>
+      </div>
+      <div class="tryout-card reveal">
+        <p class="tryout-kicker">SELECTION FLOW</p>
+        <ol class="steps">
+          <li><b>Day 0</b><span>Form + UID verification</span></li>
+          <li><b>Day 1</b><span>1v1 &amp; 4v4 aim test</span></li>
+          <li><b>Day 2</b><span>Full scrim with squad</span></li>
+          <li><b>Day 7</b><span>Officer review &amp; role</span></li>
+        </ol>
+        <p class="muted tiny">Slots: 2 open · Apply before Friday 11:59 PM IST</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="foot-left">
+    <span class="brand-mark">◈</span>
+    <div>
+      <p><b>NOVA SYNDICATE</b> · Free Fire Max guild</p>
+      <p class="muted tiny">Officer console · unofficial fan project, not affiliated with Garena.</p>
+    </div>
+  </div>
+  <p class="muted tiny">© <span id="year">2026</span> Sunny · Built for squad command</p>
+</footer>
+
+<!-- ===== Add member modal ===== -->
+<div class="modal" id="modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-x" data-close aria-label="Close">✕</button>
+    <h3 id="modalTitle">Add squad member</h3>
+    <p class="muted tiny">IGN aur role confirm karo. Attendance 0 se start hogi.</p>
+    <form id="addForm" novalidate>
+      <label>IGN<input name="ign" required maxlength="20" placeholder="e.g. SHADOW亗" /></label>
+      <div class="form-row">
+        <label>Role
+          <select name="role">
+            <option>Member</option>
+            <option>Officer</option>
+            <option>Recruit</option>
+          </select>
+        </label>
+        <label>K/D<input name="kd" type="number" step="0.01" min="0" max="30" placeholder="3.20" /></label>
+      </div>
+      <div class="form-row">
+        <label>Matches<input name="matches" type="number" min="0" max="99999" placeholder="420" /></label>
+        <label>Level<input name="level" type="number" min="1" max="100" placeholder="65" /></label>
+      </div>
+      <p class="form-error" id="formError" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Add to roster</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
