@@ -10,7 +10,7 @@
 set -euo pipefail
 umask 077
 : "${GITHUB_ENV:?}" "${GITHUB_WORKSPACE:?}" "${GITHUB_REPOSITORY:?}"
-KEY_DIR="$GITHUB_WORKSPACE/.signing"
+KEY_DIR="$GITHUB_WORKSPACE/apps/jarvis-app/.signing"
 mkdir -p "$KEY_DIR"
 STORE="$KEY_DIR/release.p12"
 PASS_FILE="$KEY_DIR/password"
@@ -29,7 +29,7 @@ elif [ -n "${SPDYI_RELEASE_KEYSTORE_BASE64:-}" ]; then
 elif [ -s "$STORE" ] && [ -s "$PASS_FILE" ]; then
   STORE_PASS=$(cat "$PASS_FILE")
   KEY_ALIAS=$(cat "$KEY_DIR/alias" 2>/dev/null || echo jarvis-release)
-  ORIGIN="cached signing key (same key as the previous release)"
+  ORIGIN="cached signing key (restored from the Actions cache)"
 else
   # A cached keystore without its password file is useless: rotate and say so.
   STORE_PASS=$(openssl rand -hex 32)
