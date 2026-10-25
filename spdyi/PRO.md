@@ -1,4 +1,4 @@
-# Spdyi Pro 2.0: diagnostics, calibration and Android app
+# Spdyi Pro 2.0.1: diagnostics, calibration and Android app
 
 This project is an independent Free Fire MAX companion. It never reads game memory/files, changes system display settings or automates input. All six sensitivity values are **0–200**; fire-button size is a separate percentage.
 
@@ -12,10 +12,13 @@ Build requirements: Node 22, JDK 21, Android SDK platform/build-tools 35 and Gra
 npm ci
 npm test
 npm run android:build
-# APK: android/app/build/outputs/apk/debug/app-debug.apk
+# Configure the release signing environment first: see SIGNING.md.
+# APK: android/app/build/outputs/apk/release/app-release.apk
 ```
 
-The `Spdyi Android APK` GitHub workflow builds and lints a **debug-signed testing APK**, then uploads `Spdyi-Pro-debug.apk` and `SHA256SUMS.txt`. This is not a Play Store release, not production-signed, and has not been certified on physical handsets. A distributable release requires the owner's controlled signing key and physical-device testing. Never commit a signing key. Separate CI debug builds can use different temporary debug keys; an update may require uninstalling the old build first. Export local profiles before uninstalling. The PWA preview cannot execute native Android plugins.
+The signed-release workflow builds and lints the **release variant**, verifies its APK signature and checks that the manifest is **not debuggable**, then publishes `Spdyi-Pro-2.0.1.apk` to the `spdyi-v2.0.1` GitHub release. A SHA-256 checksum, public signing certificate and verification report accompany it. The APK can be installed directly; a Play Store listing is a separate distribution step. No claim of physical-handset certification is made.
+
+The old debug APK and this release have different certificates. Export any saved profiles before uninstalling the old debug app to install the release. Never commit a private signing key or password. See [SIGNING.md](SIGNING.md) for encrypted recovery and keeping the same signing identity for future updates. The PWA preview cannot execute native Android plugins.
 
 ### Native snapshot (only after tapping Read device info)
 

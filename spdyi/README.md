@@ -29,10 +29,10 @@ The manifest, PNG icons and production-only service worker support home-screen i
 Read-only device scanner, cancellable app frame-pacing trial, multitouch/9-zone canvas, swipe consistency report, gameplay feedback, optional current settings, evidence labels, old/new charts, JSON export and a local ten-profile vault. Unknown hardware information is visibly unavailable, never replaced by a fake scan. All sensitivity values stay within 0–200.
 
 ```sh
-npm run android:build  # needs JDK 21 / Android SDK 35
+npm run android:build  # needs JDK 21 / Android SDK 35 + signing env (SIGNING.md)
 ```
 
-The Android workflow uploads a debug-signed APK for testing, not a Play Store production release. Full native metrics require the Android build; the browser preview deliberately exposes less. Read the architecture, references, privacy and calibration rules in [PRO.md](PRO.md).
+The Android workflow publishes a **signed, non-debuggable release APK** on GitHub Releases. Google Play publication is separate. See [SIGNING.md](SIGNING.md) for protecting the signing identity and updating the app. Full native metrics require the Android build; the browser preview deliberately exposes less. Read the architecture, references, privacy and calibration rules in [PRO.md](PRO.md).
 
 ## Catalog and research
 
@@ -61,3 +61,8 @@ npm run test:browser:pro
 ```
 
 `TEST_BASE_URL` overrides the preview origin, `BROWSER_EXECUTABLE_PATH` uses an existing Chromium binary, and `SCREENSHOT_DIR` optionally writes desktop/mobile screenshots outside source control. The browser checks exercise catalog/model-code search, manual entry, both profiles, fire-size edits, individual sensitivity tuning, clipboard/source links, save/reload, iPhone DPI guard, canceled analysis animations, mobile overflow and offline PWA generation.
+
+
+## Install the Android release
+
+Download **[Spdyi-Pro-2.0.1.apk](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/spdyi-v2.0.1/Spdyi-Pro-2.0.1.apk)** from the signed release. It is a release variant, not a renamed debug build. Its signature is verified and `application-debuggable` is checked before publication. If replacing the old debug app, export profiles before uninstalling it because the certificates differ. All normal Android installation/security checks still apply.
