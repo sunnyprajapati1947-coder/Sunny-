@@ -2,12 +2,12 @@ import {collectDiagnostics,measureFrames,summarizeSwipes,validTouchReport,native
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const gib=n=>Number.isFinite(n)?`${(n/1024**3).toFixed(2)} GiB`:'Not available';
 const metric=(name,value,source,status='reported')=>`<article class="diag-metric"><span>${name}</span><strong>${escape(value)}</strong><small class="metric-${status}">${source}</small></article>`;
-export function mountDiagnostics(root,{signal,onApply,toast}) {
+export function mountDiagnostics(root,{signal,onApply,onReport,toast}) {
  let report=null;
  root.innerHTML=`<div class="tool-heading"><span class="section-kicker">READ-ONLY • ON-DEVICE</span><h3>Device intelligence<span>.</span></h3><p>Know what’s reported, what’s estimated, and what cannot be measured.</p></div><div class="tool-toolbar"><button class="primary" id="scan-device">Read device info</button><button class="secondary" id="frame-test">Test frame pacing · 2s</button></div><div id="diag-report"><div class="empty-tool">No scan yet. Read-only diagnostics start only when you tap the button. No game files, identifiers or accounts are accessed.</div></div><div class="capability-note"><b>Outside this app’s reach</b><p>Exact hardware touch latency, hidden touch-sampling settings, game FPS and real in-game aim response cannot be read here. Browser/PWA cannot read full Android RAM, temperature or sensors inventory. Native Android builds use system APIs when available.</p></div><div id="frame-report" aria-live="polite"></div><div class="tool-toolbar"><button class="secondary" id="export-diagnostics" disabled>Export report JSON</button><button class="text-button" id="apply-device" disabled>Use reported model in setup →</button></div>`;
  const read=async()=>{
   const b=root.querySelector('#scan-device');b.disabled=true;b.textContent='Reading available APIs…';
-  try{report=await collectDiagnostics();if(signal.aborted)return;render();root.querySelector('#export-diagnostics').disabled=false;root.querySelector('#apply-device').disabled=!report.native;}
+  try{report=await collectDiagnostics();if(signal.aborted)return;onReport?.(report);render();root.querySelector('#export-diagnostics').disabled=false;root.querySelector('#apply-device').disabled=!report.native;}
   catch{if(!signal.aborted)root.querySelector('#diag-report').textContent='Device APIs unavailable. You can enter your details manually.';}
   finally{if(!signal.aborted){b.disabled=false;b.textContent='Refresh snapshot';}}
  };
@@ -20,7 +20,7 @@ export function mountDiagnostics(root,{signal,onApply,toast}) {
  root.querySelector('#scan-device').onclick=read;
  root.querySelector('#frame-test').onclick=async e=>{
   e.currentTarget.disabled=true;root.querySelector('#frame-report').textContent='Measuring app animation callbacks. Keep this screen visible…';
-  try{const frames=await measureFrames(signal);if(signal.aborted)return;if(!frames)throw Error('Too few frames. Try again.');report??=await collectDiagnostics();report.frames=frames;
+  try{const frames=await measureFrames(signal);if(signal.aborted)return;if(!frames)throw Error('Too few frames. Try again.');report??=await collectDiagnostics();report.frames=frames;onReport?.(report);
    root.querySelector('#frame-report').innerHTML=`<div class="frame-result"><div><span>APP CALLBACK PACE</span><strong>${frames.observedHz.toFixed(1)} <small>Hz estimate</small></strong></div><div><span>MEDIAN / P95</span><strong>${frames.medianMs.toFixed(1)} / ${frames.p95Ms.toFixed(1)} <small>ms</small></strong></div><p>${frames.samples} intervals · ${frames.longFramePercent.toFixed(1)}% over 1.5× median. This is this app’s requestAnimationFrame pacing—not the panel’s exact refresh rate, touch latency or Free Fire FPS.</p></div>`;root.querySelector('#export-diagnostics').disabled=false;
   }catch(err){if(!signal.aborted)root.querySelector('#frame-report').textContent=err.message;}finally{if(!signal.aborted)root.querySelector('#frame-test').disabled=false;}
  };

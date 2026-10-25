@@ -4,7 +4,7 @@ import {phones,brands,searchPhones} from './catalog.js';
 import {sources,REVIEWED,profiles} from './research.js';
 import {restoreSetup} from './storage.js';
 import {mountDiagnostics,mountTouch,downloadJson} from './workbench.js';
-import {validPrevious,cleanFeedback,cleanCalibration} from './personalization.js';
+import {validPrevious,cleanFeedback,cleanCalibration,cleanDeviceContext} from './personalization.js';
 import {Capacitor} from '@capacitor/core';
 const icon=(name,cls='')=>{const paths={bolt:'<path d="m13 2-9 12h7l-1 8 10-13h-7l1-7Z"/>',target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4M1 12h4m14 0h4"/>',phone:'<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4m-3 14h2"/>',arrow:'<path d="M4 12h16m-6-6 6 6-6 6"/>',check:'<path d="m5 12 4 4L19 6"/>',shield:'<path d="m12 2 8 3v7c0 5-8 10-8 10S4 17 4 12V5l8-3Z"/><path d="m8 11 3 3 5-5"/>',download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',tune:'<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 4 3v2m-1 3h.01"/>',copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 8V3H3v13h5"/>'};return `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.target}</svg>`};
 const spider=`<svg viewBox="0 0 80 90" fill="none" aria-hidden="true"><path d="M40 22v43m-6-38-12-9-6-15m29 24 13-9 6-15M32 35 15 29 3 14m45 21 17-6 12-15M32 44l-20 7L3 72m45-28 20 7 9 21M34 54 23 70l-3 18m26-34 11 16 3 18" stroke="currentColor" stroke-width="4"/><path d="m40 18 8 15-1 22-7 16-7-16-1-22Z" fill="currentColor"/></svg>`;
@@ -142,7 +142,7 @@ function openTool(kind){
  document.querySelector('.steps').hidden=true;document.querySelector('.step-counter').hidden=true;
  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.id===`nav-${kind}`));
  const common={signal:toolController.signal,toast};
- if(kind==='diagnostics')mountDiagnostics(stage,{...common,onApply:n=>{
+ if(kind==='diagnostics')mountDiagnostics(stage,{...common,onReport:report=>{const n=report.native,b=report.browser;state.deviceContext=cleanDeviceContext({source:n?'Android system API':'Browser CSS / rAF',width:n?.displayWidthPx??b.screenCss[0],height:n?.displayHeightPx??b.screenCss[1],displayHz:n?.refreshRateHz??null,dpr:b.dpr,frameHz:report.frames?.observedHz??null,lowMemory:n?.lowMemory??false});},onApply:n=>{
   const match=brands.find(b=>b.toLowerCase()===String(n.manufacturer).toLowerCase());
   state.brand=match||'Other';state.customBrand=match?'':String(n.manufacturer).slice(0,80);state.model='Other';state.customModel=String(n.model).slice(0,80);state.query='';state.step=1;state.dpi=false;render();toast('System model copied. Verify the model / variant before continuing.');
  }});

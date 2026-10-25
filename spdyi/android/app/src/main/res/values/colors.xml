@@ -1,0 +1,6 @@
+<resources>
+    <color name="spdyi_background">#0b0c10</color>
+    <color name="colorPrimary">#ef233c</color>
+    <color name="colorPrimaryDark">#0b0c10</color>
+    <color name="colorAccent">#f03548</color>
+</resources>
