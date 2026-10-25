@@ -1009,14 +1009,113 @@
     $("#resultTasks").addEventListener("click", () => { closeSheet(); switchTab("tasks"); });
   }
 
+  /* ------------------------------------------------------------ local brain */
+
+  function renderModelPanel() {
+    const panel = $("#modelPanel");
+    const data = state.models;
+    if (!panel || !data) return;
+    const running = data.running || {};
+    const jobs = data.jobs || {};
+    const activeJob = Object.values(jobs).find((job) => ["downloading", "starting"].includes(job.state));
+    const catalog = data.catalog || [];
+
+    panel.innerHTML = `
+      <div class="row"><span class="k">llama.cpp</span><span class="v">${data.llama_server ? '<span class="pill ok">installed</span>' : '<span class="pill warn">not found</span>'}</span></div>
+      <div class="row"><span class="k">Server</span><span class="v">${running.alive ? "running · pid " + running.pid : "stopped"}</span></div>
+      ${running.alive ? `<div class="row"><span class="k">Lane</span><span class="v">${esc(data.fast_url || "")}</span></div>` : ""}
+      <div class="row"><span class="k">Active model</span><span class="v">${running.alive && data.active_model ? esc(data.active_model) : "—"}</span></div>
+      <div class="row"><span class="k">Provider mode</span><span class="v">${esc(data.provider_mode || "auto")}</span></div>
+      <div class="row"><span class="k">Download cap</span><span class="v">${data.max_gb} GB · ${data.disk_free_gb} GB free</span></div>
+      ${activeJob ? `<div class="progress" style="margin:10px 0"><i style="width:${activeJob.percent || 0}%"></i></div>
+        <p class="small muted">${activeJob.state === "starting" ? "Model load ho raha hai…" : `Download ${activeJob.percent || 0}% · ${Math.round((activeJob.bytes || 0) / 1e6)} / ${Math.round((activeJob.total || 0) / 1e6)} MB`}</p>` : ""}
+      ${activeJob && activeJob.state === "error" ? `<p class="small" style="color:var(--danger)">${esc(activeJob.error || "")}</p>` : ""}
+      ${catalog.map((row) => `
+        <div class="item" style="margin-top:10px">
+          <div class="item-head">
+            <div style="min-width:0">
+              <div class="item-title">${esc(row.label)}${row.recommended ? ' <span class="pill ok">recommended</span>' : ""}</div>
+              <div class="item-sub">${row.size_text} · RAM ≈ ${row.ram_gb} GB · ${esc(row.quant)} · ${esc(row.license)}</div>
+              ${row.installed ? `<div class="item-sub"><span class="pill ok">installed</span> ${Math.round(row.bytes / 1e6)} MB${data.active_model === row.id ? ' <span class="pill">active</span>' : ""}</div>` : ""}
+            </div>
+          </div>
+          <div class="item-actions">
+            ${row.installed
+              ? `<button class="btn tiny primary" data-model-start="${esc(row.id)}">${icon("play")} Start</button>
+                 <button class="btn tiny ghost" data-model-use="${esc(row.id)}">Use</button>`
+              : `<button class="btn tiny" data-model-get="${esc(row.id)}">${icon("plus")} Download</button>`}
+          </div>
+        </div>`).join("")}
+      <div class="item-actions" style="margin-top:10px">
+        ${running.alive ? `<button class="btn tiny danger" id="modelStop">${icon("stop")} Stop server</button>` : ""}
+        <button class="btn tiny ghost" id="modelRefresh">${icon("refresh")} Refresh</button>
+      </div>
+      ${!data.llama_server ? `<p class="small muted" style="margin-top:8px">llama-server nahi mila. Debian proot mein:
+        <code>pkg install clang cmake git</code> → <code>git clone https://github.com/ggml-org/llama.cpp && cmake -B build && cmake --build build -j4</code>.
+        Key wala rasta chahiye to Setup → API key use karo.</p>` : ""}
+      <p class="small muted" style="margin-top:8px">Model phone par download hota hai (2.5 GB). Sab kuch local rehta hai.</p>`;
+
+    const refresh = () => loadModels();
+    $("#modelRefresh").addEventListener("click", refresh);
+    const stop = $("#modelStop");
+    if (stop) stop.addEventListener("click", async () => {
+      try { await api("/api/models/stop", { method: "POST", body: {} }); toast("Model server stopped", "ok"); } catch (err) { toast(err.message, "bad"); }
+      refresh();
+    });
+    $$("[data-model-get]").forEach((btn) => btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        await api("/api/models/download", { method: "POST", body: { model_id: btn.dataset.modelGet } });
+        toast("Download shuru — progress yahan dikhega", "ok");
+      } catch (err) { toast(err.message, "bad"); btn.disabled = false; }
+      loadModels();
+    }));
+    $$("[data-model-start]").forEach((btn) => btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        await api("/api/models/start", { method: "POST", body: { model_id: btn.dataset.modelStart } });
+        toast("Model load ho raha hai…", "ok");
+      } catch (err) { toast(err.message, "bad"); btn.disabled = false; }
+      loadModels();
+    }));
+    $$("[data-model-use]").forEach((btn) => btn.addEventListener("click", async () => {
+      try {
+        await api("/api/models/activate", { method: "POST", body: { model_id: btn.dataset.modelUse } });
+        toast("Active model set", "ok");
+        renderSettings();
+      } catch (err) { toast(err.message, "bad"); }
+    }));
+
+    if (activeJob) {
+      clearTimeout(state.modelTimer);
+      state.modelTimer = setTimeout(loadModels, 1500);
+    }
+  }
+
+  async function loadModels() {
+    try {
+      state.models = await api("/api/models");
+      renderModelPanel();
+      const prov = $("#chatProv");
+      if (prov && state.models.running && state.models.running.alive) {
+        prov.textContent = "local · " + (state.models.active_model || "gguf");
+      }
+    } catch (err) {
+      const panel = $("#modelPanel");
+      if (panel) panel.innerHTML = `<p class="small" style="color:var(--warn)">${esc(err.message)}</p>`;
+    }
+  }
+
   /* -------------------------------------------------------------- settings */
 
   async function renderSettings() {
     view.innerHTML = `<div class="screen"><div class="empty">${icon("settings")}loading…</div></div>`;
     try {
-      const [statusPayload, settingsPayload, logsPayload] = await Promise.all([
+      const [statusPayload, settingsPayload, logsPayload, modelsPayload] = await Promise.all([
         api("/api/status"), api("/api/settings"), api("/api/logs").catch(() => ({ events: [] })),
+        api("/api/models").catch(() => ({ catalog: [] })),
       ]);
+      state.models = modelsPayload;
       state.status = statusPayload;
       state.settings = settingsPayload.settings;
       paintBrand();
@@ -1037,6 +1136,11 @@
           <div class="row"><span class="k">Mode</span><span class="v">${esc(settings.provider.mode)}</span></div>
           <div class="row"><span class="k">Keys present</span><span class="v">${esc(Object.keys(keys).join(", ") || "none")}</span></div>
           <div class="row"><span class="k">Version / uptime</span><span class="v">${esc(st.version)} · ${Math.floor((st.uptime || 0) / 60)}m</span></div>
+        </div>
+
+        <div class="card">
+          <h2>${icon("memory")} Local brain (offline)</h2>
+          <div id="modelPanel"></div>
         </div>
 
         <div class="card">
@@ -1103,6 +1207,8 @@
           <button class="btn danger btn-block" id="setLogout">Lock dashboard (forget token)</button>
         </div>
       </div>`;
+
+      renderModelPanel();
 
       $("#syncSkills").addEventListener("click", async () => {
         const btn = $("#syncSkills");

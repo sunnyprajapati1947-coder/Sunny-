@@ -154,6 +154,116 @@ class ToolBox:
             raise ToolError(f"tool disabled: {name}")
         return tool
 
+    # online hands -------------------------------------------------------
+
+    def _register_online(self) -> None:
+        """The "hands" that act on the internet. Every call is approval-gated,
+        public-host only, size-capped and returned as untrusted data."""
+
+        def check_url(raw: str) -> str:
+            text = str(raw or "").strip()
+            parsed = urllib.parse.urlparse(text)
+            if parsed.scheme not in ("http", "https"):
+                raise ToolBlocked("only http/https urls are allowed")
+            if not parsed.hostname:
+                raise ToolError("url has no host")
+            if not _public_host(parsed.hostname):
+                raise ToolBlocked("refusing to contact a private or unresolvable host")
+            return text
+
+        def http_request(method: str = "GET", url: str = "", headers: dict | None = None,
+                         body: str = "", timeout: int = 20) -> dict:
+            target = check_url(url)
+            verb = str(method or "GET").upper()
+            if verb not in ("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"):
+                raise ToolError("unsupported method")
+            payload = str(body or "").encode("utf-8")
+            if len(payload) > 20_000:
+                raise ToolBlocked("request body too large (20 KB limit)")
+            clean_headers = {"user-agent": "JARVIS/1.0 (+local)"}
+            for key, value in (headers or {}).items():
+                name = str(key).strip().lower()
+                if name in ("host", "authorization", "cookie", "proxy-authorization"):
+                    raise ToolBlocked(f"refusing to send sensitive header: {name}")
+                clean_headers[name] = str(value)[:300]
+            request = urllib.request.Request(target, data=payload or None, method=verb,
+                                             headers=clean_headers)
+            try:
+                with urllib.request.urlopen(request, timeout=min(60, max(5, int(timeout)))) as response:
+                    final = response.geturl()
+                    if not _public_host(urllib.parse.urlparse(final).hostname or ""):
+                        raise ToolBlocked("redirected to a private host")
+                    raw = response.read(300_000)
+                    text = raw.decode("utf-8", "replace")
+                    return {
+                        "ok": True, "status": response.status, "final_url": final,
+                        "content_type": response.headers.get("content-type", ""),
+                        "bytes": len(raw), "truncated": len(raw) >= 300_000,
+                        "text": text[:120_000], "untrusted": True,
+                    }
+            except urllib.error.HTTPError as exc:
+                return {"ok": False, "status": exc.code,
+                        "error": f"HTTP {exc.code}", "untrusted": True}
+            except (urllib.error.URLError, TimeoutError) as exc:
+                raise ToolError(f"request failed: {type(exc).__name__}") from None
+
+        def download_file(url: str, path: str, max_mb: int = 20, overwrite: bool = False) -> dict:
+            target_url = check_url(url)
+            limit = int(min(max(int(max_mb), 1), 200))
+            target = self.resolve_path(path)
+            suffix = target.suffix.lower()
+            if suffix in (".exe", ".apk", ".bin", ".so", ".dll", ".sh", ".elf"):
+                raise ToolBlocked(f"refusing to download executable {suffix} into the project")
+            if target.exists() and not overwrite:
+                raise ToolBlocked("file exists; pass overwrite=true to replace it")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            part = target.with_suffix(target.suffix + ".part")
+            written = 0
+            request = urllib.request.Request(target_url, headers={"user-agent": "JARVIS/1.0 (+local)"})
+            try:
+                with urllib.request.urlopen(request, timeout=min(60, self.settings.tool_timeout)) as response:
+                    final = response.geturl()
+                    if not _public_host(urllib.parse.urlparse(final).hostname or ""):
+                        raise ToolBlocked("redirected to a private host")
+                    length = int(response.headers.get("content-length") or 0)
+                    if length and length > limit * 2**20:
+                        raise ToolBlocked(f"file is {length / 2**20:.1f} MB, limit is {limit} MB")
+                    with part.open("wb") as handle:
+                        while True:
+                            chunk = response.read(128 * 1024)
+                            if not chunk:
+                                break
+                            written += len(chunk)
+                            if written > limit * 2**20:
+                                handle.close()
+                                part.unlink(missing_ok=True)
+                                raise ToolBlocked(f"download exceeded {limit} MB and was discarded")
+                            handle.write(chunk)
+            except urllib.error.HTTPError as exc:
+                part.unlink(missing_ok=True)
+                raise ToolError(f"download failed: HTTP {exc.code}") from None
+            except (urllib.error.URLError, TimeoutError) as exc:
+                part.unlink(missing_ok=True)
+                raise ToolError(f"download failed: {type(exc).__name__}") from None
+            if target.exists():
+                target.replace(target.with_suffix(target.suffix + ".bak"))
+            part.replace(target)
+            return {"ok": True, "path": str(target), "bytes": written,
+                    "mb": round(written / 2**20, 2), "untrusted": True}
+
+        self.register(Tool(
+            "http_request",
+            "Call a public HTTP API (GET/POST/PUT/PATCH/DELETE/HEAD) and return status + body. "
+            "Approval-gated, no auth headers, private hosts refused.",
+            MEDIUM, {"method": "string", "url": "string", "headers": "object",
+                     "body": "string", "timeout": "number"}, http_request))
+        self.register(Tool(
+            "download_file",
+            "Download a public file into the project (text/data, no executables, 20 MB default). "
+            "Approval-gated and size-capped.",
+            MEDIUM, {"url": "string", "path": "string", "max_mb": "number",
+                     "overwrite": "boolean"}, download_file))
+
     # skills -------------------------------------------------------------
 
     def _register_skills(self) -> None:
@@ -305,6 +415,7 @@ class ToolBox:
         self._register_git()
         self._register_python()
         self._register_skills()
+        self._register_online()
 
     # memory ------------------------------------------------------------
 
@@ -363,7 +474,7 @@ class ToolBox:
             }
 
         def fs_write(path: str, content: str) -> dict:
-            target = box.resolve_path(path)
+            target = self.resolve_path(path)
             if target.is_dir():
                 raise ToolError("path is a directory")
             suffix = target.suffix.lower()

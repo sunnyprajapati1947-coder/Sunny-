@@ -358,6 +358,23 @@ class SkillLibrary:
             lines.append(f"- {row['id']} · {row['title']} [{origin}] — {row['description'][:150]}")
         return "\n".join(lines)
 
+    def atlas(self, per_pack: int = 0) -> str:
+        """A compact map of everything the phone can do, small enough for a prompt."""
+        stats = self.status()
+        rows = [row for row in self.packs() if row["count"]]
+        rows.sort(key=lambda row: row["count"], reverse=True)
+        packs = " · ".join(f"{row['pack']} {row['count']}" for row in rows)
+        native = [row for row in self.search("", builtin_only=True, limit=30)]
+        native_text = ", ".join(row["title"] for row in native)
+        lines = [
+            f"You have {stats['total']} skills installed offline on this phone "
+            f"({stats['imported']} from GitHub packs, {stats['builtin']} native).",
+            f"Packs: {packs}.",
+            f"Native skills you can run right now with skill_run: {native_text}.",
+            "For anything else, call skill_search first, then skill_show for the full method.",
+        ]
+        return "\n".join(lines)
+
     def stats(self) -> dict:
         try:
             return self.status()

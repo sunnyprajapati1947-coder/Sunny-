@@ -57,6 +57,12 @@ fast_url = "http://127.0.0.1:8081/v1"
 deep_url = "http://127.0.0.1:8080/v1"
 fast_model = "NovaLocal"
 
+[models]
+# local GGUF brain. Hard cap for downloads; 10 GB is the phone budget.
+max_gb = 10.0
+threads = 0            # 0 = cpu_count - 1
+context = 0            # 0 = min(4096, model native context)
+
 [server]
 host = "127.0.0.1"
 port = 8787
@@ -101,6 +107,9 @@ class Settings:
     python_timeout: int = 20
     memory_budget_chars: int = 2400
     approval_ttl: int = 600
+    models_max_gb: float = 10.0
+    models_threads: int = 0
+    models_context: int = 0
     store_chats: bool = True
     redact: bool = True
     sources: list = field(default_factory=list)
@@ -301,15 +310,32 @@ def load(home: Path | str | None = None) -> Settings:
     settings = Settings(home=home_path)
     sources = []
 
-    data = _toml_sections(home_path / "config.toml")
+    config_path = home_path / "config.toml"
+    data = _toml_sections(config_path)
     if data:
-        sources.append(str(home_path / "config.toml"))
+        sources.append(str(config_path))
+        if "models" not in data:
+            # older config from before the local-brain release: append defaults
+            # once, without touching a single existing line.
+            try:
+                with config_path.open("a", encoding="utf-8") as handle:
+                    handle.write(
+                        "\n[models]\n"
+                        "# local GGUF brain. Hard cap for downloads; 10 GB is the phone budget.\n"
+                        "max_gb = 10.0\nthreads = 0            # 0 = cpu_count - 1\n"
+                        "context = 0            # 0 = min(4096, model native context)\n")
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                data = _toml_sections(config_path)
+            except OSError:
+                pass
     assistant = data.get("assistant", {}) or {}
     provider = data.get("provider", {}) or {}
     local = data.get("local", {}) or {}
     server = data.get("server", {}) or {}
     limits = data.get("limits", {}) or {}
     privacy = data.get("privacy", {}) or {}
+    models = data.get("models", {}) or {}
 
     settings.assistant_name = str(assistant.get("name", settings.assistant_name))[:24] or "JARVIS"
     settings.owner = str(assistant.get("owner", settings.owner))[:40]
@@ -337,6 +363,10 @@ def load(home: Path | str | None = None) -> Settings:
     settings.memory_budget_chars = max(400, _as_int(limits.get("memory_budget_chars"), settings.memory_budget_chars))
     settings.approval_ttl = max(30, _as_int(limits.get("approval_ttl"), settings.approval_ttl))
 
+    settings.models_max_gb = min(64.0, max(0.5, _as_float(models.get("max_gb"), settings.models_max_gb)))
+    settings.models_threads = max(0, _as_int(models.get("threads"), settings.models_threads))
+    settings.models_context = max(0, _as_int(models.get("context"), settings.models_context))
+
     settings.store_chats = _as_bool(privacy.get("store_chats"), settings.store_chats)
     settings.redact = _as_bool(privacy.get("redact_secrets"), settings.redact)
 
@@ -347,12 +377,16 @@ def load(home: Path | str | None = None) -> Settings:
         model = nova.get("NOVA_QWEN_MODEL")
         if model and settings.provider_mode in ("auto", "local"):
             pass  # local lane reports its own model name
-        fast_url = nova.get("NOVA_FAST_QWEN_URL", "")
-        if fast_url.endswith("/chat/completions"):
-            settings.fast_url = fast_url.rsplit("/chat/completions", 1)[0]
-        deep_url = nova.get("NOVA_QWEN_URL", "")
-        if deep_url.endswith("/chat/completions"):
-            settings.deep_url = deep_url.rsplit("/chat/completions", 1)[0]
+        # config.toml is the source of truth once the key exists; nova.env only
+        # supplies defaults so `model start` can rewrite the lane.
+        if "fast_url" not in local:
+            fast_url = nova.get("NOVA_FAST_QWEN_URL", "")
+            if fast_url.endswith("/chat/completions"):
+                settings.fast_url = fast_url.rsplit("/chat/completions", 1)[0]
+        if "deep_url" not in local:
+            deep_url = nova.get("NOVA_QWEN_URL", "")
+            if deep_url.endswith("/chat/completions"):
+                settings.deep_url = deep_url.rsplit("/chat/completions", 1)[0]
 
     # secrets file, then environment override
     if _load_secrets(settings.secrets_path):
@@ -393,7 +427,7 @@ def save_settings(settings: Settings, patch: dict) -> Settings:
     data = _toml_sections(settings.config_path) or {}
     for section, values in (patch or {}).items():
         if not isinstance(values, dict) or section not in (
-            "assistant", "provider", "local", "server", "limits", "privacy"
+            "assistant", "provider", "local", "server", "limits", "privacy", "models"
         ):
             continue
         target = data.setdefault(section, {})
@@ -468,7 +502,7 @@ def token(settings: Settings) -> str:
 
 def _dump_toml(data: dict) -> str:
     out = ["# JARVIS settings. Safe to edit. No secrets here — put keys in secrets.env.", ""]
-    for section in ("assistant", "provider", "local", "server", "limits", "privacy"):
+    for section in ("assistant", "provider", "local", "server", "limits", "privacy", "models"):
         values = data.get(section)
         if not isinstance(values, dict):
             continue

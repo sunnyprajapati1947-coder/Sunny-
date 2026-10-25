@@ -24,17 +24,21 @@ import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from jarvis import config as config_module  # noqa: E402
+from jarvis import doctor as doctor_module  # noqa: E402
+from jarvis import tools as tools_module  # noqa: E402
 from jarvis.approvals import ApprovalStore  # noqa: E402
 from jarvis.brain import Brain  # noqa: E402
 from jarvis.db import open_database  # noqa: E402
 from jarvis.memory import MemoryStore, MemoryStoreError  # noqa: E402
 from jarvis.providers import Breaker, ProviderError, Reply, Router  # noqa: E402
+from jarvis.models import CATALOG, Downloader, ModelError, ModelManager  # noqa: E402
 from jarvis.skills import SkillLibrary, SkillRunner  # noqa: E402
 from jarvis.skills.library import SkillError  # noqa: E402
 from jarvis.tasks import TaskStore  # noqa: E402
@@ -71,6 +75,318 @@ class Base(unittest.TestCase):
         self.tasks = TaskStore(self.db)
 
 
+# -------------------------------------------------------------- local brain
+
+class PayloadHandler(BaseHTTPRequestHandler):
+    """Tiny file host with Range support, for downloader tests."""
+
+    payload = b""
+    ranges: list = []
+    hits = 0
+
+    def log_message(self, *args):
+        pass
+
+    def do_GET(self):
+        type(self).hits += 1
+        raw = self.headers.get("range") or ""
+        type(self).ranges.append(raw)
+        start = 0
+        if raw.startswith("bytes="):
+            try:
+                start = int(raw.split("=", 1)[1].split("-", 1)[0])
+            except ValueError:
+                start = 0
+        body = type(self).payload[start:]
+        self.send_response(206 if start else 200)
+        if start:
+            self.send_header("content-range", f"bytes {start}-{len(type(self).payload) - 1}/{len(type(self).payload)}")
+        self.send_header("content-length", str(len(body)))
+        self.end_headers()
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+
+
+class EndlessHandler(BaseHTTPRequestHandler):
+    """Streams without a content-length so the cap must stop it mid-flight."""
+
+    def log_message(self, *args):
+        pass
+
+    def do_GET(self):
+        self.protocol_version = "HTTP/1.0"
+        self.send_response(200)
+        self.end_headers()
+        try:
+            for _ in range(80):
+                self.wfile.write(b"x" * 65536)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+
+
+def serve(handler) -> int:
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server.server_address[1]
+
+
+class ModelTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.models = ModelManager(self.settings)
+
+    def test_catalog_is_phone_sized_and_within_the_cap(self):
+        rows = self.models.catalog()
+        self.assertEqual(len(rows), len(CATALOG))
+        default = [row for row in rows if row["recommended"]]
+        self.assertEqual(len(default), 1)
+        self.assertEqual(default[0]["id"], "qwen3-4b-instruct-q4")
+        self.assertLessEqual(default[0]["size"], 3 * 2**30)
+        self.assertIn("Q4", default[0]["quant"])
+        for row in rows:
+            self.assertTrue(row["file"].endswith(".gguf"))
+            self.assertLessEqual(row["size"], CATALOG[row["id"]]["size"] * 2)
+            self.assertTrue(row["size_text"])
+            self.assertLessEqual(row["size"], 10 * 2**30)
+            self.assertIn("huggingface.co", row["url"])
+
+    def test_status_reports_cap_disk_and_honest_running(self):
+        status = self.models.status()
+        self.assertEqual(status["max_gb"], 10.0)
+        self.assertGreater(status["disk_free_gb"], 0)
+        self.assertIn("running", status)
+        self.assertFalse(status["running"]["alive"])
+        self.assertFalse(status["running"]["healthy"])
+        self.assertEqual(status["provider_mode"], "offline")
+
+    def test_download_resumes_with_a_range_request(self):
+        PayloadHandler.payload = b"model-bytes" * 200
+        PayloadHandler.ranges = []
+        port = serve(PayloadHandler)
+        target = self.home / "models" / "part.gguf"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"old broken download")
+        head = PayloadHandler.payload[:700]
+        target.with_suffix(target.suffix + ".part").write_bytes(head)
+
+        result = Downloader(10 * 2**30).fetch(
+            f"http://127.0.0.1:{port}/part.gguf", target, expected=len(PayloadHandler.payload))
+        self.assertTrue(result["ok"])
+        self.assertEqual(target.read_bytes(), PayloadHandler.payload)
+        self.assertEqual(PayloadHandler.ranges[-1], f"bytes={len(head)}-")
+        self.assertFalse(target.with_suffix(target.suffix + ".part").exists())
+        backup = target.with_suffix(target.suffix + ".bak")
+        self.assertEqual(backup.read_bytes(), b"old broken download")
+
+    def test_download_over_cap_is_discarded(self):
+        EndlessHandler.cap_hits = 0
+        port = serve(EndlessHandler)
+        target = self.home / "models" / "huge.gguf"
+        with self.assertRaises(ModelError):
+            Downloader(1024 * 1024).fetch(f"http://127.0.0.1:{port}/huge.gguf", target)
+        self.assertFalse(target.exists())
+        self.assertFalse(target.with_suffix(target.suffix + ".part").exists())
+
+    def test_start_without_binary_is_honest(self):
+        os.environ.pop("JARVIS_LLAMA_SERVER", None)
+        os.environ.pop("NOVA_LLAMA_SERVER", None)
+        with mock.patch("jarvis.models.find_llama_server", return_value=""):
+            with self.assertRaises(ModelError) as caught:
+                self.models.start("qwen3-4b-instruct-q4")
+        self.assertIn("llama-server not found", str(caught.exception))
+        self.assertNotIn("Traceback", str(caught.exception))
+
+    def test_start_stop_with_fake_llama_server(self):
+        script = self.home / "llama-server"
+        script.write_text(
+            "#!" + sys.executable + "\n"
+            "import json, sys\n"
+            "from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\n"
+            "port = int(sys.argv[sys.argv.index('--port') + 1])\n"
+            "class H(BaseHTTPRequestHandler):\n"
+            "    def log_message(self, *a): pass\n"
+            "    def do_GET(self):\n"
+            "        body = json.dumps({'data': [{'id': 'fake-qwen'}]}).encode()\n"
+            "        self.send_response(200)\n"
+            "        self.send_header('content-type', 'application/json')\n"
+            "        self.send_header('content-length', str(len(body)))\n"
+            "        self.end_headers()\n"
+            "        self.wfile.write(body)\n"
+            "ThreadingHTTPServer(('127.0.0.1', port), H).serve_forever()\n"
+        )
+        script.chmod(0o755)
+        model_path = self.models.path_of("qwen3-1.7b-q4")
+        model_path.parent.mkdir(parents=True, exist_ok=True)
+        model_path.write_bytes(b"GGUF fake weights")
+        port = free_port()
+        self.settings.fast_url = f"http://127.0.0.1:{port}/v1"
+        self.addCleanup(self.models.stop)
+        with mock.patch.dict(os.environ, {"JARVIS_LLAMA_SERVER": str(script)}):
+            result = self.models.start(port=port, threads=1)
+            self.assertTrue(result["ok"])
+            self.assertEqual(result["model"], "qwen3-1.7b-q4")
+            self.assertEqual(result["port"], port)
+            self.assertTrue(self.models.running()["alive"])
+            self.assertTrue(self.models.running()["healthy"])
+            reloaded = config_module.load(self.home)
+            self.assertEqual(reloaded.provider_mode, "local")
+            self.assertEqual(reloaded.fast_model, "qwen3-1.7b-q4")
+            self.assertTrue(reloaded.fast_url.endswith(f":{port}/v1"))
+            stop = self.models.stop()
+            self.assertTrue(stop["stopped"])
+            self.assertFalse(self.models.running()["alive"])
+
+    def test_stop_never_kills_a_foreign_pid(self):
+        self.models.pid_path.parent.mkdir(parents=True, exist_ok=True)
+        self.models.pid_path.write_text(str(os.getpid()))
+        result = self.models.stop()
+        self.assertFalse(result["stopped"])
+        self.assertIn("stale", result["reason"])
+        self.assertFalse(self.models.pid_path.exists())
+
+
+class AtlasTests(Base):
+    def test_atlas_teaches_the_library(self):
+        library = SkillLibrary(self.db, ROOT)
+        library.sync(include_packs=False)
+        text = library.atlas()
+        self.assertIn("skills installed offline", text)
+        self.assertIn("skill_search", text)
+        self.assertIn("native", text)
+
+    def test_brain_prompt_carries_the_atlas(self):
+        library = SkillLibrary(self.db, ROOT)
+        library.sync(include_packs=False)
+        brain = Brain(self.settings, Router(self.settings), self.tools, self.memory,
+                      self.tasks, self.db, skills=library)
+        prompt = brain.system_prompt()
+        self.assertIn("skill_search", prompt)
+        self.assertIn("skills installed offline", prompt)
+
+
+class DoctorTests(Base):
+    def test_local_brain_checks_exist(self):
+        names = [name for name, _fn, _critical in doctor_module.CHECKS]
+        self.assertIn("llama.cpp binary", names)
+        self.assertIn("local gguf model", names)
+
+    def test_gguf_check_explains_the_download(self):
+        ok, detail, hint = doctor_module._gguf(self.settings)
+        self.assertFalse(ok)
+        self.assertIn("model download", hint)
+        self.assertIn("none downloaded", detail)
+
+
+class OnlineToolTests(Base):
+    """The internet "hands": approval-gated, private hosts refused, capped."""
+
+    def setUp(self):
+        super().setUp()
+        self.tools.root = self.home      # never write into the repo
+        self.handler_hits = 0
+
+    def approved(self, name, arguments):
+        first = self.tools.call(name, arguments)
+        self.assertTrue(first.get("approval_required"), first)
+        approval_id = first["approval"]["id"]
+        ok, reason = self.approvals.decide(approval_id, True)
+        self.assertTrue(ok, reason)
+        return self.tools.call(name, arguments, approval_id=approval_id)
+
+    def fake_api(self):
+        outer = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def do_GET(self):
+                outer.handler_hits += 1
+                if self.path.startswith("/big"):
+                    body = b"z" * 350_000
+                else:
+                    body = b'{"ok": true, "hello": "world"}'
+                self.send_response(200)
+                self.send_header("content-type", "application/json")
+                self.send_header("content-length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_POST(self):
+                outer.handler_hits += 1
+                length = int(self.headers.get("content-length") or 0)
+                body = json.dumps({
+                    "echo": self.rfile.read(length).decode(),
+                    "auth": self.headers.get("authorization") or "",
+                }).encode()
+                self.send_response(201)
+                self.send_header("content-length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+        return serve(Handler)
+
+    def test_tools_exist_and_need_approval_before_any_network(self):
+        registered = {tool["name"] for tool in self.tools.list()}
+        for name in ("http_request", "download_file"):
+            self.assertIn(name, registered)
+        port = self.fake_api()
+        result = self.tools.call("http_request", {"url": f"http://127.0.0.1:{port}/json"})
+        self.assertTrue(result["approval_required"])
+        self.assertEqual(self.handler_hits, 0)
+
+    def test_private_hosts_are_refused(self):
+        result = self.approved("http_request", {"url": "http://127.0.0.1:9/secret"})
+        self.assertFalse(result["ok"])
+        self.assertIn("private", result["error"])
+        result = self.approved("http_request", {"url": "file:///etc/passwd"})
+        self.assertIn("http", result["error"])
+
+    def test_public_get_and_post_are_returned_as_untrusted(self):
+        port = self.fake_api()
+        with mock.patch.object(tools_module, "_public_host", return_value=True):
+            got = self.approved("http_request", {"url": f"http://127.0.0.1:{port}/json"})["result"]
+            self.assertEqual(got["status"], 200)
+            self.assertTrue(got["untrusted"])
+            self.assertIn("world", got["text"])
+            posted = self.approved("http_request", {
+                "method": "POST", "url": f"http://127.0.0.1:{port}/echo", "body": "ping"})["result"]
+            self.assertEqual(posted["status"], 201)
+            self.assertIn("ping", posted["text"])
+            big = self.approved("http_request", {"url": f"http://127.0.0.1:{port}/big"})["result"]
+            self.assertTrue(big["truncated"])
+            self.assertLessEqual(len(big["text"]), 120_000)
+
+    def test_sensitive_headers_and_bad_methods_are_refused(self):
+        with mock.patch.object(tools_module, "_public_host", return_value=True):
+            result = self.approved("http_request", {
+                "url": "http://127.0.0.1:1/x", "headers": {"Authorization": "Bearer nope"}})
+            self.assertIn("sensitive header", result["error"])
+            result = self.approved("http_request", {"url": "http://127.0.0.1:1/x", "method": "CONNECT"})
+            self.assertIn("unsupported method", result["error"])
+
+    def test_download_writes_inside_the_project_and_respects_caps(self):
+        port = self.fake_api()
+        with mock.patch.object(tools_module, "_public_host", return_value=True):
+            got = self.approved("download_file", {
+                "url": f"http://127.0.0.1:{port}/big", "path": "downloads/big.json", "max_mb": 1})
+            self.assertTrue(got["ok"], got)
+            self.assertTrue(got["result"]["ok"])
+            saved = self.home / "downloads" / "big.json"
+            self.assertEqual(saved.stat().st_size, 350_000)
+            again = self.approved("download_file", {
+                "url": f"http://127.0.0.1:{port}/big", "path": "downloads/big.json", "max_mb": 1})
+            self.assertIn("exists", again["error"])
+            blocked = self.approved("download_file", {
+                "url": f"http://127.0.0.1:{port}/big", "path": "downloads/tool.exe", "max_mb": 1})
+            self.assertIn("executable", blocked["error"])
+            escape = self.approved("download_file", {
+                "url": f"http://127.0.0.1:{port}/big", "path": "../outside.json", "max_mb": 1})
+            self.assertFalse(escape["ok"])
+
+
 # --------------------------------------------------------------------- config
 
 class ConfigTests(Base):
@@ -105,6 +421,25 @@ class ConfigTests(Base):
         dump = json.dumps(self.settings.public())
         self.assertNotIn("super-secret-value", dump)
         self.assertTrue(self.settings.public()["keys_present"]["GEMINI_API_KEY"])
+
+    def test_models_section_defaults_and_clamps(self):
+        self.assertEqual(self.settings.models_max_gb, 10.0)
+        self.assertEqual(self.settings.models_threads, 0)
+        config_module.save_settings(self.settings, {"models": {"max_gb": 99}})
+        self.assertEqual(config_module.load(self.home).models_max_gb, 64.0)
+        config_module.save_settings(self.settings, {"models": {"max_gb": 0.1}})
+        self.assertEqual(config_module.load(self.home).models_max_gb, 0.5)
+
+    def test_old_config_gains_the_models_section(self):
+        config_path = self.settings.config_path
+        text = config_path.read_text()
+        start = text.index("[models]")
+        end = text.find("\n[", start + 1)
+        config_path.write_text(text[:start] + text[end + 1:])
+        self.assertNotIn("[models]", config_path.read_text())
+        reloaded = config_module.load(self.home)
+        self.assertEqual(reloaded.models_max_gb, 10.0)
+        self.assertIn("[models]", config_path.read_text())
 
     def test_token_is_stable_and_private(self):
         first = config_module.token(self.settings)
@@ -298,6 +633,99 @@ class ToolTests(Base):
         found = self.tools.call("recall", {"query": "meeting"})
         self.assertTrue(found["ok"])
         self.assertTrue(found["result"]["memories"])
+
+
+# ----------------------------------------------------------------- local lane
+
+class LaneHandler(BaseHTTPRequestHandler):
+    """A fake llama-server OpenAI lane, so the local brain path is tested."""
+
+    calls = 0
+
+    def log_message(self, *args):
+        pass
+
+    def _send_json(self, payload, status=200):
+        body = json.dumps(payload).encode()
+        self.send_response(status)
+        self.send_header("content-type", "application/json")
+        self.send_header("content-length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        self._send_json({"data": [{"id": "qwen3-4b-instruct-q4"}]})
+
+    def do_POST(self):
+        type(self).calls += 1
+        length = int(self.headers.get("content-length") or 0)
+        payload = json.loads(self.rfile.read(length) or b"{}")
+        rows = payload.get("messages") or []
+        tool_done = any(str(row.get("role")) == "user"
+                        and str(row.get("content") or "").startswith("<tool_result>")
+                        for row in rows)
+        answer = ("Phone theek chal raha hai, battery 80%." if tool_done
+                  else '<tool>{"name": "system_info", "arguments": {}}</tool>')
+        if not payload.get("stream"):
+            self._send_json({"choices": [{"message": {"content": answer}}], "usage": {"total_tokens": 12}})
+            return
+        self.send_response(200)
+        self.send_header("content-type", "text/event-stream")
+        self.end_headers()
+        for index in range(0, len(answer), 8):
+            chunk = {"choices": [{"delta": {"content": answer[index:index + 8]}}]}
+            self.wfile.write(("data: " + json.dumps(chunk) + "\n\n").encode())
+            self.wfile.flush()
+        self.wfile.write(b"data: [DONE]\n\n")
+        self.wfile.flush()
+
+
+class LocalLaneTests(Base):
+    """Qwen3 lane as the brain: SSE, tool loop, activation wiring."""
+
+    def setUp(self):
+        super().setUp()
+        LaneHandler.calls = 0
+        self.port = serve(LaneHandler)
+        self.settings.provider_mode = "local"
+        self.settings.fast_url = f"http://127.0.0.1:{self.port}/v1"
+        self.settings.fast_model = "qwen3-4b-instruct-q4"
+        self.settings.deep_url = "http://127.0.0.1:1/v1"
+        self.settings.timeout = 10
+        self.router = Router(self.settings)
+
+    def test_local_lane_is_selected_and_streams(self):
+        status = self.router.status()
+        self.assertEqual(status["active"], "local")
+        self.assertTrue(status["providers"][-1]["configured"])
+        seen = []
+        reply = self.router.complete("system", [{"role": "user", "content": "hi"}],
+                                     on_delta=seen.append)
+        self.assertEqual(reply.provider, "local")
+        self.assertIn("system_info", reply.text)
+        self.assertTrue(seen)
+        self.assertIn("system_info", "".join(seen))
+
+    def test_brain_runs_a_tool_on_the_local_model(self):
+        brain = Brain(self.settings, self.router, self.tools, self.memory,
+                      self.tasks, self.db)
+        turn = brain.reply("mera phone ka haal batao")
+        self.assertEqual(turn.provider, "local")
+        self.assertEqual(turn.model, "qwen3-4b-instruct-q4")
+        self.assertTrue(turn.tool_events)
+        self.assertEqual(turn.tool_events[0]["tool"], "system_info")
+        self.assertTrue(turn.tool_events[0]["ok"])
+        self.assertIn("Phone theek", turn.text)
+        self.assertNotIn("<tool>", turn.text)
+        self.assertEqual(LaneHandler.calls, 2)
+
+    def test_local_mode_without_a_lane_is_honest(self):
+        self.settings.fast_url = "http://127.0.0.1:1/v1"
+        brain = Brain(self.settings, Router(self.settings), self.tools, self.memory,
+                      self.tasks, self.db)
+        turn = brain.reply("kuch batao")
+        self.assertEqual(turn.provider, "offline")
+        self.assertIn("model configured nahi", turn.error)
 
 
 # ---------------------------------------------------------------------- tasks

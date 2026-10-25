@@ -24,7 +24,11 @@ Browser mein `http://127.0.0.1:8787/?token=...` kholo — token start hote waqt 
 | Tools: memory, fs, system, git, python, web, Termux notify/speak | **WORKING** | `ToolTests` (8 tests) |
 | Authenticated dashboard (401 without token, 429 after 12 bad tries) | **WORKING** | `ServerTests` (10 tests) + jsdom UI smoke 28/28 |
 | Streaming chat (SSE) | **WORKING** | real HTTP test + browser UI |
-| Provider chain: Gemini REST streaming, OpenAI-compatible, local llama.cpp, breaker | **WORKING (code)** — **live key ke bina untested** | `ProviderTests` against a fake Gemini server |
+| Provider chain: Gemini REST streaming, OpenAI-compatible, local llama.cpp, breaker | **WORKING (code)** — live key/local model ke bina untested | `ProviderTests` against a fake Gemini server |
+| **Local brain: Qwen3 4B Q4 GGUF + llama-server** | **WORKING (code + tests)** — asli 2.5 GB model sandbox mein nahi chala | `ModelTests` (7): catalog, cap, resume, start/stop, stale pid; `LocalLaneTests` (3): SSE, tool loop, honest offline |
+| **Model manager (download/start/stop/use, 10 GB hard cap, resume)** | **WORKING** | `model status/download/start/stop`, `ServerTests` model API |
+| **Skill atlas (saari 1,899 skills model ko sikhati hain)** | **WORKING** | `skills --atlas`, atlas prompt test |
+| **Online hands: public HTTP API + file download** | **WORKING** | `OnlineToolTests` (5 tests): approval, SSRF block, header block, caps |
 | **Skill library: 1,889 GitHub skills + 10 native** | **WORKING** | import 1.4s, FTS search, `SkillTests` (9 tests) + UI smoke |
 | **Skill run (native, real tools) + approval pause/resume** | **WORKING** | `jarvis-phone-checkup` DONE, `jarvis-memory-export` PAUSED→approve→DONE |
 | **Bolo aur kaam shuru (hands-free + wake word + offline intents)** | **WORKING (browser)** | fake recogniser test + real SSE chat; Chrome/Android par mic chahiye |
@@ -102,15 +106,65 @@ python3 run_jarvis.py --help           # commands list
 
 Verify: `/api/status` mein `provider.active = "gemini"`.
 
-### Option B — local llama.cpp (offline, free)
+### Option B — local Qwen3 4B brain (offline, free, tumhare phone par)
+
+Ye wahi cheez hai jo tumne maangi thi: **Qwen3 4B (Q4_K_M)** JARVIS ka dimaag ban jata hai, sab kuch
+phone par, koi cloud nahi. Model file **2.5 GB** hai, RAM mein ~4 GB leta hai, licence Apache-2.0.
+
+**Babal — 3 command**
 
 ```bash
-bash automation/start_fast_lane.sh     # existing Nova lane, port 8081
-python3 run_jarvis.py doctor           # "local model lanes ... up" dikhna chahiye
+python3 run_jarvis.py model list                  # 3 models, size + RAM
+python3 run_jarvis.py model download              # default: Qwen3-4B-Instruct-2507 Q4_K_M (2.5 GB)
+python3 run_jarvis.py model start                 # llama-server + auto-activate
 ```
 
-`jarvis` khud `http://127.0.0.1:8081/v1` aur `:8080/v1` ko probe karta hai (Nova ke `config/nova.env`
-se URLs bhi padh leta hai).
+Bas. `model start` khud `provider.mode = local` aur `local.fast_url = http://127.0.0.1:8081/v1` likh deta hai,
+isliye dashboard ka Chat turant local brain se jawab dene lagta hai.
+
+Dashboard se bhi ho jata hai: **Setup → Local brain (offline)** card → *Download* → *Start* → *Use*.
+Download progress bar wahin dikhta hai (page band kar do to bhi download chalta rehta hai, server side job hai).
+
+**llama-server chahiye** (ek baar ka kaam, Termux/Debian proot):
+
+```bash
+pkg install clang cmake git
+git clone https://github.com/ggml-org/llama.cpp ~/llama.cpp
+cd ~/llama.cpp && cmake -B build -DGGML_NATIVE=ON && cmake --build build -j4 --target llama-server
+# JARVIS ise khud dhoondh leta hai: ~/llama.cpp/build/bin/llama-server
+# ya batao: export JARVIS_LLAMA_SERVER=/path/to/llama-server
+```
+
+Build slow lage to Hugging Face/llama.cpp releases se ARM64 binary bhi le sakte ho — bas
+`llama-server` naam se `PATH` mein ho. `python3 run_jarvis.py doctor` bata dega mila ya nahi.
+
+**Model ke bare mein**
+
+| id | file | size | RAM | kab |
+|---|---|---|---|---|
+| `qwen3-4b-instruct-q4` *(default)* | `Qwen3-4B-Instruct-2507-Q4_K_M.gguf` | 2.5 GB | ~4.0 GB | normal chat + tool calling |
+| `qwen3-4b-q4` | `Qwen3-4B-Q4_K_M.gguf` | 2.5 GB | ~4.5 GB | sochta hai pehle, phone par slow |
+| `qwen3-1.7b-q4` | `Qwen3-1.7B-Q4_K_M.gguf` | ~1.1 GB | ~2.2 GB | kam RAM, halka kaam |
+
+- **10 GB hard cap:** `config.toml` mein `[models] max_gb = 10.0`. Cap se bada download shuru hi nahi hota,
+  aur agar server galat size bhejne lage to adhoora `.part` file delete kar diya jata hai. Cap 0.5–64 GB
+  ke beech hi set ho sakta hai — 10 se zyada tabhi jab phone mein jagah ho.
+- **Resume:** `.part` file rehti hai; dobara `model download` chalao, HTTP `Range` se wahin se shuru hota hai.
+- **Context:** default `min(4096, model ka native)` — 4 GB phone par itna hi theek hai. `[models] context = 8192`
+  se badha sakte ho (RAM bhi badhegi). `threads = 0` = CPU cores − 1.
+- **Stop:** `model stop` — pehle SIGTERM, 4 second baad SIGKILL. Sirf wahi pid kill hota hai jo
+  `/proc/<pid>/cmdline` mein `llama` dikhaye; stale pidfile ko chhu bhi nahi sakta.
+- **Logs:** `~/.openjarvis/logs/llama-server.log`; `python3 run_jarvis.py model logs -n 40`.
+
+> Sach: is sandbox (x86_64, no llama-server binary, no 2.5 GB download) mein asli Qwen3 inference **nahi**
+> chala. Jo verify hua: catalog size, download cap/resume, fake llama-server ke saath start→activate→stop,
+> stale-pid safety, aur CLI/HTTP paths. Asli model ka pehla run tumhare phone par hoga — `model start`
+> fail ho to log tail turant bata dega (aksar `cmake` build missing ya RAM kam).
+
+### Option C — pehle se bana local lane
+
+Agar tumhare paas Nova ka lane already hai (`http://127.0.0.1:8081/v1`, `:8080/v1`), JARVIS use bhi
+probe karta hai. `start` ke baad `[local] fast_url` likha jaata hai, isliye dono saath chal sakte hain.
 
 ### Bina key ke kya hota hai
 
@@ -123,7 +177,7 @@ Provider order (`auto` mode): **Gemini → OpenRouter → OpenAI → Groq → De
 
 ## 4. Dashboard tour
 
-Phone-first dark UI, 5 tabs:
+Phone-first dark UI, 6 tabs:
 
 - **Chat** — streaming replies, tool events dikhte hain, "speak" button, mic button, approval banner.
   Chat history SQLite mein rehti hai (Setup se off kar sakte ho).
@@ -131,7 +185,9 @@ Phone-first dark UI, 5 tabs:
   progress bar, aur pending approvals.
 - **Memory** — search, add, edit, forget. Kya yaad hai wahi model ko prompt mein milta hai.
 - **Tools** — har tool ka risk level aur "Run manually" (JSON args ke saath).
-- **Setup** — provider/model, API key, privacy toggle, audit log, token lock.
+- **Skills** — 1,899 skills ki search, pack filter, native skill run, task result.
+- **Setup** — provider/model, **Local brain card** (Qwen3 download/start/stop), API key, privacy toggle,
+  audit log, token lock.
 
 ### Approvals ka matlab
 
@@ -174,6 +230,30 @@ curl -s -H "x-jarvis-token: $(cat ~/.openjarvis/dashboard.token)" \
   "http://127.0.0.1:8787/api/skills?q=pdf&limit=5"
 curl -s -X POST -H "x-jarvis-token: …" -H 'content-type: application/json' \
   -d '{"inputs":{}}' http://127.0.0.1:8787/api/skills/jarvis-phone-checkup/run
+```
+
+---
+
+### 4b. Skills ko brain mein "sikhana" — sach kya hai
+
+Tumne kaha tha "uske andar saari GitHub skills sikha dena". Finetuning nahi hui (wo 4 GB phone par
+practical bhi nahi hai). Jo hua wo **retrieval** hai:
+
+- brain ke system prompt mein ek **atlas** jaata hai — kitni skills hain, kaunse 24 packs, aur native
+  skills ke naam. Isse model ko pata rehta hai ki uske paas kya hai aur wo "nahi kar sakta" jaldi nahi bolta.
+- jab kaam padta hai, model `skill_search` → `skill_show` call karta hai aur us skill ke poore
+  instructions padh kar waise hi karta hai. Yani **1,899 skills on-demand available** hain, weights ke andar
+  yaad nahi ki gayi hain.
+- native skills (phone checkup, memory export, etc.) asli tools chalate hain; imported skills knowledge
+  hain — unhe chalane ke liye model chahiye, aur wo baat wahi saaf bolte hain.
+
+Ye model ke saath kabhi gardan nahi modta: `skill_search` result khaali ho to model ko mana karna hi padega.
+
+Atlas command se dekh sakte ho:
+
+```bash
+python3 run_jarvis.py skills --atlas
+python3 run_jarvis.py skills --search "postgres backup" --limit 5
 ```
 
 ---
@@ -251,12 +331,17 @@ Jo `https://xxxx.trycloudflare.com` URL mile, uske aage `?token=<dashboard.token
 | `skill_search` / `skill_show` | low | 1,899 skills mein dhoondo / poora text padho |
 | `skill_run` | low | skill ko task bana kar chalao (andar ke risky steps apni approval maangte hain) |
 | `tasks_list` / `audit_recent` | low | queue ka haal / recent audit events |
+| `http_request` | medium | kisi bhi **public** HTTP API ko GET/POST/PUT/PATCH/DELETE/HEAD — JARVIS ke "online haath" |
+| `download_file` | medium | public file project mein laao (default 20 MB cap, executables refuse) |
 
 Sandbox rules jo code mein enforced hain:
 
 - har path project root ke andar resolve hota hai (`../` escape → `blocked`)
 - `fs_write` sirf allowlisted extensions, 400 KB limit, 2 MB se badi file overwrite nahi
-- web fetch private/loopback hosts refuse karta hai
+- web fetch **aur** `http_request`/`download_file` private, loopback, link-local aur reserved hosts refuse karte hain (SSRF guard)
+- `http_request` kabhi `authorization`, `cookie`, `host`, `proxy-authorization` header nahi bhejta; body 20 KB tak
+- web response sirf 300 KB padha jaata hai, 120 KB model ko jaata hai, aur `untrusted: true` mark hota hai
+- `download_file` `.exe/.apk/.so/.sh/.bin` refuse karta hai; purani file `.bak` ban jaati hai
 - python snippet mein `socket`, `urllib`, `subprocess`, `os.system` → refuse
 - tool output `untrusted` mark hota hai, prompt mein data ke roop mein jaata hai, instruction nahi
 - keys/tokens output mein redact hote hain
@@ -314,6 +399,14 @@ python3 run_jarvis.py chat "aaj ka plan banao"
 python3 run_jarvis.py tasks [--sweep] [--status RUNNING]
 python3 run_jarvis.py tasks --action pause --task-id tsk_xxx
 python3 run_jarvis.py memory [--search nova] [--add "yaad rakho ..."] [--forget 3]
+python3 run_jarvis.py skills [--sync] [--atlas] [--search TEXT] [--limit 8]
+python3 run_jarvis.py model list
+python3 run_jarvis.py model status
+python3 run_jarvis.py model download [qwen3-1.7b-q4] [--url ...]   # resume + 10 GB cap
+python3 run_jarvis.py model start [--port 8081] [--context 4096] [--threads 3]
+python3 run_jarvis.py model use qwen3-4b-instruct-q4                # lane switch
+python3 run_jarvis.py model stop
+python3 run_jarvis.py model logs [--lines 40]
 ```
 
 `python3 -m jarvis ...` bhi wahi commands chalata hai.
@@ -323,20 +416,22 @@ python3 run_jarvis.py memory [--search nova] [--add "yaad rakho ..."] [--forget 
 ## 13. Tests
 
 ```bash
-python3 -m unittest tests.test_jarvis_app -v     # 59 tests, ~6s
+python3 -m unittest tests.test_jarvis_app -v     # 80 tests, ~11s
 ```
 
 Kya cover hota hai: config + secret permissions, DB migration/corruption, memory (CRUD, secret refusal,
 FTS), approvals (pending/single-use/arg-binding/expiry), tool sandbox escapes, python timeout, task
 lifecycle/retries/sweep/deps, Gemini streaming + breaker (fake server), brain tool loop + budget,
-skill import/search/run/resume + offline voice intents, approval flow, aur poora HTTP server
-(401/429, chat SSE, skills API, memory CRUD, tasks, settings/secrets split).
+skill import/search/run/resume + offline voice intents, model catalog/cap/resume/stale-pid/start-stop
+(fake llama-server), atlas prompt, online hands (SSRF, header block, size cap, path escape),
+approval flow, aur poora HTTP server (401/429, chat SSE, skills API, model API, memory CRUD, tasks,
+settings/secrets split).
 
 UI ka apna smoke test jsdom se chalta hai (repo ke bahar, dev-only):
 
 ```bash
-# 28/28 checks: token gate, chat stream, skills search+run, hands-free voice,
-# memory, tasks, tools, settings, lock
+# 34/34 checks: token gate, chat stream, skills search+run, hands-free voice,
+# memory, tasks, tools, local-brain card, settings, lock
 JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 ```
 
@@ -354,6 +449,12 @@ JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 | Voice input nahi | Chrome/Android browser use karo (Web Speech API) |
 | `tomllib` ImportError | Python 3.11+ chahiye |
 | Task stuck `RUNNING` | restart — sweep use `PAUSED` kar dega, phir Resume |
+| `model start` → "llama-server not found" | llama.cpp build karo ya `JARVIS_LLAMA_SERVER` set karo; doctor dekho |
+| `model start` → "port ... busy" | `model stop`, ya `--port 8082` (aur `local.fast_url` khud badal jayega) |
+| Download beech mein ruk gaya | wahi command dobara — `.part` se resume hoga, zero se nahi |
+| "over the ... limit" | `[models] max_gb` badhao (max 64) ya chhota `qwen3-1.7b-q4` lo |
+| Local model bahut slow | `--context 2048 --threads 2`, ya 1.7B model; phone garam hoga to break do |
+| Model download ke baad bhi "offline" | `model use <id>` ya dashboard → Local brain → Use |
 
 ---
 
@@ -365,6 +466,10 @@ JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 - Imported skills ko model ke saath end-to-end chalana — code path hai (plan → execute), key ke bina sirf failure path tested.
 - Har imported skill ke liye custom native executor — abhi wo knowledge/instructions hain, script nahi.
 - Model-driven multi-step planning ki quality (abhi steps aap/CLI dete ho, ya model single-step chalata hai).
+- **Asli Qwen3 4B inference ka pehla run phone par hona baaki** — sandbox mein llama-server/2.5 GB model nahi tha.
+- Fine-tuning ya LoRA — jaan-boojh kar nahi kiya; skills retrieval se aate hain (upar 4b dekho).
+- Skill search Hindi/Devanagari mein kamzor hai (FTS English tokens par bana hai); "hindi" query par 0 hits aa sakte hain.
+- `download_file` se resume nahi hota (model downloader mein hota hai) — chhoti files ke liye theek hai.
 - Fine-tuned Hindi/Hinglish voice (browser TTS/STT par depend).
 - Trading tools — jaan-boojh kar nahi banaye.
 - PWA install prompt (dashboard local hai; browser tab/bookmark kaafi hai).

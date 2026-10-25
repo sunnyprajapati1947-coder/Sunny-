@@ -112,6 +112,12 @@ class Brain:
                     "Native skills can be executed: "
                     '<tool>{"name": "skill_run", "arguments": {"skill_id": "...", "inputs": {}}}</tool>',
                 ]
+                try:
+                    atlas = self.skills.atlas()
+                except Exception:
+                    atlas = ""
+                if atlas:
+                    lines += ["", atlas]
                 if block:
                     lines += ["", block]
 

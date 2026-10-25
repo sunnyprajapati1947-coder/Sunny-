@@ -92,6 +92,47 @@ def cmd_chat(args) -> int:
     return 0
 
 
+def cmd_model(args) -> int:
+    from .models import ModelError, cli as model_cli
+
+    try:
+        return model_cli(config_module.load(), args)
+    except ModelError as exc:
+        print(f"model error: {exc}")
+        return 1
+
+
+def cmd_skills(args) -> int:
+    from .db import open_database
+    from .skills import SkillLibrary
+
+    settings = config_module.load()
+    db = open_database(settings.db_path)
+    library = SkillLibrary(db, settings.project_root)
+    try:
+        if args.sync:
+            result = library.sync(force=args.force)
+            print(f"synced: {result['new']} new · {result['total']} total · {result['packs']} packs")
+        if args.atlas:
+            print(library.atlas())
+        if args.search:
+            rows = library.search(args.search, limit=args.limit)
+            for row in rows:
+                print(f"{row['id']:<52} [{row['pack']}] {row['title'][:60]}")
+            print(f"\n{len(rows)} results")
+        if not (args.sync or args.atlas or args.search):
+            stats = library.stats()
+            print(f"{stats['total']} skills · {stats['imported']} imported · "
+                  f"{stats['builtin']} native · {stats['packs']} packs")
+            print("native:")
+            for row in library.search("", builtin_only=True, limit=20):
+                print(f"  {row['id']:<28} {row['title']}")
+            print("\nuse --search TEXT, --atlas, --sync")
+        return 0
+    finally:
+        db.close()
+
+
 def cmd_tasks(args) -> int:
     from .db import open_database
     from .tasks import TaskStore
@@ -168,6 +209,25 @@ def main(argv: list[str] | None = None) -> int:
     chat = sub.add_parser("chat", help="single terminal turn")
     chat.add_argument("message", nargs="*")
     chat.set_defaults(func=cmd_chat)
+
+    model = sub.add_parser("model", help="local GGUF brain (download/start/stop)")
+    model.add_argument("action", nargs="?", default="status",
+                       choices=["list", "status", "download", "start", "stop", "use", "logs"])
+    model.add_argument("model_id", nargs="?", default="")
+    model.add_argument("--url", default="", help="custom GGUF URL instead of the catalog")
+    model.add_argument("--port", type=int, default=0)
+    model.add_argument("--context", type=int, default=0)
+    model.add_argument("--threads", type=int, default=0)
+    model.add_argument("--lines", type=int, default=60)
+    model.set_defaults(func=cmd_model)
+
+    skills = sub.add_parser("skills", help="skill library")
+    skills.add_argument("--sync", action="store_true")
+    skills.add_argument("--force", action="store_true")
+    skills.add_argument("--atlas", action="store_true")
+    skills.add_argument("--search", default="")
+    skills.add_argument("--limit", type=int, default=10)
+    skills.set_defaults(func=cmd_skills)
 
     tasks = sub.add_parser("tasks", help="task queue")
     tasks.add_argument("--status", default="")

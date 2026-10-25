@@ -27,6 +27,7 @@ from .approvals import ApprovalStore
 from .brain import Brain
 from .db import open_database
 from .memory import MemoryStore, MemoryStoreError
+from .models import ModelError, ModelManager
 from .providers import ProviderError, Router
 from .skills import SkillLibrary, SkillRunner
 from .skills.library import SkillError
@@ -51,6 +52,8 @@ class App:
         self.approvals = ApprovalStore(self.db, ttl=settings.approval_ttl)
         self.tasks = TaskStore(self.db)
         self.tools = ToolBox(settings, self.db, self.approvals, self.memory)
+        self.models = ModelManager(settings)
+        self.model_jobs = {}
         self.skills = SkillLibrary(self.db, settings.project_root)
         self.skill_runner = SkillRunner(self.skills, self.tools, self.tasks, self.db)
         self.tools.attach_skills(self.skills, self.skill_runner)
@@ -140,6 +143,8 @@ class App:
             "tools": len(self.tools.list()),
             "skills": {**self.skills.stats(), "ready": self.skills_ready.is_set(),
                        "error": self.skills_error},
+            "model": {k: self.models.status()[k]
+                      for k in ("running", "llama_server", "active_model", "max_gb")},
             "approvals": len(self.approvals.pending()),
             "recovered_tasks": self.recovered,
             "paths": settings.public()["paths"],
@@ -309,6 +314,10 @@ class Handler(BaseHTTPRequestHandler):
                     return
                 self.send_json({"ok": True, "task": task.to_dict()})
                 return
+            if path == "/api/models":
+                self.send_json({"ok": True, **self.app.models.status(),
+                                "jobs": self.app.model_jobs})
+                return
             if path == "/api/skills":
                 query_args = {
                     "query": (query.get("q") or [""])[0],
@@ -396,7 +405,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             self.route_post(path, body)
-        except (ToolErrorLike, TaskError, MemoryStoreError, ValueError) as exc:
+        except (ToolErrorLike, TaskError, MemoryStoreError, ModelError, ValueError) as exc:
             self.send_error_json(str(exc), 400)
         except Exception:
             traceback.print_exc()
@@ -430,6 +439,43 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error_json("memory not found", 404)
                 return
             self.send_json({"ok": True, "memory": entry.to_dict()})
+            return
+        if path.startswith("/api/models/"):
+            action = path.rsplit("/", 1)[-1]
+            if action == "download":
+                model_id = str(body.get("model_id") or "qwen3-4b-instruct-q4")
+                self.start_model_job("downloading", model_id,
+                                     lambda progress: app.models.download(
+                                         model_id, url=str(body.get("url") or ""), progress=progress))
+                self.send_json({"ok": True, "job": app.model_jobs[model_id]})
+                return
+            if action == "start":
+                model_id = str(body.get("model_id") or "")
+                key = model_id or "auto"
+                self.start_model_job("starting", key,
+                                     lambda progress: app.models.start(
+                                         model_id=model_id,
+                                         port=int(body.get("port") or 0),
+                                         context=int(body.get("context") or 0),
+                                         threads=int(body.get("threads") or 0)))
+                self.send_json({"ok": True, "job": app.model_jobs[key]})
+                return
+            if action == "stop":
+                result = app.models.stop()
+                app.model_jobs.clear()
+                self.send_json({"ok": True, **result, "status": app.models.status()})
+                return
+            if action == "activate":
+                model_id = str(body.get("model_id") or "")
+                if not app.models.installed(model_id)["installed"]:
+                    self.send_error_json("model is not downloaded", 400)
+                    return
+                app.models._activate(model_id, app.models.port())
+                self.send_json({"ok": True, "active_model": model_id,
+                                "fast_url": app.models.settings.fast_url,
+                                "mode": app.models.settings.provider_mode})
+                return
+            self.send_error_json("unknown model action", 404)
             return
         if path == "/api/skills/sync":
             result = app.skills.sync(force=bool(body.get("force")), include_packs=True)
@@ -512,6 +558,32 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok": True, "present": bool(value)})
             return
         self.send_error_json("not found", 404)
+
+    def start_model_job(self, kind: str, key: str, work) -> None:
+        app = self.app
+        job = app.model_jobs.setdefault(key, {})
+        if job.get("state") in ("downloading", "starting"):
+            return
+        job.clear()
+        job.update({"state": kind, "percent": 0, "bytes": 0, "total": 0,
+                    "error": "", "model_id": key, "started": time.time()})
+
+        def progress(state: dict) -> None:
+            job.update({"percent": state.get("percent", 0), "bytes": state.get("bytes", 0),
+                        "total": state.get("total", 0), "speed": state.get("speed", 0)})
+
+        def runner() -> None:
+            try:
+                result = work(progress) if kind == "downloading" else work(None)
+                if kind == "starting":
+                    result = result
+                job.update({"state": "done", "percent": 100, "result": result,
+                            "finished": time.time()})
+            except Exception as exc:
+                job.update({"state": "error", "error": f"{type(exc).__name__}: {exc}",
+                            "finished": time.time()})
+
+        threading.Thread(target=runner, name=f"model-{kind}", daemon=True).start()
 
     def _task_step(self, task, step) -> dict:
         """A task step is planned by the model, then reported honestly."""

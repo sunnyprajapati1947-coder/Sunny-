@@ -140,6 +140,30 @@ def _gemini_key(settings):
     return present, "present" if present else "absent", "" if present else "free key: aistudio.google.com/apikey"
 
 
+@check("llama.cpp binary")
+def _llama(settings):
+    from .models import find_llama_server
+
+    binary = find_llama_server()
+    if not binary:
+        return False, "not found", ("build llama.cpp or set JARVIS_LLAMA_SERVER; "
+                                    "free API key alternative: Setup → Gemini")
+    return True, binary, ""
+
+
+@check("local gguf model")
+def _gguf(settings):
+    from .models import ModelManager
+
+    manager = ModelManager(settings)
+    installed = [row for row in manager.catalog() if row["installed"]]
+    if not installed:
+        return False, "none downloaded", "python3 run_jarvis.py model download qwen3-4b-instruct-q4 (2.5 GB)"
+    total = sum(row["bytes"] for row in installed)
+    names = ", ".join(row["id"] for row in installed)
+    return True, f"{names} ({total / 1e9:.1f} GB)", ""
+
+
 @check("local model lanes")
 def _lanes(settings):
     from .providers import LocalProvider
