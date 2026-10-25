@@ -88,6 +88,29 @@ MIGRATIONS = [
         text, tags, subject, content='memories', content_rowid='id'
     );
     """,
+    # v3 — imported skill library (GitHub packs) + native skills
+    """
+    CREATE TABLE IF NOT EXISTS skills (
+        id TEXT PRIMARY KEY,
+        pack TEXT NOT NULL DEFAULT 'jarvis',
+        type TEXT NOT NULL DEFAULT 'skill',
+        title TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        tags TEXT DEFAULT '',
+        keywords TEXT DEFAULT '',
+        path TEXT DEFAULT '',
+        body BLOB,
+        bytes INTEGER DEFAULT 0,
+        risk TEXT DEFAULT 'low',
+        builtin INTEGER DEFAULT 0,
+        synced REAL DEFAULT 0
+    );
+    CREATE INDEX IF NOT EXISTS idx_skills_pack ON skills(pack);
+    CREATE INDEX IF NOT EXISTS idx_skills_type ON skills(type);
+    CREATE VIRTUAL TABLE IF NOT EXISTS skills_fts USING fts5(
+        id UNINDEXED, title, description, keywords
+    );
+    """,
 ]
 
 _lock = threading.RLock()
@@ -99,6 +122,7 @@ class Database:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._local = threading.local()
         self._fts = False
+        self._skill_fts = False
         self._migrate()
 
     # ------------------------------------------------------------ plumbing
@@ -129,7 +153,7 @@ class Database:
                 try:
                     conn.executescript(script)
                 except sqlite3.DatabaseError:
-                    if index == 2:
+                    if index in (2, 3):     # FTS5 may be missing on tiny builds
                         self._fts = False
                     else:
                         raise
@@ -143,12 +167,20 @@ class Database:
                 self._fts = bool(conn.execute(
                     "SELECT name FROM sqlite_master WHERE type='table' AND name='memories_fts'"
                 ).fetchone())
+                self._skill_fts = bool(conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name='skills_fts'"
+                ).fetchone())
             except sqlite3.DatabaseError:
                 self._fts = False
+                self._skill_fts = False
 
     @property
     def has_fts(self) -> bool:
         return self._fts
+
+    @property
+    def has_skill_fts(self) -> bool:
+        return self._skill_fts
 
     # --------------------------------------------------------------- helpers
 

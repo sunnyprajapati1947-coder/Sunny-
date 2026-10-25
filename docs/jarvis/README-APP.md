@@ -22,9 +22,13 @@ Browser mein `http://127.0.0.1:8787/?token=...` kholo — token start hote waqt 
 | Task engine (pause/resume/cancel/requeue, crash sweep, deps, retries) | **WORKING** | `TaskTests` (6 tests) |
 | Approval engine (arg-hash binding, single-use, TTL) | **WORKING** | `ApprovalTests` (3 tests) |
 | Tools: memory, fs, system, git, python, web, Termux notify/speak | **WORKING** | `ToolTests` (8 tests) |
-| Authenticated dashboard (401 without token) | **WORKING** | `ServerTests` (8 tests) + jsdom UI smoke 20/20 |
+| Authenticated dashboard (401 without token, 429 after 12 bad tries) | **WORKING** | `ServerTests` (10 tests) + jsdom UI smoke 28/28 |
 | Streaming chat (SSE) | **WORKING** | real HTTP test + browser UI |
 | Provider chain: Gemini REST streaming, OpenAI-compatible, local llama.cpp, breaker | **WORKING (code)** — **live key ke bina untested** | `ProviderTests` against a fake Gemini server |
+| **Skill library: 1,889 GitHub skills + 10 native** | **WORKING** | import 1.4s, FTS search, `SkillTests` (9 tests) + UI smoke |
+| **Skill run (native, real tools) + approval pause/resume** | **WORKING** | `jarvis-phone-checkup` DONE, `jarvis-memory-export` PAUSED→approve→DONE |
+| **Bolo aur kaam shuru (hands-free + wake word + offline intents)** | **WORKING (browser)** | fake recogniser test + real SSE chat; Chrome/Android par mic chahiye |
+| **Online access (tunnel)** | **PARTIAL** — script + token auth + rate limit ready; public URL yahan se nahi bana | `automation/jarvis_public.sh`, `ServerTests.test_auth_lockout` |
 | Hindi / Hinglish replies | **PARTIAL** | prompt + language setting hai; quality model par depend karti hai |
 | Voice input (browser STT) | **PARTIAL** | Chrome/Android par chalta hai, Firefox par nahi |
 | Voice output (browser TTS) | **PARTIAL** | device ki voices par depend karta hai |
@@ -142,7 +146,96 @@ Iska matlab: model koi aur file/command chupke se nahi chala sakta.
 
 ---
 
-## 5. Tools aur risk
+## 5. Skills — GitHub ki 1,889 skills
+
+Skill library repo ke andar hi hai (`apps/jarvis-pocket/data`, 23 packs), download ki zaroorat nahi:
+
+- **1,889 imported skills** — SKILL.md / agents / commands / rules / workflows / guides
+  (ECC 395, claude-skills 362, agents 325, scientific-agent-skills 223, marketing 154, …)
+- **10 native skills** — seedha phone ke tools chalate hain, model ke bina bhi:
+  `phone checkup`, `repo report`, `daily plan`, `web research`, `python calc`, `save note`,
+  `notify`, `speak`, `memory export`, `security check`.
+
+Pehla sync ~1.4s leta hai aur DB mein ~10 MB (zlib compressed). Dashboard → **Skills** tab:
+search, pack filter, details, **Run**. Sync dobara chahiye to Setup → *Re-sync skill library*.
+
+**Kaise chalta hai**
+
+- Native skill = steps ka JSON, har step ek asli tool (`system_info`, `git_status`, `fs_write`, …).
+- Imported skill = instructions model ko di jaati hain (3-step task: load → plan → execute with tools).
+  Bina API key ke imported skill honestly FAIL ho jati hai ("model required") — fake success nahi.
+- Risky steps (file write, python, notify) **apni approval** maangte hain; task `PAUSED` hota hai.
+  Approve karke **Run/Resume** dabao — wahi task wahin se aage chalta hai, naya kaam nahi banta.
+
+CLI/API se bhi:
+
+```bash
+curl -s -H "x-jarvis-token: $(cat ~/.openjarvis/dashboard.token)" \
+  "http://127.0.0.1:8787/api/skills?q=pdf&limit=5"
+curl -s -X POST -H "x-jarvis-token: …" -H 'content-type: application/json' \
+  -d '{"inputs":{}}' http://127.0.0.1:8787/api/skills/jarvis-phone-checkup/run
+```
+
+---
+
+## 6. Bolo aur kaam shuru (Tony wala feel)
+
+Chat tab par **hands-free** chip dabao:
+
+1. Mic on, JARVIS sunta rehta hai; bolo *"Jarvis, phone checkup karo"*.
+2. "Jarvis" / "hey Jarvis" wake word strip ho jata hai, baaki sentence chat mein chala jata hai.
+3. Jawab aata hai, JARVIS bol kar sunata hai, phir wapas sunna shuru — loop chalta rehta hai.
+4. Bina API key ke bhi ye commands **sach mein kaam karte hain**:
+
+| Bolo | Kya hota hai |
+|---|---|
+| "phone checkup karo" | battery/storage/RAM check + memory note |
+| "repo report do" | git status + last commits |
+| "memory export karo" | approval → JSON backup file |
+| "security check karo" | audit events review |
+| "aaj ka plan banao" | open tasks + plan note |
+
+Voice input/output browser ki Web Speech API se hai (Chrome/Android). Firefox mein mic nahi chalega —
+tab likh kar bolo, kaam phir bhi hoga.
+
+---
+
+## 7. Online — duniya kahin se bhi (tunnel)
+
+Server phone par hi rehta hai; tunnel sirf ek public HTTPS darwaza kholta hai. Data kahin upload nahi hota.
+
+```bash
+bash automation/jarvis_start.sh --bg          # server local
+bash automation/jarvis_public.sh --check      # kaun sa tunnel tool installed hai
+bash automation/jarvis_public.sh              # cloudflared / tailscale / ngrok
+```
+
+Cloudflared (free, account nahi chahiye, Debian proot mein):
+
+```bash
+curl -L -o /usr/local/bin/cloudflared \
+  https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64
+chmod +x /usr/local/bin/cloudflared
+bash automation/jarvis_public.sh --tool cloudflared
+```
+
+Jo `https://xxxx.trycloudflare.com` URL mile, uske aage `?token=<dashboard.token>` lagao — bas.
+(Phone browser mein bookmark bana lo; token dashboard ke Setup se lock/unlock kar sakte ho.)
+
+**Security jo already lagi hai**
+
+- har `/api` call par bearer token (header, cookie ya `?token=`), `hmac.compare_digest`
+- ek IP se 12 galat token → 5 minute 429 (brute force slow)
+- token logs mein redact hota hai
+- `fs_*` project root ke andar pinned, `python_exec` sandboxed, destructive git blocked
+- tunnel band karo → app turant offline (server local hi rehta hai)
+
+> Public URL main yahan se nahi bana sakta (sandbox se bahar tunnel allowed nahi). Script, auth,
+> rate-limit aur tests ready hain — phone par ek command chahiye.
+
+---
+
+## 8. Tools aur risk
 
 | Tool | Risk | Kya karta hai |
 |---|---|---|
@@ -155,6 +248,9 @@ Iska matlab: model koi aur file/command chupke se nahi chala sakta.
 | `web_search` / `web_fetch` | low | DuckDuckGo HTML + public page text (untrusted) |
 | `git_status` / `git_log` / `git_diff` | low | read-only git; destructive flags blocked |
 | `python_exec` | medium | isolated temp dir, `-I`, timeout, no network/shell |
+| `skill_search` / `skill_show` | low | 1,899 skills mein dhoondo / poora text padho |
+| `skill_run` | low | skill ko task bana kar chalao (andar ke risky steps apni approval maangte hain) |
+| `tasks_list` / `audit_recent` | low | queue ka haal / recent audit events |
 
 Sandbox rules jo code mein enforced hain:
 
@@ -167,7 +263,7 @@ Sandbox rules jo code mein enforced hain:
 
 ---
 
-## 6. Tasks: crash ke baad kya hota hai
+## 9. Tasks: crash ke baad kya hota hai
 
 - Status: `PENDING → RUNNING → DONE | FAILED | BLOCKED | CANCELLED`, beech mein `PAUSED`.
 - Har state change pehle SQLite mein likhti hai, phir UI ko dikhti hai.
@@ -179,7 +275,7 @@ Sandbox rules jo code mein enforced hain:
 
 ---
 
-## 7. Memory
+## 10. Memory
 
 - Kinds: `preference`, `project`, `decision`, `task`, `fact`, `note`.
 - FTS5 available ho to full-text search, warna `LIKE` fallback (`stats.fts` batata hai).
@@ -190,7 +286,7 @@ Sandbox rules jo code mein enforced hain:
 
 ---
 
-## 8. Data kahan rehta hai
+## 11. Data kahan rehta hai
 
 ```
 ~/.openjarvis/
@@ -208,7 +304,7 @@ data delete nahi hota.
 
 ---
 
-## 9. CLI
+## 12. CLI
 
 ```bash
 python3 run_jarvis.py doctor [--json]
@@ -224,27 +320,29 @@ python3 run_jarvis.py memory [--search nova] [--add "yaad rakho ..."] [--forget 
 
 ---
 
-## 10. Tests
+## 13. Tests
 
 ```bash
-python3 -m unittest tests.test_jarvis_app -v     # 44 tests, ~6s
+python3 -m unittest tests.test_jarvis_app -v     # 59 tests, ~6s
 ```
 
 Kya cover hota hai: config + secret permissions, DB migration/corruption, memory (CRUD, secret refusal,
 FTS), approvals (pending/single-use/arg-binding/expiry), tool sandbox escapes, python timeout, task
 lifecycle/retries/sweep/deps, Gemini streaming + breaker (fake server), brain tool loop + budget,
-approval flow, aur poora HTTP server (401, chat SSE, memory CRUD, tasks, settings/secrets split).
+skill import/search/run/resume + offline voice intents, approval flow, aur poora HTTP server
+(401/429, chat SSE, skills API, memory CRUD, tasks, settings/secrets split).
 
 UI ka apna smoke test jsdom se chalta hai (repo ke bahar, dev-only):
 
 ```bash
-# 20/20 checks: token gate, chat stream, memory, tasks, tools, settings, lock
+# 28/28 checks: token gate, chat stream, skills search+run, hands-free voice,
+# memory, tasks, tools, settings, lock
 JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 ```
 
 ---
 
-## 11. Troubleshooting
+## 14. Troubleshooting
 
 | Problem | Fix |
 |---|---|
@@ -259,10 +357,13 @@ JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 
 ---
 
-## 12. Kya abhi bhi baaki hai (honest backlog)
+## 15. Kya abhi bhi baaki hai (honest backlog)
 
 - Python 3.9/3.10 ke liye TOML fallback (abhi 3.11+ required).
 - Real Gemini/OpenRouter ke saath live verification — sandbox mein key nahi thi, isliye sirf fake-server test hua.
+- Public tunnel ka live URL — script tested hai, par is sandbox se bahar tunnel nahi khul sakta.
+- Imported skills ko model ke saath end-to-end chalana — code path hai (plan → execute), key ke bina sirf failure path tested.
+- Har imported skill ke liye custom native executor — abhi wo knowledge/instructions hain, script nahi.
 - Model-driven multi-step planning ki quality (abhi steps aap/CLI dete ho, ya model single-step chalata hai).
 - Fine-tuned Hindi/Hinglish voice (browser TTS/STT par depend).
 - Trading tools — jaan-boojh kar nahi banaye.

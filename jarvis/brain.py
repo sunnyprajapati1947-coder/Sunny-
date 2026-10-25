@@ -52,13 +52,15 @@ class Turn:
 
 
 class Brain:
-    def __init__(self, settings, router: Router, tools: ToolBox, memory, tasks: TaskStore, db):
+    def __init__(self, settings, router: Router, tools: ToolBox, memory, tasks: TaskStore, db,
+                 skills=None):
         self.settings = settings
         self.router = router
         self.tools = tools
         self.memory = memory
         self.tasks = tasks
         self.db = db
+        self.skills = skills
 
     # ------------------------------------------------------------- prompt
 
@@ -70,6 +72,8 @@ class Brain:
             "",
             "Rules:",
             "- Be direct and useful. Short paragraphs, tight bullets. No filler.",
+            "- Tone: calm, competent, lightly witty — like a trusted chief of staff. "
+            "Address the user as their configured name, never grovel.",
             "- This is a phone screen: short headings, lists over tables.",
             f"- {LANGUAGE_LINE.get(settings.language, LANGUAGE_LINE['auto'])}",
             "- Markdown is fine. Code in fenced blocks with a language tag.",
@@ -91,6 +95,25 @@ class Brain:
             lines += ["", "Open tasks on this device:"]
             for task in open_tasks[:6]:
                 lines.append(f"- {task.id} · {task.title} · {task.status} · {task.progress['percent']}%")
+
+        if self.skills is not None:
+            try:
+                stats = self.skills.stats()
+                block = self.skills.prompt_block(user_text)
+            except Exception:
+                stats, block = {"total": 0}, ""
+            if stats.get("total"):
+                lines += [
+                    "",
+                    f"Skill library: {stats['total']} skills installed on this phone "
+                    f"({stats.get('imported', 0)} imported from GitHub packs, {stats.get('builtin', 0)} native).",
+                    "When the user asks for a capability, check the library before refusing:",
+                    '<tool>{"name": "skill_search", "arguments": {"query": "..."}}</tool>',
+                    "Native skills can be executed: "
+                    '<tool>{"name": "skill_run", "arguments": {"skill_id": "...", "inputs": {}}}</tool>',
+                ]
+                if block:
+                    lines += ["", block]
 
         tools = self.tools.list()
         lines += [
@@ -167,6 +190,14 @@ class Brain:
         system = self.system_prompt(user_text)
 
         if not self.router.chain():
+            handled = self._skill_intent(user_text)
+            if handled:
+                turn.text, turn.provider = handled["text"], "jarvis-skills"
+                turn.model = "native-skill"
+                if handled.get("event"):
+                    turn.tool_events.append(handled["event"])
+                turn.latency_ms = int((time.time() - started) * 1000)
+                return turn
             turn.error = ("Koi model configured nahi hai. Settings me API key daalo "
                           "(Gemini free hai) ya local llama-server start karo.")
             turn.text = self._offline_answer(user_text)
@@ -236,6 +267,99 @@ class Brain:
 
         turn.text = turn.text or "Kuch jawab nahi bana."
         return turn
+
+    # ---------------------------------------------------------- skill intents
+
+    SKILL_INTENTS = (
+        (r"\b(checkup|check up|health check)\b|"
+         r"\b(phone|device|battery|storage)\b.*\b(check|checkup|status|health)\b",
+         "jarvis-phone-checkup"),
+        (r"\b(repo|project|git)\b.*\b(report|status|haal|summary|health)\b", "jarvis-repo-report"),
+        (r"\b(export|backup|back up)\b.*\b(memory|memories|yaad)\b|"
+         r"\b(memory|memories|yaad)\b.*\b(export|backup|back up)\b", "jarvis-memory-export"),
+        (r"\b(security|audit|leak)\b.*\b(check|scan|review|report|karo)\b|"
+         r"\b(security|audit)\b.*\bcheck\b", "jarvis-security-check"),
+        (r"\b(daily|aaj ka|today)\b.*\b(plan|schedule)\b|\b(plan|schedule)\b.*\b(daily|aaj)\b",
+         "jarvis-daily-plan"),
+    )
+
+    def _skill_intent(self, text: str) -> dict:
+        """Voice-first: 'phone checkup karo' should DO it, even without a model."""
+        if self.skills is None:
+            return {}
+        lowered = str(text or "").lower()
+        for pattern, skill_id in self.SKILL_INTENTS:
+            if not re.search(pattern, lowered):
+                continue
+            try:
+                result = self.tools.call("skill_run", {"skill_id": skill_id, "inputs": {}})
+            except Exception:
+                return {}
+            if result.get("approval_required"):
+                approval = result.get("approval") or {}
+                return {"text": (f"Is kaam ke liye approval chahiye: **{approval.get('tool', 'step')}** "
+                                 f"`{approval.get('id', '')}`. Dashboard → Tasks tab se approve karo, "
+                                 "phir main aage chala dunga."),
+                        "event": {"tool": "skill_run", "skill": skill_id, "ok": False,
+                                  "approval_required": True}}
+            if not result.get("ok"):
+                return {}
+            payload = result.get("result") or {}
+            task = payload.get("task") or {}
+            nested = payload.get("approval")
+            if task.get("status") == "PAUSED" and nested:
+                return {"text": (f"**{task.get('title', 'Skill')}** shuru hui, lekin ek step ke liye "
+                                 f"approval chahiye (**{nested.get('tool', 'step')}** "
+                                 f"`{nested.get('id', '')}`). Tasks tab se approve karke Run dabao."),
+                        "event": {"tool": "skill_run", "skill": skill_id, "ok": False,
+                                  "approval_required": True, "status": "PAUSED"}}
+            steps = task.get("steps") or []
+            done = [step for step in steps if step.get("status") == "done"]
+            title = task.get("title") or "Skill"
+            lines = [f"**{title}** — {task.get('status', '?').lower()}, "
+                     f"{len(done)}/{len(steps)} steps."]
+            if task.get("status") == "PAUSED" and "approval" in str(task.get("error", "")).lower():
+                lines.insert(0, "**Approval chahiye** — Tasks tab se approve karo, phir Run dabao.")
+            for step in steps[:4]:
+                detail = self._condense(step.get("detail") or "")
+                mark = "✓" if step.get("status") == "done" else "•"
+                lines.append(f"{mark} **{step.get('title')}**{(' — ' + detail) if detail else ''}")
+            if task.get("error"):
+                lines.append(f"\nNote: {task['error']}")
+            return {"text": "\n".join(lines),
+                    "event": {"tool": "skill_run", "skill": skill_id, "ok": True,
+                              "status": task.get("status")}}
+        return {}
+
+    @staticmethod
+    def _condense(detail: str) -> str:
+        """Turn a tool's JSON blob into one readable line for a phone screen."""
+        text = str(detail or "").strip()
+        if not text:
+            return ""
+        if text.startswith("{"):
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError:
+                data = None
+            if isinstance(data, dict):
+                for key in ("stdout", "text", "spoken", "notified", "error"):
+                    if isinstance(data.get(key), str) and data[key].strip():
+                        return data[key].strip().replace("\n", " ")[:150]
+                pieces = []
+                for key, value in list(data.items())[:5]:
+                    if key == "ok" and len(data) > 1:
+                        continue
+                    if isinstance(value, (str, int, float, bool)):
+                        pieces.append(f"{key}={value}")
+                    elif isinstance(value, list):
+                        pieces.append(f"{key}[{len(value)}]")
+                    elif isinstance(value, dict):
+                        inner = value.get("id") or value.get("name") or value.get("count")
+                        pieces.append(f"{key}={inner}" if inner is not None else f"{key}{{…}}")
+                if pieces:
+                    return ", ".join(pieces)[:150]
+        return text.replace("\n", " ")[:150]
 
     # ------------------------------------------------------------- offline
 

@@ -71,6 +71,19 @@ class ApprovalStore:
         rows = self.db.query("SELECT * FROM approvals WHERE status='PENDING' ORDER BY created DESC")
         return [self._row(row) for row in rows]
 
+    def available_for(self, tool: str, arguments: dict) -> str | None:
+        """An APPROVED, unused, unexpired approval for exactly these arguments.
+
+        Used when a paused task resumes: the user already approved this call,
+        so it must not ask again (and must not be reusable for anything else).
+        """
+        self.expire()
+        row = self.db.one(
+            "SELECT id FROM approvals WHERE tool=? AND arg_hash=? AND status='APPROVED' "
+            "AND expires > ? ORDER BY created LIMIT 1",
+            (tool, args_hash(tool, arguments or {}), time.time()))
+        return row["id"] if row else None
+
     def get(self, approval_id: str) -> Approval | None:
         row = self.db.one("SELECT * FROM approvals WHERE id=?", (approval_id,))
         return self._row(row) if row else None

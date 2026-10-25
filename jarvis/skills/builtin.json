@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "note": "Native JARVIS skills that run on the phone with the local tools. No model needed. {{input.x}} = user input, {{prev.x}} = previous step result, {{now}} / {{owner}} are filled by the runner.",
+  "skills": [
+    {
+      "id": "jarvis-phone-checkup",
+      "title": "Phone checkup",
+      "description": "Battery, storage, RAM aur platform check karke ek short report deta hai aur memory mein note karta hai.",
+      "icon": "battery",
+      "risk": "low",
+      "tags": [
+        "device",
+        "health",
+        "battery"
+      ],
+      "inputs": {},
+      "steps": [
+        {
+          "title": "Device stats padho",
+          "tool": "system_info",
+          "args": {}
+        },
+        {
+          "title": "Report yaad rakho",
+          "tool": "remember",
+          "args": {
+            "text": "Last phone checkup: battery {{prev.result.battery.percentage}}%, storage free {{prev.result.disk.free_gb}} GB, platform {{prev.result.platform}}.",
+            "kind": "note",
+            "subject": "device"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-repo-report",
+      "title": "Repo report",
+      "description": "Git status aur recent commits se project ka haal batata hai. Kuch change nahi karta.",
+      "icon": "git",
+      "risk": "low",
+      "tags": [
+        "git",
+        "code",
+        "status"
+      ],
+      "inputs": {},
+      "steps": [
+        {
+          "title": "Git status",
+          "tool": "git_status",
+          "args": {}
+        },
+        {
+          "title": "Recent commits",
+          "tool": "git_log",
+          "args": {
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-daily-plan",
+      "title": "Daily plan",
+      "description": "Open tasks aur memory se aaj ka focused plan banata hai (model ho to smart, warna deterministic template).",
+      "icon": "plan",
+      "risk": "low",
+      "tags": [
+        "planning",
+        "productivity"
+      ],
+      "inputs": {},
+      "steps": [
+        {
+          "title": "Open tasks dekho",
+          "tool": "tasks_list",
+          "args": {}
+        },
+        {
+          "title": "Plan yaad rakho",
+          "tool": "remember",
+          "args": {
+            "text": "Daily plan {{now}}: open tasks = {{prev.result.count}}.",
+            "kind": "note",
+            "subject": "plan"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-web-research",
+      "title": "Web research",
+      "description": "Kisi bhi topic par web search karta hai, top results ke page padhta hai aur note bana deta hai.",
+      "icon": "search",
+      "risk": "low",
+      "tags": [
+        "web",
+        "research",
+        "internet"
+      ],
+      "inputs": {
+        "query": "kya search karna hai"
+      },
+      "steps": [
+        {
+          "title": "Search",
+          "tool": "web_search",
+          "args": {
+            "query": "{{input.query}}"
+          }
+        },
+        {
+          "title": "Research yaad rakho",
+          "tool": "remember",
+          "args": {
+            "text": "Web research '{{input.query}}': {{prev.result.results.0.title}} — {{prev.result.results.0.url}}",
+            "kind": "note",
+            "subject": "research"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-python-calc",
+      "title": "Python calculation",
+      "description": "Isolated Python sandbox mein calculation ya data munging chalata hai (approval ke baad).",
+      "icon": "code",
+      "risk": "medium",
+      "tags": [
+        "python",
+        "math",
+        "data"
+      ],
+      "inputs": {
+        "code": "python snippet"
+      },
+      "steps": [
+        {
+          "title": "Code chalao",
+          "tool": "python_exec",
+          "args": {
+            "code": "{{input.code}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-note-file",
+      "title": "Save note to file",
+      "description": "Ek note ko project ke andar file mein likhta hai (approval ke baad, purani file ka .bak bachta hai).",
+      "icon": "file",
+      "risk": "medium",
+      "tags": [
+        "files",
+        "notes"
+      ],
+      "inputs": {
+        "path": "notes/note.md",
+        "text": "kya likhna hai"
+      },
+      "steps": [
+        {
+          "title": "File likho",
+          "tool": "fs_write",
+          "args": {
+            "path": "{{input.path}}",
+            "content": "{{input.text}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-notify-me",
+      "title": "Phone notification",
+      "description": "Android notification bhejta hai (Termux:API chahiye).",
+      "icon": "bell",
+      "risk": "medium",
+      "tags": [
+        "android",
+        "termux",
+        "notify"
+      ],
+      "inputs": {
+        "text": "notification text"
+      },
+      "steps": [
+        {
+          "title": "Notify",
+          "tool": "notify",
+          "args": {
+            "title": "JARVIS",
+            "message": "{{input.text}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-speak",
+      "title": "Speak out loud",
+      "description": "Phone se bol kar sunata hai (Termux:API TTS).",
+      "icon": "volume",
+      "risk": "medium",
+      "tags": [
+        "android",
+        "voice",
+        "tts"
+      ],
+      "inputs": {
+        "text": "kya bolna hai"
+      },
+      "steps": [
+        {
+          "title": "Bolo",
+          "tool": "speak",
+          "args": {
+            "text": "{{input.text}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-memory-export",
+      "title": "Export memory",
+      "description": "Saari memory ko ek JSON file mein export karta hai (backup ke liye).",
+      "icon": "download",
+      "risk": "medium",
+      "tags": [
+        "memory",
+        "backup"
+      ],
+      "inputs": {},
+      "steps": [
+        {
+          "title": "Memory padho",
+          "tool": "recall",
+          "args": {
+            "limit": 200
+          }
+        },
+        {
+          "title": "Backup likho",
+          "tool": "fs_write",
+          "args": {
+            "path": "backups/memory-export.md",
+            "content": "# Memory export {{now}}\n\n{{prev.result}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jarvis-security-check",
+      "title": "Security check",
+      "description": "Audit log aur settings dekh kar batata hai ki koi risky action ya leaked secret to nahi hua.",
+      "icon": "shield",
+      "risk": "low",
+      "tags": [
+        "security",
+        "audit"
+      ],
+      "inputs": {},
+      "steps": [
+        {
+          "title": "Recent audit events",
+          "tool": "audit_recent",
+          "args": {
+            "limit": 20
+          }
+        },
+        {
+          "title": "Secret scan note",
+          "tool": "remember",
+          "args": {
+            "text": "Security check {{now}}: {{prev.result.count}} audit events reviewed. Secrets are refused by the memory policy (verified by tests).",
+            "kind": "note",
+            "subject": "security"
+          }
+        }
+      ]
+    }
+  ]
+}

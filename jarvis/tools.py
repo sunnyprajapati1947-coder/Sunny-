@@ -129,7 +129,14 @@ class ToolBox:
         self.memory = memory
         self.root = Path(settings.project_root).resolve()
         self.tools: dict[str, Tool] = {}
+        self.library = None
+        self.skill_runner = None
         self._register_all()
+
+    def attach_skills(self, library, runner) -> None:
+        """Called by the server once the skill library is ready."""
+        self.library = library
+        self.skill_runner = runner
 
     # ------------------------------------------------------------ registry
 
@@ -146,6 +153,69 @@ class ToolBox:
         if not tool.enabled:
             raise ToolError(f"tool disabled: {name}")
         return tool
+
+    # skills -------------------------------------------------------------
+
+    def _register_skills(self) -> None:
+        box = self
+
+        def require_library():
+            if box.library is None:
+                raise ToolError("skill library is not ready yet")
+            return box.library
+
+        def skill_search(query: str = "", pack: str = "", limit: int = 8) -> dict:
+            library = require_library()
+            rows = library.search(query, limit=int(limit), pack=pack)
+            return {"ok": True, "count": len(rows), "skills": rows}
+
+        def skill_show(skill_id: str) -> dict:
+            library = require_library()
+            skill = library.get(str(skill_id))
+            if not skill:
+                raise ToolError(f"skill not found: {skill_id}")
+            return {"ok": True, "skill": skill}
+
+        def skill_run(skill_id: str, inputs: dict | None = None) -> dict:
+            if box.skill_runner is None:
+                raise ToolError("skill runner is not ready yet")
+            result = box.skill_runner.start(str(skill_id), inputs or {})
+            return {"ok": True, "skill": result.get("skill"), "task": result.get("task"),
+                    "approval": result.get("approval")}
+
+        def tasks_list() -> dict:
+            rows = box.db.query(
+                "SELECT status, COUNT(*) AS n FROM tasks GROUP BY status")
+            open_rows = box.db.query(
+                "SELECT id, title, status FROM tasks WHERE status NOT IN ('DONE','FAILED','CANCELLED') "
+                "ORDER BY created DESC LIMIT 20")
+            return {"ok": True, "count": sum(int(row["n"]) for row in rows),
+                    "by_status": {row["status"]: int(row["n"]) for row in rows},
+                    "open": [{"id": row["id"], "title": row["title"], "status": row["status"]}
+                             for row in open_rows]}
+
+        def audit_recent(limit: int = 20) -> dict:
+            rows = box.db.query(
+                "SELECT ts, event, detail FROM audit ORDER BY id DESC LIMIT ?",
+                (max(1, min(int(limit), 100)),))
+            return {"ok": True, "count": len(rows),
+                    "events": [{"ts": row["ts"], "event": row["event"],
+                                "detail": str(row["detail"] or "")[:200]} for row in rows]}
+
+        self.register(Tool("skill_search",
+                           "Search the user's skill library (1,889 GitHub skills + native skills). "
+                           "Use before saying you cannot do something.",
+                           LOW, {"query": "string", "pack": "string", "limit": "number"}, skill_search))
+        self.register(Tool("skill_show", "Read one skill's full instructions by id.",
+                           LOW, {"skill_id": "string"}, skill_show))
+        self.register(Tool("skill_run",
+                           "Run a skill as a task on the phone. Native skills execute real tools; "
+                           "imported skills load their instructions into the model. Risky steps "
+                           "inside the skill still need their own approval.",
+                           LOW, {"skill_id": "string", "inputs": "object"}, skill_run))
+        self.register(Tool("tasks_list", "List task counts and open tasks.", LOW, {}, tasks_list))
+        self.register(Tool("audit_recent", "Read the most recent local audit events.",
+                           LOW, {"limit": "number"}, audit_recent))
 
     # ------------------------------------------------------------ execution
 
@@ -234,6 +304,7 @@ class ToolBox:
         self._register_web()
         self._register_git()
         self._register_python()
+        self._register_skills()
 
     # memory ------------------------------------------------------------
 

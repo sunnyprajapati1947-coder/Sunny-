@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import os
+import threading
 import time
 import traceback
 import urllib.parse
@@ -26,10 +28,16 @@ from .brain import Brain
 from .db import open_database
 from .memory import MemoryStore, MemoryStoreError
 from .providers import ProviderError, Router
+from .skills import SkillLibrary, SkillRunner
+from .skills.library import SkillError
 from .tasks import TaskError, TaskStore
 from .tools import ToolBox
 
 STATIC = Path(__file__).resolve().parent / "static"
+AUTH_WINDOW = 300.0      # seconds
+AUTH_MAX_FAILS = 12      # per IP per window, then 429
+_AUTH_LOCK = threading.Lock()
+_AUTH_FAILS: dict[str, list[float]] = {}
 PUBLIC_PATHS = {"/", "/index.html", "/app.css", "/app.js", "/favicon.svg", "/manifest.webmanifest"}
 
 
@@ -43,10 +51,40 @@ class App:
         self.approvals = ApprovalStore(self.db, ttl=settings.approval_ttl)
         self.tasks = TaskStore(self.db)
         self.tools = ToolBox(settings, self.db, self.approvals, self.memory)
+        self.skills = SkillLibrary(self.db, settings.project_root)
+        self.skill_runner = SkillRunner(self.skills, self.tools, self.tasks, self.db)
+        self.tools.attach_skills(self.skills, self.skill_runner)
         self.router = Router(settings)
-        self.brain = Brain(settings, self.router, self.tools, self.memory, self.tasks, self.db)
+        self.brain = Brain(settings, self.router, self.tools, self.memory, self.tasks, self.db,
+                           skills=self.skills)
         self.recovered = self.tasks.sweep()
         self.started = time.time()
+        self.skills_ready = threading.Event()
+        self.skills_error = ""
+        threading.Thread(target=self._sync_skills, name="skill-sync", daemon=True).start()
+
+    def _sync_skills(self) -> None:
+        """Builtins import instantly; the 16 MB pack library arrives in the background."""
+        try:
+            started = time.time()
+            include_packs = os.environ.get("JARVIS_SKILL_PACKS", "1").lower() not in ("0", "false", "no")
+            self.skills.sync(include_packs=include_packs)
+            self.skills_error = ""
+            print(f"skills ready: {self.skills.stats()['total']} in "
+                  f"{int((time.time() - started) * 1000)} ms")
+        except Exception as exc:
+            self.skills_error = f"{type(exc).__name__}: {exc}"
+        finally:
+            self.skills_ready.set()
+
+    def plan_step(self, task, step, prompt: str) -> dict:
+        """Used by imported skills: one model step, honest failure when offline."""
+        turn = self.brain.reply(prompt, history=[])
+        if turn.provider == "offline" or (turn.error and not turn.text):
+            return {"ok": False, "detail": turn.error or "model required for imported skills"}
+        if turn.error and not turn.text:
+            return {"ok": False, "detail": turn.error}
+        return {"ok": True, "detail": (turn.text or "")[:600], "result": turn.text}
 
     # ------------------------------------------------------------- chats
 
@@ -100,6 +138,8 @@ class App:
             "memory": self.memory.stats(),
             "tasks": self.tasks.stats(),
             "tools": len(self.tools.list()),
+            "skills": {**self.skills.stats(), "ready": self.skills_ready.is_set(),
+                       "error": self.skills_error},
             "approvals": len(self.approvals.pending()),
             "recovered_tasks": self.recovered,
             "paths": settings.public()["paths"],
@@ -161,6 +201,38 @@ class Handler(BaseHTTPRequestHandler):
 
     # --------------------------------------------------------------- auth
 
+    # -- brute force guard (public tunnels make this worth having)
+
+    def auth_blocked(self) -> bool:
+        ip = self.client_address[0]
+        now = time.time()
+        with _AUTH_LOCK:
+            rows = [ts for ts in _AUTH_FAILS.get(ip, []) if now - ts < AUTH_WINDOW]
+            _AUTH_FAILS[ip] = rows
+            return len(rows) >= AUTH_MAX_FAILS
+
+    def auth_failed(self) -> None:
+        ip = self.client_address[0]
+        with _AUTH_LOCK:
+            _AUTH_FAILS.setdefault(ip, []).append(time.time())
+
+    def auth_ok(self) -> None:
+        with _AUTH_LOCK:
+            _AUTH_FAILS.pop(self.client_address[0], None)
+
+    def reject_auth(self) -> None:
+        if self.auth_blocked():
+            body = _json_bytes({"ok": False, "error": "too many failed attempts, wait 5 minutes"})
+            self.send_response(429)
+            self.send_header("content-type", "application/json; charset=utf-8")
+            self.send_header("content-length", str(len(body)))
+            self.send_header("retry-after", "300")
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.auth_failed()
+        self.send_error_json("unauthorised", 401)
+
     def authorised(self, query: dict) -> bool:
         header = self.headers.get("x-jarvis-token", "")
         if header and _same(header, self.token):
@@ -193,8 +265,9 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
             if not self.authorised(query):
-                self.send_error_json("unauthorised", 401)
+                self.reject_auth()
                 return
+            self.auth_ok()
 
             if path == "/api/health":
                 self.send_json({"ok": True, "version": __version__})
@@ -236,6 +309,31 @@ class Handler(BaseHTTPRequestHandler):
                     return
                 self.send_json({"ok": True, "task": task.to_dict()})
                 return
+            if path == "/api/skills":
+                query_args = {
+                    "query": (query.get("q") or [""])[0],
+                    "pack": (query.get("pack") or [""])[0],
+                    "kind": (query.get("type") or [""])[0],
+                    "limit": int((query.get("limit") or ["30"])[0] or 30),
+                    "builtin_only": (query.get("builtin") or [""])[0] in ("1", "true", "yes"),
+                }
+                rows = self.app.skills.search(**query_args)
+                self.send_json({"ok": True, "skills": rows, "packs": self.app.skills.packs(),
+                                "stats": {**self.app.skills.stats(),
+                                          "ready": self.app.skills_ready.is_set()}})
+                return
+            if path == "/api/skills/packs":
+                self.send_json({"ok": True, "packs": self.app.skills.packs(),
+                                "stats": self.app.skills.stats()})
+                return
+            if path.startswith("/api/skills/"):
+                skill_id = urllib.parse.unquote(path.rsplit("/", 1)[-1])
+                skill = self.app.skills.get(skill_id)
+                if not skill:
+                    self.send_error_json("skill not found", 404)
+                    return
+                self.send_json({"ok": True, "skill": skill})
+                return
             if path == "/api/approvals":
                 self.send_json({"ok": True,
                                 "approvals": [row.to_dict() for row in self.app.approvals.pending()]})
@@ -257,8 +355,9 @@ class Handler(BaseHTTPRequestHandler):
         query = urllib.parse.parse_qs(parsed.query)
         path = parsed.path
         if not self.authorised(query):
-            self.send_error_json("unauthorised", 401)
+            self.reject_auth()
             return
+        self.auth_ok()
         try:
             if path.startswith("/api/chats/"):
                 self.app.chat_delete(path.rsplit("/", 1)[-1])
@@ -279,8 +378,9 @@ class Handler(BaseHTTPRequestHandler):
         query = urllib.parse.parse_qs(parsed.query)
         path = parsed.path
         if not self.authorised(query):
-            self.send_error_json("unauthorised", 401)
+            self.reject_auth()
             return
+        self.auth_ok()
         length = int(self.headers.get("content-length") or 0)
         if length > 2_000_000:
             self.send_error_json("payload too large", 413)
@@ -331,6 +431,20 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self.send_json({"ok": True, "memory": entry.to_dict()})
             return
+        if path == "/api/skills/sync":
+            result = app.skills.sync(force=bool(body.get("force")), include_packs=True)
+            self.send_json({"ok": True, **result})
+            return
+        if path.startswith("/api/skills/") and path.endswith("/run"):
+            skill_id = urllib.parse.unquote(path[len("/api/skills/"):-len("/run")])
+            result = app.skill_runner.start(
+                skill_id,
+                inputs=body.get("inputs") or {},
+                auto_run=bool(body.get("auto_run", True)),
+                planner=app.plan_step,
+            )
+            self.send_json({"ok": True, **result}, 200)
+            return
         if path == "/api/tasks":
             task = app.tasks.create(
                 str(body.get("title") or ""),
@@ -356,6 +470,10 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json({"ok": True, "task": task.to_dict()})
                     return
                 if action == "run":
+                    if app.skill_runner.bound_skill(task_id):
+                        result = app.skill_runner.resume(task_id, planner=app.plan_step)
+                        self.send_json({"ok": True, **result})
+                        return
                     task = app.tasks.run(task_id, lambda task, step: self._task_step(task, step))
                     self.send_json({"ok": True, "task": task.to_dict()})
                     return

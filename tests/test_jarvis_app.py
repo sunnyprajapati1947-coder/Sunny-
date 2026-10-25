@@ -35,6 +35,8 @@ from jarvis.brain import Brain  # noqa: E402
 from jarvis.db import open_database  # noqa: E402
 from jarvis.memory import MemoryStore, MemoryStoreError  # noqa: E402
 from jarvis.providers import Breaker, ProviderError, Reply, Router  # noqa: E402
+from jarvis.skills import SkillLibrary, SkillRunner  # noqa: E402
+from jarvis.skills.library import SkillError  # noqa: E402
 from jarvis.tasks import TaskStore  # noqa: E402
 from jarvis.tools import ToolBox  # noqa: E402
 
@@ -121,11 +123,12 @@ class ConfigTests(Base):
 
 class DatabaseTests(Base):
     def test_schema_and_fts(self):
-        self.assertEqual(self.db.one("SELECT value FROM meta WHERE key='schema'")["value"], "2")
+        self.assertEqual(self.db.one("SELECT value FROM meta WHERE key='schema'")["value"], "3")
         self.assertTrue(self.db.has_fts)
+        self.assertTrue(self.db.has_skill_fts)
         tables = {row["name"] for row in self.db.query(
             "SELECT name FROM sqlite_master WHERE type='table'")}
-        for name in ("memories", "chats", "messages", "tasks", "approvals", "audit"):
+        for name in ("memories", "chats", "messages", "tasks", "approvals", "audit", "skills", "skills_fts"):
             self.assertIn(name, tables)
 
     def test_corrupt_database_is_quarantined_not_lost(self):
@@ -349,6 +352,145 @@ class TaskTests(Base):
         self.assertEqual(unblocked.status, "DONE")
 
 
+# --------------------------------------------------------------------- skills
+
+PACK_ITEMS = [
+    {"i": "demo-alpha", "t": "Alpha PDF Tool", "d": "Convert and merge pdf documents", "y": "skill",
+     "p": 0, "g": ["pdf", "docs"], "k": "pdf convert merge", "f": "skills/alpha/SKILL.md", "c": 0},
+    {"i": "demo-beta", "t": "Beta Test Agent", "d": "Write and run tests for a repo", "y": "agent",
+     "p": 0, "g": ["test"], "k": "tests pytest", "f": "agents/beta.md", "c": 0},
+]
+
+
+class SkillTests(Base):
+    def setUp(self):
+        super().setUp()
+        data_dir = self.home / "apps" / "jarvis-pocket" / "data"
+        (data_dir / "chunks").mkdir(parents=True)
+        manifest = {
+            "built": "test-build-1",
+            "types": {"skill": "Skills", "agent": "Agents"},
+            "packs": [{"id": "demo", "name": "Demo", "count": 2}],
+            "chunks": ["c000"],
+            "items": PACK_ITEMS,
+        }
+        (data_dir / "manifest.json").write_text(json.dumps(manifest))
+        (data_dir / "chunks" / "c000.json").write_text(json.dumps({
+            "p": 0, "y": "skill",
+            "items": {"demo-alpha": "# Alpha PDF Tool\n\nMerge pdf files with care.",
+                      "demo-beta": "# Beta Agent\n\nWrite tests first."},
+        }))
+        self.library = SkillLibrary(self.db, self.home)
+        self.tools.root = self.home.resolve()
+
+    def test_sync_imports_packs_and_builtins(self):
+        result = self.library.sync()
+        self.assertEqual(result["new"], 2)
+        stats = self.library.stats()
+        self.assertEqual(stats["imported"], 2)
+        self.assertEqual(stats["builtin"], 10)
+        self.assertEqual(stats["total"], 12)
+        self.assertEqual(stats["packs"], 2)          # demo + jarvis
+        self.assertEqual(stats["imported_packs"], 1)
+        self.assertTrue(stats["fts"])
+
+    def test_sync_is_idempotent_and_forced_on_new_build(self):
+        self.library.sync()
+        again = self.library.sync()
+        self.assertEqual(again["new"], 0)
+        self.assertEqual(again["skipped"], "already up to date")
+        forced = self.library.sync(force=True)
+        self.assertEqual(forced["new"], 2)
+        self.assertEqual(self.library.stats()["imported"], 2)
+
+    def test_search_get_and_prompt_block(self):
+        self.library.sync()
+        hits = self.library.search("pdf")
+        self.assertEqual(hits[0]["id"], "demo-alpha")
+        self.assertEqual(self.library.search("pdf", pack="demo")[0]["id"], "demo-alpha")
+        self.assertEqual(self.library.search("pdf", pack="nope"), [])
+        self.assertEqual(self.library.search("", kind="agent")[0]["id"], "demo-beta")
+        skill = self.library.get("demo-alpha")
+        self.assertIn("Merge pdf files", skill["text"])
+        block = self.library.prompt_block("merge pdf")
+        self.assertIn("demo-alpha", block)
+        self.assertIn("Alpha PDF Tool", block)
+        self.assertIsNone(self.library.get("missing-skill"))
+
+    def test_builtin_skills_are_runnable_definitions(self):
+        self.library.sync()
+        builtin = self.library.search("", builtin_only=True, limit=20)
+        ids = {row["id"] for row in builtin}
+        self.assertIn("jarvis-phone-checkup", ids)
+        self.assertEqual(len(builtin), 10)
+        payload = self.library.payload("jarvis-phone-checkup")
+        self.assertGreaterEqual(len(payload["steps"]), 2)
+        display = self.library.get("jarvis-phone-checkup")
+        self.assertIn("# Phone checkup", display["text"])
+        self.assertIn("system_info", display["text"])
+
+    def test_builtin_run_executes_real_tools(self):
+        self.library.sync()
+        runner = SkillRunner(self.library, self.tools, self.tasks, self.db)
+        result = runner.start("jarvis-phone-checkup", {})
+        self.assertEqual(result["task"]["status"], "DONE")
+        self.assertEqual([step["status"] for step in result["task"]["steps"]], ["done", "done"])
+        self.assertTrue(self.memory.search("checkup"))
+        # the task is bound so it can be resumed later
+        self.assertEqual(runner.bound_skill(result["task"]["id"]), "jarvis-phone-checkup")
+
+    def test_approval_pauses_then_resume_completes(self):
+        self.library.sync()
+        runner = SkillRunner(self.library, self.tools, self.tasks, self.db)
+        result = runner.start("jarvis-memory-export", {})
+        self.assertEqual(result["task"]["status"], "PAUSED")
+        self.assertTrue(result["approval"])
+        approval_id = result["approval"]["id"]
+        target = self.home / "backups" / "memory-export.md"
+        self.assertFalse(target.exists())
+        ok, _ = self.approvals.decide(approval_id, True)
+        self.assertTrue(ok)
+        resumed = runner.resume(result["task"]["id"])
+        self.assertEqual(resumed["task"]["status"], "DONE")
+        self.assertTrue(target.exists())
+        self.assertIn("# Memory export", target.read_text())
+
+    def test_missing_input_is_refused(self):
+        self.library.sync()
+        runner = SkillRunner(self.library, self.tools, self.tasks, self.db)
+        with self.assertRaises(SkillError):
+            runner.start("jarvis-web-research", {})
+        with self.assertRaises(SkillError):
+            runner.start("does-not-exist", {})
+
+    def test_imported_skill_fails_honestly_without_model(self):
+        self.library.sync()
+        runner = SkillRunner(self.library, self.tools, self.tasks, self.db)
+        result = runner.start("demo-alpha", auto_run=True, planner=None)
+        self.assertEqual(result["task"]["status"], "FAILED")
+        self.assertIn("model", result["task"]["error"].lower())
+
+    def test_skill_tools_are_registered_and_wired(self):
+        self.library.sync()
+        runner = SkillRunner(self.library, self.tools, self.tasks, self.db)
+        self.tools.attach_skills(self.library, runner)
+        names = {tool["name"] for tool in self.tools.list()}
+        for name in ("skill_search", "skill_show", "skill_run", "tasks_list", "audit_recent"):
+            self.assertIn(name, names)
+        found = self.tools.call("skill_search", {"query": "pdf"})
+        self.assertTrue(found["ok"])
+        self.assertGreaterEqual(found["result"]["count"], 1)
+        shown = self.tools.call("skill_show", {"skill_id": "demo-alpha"})
+        self.assertTrue(shown["ok"])
+        self.assertIn("Alpha", shown["result"]["skill"]["title"])
+        ran = self.tools.call("skill_run", {"skill_id": "jarvis-phone-checkup", "inputs": {}})
+        self.assertTrue(ran["ok"], ran)
+        self.assertEqual(ran["result"]["task"]["status"], "DONE")
+        listed = self.tools.call("tasks_list", {})
+        self.assertTrue(listed["ok"])
+        self.assertGreaterEqual(listed["result"]["count"], 1)
+
+
 # ------------------------------------------------------------------ providers
 
 class FakeGemini(BaseHTTPRequestHandler):
@@ -495,6 +637,32 @@ class BrainTests(Base):
         self.assertLessEqual(len(turn.tool_events), self.settings.max_tool_steps)
         self.assertTrue(turn.text is not None)
 
+    def test_offline_skill_intent_runs_a_native_skill(self):
+        library = SkillLibrary(self.db, self.home)
+        library.sync(include_packs=False)
+        runner = SkillRunner(library, self.tools, self.tasks, self.db)
+        self.tools.attach_skills(library, runner)
+        brain = Brain(self.settings, Router(self.settings), self.tools, self.memory,
+                      self.tasks, self.db, skills=library)
+        turn = brain.reply("phone checkup karo")
+        self.assertEqual(turn.provider, "jarvis-skills")
+        self.assertIn("Phone checkup", turn.text)
+        self.assertEqual(turn.tool_events[0]["tool"], "skill_run")
+        self.assertTrue(self.memory.search("checkup"))
+
+    def test_offline_skill_intent_asks_for_approval(self):
+        library = SkillLibrary(self.db, self.home)
+        library.sync(include_packs=False)
+        runner = SkillRunner(library, self.tools, self.tasks, self.db)
+        self.tools.attach_skills(library, runner)
+        brain = Brain(self.settings, Router(self.settings), self.tools, self.memory,
+                      self.tasks, self.db, skills=library)
+        turn = brain.reply("memory export karo")
+        self.assertEqual(turn.provider, "jarvis-skills")
+        self.assertIn("approval", turn.text.lower())
+        self.assertTrue(turn.tool_events[0].get("approval_required"))
+        self.assertFalse((self.home / "backups" / "memory-export.md").exists())
+
     def test_offline_answer_is_honest(self):
         brain = Brain(self.settings, Router(self.settings), self.tools, self.memory, self.tasks, self.db)
         turn = brain.reply("namaste")
@@ -525,6 +693,7 @@ class ServerTests(Base):
         env["JARVIS_HOME"] = str(self.home)
         env.pop("GEMINI_API_KEY", None)
         env["JARVIS_PROVIDER"] = "offline"
+        env["JARVIS_SKILL_PACKS"] = "0"      # pack import is covered by SkillTests
         self.proc = subprocess.Popen(
             [sys.executable, str(ROOT / "run_jarvis.py"), "serve", "--port", str(self.port)],
             cwd=str(ROOT), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -662,6 +831,35 @@ class ServerTests(Base):
         self.assertEqual(self.post(f"/api/tasks/{task_id}/pause", {})[1]["task"]["status"], "PAUSED")
         self.assertEqual(self.post(f"/api/tasks/{task_id}/resume", {})[1]["task"]["status"], "PENDING")
         self.assertEqual(self.post(f"/api/tasks/{task_id}/cancel", {})[1]["task"]["status"], "CANCELLED")
+
+    def test_skills_api_and_run(self):
+        deadline = time.time() + 10
+        payload = {}
+        while time.time() < deadline:
+            status, payload = self.get("/api/skills?builtin=1&limit=20")
+            if status == 200 and payload.get("stats", {}).get("builtin"):
+                break
+            time.sleep(0.1)
+        self.assertEqual(status, 200)
+        self.assertGreaterEqual(payload["stats"]["builtin"], 10)
+        self.assertTrue(any(row["id"] == "jarvis-phone-checkup" for row in payload["skills"]))
+        status, detail = self.get("/api/skills/jarvis-phone-checkup")
+        self.assertEqual(status, 200)
+        self.assertEqual(detail["skill"]["title"], "Phone checkup")
+        status, result = self.post("/api/skills/jarvis-phone-checkup/run", {"inputs": {}})
+        self.assertEqual(status, 200, result)
+        self.assertEqual(result["task"]["status"], "DONE")
+        status, missing = self.post("/api/skills/does-not-exist/run", {"inputs": {}})
+        self.assertEqual(status, 400)
+
+    def test_auth_lockout_after_repeated_failures(self):
+        codes = []
+        for _ in range(14):
+            codes.append(self.get("/api/status", token=False)[0])
+        self.assertEqual(codes[0], 401)
+        self.assertIn(429, codes)
+        # a correct token still works from the same IP
+        self.assertEqual(self.get("/api/status")[0], 200)
 
     def test_token_never_lands_in_the_log(self):
         self.get("/api/status")

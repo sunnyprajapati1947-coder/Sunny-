@@ -17,6 +17,8 @@
     speaking: false,
     recognition: null,
     listening: false,
+    handsFree: localStorage.getItem("jarvis.handsfree") === "1",
+    skills: { stats: null, packs: [] },
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -162,12 +164,14 @@
     if (!st) return;
     const p = st.provider || {};
     const label = p.active ? `${p.active}${p.model ? " · " + p.model : ""}` : "offline brain";
-    $("#brandSub").textContent = `${label} · ${st.tools} tools`;
+    const skillCount = st.skills && st.skills.total ? ` · ${st.skills.total} skills` : "";
+    $("#brandSub").textContent = `${label} · ${st.tools} tools${skillCount}`;
   }
 
   /* ---------------------------------------------------------------- routing */
 
   function switchTab(tab) {
+    if (tab !== "chat" && state.listening && state.recognition) state.recognition.stop();
     state.tab = tab;
     localStorage.setItem(LS.tab, tab);
     $$("#tabs .tab").forEach((btn) => btn.classList.toggle("is-on", btn.dataset.tab === tab));
@@ -178,6 +182,7 @@
     if (state.streaming && state.tab === "chat") return;
     if (state.tab === "chat") renderChat();
     else if (state.tab === "tasks") renderTasks();
+    else if (state.tab === "skills") renderSkills();
     else if (state.tab === "memory") renderMemory();
     else if (state.tab === "tools") renderTools();
     else renderSettings();
@@ -193,6 +198,8 @@
     "Phone ka battery kitna hai?",
     "Is project ka git status batao",
     "Python se 12 ka factorial nikaalo",
+    "Phone checkup karo",
+    "Repo report do",
   ];
 
   function renderChat() {
@@ -204,6 +211,8 @@
             ? esc(state.status.provider.active + (state.status.provider.model ? " · " + state.status.provider.model : ""))
             : "offline mode"}</span>
           <span class="spacer"></span>
+          <button class="chip handsfree ${state.handsFree ? "is-on" : ""}" id="btnHandsFree" title="Sunta rahe aur khud jawab bole">
+            ${icon("volume")} hands-free</button>
           <button class="chip" id="btnChats">Chats</button>
           <button class="chip" id="btnNewChat">${icon("plus")} New</button>
         </div>
@@ -238,6 +247,19 @@
       paintWelcome(log);
     });
     $("#btnChats").addEventListener("click", openChatsSheet);
+    $("#btnHandsFree").addEventListener("click", () => {
+      state.handsFree = !state.handsFree;
+      localStorage.setItem("jarvis.handsfree", state.handsFree ? "1" : "0");
+      $("#btnHandsFree").classList.toggle("is-on", state.handsFree);
+      if (state.handsFree) {
+        if (!state.voice) { state.voice = true; localStorage.setItem(LS.voice, "1"); $("#btnVoice").classList.add("is-on"); }
+        toast("Hands-free on — bolo, main sun raha hoon", "ok");
+        startListening();
+      } else {
+        if (state.recognition) state.recognition.stop();
+        toast("Hands-free off");
+      }
+    });
 
     const input = $("#input");
     input.addEventListener("input", () => {
@@ -797,6 +819,196 @@
     return out;
   }
 
+  /* ---------------------------------------------------------------- skills */
+
+  let skillsTimer = null;
+
+  async function renderSkills() {
+    clearTimeout(skillsTimer);
+    view.innerHTML = `<div class="screen">
+      <h1>Skills</h1>
+      <p class="lead">GitHub se aaye 1,889 skills + native skills jo phone par seedha chalte hain. Bolo ya likho — JARVIS khud dhoond kar chalata hai.</p>
+      <div class="sync-bar" id="skillSync">
+        <span class="pill">loading…</span>
+      </div>
+      <input id="skillSearch" placeholder="skill dhoondo… (pdf, react, security, deploy)" autocomplete="off">
+      <div class="chips" id="skillFilters" style="margin-top:10px"></div>
+      <div id="skillList"></div>
+    </div>`;
+
+    const list = $("#skillList");
+    let query = "";
+    let pack = "";
+
+    async function load() {
+      try {
+        const payload = await api(`/api/skills?limit=40${query ? "&q=" + encodeURIComponent(query) : ""}${pack ? "&pack=" + encodeURIComponent(pack) : ""}`);
+        const stats = payload.stats || {};
+        $("#skillSync").innerHTML = `
+          <span class="pill ok">${stats.total || 0} skills</span>
+          <span class="pill">${stats.imported || 0} GitHub</span>
+          <span class="pill">${stats.builtin || 0} native</span>
+          <span class="pill">${stats.packs || 0} packs</span>
+          <span class="spacer"></span>
+          <button class="chip" id="skillSyncBtn">${stats.ready ? "Re-sync" : "Syncing…"}</button>`;
+        $("#skillSyncBtn").addEventListener("click", async (event) => {
+          event.target.disabled = true;
+          event.target.textContent = "Syncing…";
+          try {
+            const result = await api("/api/skills/sync", { method: "POST", body: {} });
+            toast(`${result.new || 0} new skills, ${result.total || 0} total`, "ok");
+          } catch (err) { toast(err.message, "bad"); }
+          load();
+        });
+
+        const packs = payload.packs || [];
+        const top = packs.filter((row) => row.count > 0).slice(0, 8);
+        $("#skillFilters").innerHTML = [
+          `<button class="chip ${pack === "" ? "is-on" : ""}" data-pack="">all</button>`,
+          ...top.map((row) => `<button class="chip ${pack === row.pack ? "is-on" : ""}" data-pack="${esc(row.pack)}">${esc(row.pack)} <span class="muted">${row.count}</span></button>`),
+        ].join("");
+        $$("#skillFilters .chip").forEach((chip) => chip.addEventListener("click", () => {
+          pack = chip.dataset.pack;
+          load();
+        }));
+
+        const rows = payload.skills || [];
+        if (!rows.length) {
+          list.innerHTML = `<div class="empty">${icon("skills")}${stats.ready ? "Kuch nahi mila — doosra shabd try karo." : "Library sync ho rahi hai… thoda ruko."}</div>`;
+          if (!stats.ready) skillsTimer = setTimeout(load, 1500);
+          return;
+        }
+        list.innerHTML = rows.map((row) => `
+          <div class="item">
+            <div class="item-head">
+              <div style="min-width:0">
+                <div class="item-title">${esc(row.title)}</div>
+                <div class="item-sub skill-desc">${esc(row.description)}</div>
+                <div class="item-sub" style="margin-top:6px">
+                  <span class="pill ${row.builtin ? "ok" : ""}">${row.builtin ? "native" : esc(row.pack)}</span>
+                  <span class="pill">${esc(row.type)}</span>
+                  ${row.risk !== "low" ? `<span class="pill warn">${esc(row.risk)}</span>` : ""}
+                </div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="btn tiny" data-open="${esc(row.id)}">${icon("chevron")} Details</button>
+              <button class="btn tiny primary" data-run="${esc(row.id)}">${icon("play")} Run</button>
+            </div>
+          </div>`).join("");
+
+        $$("[data-open]", list).forEach((btn) => btn.addEventListener("click", () => openSkill(btn.dataset.open)));
+        $$("[data-run]", list).forEach((btn) => btn.addEventListener("click", () => {
+          const row = rows.find((item) => item.id === btn.dataset.run);
+          runSkill(row);
+        }));
+      } catch (err) {
+        list.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+      }
+    }
+
+    let debounce;
+    $("#skillSearch").addEventListener("input", (event) => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => { query = event.target.value.trim(); load(); }, 240);
+    });
+    load();
+  }
+
+  async function openSkill(skillId) {
+    try {
+      const payload = await api(`/api/skills/${encodeURIComponent(skillId)}`);
+      const skill = payload.skill;
+      const body = `
+        <div class="item-sub" style="margin-bottom:8px">
+          <span class="pill ${skill.builtin ? "ok" : ""}">${skill.builtin ? "native" : esc(skill.pack)}</span>
+          <span class="pill">${esc(skill.type)}</span>
+          ${skill.path ? `<span class="pill">${esc(skill.path)}</span>` : ""}
+        </div>
+        <div class="skill-body">${md(skill.text || skill.description || "")}</div>
+        <button class="btn primary btn-block" id="skillRunSheet">${icon("play")} Run this skill</button>`;
+      openSheet(skill.title, body);
+      $("#skillRunSheet").addEventListener("click", () => { closeSheet(); runSkill(skill); });
+    } catch (err) { toast(err.message, "bad"); }
+  }
+
+  function runSkill(skill) {
+    const inputs = skill.inputs || {};
+    const names = Object.keys(inputs);
+    if (!names.length) {
+      executeSkill(skill.id, {});
+      return;
+    }
+    const body = `
+      <p class="muted small">${esc(skill.description || "")}</p>
+      ${names.map((name) => `<label class="field"><span>${esc(name)} — ${esc(inputs[name])}</span>
+        <input data-input="${esc(name)}" ${name === "code" || name === "text" ? 'placeholder="yahan likho ya bolo"' : ""}></label>`).join("")}
+      <button class="btn primary btn-block" id="skillRunGo">${icon("play")} Start</button>`;
+    openSheet("Run: " + skill.title, body);
+    $("#skillRunGo").addEventListener("click", () => {
+      const values = {};
+      $$("[data-input]").forEach((input) => { values[input.dataset.input] = input.value.trim(); });
+      closeSheet();
+      executeSkill(skill.id, values);
+    });
+  }
+
+  async function executeSkill(skillId, inputs) {
+    toast("Skill start…");
+    try {
+      const result = await api(`/api/skills/${encodeURIComponent(skillId)}/run`, {
+        method: "POST",
+        body: { inputs, auto_run: true },
+      });
+      const task = result.task;
+      if (result.approval) {
+        showSkillApproval(result.approval, task);
+        return;
+      }
+      toast(task.status === "DONE" ? "Ho gaya" : `Task ${task.status.toLowerCase()}`, task.status === "DONE" ? "ok" : "bad");
+      openTaskResult(task);
+    } catch (err) { toast(err.message, "bad"); }
+  }
+
+  function showSkillApproval(approval, task) {
+    const body = `
+      <p class="muted small">Skill ke andar ek ${esc(approval.risk || "medium")} risk step hai. Exact arguments neeche hain — approve karne par yahi call chalegi.</p>
+      <div class="approval"><strong>${esc(approval.tool)}</strong>
+        <pre>${esc(JSON.stringify(approval.arguments || {}, null, 2))}</pre></div>
+      <button class="btn primary btn-block" id="skillApprove">${icon("check")} Approve & continue</button>
+      <button class="btn ghost btn-block" id="skillDeny">${icon("x")} Deny</button>`;
+    openSheet("Approval chahiye", body);
+    $("#skillApprove").addEventListener("click", async () => {
+      try {
+        await api(`/api/approvals/${approval.id}/approve`, { method: "POST", body: {} });
+        closeSheet();
+        toast("Approved — kaam chalu", "ok");
+        const resumed = await api(`/api/tasks/${task.id}/run`, { method: "POST", body: {} });
+        toast(resumed.task.status === "DONE" ? "Ho gaya" : `Task ${resumed.task.status.toLowerCase()}`, resumed.task.status === "DONE" ? "ok" : "bad");
+        openTaskResult(resumed.task);
+      } catch (err) { toast(err.message, "bad"); }
+    });
+    $("#skillDeny").addEventListener("click", async () => {
+      try { await api(`/api/approvals/${approval.id}/deny`, { method: "POST", body: {} }); } catch { /* ignore */ }
+      closeSheet();
+      toast("Denied");
+    });
+  }
+
+  function openTaskResult(task) {
+    const steps = (task.steps || []).map((step) => `<li class="${esc(String(step.status || ""))}">
+      <span class="tick">${step.status === "done" ? "✓" : step.status === "failed" ? "!" : ""}</span>
+      <span>${esc(step.title)}${step.detail ? `<br><span class="muted small">${esc(String(step.detail).slice(0, 300))}</span>` : ""}</span>
+    </li>`).join("");
+    openSheet(task.title, `
+      <div class="item-sub"><span class="pill ${task.status === "DONE" ? "ok" : task.status === "FAILED" ? "bad" : "warn"}">${esc(task.status)}</span>
+        <span class="pill">${(task.progress && task.progress.percent) || 0}%</span></div>
+      <ul class="steps">${steps}</ul>
+      ${task.error ? `<p class="small" style="color:var(--warn)">${esc(task.error)}</p>` : ""}
+      <button class="btn primary btn-block" id="resultTasks">Tasks tab kholo</button>`);
+    $("#resultTasks").addEventListener("click", () => { closeSheet(); switchTab("tasks"); });
+  }
+
   /* -------------------------------------------------------------- settings */
 
   async function renderSettings() {
@@ -825,6 +1037,15 @@
           <div class="row"><span class="k">Mode</span><span class="v">${esc(settings.provider.mode)}</span></div>
           <div class="row"><span class="k">Keys present</span><span class="v">${esc(Object.keys(keys).join(", ") || "none")}</span></div>
           <div class="row"><span class="k">Version / uptime</span><span class="v">${esc(st.version)} · ${Math.floor((st.uptime || 0) / 60)}m</span></div>
+        </div>
+
+        <div class="card">
+          <h2>${icon("skills")} Skills</h2>
+          <div class="row"><span class="k">Installed</span><span class="v">${(st.skills && st.skills.total) || 0}</span></div>
+          <div class="row"><span class="k">GitHub packs</span><span class="v">${(st.skills && st.skills.imported) || 0} · ${(st.skills && st.skills.packs) || 0} packs</span></div>
+          <div class="row"><span class="k">Native (phone tools)</span><span class="v">${(st.skills && st.skills.builtin) || 0}</span></div>
+          <div class="row"><span class="k">Import status</span><span class="v">${st.skills && st.skills.ready ? "ready" : "syncing…"}${st.skills && st.skills.error ? " · " + esc(st.skills.error.slice(0, 40)) : ""}</span></div>
+          <button class="btn ghost btn-block" id="syncSkills">Re-sync skill library</button>
         </div>
 
         <div class="card">
@@ -882,6 +1103,21 @@
           <button class="btn danger btn-block" id="setLogout">Lock dashboard (forget token)</button>
         </div>
       </div>`;
+
+      $("#syncSkills").addEventListener("click", async () => {
+        const btn = $("#syncSkills");
+        btn.disabled = true;
+        btn.textContent = "Syncing…";
+        try {
+          const result = await api("/api/skills/sync", { method: "POST", body: { force: true } });
+          toast(`${result.total} skills ready`, "ok");
+          renderSettings();
+        } catch (err) {
+          toast(err.message, "bad");
+          btn.disabled = false;
+          btn.textContent = "Re-sync skill library";
+        }
+      });
 
       $("#setSave").addEventListener("click", async () => {
         try {
@@ -977,15 +1213,34 @@
     if (voice) utterance.voice = voice;
     utterance.rate = 1.02;
     utterance.onstart = () => { state.speaking = true; };
-    utterance.onend = () => { state.speaking = false; };
+    utterance.onend = () => {
+      state.speaking = false;
+      if (state.handsFree && state.tab === "chat" && !state.streaming) {
+        setTimeout(() => { if (state.handsFree && !state.listening && !state.streaming) startListening(); }, 500);
+      }
+    };
     utterance.onerror = () => { state.speaking = false; };
     window.speechSynthesis.speak(utterance);
   }
 
-  function toggleMic() {
+  function stripWakeWord(text) {
+    return String(text || "")
+      .replace(/^\s*(hey|ok|okay|oye|are|sun)\s+/i, "")
+      .replace(/^\s*jarvis[\s,!.\-]*/i, "")
+      .trim();
+  }
+
+  function startListening(options = {}) {
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Recognition) return toast("Voice input ke liye Chrome/Android browser chahiye", "bad");
-    if (state.listening) { state.recognition && state.recognition.stop(); return; }
+    if (!Recognition) {
+      toast("Voice ke liye Chrome/Android browser chahiye", "bad");
+      if (state.handsFree) {
+        state.handsFree = false;
+        localStorage.setItem("jarvis.handsfree", "0");
+      }
+      return;
+    }
+    if (state.listening) return;
     const recognition = new Recognition();
     recognition.lang = "hi-IN";
     recognition.interimResults = true;
@@ -994,23 +1249,54 @@
     const input = $("#input");
     const mic = $("#btnMic");
     state.recognition = recognition;
+    let heard = "";
+
     recognition.onstart = () => {
       state.listening = true;
       if (mic) { mic.classList.add("is-live"); mic.innerHTML = icon("stop"); }
-      toast("Sun raha hoon…");
+      if (!options.silent) toast(state.handsFree ? "Sun raha hoon…" : "Bolo…");
     };
     recognition.onresult = (event) => {
       let text = "";
       for (let i = event.resultIndex; i < event.results.length; i += 1) text += event.results[i][0].transcript;
-      if (input) input.value = text;
+      heard = text;
+      if (input) {
+        input.value = text;
+        input.dispatchEvent(new window.Event("input", { bubbles: true }));
+      }
     };
-    recognition.onerror = (event) => { toast("Voice error: " + event.error, "bad"); };
+    recognition.onerror = (event) => {
+      if (event.error !== "no-speech" && event.error !== "aborted") {
+        toast("Voice error: " + event.error, "bad");
+      }
+    };
     recognition.onend = () => {
       state.listening = false;
       if (mic) { mic.classList.remove("is-live"); mic.innerHTML = icon("mic"); }
-      if (input && input.value.trim()) send(input.value);
+      const text = stripWakeWord(heard);
+      if (input) input.value = "";
+      if (text && state.tab === "chat" && !state.streaming) {
+        send(text);
+      } else if (state.handsFree && state.tab === "chat" && !state.streaming && !state.speaking) {
+        setTimeout(() => {
+          if (state.handsFree && !state.listening && !state.streaming && !state.speaking) {
+            startListening({ silent: true });
+          }
+        }, 700);
+      }
     };
     try { recognition.start(); } catch { /* already started */ }
+  }
+
+  function toggleMic() {
+    if (state.listening) { state.recognition && state.recognition.stop(); return; }
+    if (state.handsFree) {
+      state.handsFree = false;
+      localStorage.setItem("jarvis.handsfree", "0");
+      const btn = $("#btnHandsFree");
+      if (btn) btn.classList.remove("is-on");
+    }
+    startListening();
   }
 
   function copy(text) {
