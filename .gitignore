@@ -12,3 +12,4 @@ logs/server.log
 
 # CI-generated release keystore (never commit key material)
 apps/jarvis-app/.signing/
+node_modules/

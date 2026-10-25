@@ -232,6 +232,17 @@
   }
 
   function toBase64(blob) {
+    if (typeof blob.arrayBuffer !== 'function' && window.FileReader) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onerror = function () { reject(new Error('File read fail')); };
+        reader.onload = function () {
+          var text = String(reader.result || '');
+          resolve(text.indexOf(',') >= 0 ? text.split(',')[1] : text);
+        };
+        reader.readAsDataURL(blob);
+      });
+    }
     return blob.arrayBuffer().then(function (buffer) {
       var bytes = new Uint8Array(buffer);
       var chunk = 0x8000;

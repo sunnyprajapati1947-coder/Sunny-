@@ -1,0 +1,12 @@
+{
+  "name": "jarvis-pocket-smoke",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only jsdom smoke test for Jarvis Pocket (22 checks).",
+  "scripts": {
+    "test": "node smoke.mjs"
+  },
+  "dependencies": {
+    "jsdom": "^26.1.0"
+  }
+}
