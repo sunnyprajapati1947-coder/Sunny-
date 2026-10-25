@@ -46,13 +46,13 @@ Browser mein `http://127.0.0.1:8787/?token=...` kholo — token start hote waqt 
 Koi bhi feature "working" sirf tab likha hai jab test ya real call se verify hua. Jo verify nahi hua,
 wahan "untested" likha hai.
 
-**Android APK (0.3.0)** — `jarvis-v0.3.0` release: `JARVIS-0.3.0.apk` (9.99 MB), `com.sunnyai.jarvis`,
+**Android APK (0.3.4)** — `jarvis-v0.3.4` release: `JARVIS-0.3.4.apk` (9.99 MB), `com.sunnyai.jarvis`,
 non-debuggable, release-signed. Ismein tasks queue, chat tools, video studio, connections hub, in-app
 updater aur foreground-service notification sab bundle hain. Neeche section 1.5 dekho.
 
 | App feature | Status | Verify kaise hua |
 |---|---|---|
-| Installable APK (Capacitor shell + native bridge) | **WORKING** | GitHub release `jarvis-v0.3.0`, CI run success (`JARVIS Android APK`) |
+| Installable APK (Capacitor shell + native bridge) | **WORKING** | GitHub releases `jarvis-v0.3.3` + `jarvis-v0.3.4`, CI runs success (`JARVIS Android APK`) |
 | Tasks tab: plan → steps → retry (2x) → resume after restart | **WORKING** | jsdom smoke: 2-step task DONE, failure path FAILED→retry DONE, `jp.tasks` persist |
 | Chat tools `task_create` / `task_status` / `video_create` | **WORKING** | smoke: tool tag se task bana aur Tasks screen me dikha |
 | Video studio: prompt → WebM slideshow → gallery auto-save | **WORKING (WebM slideshow)** | smoke: plan parse, record, `saveToGallery` mime `video/webm`, 1.2 KB base64 payload |
@@ -71,15 +71,17 @@ updater aur foreground-service notification sab bundle hain. Neeche section 1.5 
 Phone par bas ek file install karni hai. Termux, Python, `git` — kuch nahi chahiye.
 
 1. Phone ke browser me release page kholo:
-   `https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/jarvis-v0.3.0`
-2. **JARVIS-0.3.0.apk** tap karo → "Install unknown apps" allow karo (sirf browser/Files app ke liye).
+   `https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/jarvis-v0.3.4`
+2. **JARVIS-0.3.4.apk** tap karo → "Install unknown apps" allow karo (sirf browser/Files app ke liye).
 3. App kholo → Settings → **AI provider** me apni Gemini (ya OpenAI-compatible) key daalo.
    Bina key ke bhi 1,899-skill library, tasks ke local steps aur video script ka offline fallback chalta hai.
 4. Pehli baar notification permission maangega — allow karo, warna task-done alerts nahi aayenge.
 
-**Pehli baar ek extra step:** `0.1.0` doosri (throwaway) signing key se bana tha. Agar woh install hai to
-Android "App not installed" bolega — purana JARVIS uninstall karke `0.3.0` install karo. `0.3.0` se aage
-signing key fix hai (release notes me signer SHA-256), isliye aage ke updates seedhe install ho jayenge.
+**Pehli baar ek extra step:** `0.1.0` ek throwaway signing key se bana tha, isliye agar woh install hai to
+Android "App not installed" bolega — purana JARVIS uninstall karke `0.3.4` install karo.
+`0.3.3` se signing key fix hai aur CI use Actions cache se reuse karta hai; `0.3.3` aur `0.3.4` ka
+signer certificate SHA-256 same hai (`fc37b697…`), isliye aage ke updates seedhe install ho jayenge.
+(Wohi fingerprint har release ke notes me likha hota hai — mismatch matlab key rotate, tab uninstall karna padega.)
 
 **Andar kya hai**
 
