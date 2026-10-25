@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sunnyprajapati1947-coder.github.io/Sunny-/sitemap.xml
