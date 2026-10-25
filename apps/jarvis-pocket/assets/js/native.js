@@ -191,11 +191,16 @@
     document.body.appendChild(bar);
     document.getElementById('jarvisUpdateX').addEventListener('click', function () { bar.remove(); });
     document.getElementById('jarvisUpdateGo').addEventListener('click', function () {
-      call('openUrl', { url: apkUrl }).then(function () {
-        toast('Download shuru — install tap karo', 'ok');
-      }).catch(function () {
-        window.open(apkUrl, '_blank');
-      });
+      call('downloadUpdate', { url: apkUrl, version: release })
+        .then(function () {
+          toast('Download shuru — notification se install karo', 'ok');
+        })
+        .catch(function () {
+          call('openUrl', { url: apkUrl }).catch(function () {
+            window.open(apkUrl, '_blank');
+          });
+          toast('Browser se download — install tap karo', 'ok');
+        });
       bar.remove();
     });
   }

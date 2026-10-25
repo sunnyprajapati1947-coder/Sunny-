@@ -404,7 +404,8 @@
       '<tool>{"name":"kb_search","query":"voice cloning"}</tool>',
       '<tool>{"name":"kb_open","id":"ecc-skills-voice"}</tool>',
       '<tool>{"name":"remember","text":"User builds Android apps in Kotlin"}</tool>',
-      'Available tools: kb_search {query}, kb_open {id}, remember {text}.',
+      'Available tools: kb_search {query}, kb_open {id}, remember {text}, ' +
+      'task_create {goal, title?}, task_status {id?}.',
       'After a tool call the app replies with <tool_result>. Then answer the user normally. Never show tool tags in your final answer.'
     );
     if (options.context) {

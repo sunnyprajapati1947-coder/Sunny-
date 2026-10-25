@@ -19,11 +19,10 @@ for (const item of ITEMS) {
 // The APK ships its own shell; a service worker there only risks stale JS.
 await rm(join(out, "sw.js"), { force: true });
 const html = await readFile(join(out, "index.html"), "utf8");
-const patched = html
-  .replace(/\s*<link rel="manifest"[^>]*>/, "")
-  .replace('<script src="assets/js/app.js"></script>',
-           '<script src="assets/js/native.js"></script>\n<script src="assets/js/app.js"></script>');
-if (patched === html) throw new Error("index.html did not match the expected script tag");
+if (!html.includes("assets/js/native.js")) {
+  throw new Error("index.html is missing the native bridge script");
+}
+const patched = html.replace(/\s*<link rel="manifest"[^>]*>/, "");
 await writeFile(join(out, "index.html"), patched);
 
 console.log(`staged ${((await dirBytes(out)) / 1024 / 1024).toFixed(1)} MB into ${out}`);

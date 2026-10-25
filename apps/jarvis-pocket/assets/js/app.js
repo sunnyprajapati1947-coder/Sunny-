@@ -13,6 +13,7 @@
   var TABS = [
     { id: 'chat', label: 'Chat', icon: 'chat', href: '#/' },
     { id: 'library', label: 'Library', icon: 'library', href: '#/library' },
+    { id: 'tasks', label: 'Tasks', icon: 'clock', href: '#/tasks' },
     { id: 'memory', label: 'Memory', icon: 'brain', href: '#/memory' },
     { id: 'settings', label: 'Settings', icon: 'settings', href: '#/settings' }
   ];
@@ -36,6 +37,8 @@
   function activeTab(path) {
     if (path === '/library' || path.indexOf('/pack/') === 0 || path.indexOf('/item/') === 0 ||
       path.indexOf('/collection/') === 0 || path === '/saved' || path === '/search') return 'library';
+    if (path === '/tasks') return 'tasks';
+    if (path === '/connections') return 'settings';
     if (path === '/memory') return 'memory';
     if (path === '/settings' || path === '/about') return 'settings';
     return 'chat';
@@ -107,6 +110,10 @@
         html = Lib.itemScreen(decodeURIComponent(path.slice(6)));
       } else if (path.indexOf('/collection/') === 0) {
         html = Lib.collectionScreen(decodeURIComponent(path.slice(12)));
+      } else if (path === '/tasks') {
+        html = window.JarvisTasks.screen();
+      } else if (path === '/connections') {
+        html = window.JarvisConnections.screen();
       } else if (path === '/memory') {
         html = memoryScreen();
       } else if (path === '/settings') {
@@ -131,6 +138,8 @@
       else if (path.indexOf('/pack/') === 0) Lib.mountPack(decodeURIComponent(path.slice(6)));
       else if (path.indexOf('/item/') === 0) Lib.mountItem(decodeURIComponent(path.slice(6)));
       else if (path.indexOf('/collection/') === 0) Lib.mountCollection(decodeURIComponent(path.slice(12)));
+      else if (path === '/tasks') window.JarvisTasks.mount();
+      else if (path === '/connections') window.JarvisConnections.mount();
       else if (path === '/memory') mountMemory();
       else if (path === '/settings') mountSettings();
       else if (path === '/about') mountAbout();
@@ -337,13 +346,16 @@
           '</div>' +
         '</section>' +
 
+        '<a class="card card-link" href="#/connections">' +
+          '<div class="card-head"><h2>' + UI.icon('bolt') + 'Connections — YouTube, social, device</h2>' + UI.icon('chevron') + '</div>' +
+        '</a>' +
         '<a class="card card-link" href="#/saved">' +
           '<div class="card-head"><h2>' + UI.icon('bookmark') + 'Your shelf</h2>' + UI.icon('chevron') + '</div>' +
         '</a>' +
         '<a class="card card-link" href="#/about">' +
           '<div class="card-head"><h2>' + UI.icon('info') + 'About & packs</h2>' + UI.icon('chevron') + '</div>' +
         '</a>' +
-        '<p class="muted center small">Jarvis Pocket · v1.0 · made from 23 open-source repos</p>' +
+        '<p class="muted center small">JARVIS · v' + ((window.JarvisNativeInfo && window.JarvisNativeInfo.version) || '1.0') + ' · made from 23 open-source repos</p>' +
       '</section>';
   }
 
@@ -708,6 +720,11 @@
       });
     }
   }
+
+  window.JarvisApp = {
+    render: render,
+    go: function (path) { location.hash = path; }
+  };
 
   function boot() {
     applyTheme();

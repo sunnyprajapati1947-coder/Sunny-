@@ -414,6 +414,23 @@
       var entry = Memory.add(tool.text || '');
       return Promise.resolve(entry ? 'Saved to memory: ' + entry.text : 'Nothing to save.');
     }
+    if (name === 'task_create') {
+      var Tasks = window.JarvisTasks;
+      if (!Tasks) return Promise.resolve('Task engine load nahi hua.');
+      var task = Tasks.create(tool.goal || tool.text || '', { title: tool.title || '' });
+      if (!task) return Promise.resolve('Goal khali hai — kya karna hai batao.');
+      Tasks.run(task.id);
+      return Promise.resolve('Task queued: "' + task.title + '" (id ' + task.id +
+        '). Steps khud banenge, fail hone par retry hoga, aur Tasks tab me progress dikhega.');
+    }
+    if (name === 'task_status') {
+      var queue = window.JarvisTasks ? window.JarvisTasks.list() : [];
+      if (tool.id) queue = queue.filter(function (row) { return row.id === tool.id; });
+      if (!queue.length) return Promise.resolve('Koi task nahi mila.');
+      return Promise.resolve(queue.slice(0, 8).map(function (task) {
+        return '- ' + task.id + ' | ' + task.status + ' | ' + task.title;
+      }).join('\n'));
+    }
     return Promise.resolve('Unknown tool: ' + name);
   }
 
