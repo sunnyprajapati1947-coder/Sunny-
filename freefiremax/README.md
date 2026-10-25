@@ -21,17 +21,29 @@ bash termux/serve.sh
 
 Poora guide: [`../termux/README.md`](../termux/README.md)
 
+## Pages
+
+| Page | Kya hai |
+| --- | --- |
+| `index.html` | Home — hero, quick links, latest news, modes, esports/download CTA |
+| `game.html` | Game — modes, maps, agents (filter/search), weapon classes, loadout drawer |
+| `news.html` | News — 6 briefings with category filters |
+| `esports.html` | Esports — path, calendar, sample standings, prize split |
+| `download.html` | Download — official store links, indicative specs, install steps |
+| `support.html` | Support — 8-question FAQ, scam red flags, safety checklist |
+| `redeem.html` | Redeem — offline format checker + safe redeem steps |
+
 ## Files
 
 | File | Kaam |
 | --- | --- |
-| `index.html` | Home (hero, maps, agents, weapons, esports, redeem, downloads, disclaimer) |
-| `styles.css` | Dark cinematic theme, responsive grid, reduced-motion support |
-| `app.js` | Data-driven render: maps/agents/weapons/calendar, loadout pins, code checker |
+| `styles.css` | Dark cinematic theme + portal chrome (nav, ticker, news, FAQ, footer), responsive |
+| `app.js` | Data-driven render (maps/agents/weapons/calendar), loadout pins, code checker, news filters, nav/ticker |
 | `assets/hero.jpg` | Bermuda-style island key art |
 | `assets/agents.jpg` | Agent comp banner |
 | `assets/weapons.jpg` | Arsenal visual |
 | `assets/esports.jpg` | Esports arena visual |
+| `assets/news-*.jpg` | News thumbnails (season, agent, trophy) |
 
 ## Features
 

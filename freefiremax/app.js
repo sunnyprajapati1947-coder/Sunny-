@@ -1,83 +1,40 @@
 /* ============================================================
-   FF MAX UNIVERSE — unofficial fan hub
-   Data-driven UI: maps, agents, weapon classes, esports, loadout
-   No backend, no tracking, nothing leaves the device.
+   FF MAX UNIVERSE — unofficial fan portal
+   Shared behaviour: data-driven sections, loadout pins,
+   code-format checker, news filters, nav, reveal, counters.
+   No backend, no tracking — nothing leaves the device.
    ============================================================ */
 (() => {
   "use strict";
 
   /* =========================================================
-     1. DATA
+     1. DATA  (edit here to update content)
      ========================================================= */
-
-  // Note: these are fan-written summaries, not official values.
   const MAPS = [
-    {
-      code: "MAP-01", name: "Bermuda", tint: "rgba(255,159,28,.22)",
+    { code: "MAP-01", name: "Bermuda", tint: "rgba(255,159,28,.22)",
       tags: ["4×4 km", "50 players", "Balanced"],
-      rows: [
-        ["Terrain", "Coastal towns · hills"],
-        ["Hot drops", "Clock Tower, Peak, Mars"],
-        ["Loot", "High in towns"],
-        ["Rotations", "Roads + river crossings"]
-      ],
-      note: "Sabse familiar map. Rotation ke liye road network strong hai — end circles often Peak/Clock side shift karte hain."
-    },
-    {
-      code: "MAP-02", name: "Purgatory", tint: "rgba(46,230,208,.18)",
+      rows: [["Terrain", "Coastal towns · hills"], ["Hot drops", "Clock Tower, Peak, Mars"], ["Loot", "High in towns"], ["Rotations", "Roads + river crossings"]],
+      note: "Sabse familiar map. Rotation ke liye road network strong hai — end circles often Peak/Clock side shift karte hain." },
+    { code: "MAP-02", name: "Purgatory", tint: "rgba(46,230,208,.18)",
       tags: ["2×2 km", "20 players", "Fast"],
-      rows: [
-        ["Terrain", "Volcanic · industrial"],
-        ["Hot drops", "Central factory, cave"],
-        ["Loot", "Dense but contested"],
-        ["Rotations", "Short, vertical"]
-      ],
-      note: "Chhota map = early fights. Third-party bahut common, isliye cover discipline aur sound cues decisive hain."
-    },
-    {
-      code: "MAP-03", name: "Kalahari", tint: "rgba(255,194,75,.2)",
+      rows: [["Terrain", "Volcanic · industrial"], ["Hot drops", "Central factory, cave"], ["Loot", "Dense but contested"], ["Rotations", "Short, vertical"]],
+      note: "Chhota map = early fights. Third-party bahut common, isliye cover discipline aur sound cues decisive hain." },
+    { code: "MAP-03", name: "Kalahari", tint: "rgba(255,194,75,.2)",
       tags: ["2×2 km", "50 players", "Open"],
-      rows: [
-        ["Terrain", "Desert · canyons"],
-        ["Hot drops", "Command Post, Refinery"],
-        ["Loot", "Scattered mid-tier"],
-        ["Rotations", "Long sightlines"]
-      ],
-      note: "Open ground pe rotation sabse risky. Smoke/vehicle usage aur ridge control hi jeet ka rasta hai."
-    },
-    {
-      code: "MAP-04", name: "Alpine", tint: "rgba(165,180,252,.2)",
+      rows: [["Terrain", "Desert · canyons"], ["Hot drops", "Command Post, Refinery"], ["Loot", "Scattered mid-tier"], ["Rotations", "Long sightlines"]],
+      note: "Open ground pe rotation sabse risky. Smoke/vehicle usage aur ridge control hi jeet ka rasta hai." },
+    { code: "MAP-04", name: "Alpine", tint: "rgba(165,180,252,.2)",
       tags: ["Snow", "Vertical", "Mid-range"],
-      rows: [
-        ["Terrain", "Snow peaks · cable cars"],
-        ["Hot drops", "Observatory, Peak"],
-        ["Loot", "Sparse, high-value zones"],
-        ["Rotations", "High ground first"]
-      ],
-      note: "Height advantage sab kuch hai. Snow footsteps duur tak sunai dete hain — audio awareness must."
-    },
-    {
-      code: "MAP-05", name: "Nexterra", tint: "rgba(196,181,253,.2)",
+      rows: [["Terrain", "Snow peaks · cable cars"], ["Hot drops", "Observatory, Peak"], ["Loot", "Sparse, high-value zones"], ["Rotations", "High ground first"]],
+      note: "Height advantage sab kuch hai. Snow footsteps duur tak sunai dete hain — audio awareness must." },
+    { code: "MAP-05", name: "Nexterra", tint: "rgba(196,181,253,.2)",
       tags: ["Futuristic", "Multi-level", "Rotate heavy"],
-      rows: [
-        ["Terrain", "Sci-fi city · anti-grav lifts"],
-        ["Hot drops", "Central spire, docks"],
-        ["Loot", "Multi-floor buildings"],
-        ["Rotations", "Vertical + tunnels"]
-      ],
-      note: "Vertical fights zyada — ziplines aur lifts se third-party aata hai. Entry se pehle angle clear karo."
-    },
-    {
-      code: "MAP-06", name: "Training Ground", tint: "rgba(148,163,184,.2)",
+      rows: [["Terrain", "Sci-fi city · anti-grav lifts"], ["Hot drops", "Central spire, docks"], ["Loot", "Multi-floor buildings"], ["Rotations", "Vertical + tunnels"]],
+      note: "Vertical fights zyada — ziplines aur lifts se third-party aata hai. Entry se pehle angle clear karo." },
+    { code: "MAP-06", name: "Training Ground", tint: "rgba(148,163,184,.2)",
       tags: ["Practice", "Aim range", "No stakes"],
-      rows: [
-        ["Terrain", "Range · obstacle course"],
-        ["Hot drops", "—"],
-        ["Loot", "Full access"],
-        ["Rotations", "Drills only"]
-      ],
-      note: "Daily 15 minute: recoil drill, flick drill, gloo-wall + peek combo. Warm-up ke bina ranked nahi."
-    }
+      rows: [["Terrain", "Range · obstacle course"], ["Hot drops", "—"], ["Loot", "Full access"], ["Rotations", "Drills only"]],
+      note: "Daily 15 minute: recoil drill, flick drill, gloo-wall + peek combo. Warm-up ke bina ranked nahi." }
   ];
 
   const AGENTS = [
@@ -142,6 +99,7 @@
   const toastEl = $("#toast");
   let toastTimer;
   function toast(msg) {
+    if (!toastEl) return;
     toastEl.textContent = msg;
     toastEl.classList.add("show");
     clearTimeout(toastTimer);
@@ -149,7 +107,7 @@
   }
 
   /* =========================================================
-     3. LOADOUT (pins) — localStorage
+     3. LOADOUT (pins) — localStorage, optional per page
      ========================================================= */
   const LKEY = "ffmax.loadout.v1";
   let loadout = readLoadout();
@@ -163,11 +121,7 @@
     }
   }
   function saveLoadout() {
-    try {
-      localStorage.setItem(LKEY, JSON.stringify(loadout));
-    } catch {
-      /* private mode / quota — UI still works in-memory */
-    }
+    try { localStorage.setItem(LKEY, JSON.stringify(loadout)); } catch { /* blocked storage */ }
     renderLoadout();
   }
   const isPinned = (type, name) => loadout.some((x) => x.type === type && x.name === name);
@@ -187,18 +141,16 @@
 
   function renderLoadout() {
     const list = $("#loadoutList");
+    if (!list) return;
     list.innerHTML = loadout.length
-      ? loadout
-          .map(
-            (x, i) => `
+      ? loadout.map((x, i) => `
         <div class="lo-item">
           <div><small>${esc(x.type)}</small><b>${esc(x.name)}</b></div>
           <button data-unpin="${i}" aria-label="Remove ${esc(x.name)} from loadout">✕</button>
-        </div>`
-          )
-          .join("")
+        </div>`).join("")
       : `<p class="lo-empty">Abhi kuch pin nahi hai.<br />Maps, agents ya weapons me <b>★</b> dabao.</p>`;
-    $("#loadoutCount").textContent = String(loadout.length);
+    const count = $("#loadoutCount");
+    if (count) count.textContent = String(loadout.length);
   }
 
   function syncPins() {
@@ -214,9 +166,11 @@
   /* =========================================================
      4. MAPS
      ========================================================= */
-  function renderMaps() {
-    $("#mapGrid").innerHTML = MAPS.map(
-      (m, i) => `
+  function initMaps() {
+    const grid = $("#mapGrid");
+    if (!grid) return;
+
+    grid.innerHTML = MAPS.map((m, i) => `
       <div class="map-card" role="button" tabindex="0" aria-expanded="false" data-map="${i}" style="--map-tint:${m.tint}">
         <div class="map-top">
           <span class="map-code">${esc(m.code)}</span>
@@ -224,7 +178,6 @@
         </div>
         <h3 class="map-name">${esc(m.name)}</h3>
         <div class="map-meta">${m.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
-
         <div class="map-detail">
           <div>
             <div class="map-detail-inner">
@@ -238,38 +191,37 @@
             </div>
           </div>
         </div>
-      </div>`
-    ).join("");
-  }
+      </div>`).join("");
 
-  $("#mapGrid").addEventListener("click", (e) => {
-    const pin = e.target.closest("[data-pin-type]");
-    if (pin) {
-      e.stopPropagation();
-      e.preventDefault();
-      togglePin(pin.dataset.pinType, pin.dataset.pinName);
-      return;
-    }
-    const card = e.target.closest(".map-card");
-    if (!card) return;
-    const open = card.getAttribute("aria-expanded") === "true";
-    card.setAttribute("aria-expanded", String(!open));
-  });
-  $("#mapGrid").addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" && e.key !== " ") return;
-    const pin = e.target.closest("[data-pin-type]");
-    if (pin) {
-      e.preventDefault();
-      e.stopPropagation();
-      togglePin(pin.dataset.pinType, pin.dataset.pinName);
-      return;
-    }
-    const card = e.target.closest(".map-card");
-    if (card && e.target === card) {
-      e.preventDefault();
+    grid.addEventListener("click", (e) => {
+      const pin = e.target.closest("[data-pin-type]");
+      if (pin) {
+        e.stopPropagation();
+        e.preventDefault();
+        togglePin(pin.dataset.pinType, pin.dataset.pinName);
+        return;
+      }
+      const card = e.target.closest(".map-card");
+      if (!card) return;
       card.setAttribute("aria-expanded", String(card.getAttribute("aria-expanded") !== "true"));
-    }
-  });
+    });
+
+    grid.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const pin = e.target.closest("[data-pin-type]");
+      if (pin) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePin(pin.dataset.pinType, pin.dataset.pinName);
+        return;
+      }
+      const card = e.target.closest(".map-card");
+      if (card && e.target === card) {
+        e.preventDefault();
+        card.setAttribute("aria-expanded", String(card.getAttribute("aria-expanded") !== "true"));
+      }
+    });
+  }
 
   /* =========================================================
      5. AGENTS
@@ -277,14 +229,14 @@
   const agentState = { role: "All", q: "" };
 
   function renderAgents() {
+    const grid = $("#agentGrid");
+    if (!grid) return;
     const q = agentState.q.trim().toLowerCase();
     const list = AGENTS.filter(
       (a) => (agentState.role === "All" || a.role === agentState.role) && (!q || a.name.toLowerCase().includes(q))
     );
 
-    $("#agentGrid").innerHTML = list
-      .map(
-        (a) => `
+    grid.innerHTML = list.map((a) => `
       <article class="agent role-${esc(a.role)}">
         <div class="agent-top">
           <span class="agent-avatar" aria-hidden="true">${esc(initials(a.name))}</span>
@@ -303,29 +255,31 @@
             ${[1, 2, 3, 4, 5].map((n) => `<i class="diff-bar${n <= a.diff ? " on" : ""}"></i>`).join("")}
           </span>
         </div>
-      </article>`
-      )
-      .join("");
+      </article>`).join("");
 
-    $("#agentEmpty").hidden = list.length > 0;
+    const empty = $("#agentEmpty");
+    if (empty) empty.hidden = list.length > 0;
     syncPins();
   }
 
-  $("#agentFilters").addEventListener("click", (e) => {
-    const chip = e.target.closest("[data-role]");
-    if (!chip) return;
-    agentState.role = chip.dataset.role;
-    $$("#agentFilters .chip").forEach((c) => c.classList.toggle("is-active", c === chip));
+  function initAgents() {
+    const filters = $("#agentFilters");
+    if (!filters) return;
+    filters.addEventListener("click", (e) => {
+      const chip = e.target.closest("[data-role]");
+      if (!chip) return;
+      agentState.role = chip.dataset.role;
+      $$("#agentFilters .chip").forEach((c) => c.classList.toggle("is-active", c === chip));
+      renderAgents();
+    });
+    const search = $("#agentSearch");
+    if (search) search.addEventListener("input", (e) => { agentState.q = e.target.value; renderAgents(); });
+    $("#agentGrid").addEventListener("click", (e) => {
+      const pin = e.target.closest("[data-pin-type]");
+      if (pin) togglePin(pin.dataset.pinType, pin.dataset.pinName);
+    });
     renderAgents();
-  });
-  $("#agentSearch").addEventListener("input", (e) => {
-    agentState.q = e.target.value;
-    renderAgents();
-  });
-  $("#agentGrid").addEventListener("click", (e) => {
-    const pin = e.target.closest("[data-pin-type]");
-    if (pin) togglePin(pin.dataset.pinType, pin.dataset.pinName);
-  });
+  }
 
   /* =========================================================
      6. WEAPONS
@@ -333,28 +287,26 @@
   let activeWeapon = WEAPONS[0].id;
 
   function renderWeaponTabs() {
-    $("#wcTabs").innerHTML = WEAPONS.map(
-      (w) => `<button class="wc-tab${w.id === activeWeapon ? " is-active" : ""}" role="tab"
-        aria-selected="${w.id === activeWeapon}" data-wc="${esc(w.id)}">${esc(w.label)}</button>`
-    ).join("");
+    const tabs = $("#wcTabs");
+    if (!tabs) return;
+    tabs.innerHTML = WEAPONS.map((w) => `<button class="wc-tab${w.id === activeWeapon ? " is-active" : ""}"
+      role="tab" aria-selected="${w.id === activeWeapon}" data-wc="${esc(w.id)}">${esc(w.label)}</button>`).join("");
   }
 
   function renderWeapon() {
+    const body = $("#wcBody");
+    if (!body) return;
     const w = WEAPONS.find((x) => x.id === activeWeapon) ?? WEAPONS[0];
-    $("#wcBody").innerHTML = `
+    body.innerHTML = `
       <div class="wc-title"><h3>${esc(w.name)}</h3><span>${esc(w.sub)}</span></div>
       <p class="wc-desc">${esc(w.desc)}</p>
       <div class="bars">
-        ${w.bars
-          .map(
-            ([label, val]) => `
+        ${w.bars.map(([label, val]) => `
           <div class="bar-row">
             <span>${esc(label)}</span>
             <div class="bar-track"><i class="bar-fill" style="width:${val}%"></i></div>
             <b>${val}</b>
-          </div>`
-          )
-          .join("")}
+          </div>`).join("")}
       </div>
       <div class="wc-loadout">
         <button class="pin" type="button" data-pin-type="Weapon" data-pin-name="${esc(w.name)}" aria-pressed="false">
@@ -365,225 +317,227 @@
     syncPins();
   }
 
-  $("#wcTabs").addEventListener("click", (e) => {
-    const tab = e.target.closest("[data-wc]");
-    if (!tab) return;
-    activeWeapon = tab.dataset.wc;
+  function initWeapons() {
+    const tabs = $("#wcTabs");
+    if (!tabs) return;
+    tabs.addEventListener("click", (e) => {
+      const tab = e.target.closest("[data-wc]");
+      if (!tab) return;
+      activeWeapon = tab.dataset.wc;
+      renderWeaponTabs();
+      renderWeapon();
+    });
+    $("#wcBody").addEventListener("click", (e) => {
+      const pin = e.target.closest("[data-pin-type]");
+      if (pin) togglePin(pin.dataset.pinType, pin.dataset.pinName);
+    });
     renderWeaponTabs();
     renderWeapon();
-  });
-  $("#wcBody").addEventListener("click", (e) => {
-    const pin = e.target.closest("[data-pin-type]");
-    if (pin) togglePin(pin.dataset.pinType, pin.dataset.pinName);
-  });
+  }
 
   /* =========================================================
      7. CALENDAR
      ========================================================= */
-  function renderCalendar() {
-    $("#calList").innerHTML = CALENDAR.map(
-      (c) => `
+  function initCalendar() {
+    const list = $("#calList");
+    if (!list) return;
+    list.innerHTML = CALENDAR.map((c) => `
       <li>
         <span class="when">${esc(c.when)}</span>
         <span class="what"><b>${esc(c.what)}</b><span>${esc(c.sub)}</span></span>
         <span class="st ${esc(c.status)}">${esc(c.status)}</span>
-      </li>`
-    ).join("");
+      </li>`).join("");
   }
 
   /* =========================================================
-     8. REDEEM CODE — format check only
+     8. REDEEM — format check only (never contacts a server)
      ========================================================= */
-  const CODE_RE = /^[A-Z0-9][A-Z0-9-]{6,18}[A-Z0-9]$/;
+  function initRedeem() {
+    const btn = $("#checkCode");
+    if (!btn) return;
+    const RE = /^[A-Z0-9][A-Z0-9-]{6,18}[A-Z0-9]$/;
 
-  function checkCode() {
-    const input = $("#codeInput");
-    const out = $("#codeOut");
-    const raw = input.value.trim().toUpperCase();
-    out.hidden = false;
-    out.classList.remove("good", "bad", "warn");
+    function check() {
+      const input = $("#codeInput");
+      const out = $("#codeOut");
+      const raw = input.value.trim().toUpperCase();
+      out.hidden = false;
+      out.classList.remove("good", "bad", "warn");
 
-    if (!raw) {
-      out.classList.add("warn");
-      out.textContent = "Pehle koi code type karo.";
-      return;
+      if (!raw) { out.classList.add("warn"); out.textContent = "Pehle koi code type karo."; return; }
+      if (/\s/.test(raw)) { out.classList.add("bad"); out.textContent = "Code me space nahi hona chahiye — dashes (-) use karo."; return; }
+      if (raw.length < 8) { out.classList.add("bad"); out.textContent = `Bahut chhota (${raw.length} chars). Typical codes 8–20 characters ke hote hain.`; return; }
+      if (raw.length > 20) { out.classList.add("bad"); out.textContent = `Bahut lamba (${raw.length} chars). 20 se zyada characters usually invalid hote hain.`; return; }
+      if (!RE.test(raw)) { out.classList.add("bad"); out.textContent = "Invalid characters ya dash placement — sirf A–Z, 0–9 aur beech me dash allowed hai."; return; }
+      out.classList.add("good");
+      out.textContent = `Format sahi lagta hai ✓ — ${raw}. Ab ise sirf official redeem page pe try karo. Yeh tool code verify ya redeem nahi karta.`;
     }
-    if (/\s/.test(raw)) {
-      out.classList.add("bad");
-      out.textContent = "Code me space nahi hona chahiye — dashes (-) use karo.";
-      return;
-    }
-    if (raw.length < 8) {
-      out.classList.add("bad");
-      out.textContent = `Bahut chhota (${raw.length} chars). Typical codes 8–20 characters ke hote hain.`;
-      return;
-    }
-    if (raw.length > 20) {
-      out.classList.add("bad");
-      out.textContent = `Bahut lamba (${raw.length} chars). 20 se zyada characters usually invalid hote hain.`;
-      return;
-    }
-    if (!CODE_RE.test(raw)) {
-      out.classList.add("bad");
-      out.textContent = "Invalid characters ya dash placement — sirf A–Z, 0–9 aur beech me dash allowed hai.";
-      return;
-    }
-    out.classList.add("good");
-    out.textContent = `Format sahi lagta hai ✓ — ${raw}. Ab ise sirf official redeem page pe try karo. Yeh tool code verify ya redeem nahi karta.`;
+
+    btn.addEventListener("click", check);
+    $("#codeInput").addEventListener("keydown", (e) => { if (e.key === "Enter") check(); });
+    const clear = $("#clearCode");
+    if (clear) clear.addEventListener("click", () => {
+      $("#codeInput").value = "";
+      const out = $("#codeOut");
+      out.hidden = true;
+      out.textContent = "";
+      out.classList.remove("good", "bad", "warn");
+      $("#codeInput").focus();
+    });
   }
-
-  $("#checkCode").addEventListener("click", checkCode);
-  $("#codeInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") checkCode();
-  });
-  $("#clearCode").addEventListener("click", () => {
-    $("#codeInput").value = "";
-    const out = $("#codeOut");
-    out.hidden = true;
-    out.textContent = "";
-    out.classList.remove("good", "bad", "warn");
-    $("#codeInput").focus();
-  });
 
   /* =========================================================
-     9. DRAWER
+     9. NEWS FILTER
      ========================================================= */
-  const drawer = $("#drawer");
-  let lastFocus = null;
+  function initNews() {
+    const bar = $("#newsFilters");
+    if (!bar) return;
+    const cards = $$("#newsGrid .news-card");
+    const empty = $("#newsEmpty");
 
-  function openDrawer() {
-    lastFocus = document.activeElement;
-    drawer.hidden = false;
-    document.body.style.overflow = "hidden";
-    setTimeout(() => drawer.querySelector(".x")?.focus(), 50);
-  }
-  function closeDrawer() {
-    drawer.hidden = true;
-    document.body.style.overflow = "";
-    lastFocus?.focus?.();
+    bar.addEventListener("click", (e) => {
+      const chip = e.target.closest("[data-cat]");
+      if (!chip) return;
+      const cat = chip.dataset.cat;
+      $$("#newsFilters .chip").forEach((c) => c.classList.toggle("is-active", c === chip));
+      let shown = 0;
+      cards.forEach((card) => {
+        const ok = cat === "All" || card.dataset.cat === cat;
+        card.hidden = !ok;
+        if (ok) shown++;
+      });
+      if (empty) empty.hidden = shown > 0;
+    });
   }
 
-  $("#loadoutBtn").addEventListener("click", openDrawer);
-  drawer.addEventListener("click", (e) => {
-    if (e.target.closest("[data-close]")) return closeDrawer();
-    const unpin = e.target.closest("[data-unpin]");
-    if (unpin) {
-      loadout.splice(Number(unpin.dataset.unpin), 1);
+  /* =========================================================
+     10. DRAWER + LOADOUT UI
+     ========================================================= */
+  function initDrawer() {
+    const drawer = $("#drawer");
+    const openBtn = $("#loadoutBtn");
+    if (!drawer || !openBtn) return;
+    let lastFocus = null;
+
+    const open = () => {
+      lastFocus = document.activeElement;
+      drawer.hidden = false;
+      document.body.style.overflow = "hidden";
+      setTimeout(() => drawer.querySelector(".x")?.focus(), 50);
+    };
+    const close = () => {
+      drawer.hidden = true;
+      document.body.style.overflow = "";
+      lastFocus?.focus?.();
+    };
+
+    openBtn.addEventListener("click", open);
+    drawer.addEventListener("click", (e) => {
+      if (e.target.closest("[data-close]")) return close();
+      const unpin = e.target.closest("[data-unpin]");
+      if (unpin) {
+        loadout.splice(Number(unpin.dataset.unpin), 1);
+        saveLoadout();
+        syncPins();
+      }
+    });
+    const clear = $("#clearLoadout");
+    if (clear) clear.addEventListener("click", () => {
+      if (!loadout.length) return toast("Loadout already empty hai.");
+      loadout = [];
       saveLoadout();
       syncPins();
-    }
-  });
-  $("#clearLoadout").addEventListener("click", () => {
-    if (!loadout.length) return toast("Loadout already empty hai.");
-    loadout = [];
-    saveLoadout();
-    syncPins();
-    toast("Loadout cleared");
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    if (!drawer.hidden) closeDrawer();
-  });
-
-  /* =========================================================
-     10. NAV / REVEAL / COUNTERS
-     ========================================================= */
-  const nav = $("#nav");
-  const navLinks = $("#navLinks");
-  const burger = $("#hamburger");
-
-  const onScroll = () => nav.classList.toggle("is-stuck", window.scrollY > 6);
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-
-  burger.addEventListener("click", () => {
-    const open = navLinks.classList.toggle("open");
-    burger.setAttribute("aria-expanded", String(open));
-  });
-  navLinks.addEventListener("click", (e) => {
-    if (e.target.matches("a")) {
-      navLinks.classList.remove("open");
-      burger.setAttribute("aria-expanded", "false");
-    }
-  });
-
-  // Scroll spy
-  const sections = ["maps", "agents", "weapons", "esports", "redeem", "sources"]
-    .map((id) => document.getElementById(id))
-    .filter(Boolean);
-  if ("IntersectionObserver" in window && sections.length) {
-    const spy = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (!en.isIntersecting) return;
-          $$("[data-nav]").forEach((a) =>
-            a.classList.toggle("is-active", a.getAttribute("href") === `#${en.target.id}`)
-          );
-        });
-      },
-      { rootMargin: "-45% 0px -50% 0px" }
-    );
-    sections.forEach((s) => spy.observe(s));
+      toast("Loadout cleared");
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !drawer.hidden) close();
+    });
   }
 
-  function setupReveal() {
-    const items = $$(".section-head, .map-card, .agent, .weapon-panel, .weapon-visual, .esports-media, .path, .calendar, .redeem-card, .safety, .source, .disclaimer");
+  /* =========================================================
+     11. NAV / TICKER / REVEAL / COUNTERS
+     ========================================================= */
+  function initNav() {
+    const nav = $("#nav");
+    const navLinks = $("#navLinks");
+    const burger = $("#hamburger");
+
+    if (nav) {
+      const onScroll = () => nav.classList.toggle("is-stuck", window.scrollY > 6);
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
+    if (burger && navLinks) {
+      burger.addEventListener("click", () => {
+        const open = navLinks.classList.toggle("open");
+        burger.setAttribute("aria-expanded", String(open));
+      });
+      navLinks.addEventListener("click", (e) => {
+        if (e.target.matches("a")) {
+          navLinks.classList.remove("open");
+          burger.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
+    // ticker: duplicate the items so the marquee loops seamlessly
+    const track = $(".ticker-track");
+    if (track) track.innerHTML += track.innerHTML;
+  }
+
+  function initReveal() {
+    const items = $$(".section-head, .map-card, .agent, .weapon-panel, .weapon-visual, .esports-media, .path, .calendar, .redeem-card, .safety, .source, .disclaimer, .news-card, .mode, .platform, .panel, .cta-band, .prize, .faq, .quick, .spec-table");
     if (!("IntersectionObserver" in window)) return;
     items.forEach((el) => el.classList.add("reveal"));
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en, i) => {
-          if (!en.isIntersecting) return;
-          setTimeout(() => en.target.classList.add("in"), Math.min(i * 60, 300));
-          io.unobserve(en.target);
-        });
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -30px 0px" }
-    );
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en, i) => {
+        if (!en.isIntersecting) return;
+        setTimeout(() => en.target.classList.add("in"), Math.min(i * 60, 300));
+        io.unobserve(en.target);
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -30px 0px" });
     items.forEach((el) => io.observe(el));
   }
 
-  function setupCounters() {
+  function initCounters() {
     const nodes = $$("[data-count]");
+    if (!nodes.length) return;
     const run = (el) => {
       const target = Number(el.dataset.count) || 0;
       const dur = 1000;
       const t0 = performance.now();
       const step = (now) => {
         const p = Math.min(1, (now - t0) / dur);
-        const eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = String(Math.round(target * eased));
+        el.textContent = String(Math.round(target * (1 - Math.pow(1 - p, 3))));
         if (p < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     };
     if (!("IntersectionObserver" in window)) return nodes.forEach(run);
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) {
-            run(en.target);
-            io.unobserve(en.target);
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) { run(en.target); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.5 });
     nodes.forEach((n) => io.observe(n));
   }
 
   /* =========================================================
-     11. INIT
+     12. INIT
      ========================================================= */
-  $("#year").textContent = String(new Date().getFullYear());
-  renderMaps();
-  renderAgents();
-  renderWeaponTabs();
-  renderWeapon();
-  renderCalendar();
+  const yearEl = $("#year");
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+  initNav();
+  initMaps();
+  initAgents();
+  initWeapons();
+  initCalendar();
+  initRedeem();
+  initNews();
+  initDrawer();
   renderLoadout();
   syncPins();
-  setupReveal();
-  setupCounters();
+  initReveal();
+  initCounters();
 })();

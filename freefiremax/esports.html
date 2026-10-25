@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Esports — Season Path, Calendar &amp; Standings | FF MAX UNIVERSE</title>
+<meta name="description" content="Free Fire Max esports overview: ranked to grand finals path, indicative season calendar, standings and prize structure. Unofficial community resource." />
+<meta name="theme-color" content="#07090e" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="esports">
+
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="notice" role="note">
+  <span class="notice-dot"></span>
+  <p><b>Unofficial fan project.</b> Not affiliated with, endorsed by or sponsored by Garena. No APKs, no account logins, no diamond selling.</p>
+</div>
+
+<div class="ticker" aria-label="Announcements">
+  <div class="ticker-track"><span class="ticker-item"><b>Season update</b> — Ranked tiers + map rotation tweaks live</span><span class="ticker-item"><b>Esports</b> — Open qualifiers registration window open</span><span class="ticker-item"><b>Anti-cheat</b> — New detection wave — report suspicious lobbies</span><span class="ticker-item"><b>Community</b> — Creator Cup highlights now on the news page</span><span class="ticker-item"><b>Safety</b> — Never share UID, OTP or password — anywhere</span></div>
+</div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="index.html" aria-label="FF Max Universe home">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="20" height="20"><path fill="currentColor" d="M16 2 4 9v14l12 7 12-7V9L16 2Zm0 3.4 8.6 5v11.2L16 26.6 7.4 21.6V10.4L16 5.4Z"/><path fill="currentColor" d="M16 10l4.6 2.7v5.4L16 20.8l-4.6-2.7v-5.4L16 10Z"/></svg>
+    </span>
+    <span class="brand-text">FF<span class="brand-accent">MAX</span> <em>UNIVERSE</em></span>
+  </a>
+
+  <nav class="nav-links" id="navLinks" aria-label="Primary">
+    <a href="index.html" data-nav class="is-active">Home</a><a href="game.html" data-nav>Game</a><a href="news.html" data-nav>News</a><a href="esports.html" data-nav>Esports</a><a href="download.html" data-nav>Download</a><a href="support.html" data-nav>Support</a>
+    <a class="nav-cta-link" href="redeem.html">Redeem</a>
+  </nav>
+
+  <div class="nav-right">
+    <span class="region"><i aria-hidden="true">◈</i> IN · English</span>
+    
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-head">
+    <nav class="crumb" aria-label="Breadcrumb"><a href="index.html">Home</a> <span>/</span> <b>Esports</b></nav>
+    <h1>Esports</h1>
+    <p class="sec-sub">Ranked grind se main stage tak. Path, indicative calendar, standings aur prize structure — ek nazar me.</p>
+    <div class="page-meta"><span class="tag">Indicative schedule</span><span class="tag">Community resource</span></div>
+  </section>
+
+  <section class="section">
+    <div class="esports">
+      <figure class="esports-media">
+        <img src="assets/esports.jpg" alt="Esports arena with stage lights and a silhouetted mobile-gaming crowd" loading="lazy" decoding="async" />
+        <figcaption>Arena nights · mobile-first competition</figcaption>
+      </figure>
+      <div class="esports-main">
+        <ol class="path">
+          <li><b>01</b><div><h3>Ranked grind</h3><p>Heroic + squad discipline. Yahan se scrims ka invite milta hai.</p></div></li>
+          <li><b>02</b><div><h3>Open qualifiers</h3><p>Custom rooms, points system, top squads bracket me jaate hain.</p></div></li>
+          <li><b>03</b><div><h3>League stage</h3><p>Fixed weekly lobbies, VOD review, consistent rotations.</p></div></li>
+          <li><b>04</b><div><h3>Grand finals</h3><p>Booyah pressure — end-circle calls hi match decide karte hain.</p></div></li>
+        </ol>
+        <div class="calendar">
+          <div class="cal-head"><h3>Indicative season calendar</h3><span class="badge badge-soft">Dates vary by region</span></div>
+          <ul class="cal-list" id="calList"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> STANDINGS</p>
+      <h2>Sample points table</h2>
+      <p class="sec-sub">Points format ka example — actual tables organisers publish karte hain.</p>
+    </header>
+    <table class="lb">
+      <caption class="sr-only">Sample esports standings</caption>
+      <thead><tr><th>#</th><th>Team</th><th>Matches</th><th>Placement pts</th><th>Finishes</th><th class="pts">Total</th></tr></thead>
+      <tbody>
+        <tr><td class="rank">01</td><td class="team">NOVA SYNDICATE</td><td>12</td><td>86</td><td>54</td><td class="pts">140</td></tr>
+        <tr><td class="rank">02</td><td class="team">IRON WOLVES</td><td>12</td><td>81</td><td>51</td><td class="pts">132</td></tr>
+        <tr><td class="rank">03</td><td class="team">PHANTOM RAID</td><td>12</td><td>78</td><td>49</td><td class="pts">127</td></tr>
+        <tr><td class="rank">04</td><td class="team">DESERT FALCONS</td><td>12</td><td>74</td><td>46</td><td class="pts">120</td></tr>
+        <tr><td class="rank">05</td><td class="team">CYBER TIDE</td><td>12</td><td>69</td><td>44</td><td class="pts">113</td></tr>
+        <tr><td class="rank">06</td><td class="team">EMBER SQUAD</td><td>12</td><td>66</td><td>41</td><td class="pts">107</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> STRUCTURE</p>
+      <h2>Prize split example</h2>
+      <p class="sec-sub">Illustrative split — real prize pools aur distribution har tournament me alag hote hain.</p>
+    </header>
+    <div class="prize-grid">
+      <div class="prize"><small>Champion</small><b>40%</b></div>
+      <div class="prize"><small>Runner-up</small><b>25%</b></div>
+      <div class="prize"><small>3rd place</small><b>15%</b></div>
+    </div>
+    <p class="disclaimer" style="margin-top:20px">
+      <b>Note:</b> Standings aur prize structure sample data hain, kisi live tournament ka official result nahi. Registration, rules aur results ke liye organiser ke official page follow karo.
+    </p>
+  </section>
+
+</main>
+
+<footer class="portal-foot">
+  <div class="pf-inner">
+    <div>
+      <div class="pf-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="18" height="18"><path fill="currentColor" d="M16 2 4 9v14l12 7 12-7V9L16 2Zm0 3.4 8.6 5v11.2L16 26.6 7.4 21.6V10.4L16 5.4Z"/></svg>
+        </span>
+        <span class="brand-text">FF<span class="brand-accent">MAX</span> <em>UNIVERSE</em></span>
+      </div>
+      <p class="pf-note">Independent, unofficial fan hub for battle-royale players. Maps, meta notes, esports info and safe-play guidance. Runs locally on Termux.</p>
+    </div>
+    <div class="pf-col">
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="game.html">Game &amp; modes</a></li>
+        <li><a href="game.html#maps">Maps</a></li>
+        <li><a href="game.html#agents">Agents</a></li>
+        <li><a href="game.html#weapons">Weapons</a></li>
+      </ul>
+    </div>
+    <div class="pf-col">
+      <h4>Community</h4>
+      <ul>
+        <li><a href="news.html">News &amp; updates</a></li>
+        <li><a href="esports.html">Esports</a></li>
+        <li><a href="redeem.html">Redeem codes</a></li>
+        <li><a href="support.html">Support &amp; FAQ</a></li>
+      </ul>
+    </div>
+    <div class="pf-col">
+      <h4>Official only</h4>
+      <ul>
+        <li><a href="https://ff.garena.com/" target="_blank" rel="noopener noreferrer">ff.garena.com ↗</a></li>
+        <li><a href="https://play.google.com/store/apps/details?id=com.dts.freefiremax" target="_blank" rel="noopener noreferrer">Google Play ↗</a></li>
+        <li><a href="https://apps.apple.com/app/id1480513944" target="_blank" rel="noopener noreferrer">App Store ↗</a></li>
+        <li><a href="download.html">Download guide</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pf-bottom">
+    <p class="legal">© <span id="year">2026</span> FF MAX UNIVERSE · unofficial fan project. “Free Fire”, “Free Fire MAX”, “Garena” and related marks are trademarks of their respective owners. This site is not affiliated with, endorsed by or sponsored by Garena. No game files, APKs, accounts or in-game currency are hosted, sold or exchanged here. Illustrations are original artwork.</p>
+    <p>Made for the squad · Termux-ready</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Game — Maps, Agents &amp; Weapons | FF MAX UNIVERSE</title>
+<meta name="description" content="Free Fire Max game guide: core modes, map rotations, meta agents by role and weapon class archetypes. Unofficial fan resource." />
+<meta name="theme-color" content="#07090e" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="game">
+
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="notice" role="note">
+  <span class="notice-dot"></span>
+  <p><b>Unofficial fan project.</b> Not affiliated with, endorsed by or sponsored by Garena. No APKs, no account logins, no diamond selling.</p>
+</div>
+
+<div class="ticker" aria-label="Announcements">
+  <div class="ticker-track"><span class="ticker-item"><b>Season update</b> — Ranked tiers + map rotation tweaks live</span><span class="ticker-item"><b>Esports</b> — Open qualifiers registration window open</span><span class="ticker-item"><b>Anti-cheat</b> — New detection wave — report suspicious lobbies</span><span class="ticker-item"><b>Community</b> — Creator Cup highlights now on the news page</span><span class="ticker-item"><b>Safety</b> — Never share UID, OTP or password — anywhere</span></div>
+</div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="index.html" aria-label="FF Max Universe home">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="20" height="20"><path fill="currentColor" d="M16 2 4 9v14l12 7 12-7V9L16 2Zm0 3.4 8.6 5v11.2L16 26.6 7.4 21.6V10.4L16 5.4Z"/><path fill="currentColor" d="M16 10l4.6 2.7v5.4L16 20.8l-4.6-2.7v-5.4L16 10Z"/></svg>
+    </span>
+    <span class="brand-text">FF<span class="brand-accent">MAX</span> <em>UNIVERSE</em></span>
+  </a>
+
+  <nav class="nav-links" id="navLinks" aria-label="Primary">
+    <a href="index.html" data-nav>Home</a><a href="game.html" data-nav class="is-active">Game</a><a href="news.html" data-nav>News</a><a href="esports.html" data-nav>Esports</a><a href="download.html" data-nav>Download</a><a href="support.html" data-nav>Support</a>
+    <a class="nav-cta-link" href="redeem.html">Redeem</a>
+  </nav>
+
+  <div class="nav-right">
+    <span class="region"><i aria-hidden="true">◈</i> IN · English</span>
+    <button class="loadout-btn" id="loadoutBtn" aria-haspopup="dialog"><span aria-hidden="true">★</span> Loadout <b id="loadoutCount">0</b></button>
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-head">
+    <nav class="crumb" aria-label="Breadcrumb"><a href="index.html">Home</a> <span>/</span> <b>Game</b></nav>
+    <h1>Inside the game</h1>
+    <p class="sec-sub">Modes, maps, agents aur weapons — sab ek hi jagah. Cards pe tap karke detail kholo, aur apna loadout pin karo.</p>
+    <div class="page-meta"><span class="tag">6 maps</span><span class="tag">18 agents</span><span class="tag">6 weapon classes</span><span class="tag">Fan notes</span></div>
+  </section>
+
+  <section class="section" id="modes">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 01 — MODES</p>
+      <h2>Pick your format</h2>
+      <p class="sec-sub">Har mode ke liye alag discipline chahiye — same aim, different decisions.</p>
+    </header>
+    <div class="mode-grid">
+      <article class="mode">
+        <span class="mode-num">MODE 01</span>
+        <h3>Battle Royale</h3>
+        <p>50 players, island-wide looting aur shrinking zone. Rotation discipline match jeetata hai.</p>
+        <div class="mode-facts"><span class="tag">50 players</span><span class="tag">Zone pressure</span><span class="tag">Revive-based</span></div>
+      </article>
+      <article class="mode">
+        <span class="mode-num">MODE 02</span>
+        <h3>Clash Squad</h3>
+        <p>4v4 rounds with buy economy. Loadout planning aur first-blood momentum decisive.</p>
+        <div class="mode-facts"><span class="tag">4v4</span><span class="tag">Economy</span><span class="tag">Round based</span></div>
+      </article>
+      <article class="mode">
+        <span class="mode-num">MODE 03</span>
+        <h3>Lone Wolf</h3>
+        <p>1v1 / 2v2 duels. Pure mechanics — koi excuse nahi, sirf aim aur movement.</p>
+        <div class="mode-facts"><span class="tag">1v1 · 2v2</span><span class="tag">Warm-up friendly</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="maps">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 02 — BATTLEGROUNDS</p>
+      <h2>Know the ground before the drop</h2>
+      <p class="sec-sub">Har map ka apna rotation logic hai. Card pe tap karo — hot drops, loot quality aur rotation notes khul jayenge.</p>
+    </header>
+    <div class="map-grid" id="mapGrid"></div>
+  </section>
+
+  <section class="section" id="agents">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 03 — CHARACTERS</p>
+      <h2>Meta agents, role by role</h2>
+      <p class="sec-sub">18 popular picks, role ke hisaab se. Filter lagao aur apni squad comp plan karo.</p>
+    </header>
+
+    <figure class="agent-banner">
+      <img src="assets/agents.jpg" alt="Three illustrated battle-royale agents: a hacker, a sniper and a shield-carrying support operative" loading="lazy" decoding="async" />
+      <figcaption>
+        <span class="ab-kicker">SQUAD COMP</span>
+        <h3>1 Rusher · 2 Support · 1 Flex</h3>
+        <p>Balanced comp ka simple rule: entry, sustain, aur ek flexible slot jo circle ke hisaab se badle.</p>
+      </figcaption>
+    </figure>
+
+    <div class="agent-toolbar">
+      <div class="chips" id="agentFilters" role="group" aria-label="Filter agents by role">
+        <button class="chip is-active" data-role="All">All <i>18</i></button>
+        <button class="chip" data-role="Rusher">Rusher</button>
+        <button class="chip" data-role="Support">Support</button>
+        <button class="chip" data-role="Sniper">Sniper</button>
+        <button class="chip" data-role="Intel">Intel</button>
+        <button class="chip" data-role="Defender">Defender</button>
+      </div>
+      <label class="search">
+        <span class="srch-ico" aria-hidden="true">⌕</span>
+        <input type="search" id="agentSearch" placeholder="Search agent…" aria-label="Search agents" />
+      </label>
+    </div>
+    <div class="agent-grid" id="agentGrid"></div>
+    <p class="empty" id="agentEmpty" hidden>Koi agent match nahi hua — filter reset karo.</p>
+  </section>
+
+  <section class="section" id="weapons">
+    <header class="sec-head">
+      <p class="kicker"><span class="k-line"></span> 04 — ARSENAL</p>
+      <h2>Weapon classes at a glance</h2>
+      <p class="sec-sub">Class chuno — range, fire rate, control aur mobility ke archetype bars update ho jayenge.</p>
+    </header>
+
+    <div class="weapon-wrap">
+      <div class="weapon-visual">
+        <img src="assets/weapons.jpg" alt="Illustration of an assault rifle, sniper rifle and SMG on a dark background" loading="lazy" decoding="async" />
+        <span class="weapon-tag">INVENTORY · CLASS ARCHETYPES</span>
+      </div>
+      <div class="weapon-panel">
+        <div class="wc-tabs" id="wcTabs" role="tablist" aria-label="Weapon classes"></div>
+        <div class="wc-body" id="wcBody" role="tabpanel" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="cta-band">
+      <div>
+        <h2>Loadout ready hai?</h2>
+        <p>Pinned agents, maps aur weapons Loadout drawer me hain — us device pe save rehte hain.</p>
+      </div>
+      <button class="btn btn-primary" id="loadoutBtn2" onclick="document.getElementById('loadoutBtn').click()">Open loadout <span class="arw">→</span></button>
+    </div>
+  </section>
+
+  <div class="drawer" id="drawer" hidden>
+    <div class="drawer-scrim" data-close></div>
+    <aside class="drawer-card" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="drawer-head">
+        <h2 id="drawerTitle">Your loadout</h2>
+        <button class="x" data-close aria-label="Close loadout">✕</button>
+      </div>
+      <p class="muted tiny">Agent, weapon aur map pin karo. Browser me save rehta hai — sirf is device pe.</p>
+      <div class="loadout-list" id="loadoutList"></div>
+      <button class="btn btn-line btn-block" id="clearLoadout">Clear loadout</button>
+    </aside>
+  </div>
+
+</main>
+
+<footer class="portal-foot">
+  <div class="pf-inner">
+    <div>
+      <div class="pf-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="18" height="18"><path fill="currentColor" d="M16 2 4 9v14l12 7 12-7V9L16 2Zm0 3.4 8.6 5v11.2L16 26.6 7.4 21.6V10.4L16 5.4Z"/></svg>
+        </span>
+        <span class="brand-text">FF<span class="brand-accent">MAX</span> <em>UNIVERSE</em></span>
+      </div>
+      <p class="pf-note">Independent, unofficial fan hub for battle-royale players. Maps, meta notes, esports info and safe-play guidance. Runs locally on Termux.</p>
+    </div>
+    <div class="pf-col">
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="game.html">Game &amp; modes</a></li>
+        <li><a href="game.html#maps">Maps</a></li>
+        <li><a href="game.html#agents">Agents</a></li>
+        <li><a href="game.html#weapons">Weapons</a></li>
+      </ul>
+    </div>
+    <div class="pf-col">
+      <h4>Community</h4>
+      <ul>
+        <li><a href="news.html">News &amp; updates</a></li>
+        <li><a href="esports.html">Esports</a></li>
+        <li><a href="redeem.html">Redeem codes</a></li>
+        <li><a href="support.html">Support &amp; FAQ</a></li>
+      </ul>
+    </div>
+    <div class="pf-col">
+      <h4>Official only</h4>
+      <ul>
+        <li><a href="https://ff.garena.com/" target="_blank" rel="noopener noreferrer">ff.garena.com ↗</a></li>
+        <li><a href="https://play.google.com/store/apps/details?id=com.dts.freefiremax" target="_blank" rel="noopener noreferrer">Google Play ↗</a></li>
+        <li><a href="https://apps.apple.com/app/id1480513944" target="_blank" rel="noopener noreferrer">App Store ↗</a></li>
+        <li><a href="download.html">Download guide</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pf-bottom">
+    <p class="legal">© <span id="year">2026</span> FF MAX UNIVERSE · unofficial fan project. “Free Fire”, “Free Fire MAX”, “Garena” and related marks are trademarks of their respective owners. This site is not affiliated with, endorsed by or sponsored by Garena. No game files, APKs, accounts or in-game currency are hosted, sold or exchanged here. Illustrations are original artwork.</p>
+    <p>Made for the squad · Termux-ready</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

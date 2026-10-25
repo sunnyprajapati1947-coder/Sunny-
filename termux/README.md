@@ -89,4 +89,8 @@ Site static hai — refresh se naya version aa jayega.
 
 ## Kya host ho raha hai
 
-Script sirf `freefiremax/` folder ko serve karta hai (`--bind 0.0.0.0`), yaani local network tak. Internet pe expose **nahi** hota. Public URL chahiye to Cloudflare Tunnel / ngrok alag se chalao — lekin tab bhi yeh unofficial fan site hai, "official" ke naam pe publish mat karo (Garena trademark).
+Script `freefiremax/` folder ko serve karta hai (`--bind 0.0.0.0`), yaani local network tak. Portal multi-page hai:
+
+`index.html` (home) · `game.html` · `news.html` · `esports.html` · `download.html` · `support.html` · `redeem.html`
+
+Saare pages same nav/footer + shared `styles.css` / `app.js` use karte hain — koi build step nahi, direct HTML edit karo. Internet pe expose **nahi** hota. Public URL chahiye to Cloudflare Tunnel / ngrok alag se chalao — lekin tab bhi yeh unofficial fan site hai, "official" ke naam pe publish mat karo (Garena trademark).

@@ -19,7 +19,7 @@ Model availability can depend on the Google account, API project, quota, region,
 | Folder | What it is | Run |
 | --- | --- | --- |
 | `site/` | Nova officer console — guild roster management | any static server (`python3 -m http.server`) |
-| `freefiremax/` | **FF MAX Universe** — unofficial Free Fire Max fan hub (maps, agents, weapons, esports, loadout, redeem-format checker) | `bash termux/serve.sh` |
+| `freefiremax/` | **FF MAX Universe** — unofficial Free Fire Max portal: home, game, news, esports, download, support, redeem (7 pages) | `bash termux/serve.sh` |
 
 ### Termux (Android)
 
