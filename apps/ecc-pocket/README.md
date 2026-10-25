@@ -4,6 +4,8 @@ A phone-first, offline-capable reader for [affaan-m/ECC](https://github.com/affa
 
 The ECC repository is a Claude Code / Codex / Kimi plugin and harness library: it ships hundreds of markdown skills, subagent definitions, slash commands and language rules. That is great on a laptop and awkward on a phone. ECC Pocket turns the same content into an installable web app: browse it, search it, save favourites and read it on a train with no signal. Nothing about ECC changes, and nothing is executed by this app.
 
+**Live app: <https://ecc-pocket.vercel.app>** — open it on any phone, then *Add to Home Screen*.
+
 ```
 apps/ecc-pocket/
 ├── index.html               app shell + icon sprite
@@ -56,6 +58,8 @@ python3 -m http.server 8080 --bind 0.0.0.0
 To make the whole pack available offline, open **Settings → Offline → Save all**. Otherwise the app still caches the shell and every chapter you open.
 
 Deploying? GitHub Pages, Vercel, Netlify, Cloudflare Pages or any static host will do; point the host at `apps/ecc-pocket` and keep the directory structure intact.
+
+The production deployment at <https://ecc-pocket.vercel.app> is a plain static deploy of this folder (Vercel project `ecc-pocket`, build command fetches the repository tarball for the pinned commit, *Output Directory* `apps/ecc-pocket`). No install step, no framework build.
 
 - **Vercel:** import the repository, set *Root Directory* to `apps/ecc-pocket`, framework preset *Other*, no build command.
 - **Netlify / Cloudflare Pages:** publish directory `apps/ecc-pocket`, no build command.
