@@ -522,8 +522,84 @@
     nodes.forEach((n) => io.observe(n));
   }
 
+
   /* =========================================================
-     12. INIT
+     12. COUNTDOWNS  (community timers — always rolling)
+     ========================================================= */
+  function initCountdowns() {
+    const nodes = $$("[data-countdown]");
+    if (!nodes.length) return;
+
+    // Next occurrence of a weekday at a given hour, in local time.
+    function nextWeekday(dayIndex, hour) {
+      const now = new Date();
+      const d = new Date(now);
+      d.setHours(hour, 0, 0, 0);
+      let delta = (dayIndex - d.getDay() + 7) % 7;
+      if (delta === 0 && d <= now) delta = 7;
+      d.setDate(d.getDate() + delta);
+      return d;
+    }
+    function nextMonthStart() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+    }
+
+    const targets = {
+      "grand-final": () => nextWeekday(0, 20),   // Sunday 20:00 — finals lobby
+      "creator-cup": () => nextWeekday(5, 18),   // Friday 18:00 — creator cup
+      "season": () => nextMonthStart()           // 1st of next month — reset
+    };
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    function tick() {
+      const now = Date.now();
+      nodes.forEach((node) => {
+        const fn = targets[node.dataset.countdown];
+        if (!fn) return;
+        let diff = fn().getTime() - now;
+        const live = diff <= 0;
+        if (live) diff = 0;
+        const days = Math.floor(diff / 86400000);
+        const hrs = Math.floor((diff % 86400000) / 3600000);
+        const min = Math.floor((diff % 3600000) / 60000);
+        const sec = Math.floor((diff % 60000) / 1000);
+        const cells = node.querySelectorAll("b");
+        if (cells.length === 4) {
+          cells[0].textContent = pad(days);
+          cells[1].textContent = pad(hrs);
+          cells[2].textContent = pad(min);
+          cells[3].textContent = pad(sec);
+        }
+        node.classList.toggle("is-live", live);
+        node.setAttribute("aria-label", live ? "Event live now" : `${days} days, ${hrs} hours, ${min} minutes remaining`);
+      });
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  /* =========================================================
+     13. READING PROGRESS (article pages)
+     ========================================================= */
+  function initProgress() {
+    const bar = $("#progress");
+    if (!bar) return;
+    const article = $(".article") || document.body;
+    const update = () => {
+      const rect = article.getBoundingClientRect();
+      const total = Math.max(1, rect.height - window.innerHeight * 0.4);
+      const scrolled = Math.min(total, Math.max(0, -rect.top + window.innerHeight * 0.2));
+      bar.style.width = `${(scrolled / total) * 100}%`;
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+  }
+
+  /* =========================================================
+     14. INIT
      ========================================================= */
   const yearEl = $("#year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
@@ -540,4 +616,6 @@
   syncPins();
   initReveal();
   initCounters();
+  initCountdowns();
+  initProgress();
 })();

@@ -32,6 +32,11 @@ Poora guide: [`../termux/README.md`](../termux/README.md)
 | `download.html` | Download — official store links, indicative specs, install steps |
 | `support.html` | Support — 8-question FAQ, scam red flags, safety checklist |
 | `redeem.html` | Redeem — offline format checker + safe redeem steps |
+| `events.html` | Events — 3 live countdowns (rolling), monthly calendar, rewards |
+| `news-season.html` · `news-agent.html` · `news-esports.html` | Full article pages with reading-progress bar and related links |
+| `404.html` | Not-found page |
+
+Ranks section (RP bands + climb tips) lives on `game.html#ranks`.
 
 ## Files
 
