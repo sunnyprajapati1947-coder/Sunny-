@@ -1,15 +1,29 @@
-name: Spdyi Android APK
+name: Spdyi Signed Android Release
 on:
   push:
     branches: ['arena/a2d03b08-sunny']
-    paths: ['spdyi/**', '.github/workflows/spdyi-android.yml']
+    paths:
+      - 'spdyi/src/**'
+      - 'spdyi/public/**'
+      - 'spdyi/android/**'
+      - 'spdyi/signing/recovery-public.pem'
+      - 'spdyi/scripts/prepare-release-signing.sh'
+      - 'spdyi/package*.json'
+      - 'spdyi/capacitor.config.json'
+      - 'spdyi/index.html'
+      - '.github/workflows/spdyi-android.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
+concurrency:
+  group: spdyi-signed-release
+  cancel-in-progress: false
 jobs:
-  apk:
+  release:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -21,31 +35,64 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - name: Install SDK
-        run: |
-          echo "Using runner SDK: $ANDROID_HOME"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
-      - name: Web tests and production bundle
+      - name: Install Android SDK
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
+      - name: Web tests and bundled app
         working-directory: spdyi
         run: npm ci && npm test && npm run android:sync
-      - name: Assemble and lint Android app
+      - name: Prepare protected release signing
+        env:
+          SPDYI_RELEASE_KEYSTORE_BASE64: ${{ secrets.SPDYI_RELEASE_KEYSTORE_BASE64 }}
+          SPDYI_RELEASE_STORE_PASSWORD: ${{ secrets.SPDYI_RELEASE_STORE_PASSWORD }}
+          SPDYI_RELEASE_KEY_ALIAS: ${{ secrets.SPDYI_RELEASE_KEY_ALIAS }}
+        run: bash spdyi/scripts/prepare-release-signing.sh
+      - name: Assemble and lint release variant
         working-directory: spdyi/android
         run: |
           chmod +x gradlew
           set +e
-          ./gradlew :app:assembleDebug :app:lintDebug --no-daemon 2>&1 | tee /tmp/spdyi-android-build.log
+          ./gradlew :app:assembleRelease :app:lintRelease --no-daemon 2>&1 | tee /tmp/spdyi-release-build.log
           result=${PIPESTATUS[0]}
           if [ "$result" -ne 0 ]; then
-            while IFS= read -r line; do echo "::error::$line"; done < <(tail -70 /tmp/spdyi-android-build.log)
+            while IFS= read -r line; do echo "::error::$line"; done < <(tail -70 /tmp/spdyi-release-build.log)
           fi
           exit "$result"
-      - name: Name APK and record hash
+      - name: Verify signature and non-debuggable manifest
         run: |
-          mkdir -p apk
-          cp spdyi/android/app/build/outputs/apk/debug/app-debug.apk apk/Spdyi-Pro-debug.apk
-          cd apk && sha256sum Spdyi-Pro-debug.apk > SHA256SUMS.txt
+          set -euo pipefail
+          apk=spdyi/android/app/build/outputs/apk/release/app-release.apk
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" verify --verbose --print-certs "$apk" | tee apk/SIGNATURE-VERIFICATION.txt
+          "$tools/aapt" dump badging "$apk" > apk/APK-METADATA.txt
+          if grep -q 'application-debuggable' apk/APK-METADATA.txt; then
+            echo '::error::Release APK must not be debuggable.'
+            exit 1
+          fi
+          grep -q "package: name='com.spdyi.lab'" apk/APK-METADATA.txt
+          cp "$apk" apk/Spdyi-Pro-2.0.1.apk
+          cd apk
+          sha256sum Spdyi-Pro-2.0.1.apk > SHA256SUMS.txt
+      - name: Publish APK as a GitHub release
+        run: |
+          set -euo pipefail
+          version=$(node -p 'JSON.parse(require("fs").readFileSync("spdyi/package.json")).version')
+          cat > /tmp/spdyi-release-notes.md <<'NOTES'
+          Install **Spdyi-Pro-2.0.1.apk** on Android. This is the signed, non-debuggable **release variant**, not a debug APK.
+
+          Includes device diagnostics, touch/multitouch calibration, 0–200 sensitivity suggestions, fire-button size, gameplay feedback, evidence labels, comparisons and local profiles. Works with bundled app content; no game/account access or automatic DPI changes.
+
+          Not a Google Play listing, official Garena product, perfect-headshot guarantee or physical-handset certification. If replacing the older debug app, export profiles before uninstalling it: debug and release use different signing certificates.
+
+          SHA256SUMS.txt and the public signing certificate/verification report are included. The .cms file is an encrypted signing-recovery backup, **not** another app; users only need the .apk. No plaintext signing key or password is published.
+          NOTES
+          gh release create "spdyi-v$version" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Spdyi Pro $version — Android App" --latest=false \
+            --notes-file /tmp/spdyi-release-notes.md apk/*
       - uses: actions/upload-artifact@v4
         with:
-          name: Spdyi-Pro-Android-debug
+          name: Spdyi-Pro-signed-release
           path: apk/
-          retention-days: 14
+          retention-days: 30
+      - name: Remove unencrypted signing material
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/spdyi-signing"

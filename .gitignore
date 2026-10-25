@@ -3,3 +3,6 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# Local signing recovery material — never publish private keys.
+/.spdyi-signing/
