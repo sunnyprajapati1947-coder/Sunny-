@@ -3,3 +3,24 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Runtime data
+users.json.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Logs / OS
+*.log
+.DS_Store
