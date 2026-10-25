@@ -28,12 +28,14 @@ Browser mein `http://127.0.0.1:8787/?token=...` kholo — token start hote waqt 
 | **Local brain: Qwen3 4B Q4 GGUF + llama-server** | **WORKING (code + tests)** — asli 2.5 GB model sandbox mein nahi chala | `ModelTests` (7): catalog, cap, resume, start/stop, stale pid; `LocalLaneTests` (3): SSE, tool loop, honest offline |
 | **Model manager (download/start/stop/use, 10 GB hard cap, resume)** | **WORKING** | `model status/download/start/stop`, `ServerTests` model API |
 | **Skill atlas (saari 1,899 skills model ko sikhati hain)** | **WORKING** | `skills --atlas`, atlas prompt test |
+| **Hindi/Hinglish search (skills + memory)** | **WORKING (map-based)** | `फोन` → phone skills, `mere phone ka checkup karo` → Phone checkup, Hindi memory recall |
 | **Online hands: public HTTP API + file download** | **WORKING** | `OnlineToolTests` (5 tests): approval, SSRF block, header block, caps |
 | **Skill library: 1,889 GitHub skills + 10 native** | **WORKING** | import 1.4s, FTS search, `SkillTests` (9 tests) + UI smoke |
 | **Skill run (native, real tools) + approval pause/resume** | **WORKING** | `jarvis-phone-checkup` DONE, `jarvis-memory-export` PAUSED→approve→DONE |
 | **Bolo aur kaam shuru (hands-free + wake word + offline intents)** | **WORKING (browser)** | fake recogniser test + real SSE chat; Chrome/Android par mic chahiye |
 | **Online access (tunnel)** | **PARTIAL** — script + token auth + rate limit ready; public URL yahan se nahi bana | `automation/jarvis_public.sh`, `ServerTests.test_auth_lockout` |
 | Hindi / Hinglish replies | **PARTIAL** | prompt + language setting hai; quality model par depend karti hai |
+| Hindi/Devanagari **search** (skills + memory) | **WORKING (67-word Hindi map + variants)** | sandbox: `फोन` 0 hits → phone skills; Hindi memory `मेरा फोन` ab milta hai |
 | Voice input (browser STT) | **PARTIAL** | Chrome/Android par chalta hai, Firefox par nahi |
 | Voice output (browser TTS) | **PARTIAL** | device ki voices par depend karta hai |
 | Termux notification / TTS tools | **BLOCKED in sandbox** | code hai, `termux-api` package + app phone par chahiye |
@@ -416,13 +418,14 @@ python3 run_jarvis.py model logs [--lines 40]
 ## 13. Tests
 
 ```bash
-python3 -m unittest tests.test_jarvis_app -v     # 80 tests, ~11s
+python3 -m unittest tests.test_jarvis_app -v     # 83 tests, ~11s
 ```
 
 Kya cover hota hai: config + secret permissions, DB migration/corruption, memory (CRUD, secret refusal,
 FTS), approvals (pending/single-use/arg-binding/expiry), tool sandbox escapes, python timeout, task
 lifecycle/retries/sweep/deps, Gemini streaming + breaker (fake server), brain tool loop + budget,
-skill import/search/run/resume + offline voice intents, model catalog/cap/resume/stale-pid/start-stop
+skill import/search/run/resume + Hinglish query normalisation, bilingual memory search, offline voice intents,
+model catalog/cap/resume/stale-pid/start-stop
 (fake llama-server), atlas prompt, online hands (SSRF, header block, size cap, path escape),
 approval flow, aur poora HTTP server (401/429, chat SSE, skills API, model API, memory CRUD, tasks,
 settings/secrets split).
@@ -468,7 +471,8 @@ JARVIS_TOKEN=$(cat ~/.openjarvis/dashboard.token) node /tmp/uitest/smoke.mjs
 - Model-driven multi-step planning ki quality (abhi steps aap/CLI dete ho, ya model single-step chalata hai).
 - **Asli Qwen3 4B inference ka pehla run phone par hona baaki** — sandbox mein llama-server/2.5 GB model nahi tha.
 - Fine-tuning ya LoRA — jaan-boojh kar nahi kiya; skills retrieval se aate hain (upar 4b dekho).
-- Skill search Hindi/Devanagari mein kamzor hai (FTS English tokens par bana hai); "hindi" query par 0 hits aa sakte hain.
+- Hindi/Hinglish search **map-based** hai (67 common Hindi words + 72 stopwords), poora translator nahi. "hindi" jaisi language-name query par 0 hits
+  aa sakte hain — skills English mein likhi hain, isliye "translate" ya "hindi translation" search karo.
 - `download_file` se resume nahi hota (model downloader mein hota hai) — chhoti files ke liye theek hai.
 - Fine-tuned Hindi/Hinglish voice (browser TTS/STT par depend).
 - Trading tools — jaan-boojh kar nahi banaye.

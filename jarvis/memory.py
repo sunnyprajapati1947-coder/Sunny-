@@ -16,6 +16,7 @@ import time
 from dataclasses import dataclass, field
 
 from .db import Database
+from .textnorm import match_terms
 
 KINDS = ("preference", "project", "decision", "task", "fact", "note")
 
@@ -197,24 +198,33 @@ class MemoryStore:
         term = " ".join(str(query or "").split()).strip()
         if not term:
             return self.list(limit=limit)
+        # Hindi/Hinglish query → English terms + the Hindi spellings that map
+        # to them, so a memory written in Devanagari is still found.
+        words = match_terms(term, expand_hindi=True)
         rows: list = []
-        if self.db.has_fts:
-            safe = re.sub(r"[^\w\s\u0900-\u097F]", " ", term).strip()
-            if safe:
+        if self.db.has_fts and words:
+            for joiner in (" AND ", " OR "):
+                match = joiner.join(f'"{word}"*' for word in words[:6])
                 try:
                     rows = self.db.query(
                         "SELECT m.* FROM memories_fts f JOIN memories m ON m.id=f.rowid "
                         "WHERE memories_fts MATCH ? ORDER BY rank LIMIT ?",
-                        (safe + "*", limit),
+                        (match, limit),
                     )
                 except Exception:
                     rows = []
+                if rows:
+                    break
         if not rows:
-            like = f"%{term}%"
+            like_words = words or [term]
+            clause = " OR ".join(
+                ["(text LIKE ? OR subject LIKE ? OR tags LIKE ?)"] * len(like_words))
+            params = []
+            for word in like_words:
+                params.extend([f"%{word}%"] * 3)
             rows = self.db.query(
-                "SELECT * FROM memories WHERE text LIKE ? OR subject LIKE ? OR tags LIKE ? "
-                "ORDER BY updated DESC LIMIT ?",
-                (like, like, like, limit),
+                f"SELECT * FROM memories WHERE ({clause}) ORDER BY updated DESC LIMIT ?",
+                (*params, limit),
             )
         return [_row_to_memory(row) for row in rows]
 

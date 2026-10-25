@@ -541,7 +541,7 @@
       </div>
       <div class="card">
         <h2>${icon("memory")} Saved</h2>
-        <input id="memSearch" placeholder="Search memory…" autocomplete="off">
+        <input id="memSearch" placeholder="Search memory… (Hindi bhi)" autocomplete="off">
         <div id="memStats" class="muted small" style="margin-top:6px"></div>
       </div>
       <div id="memList"></div>
@@ -831,7 +831,7 @@
       <div class="sync-bar" id="skillSync">
         <span class="pill">loading…</span>
       </div>
-      <input id="skillSearch" placeholder="skill dhoondo… (pdf, react, security, deploy)" autocomplete="off">
+      <input id="skillSearch" placeholder="skill dhoondo… (pdf, deploy, फोन — Hindi bhi)" autocomplete="off">
       <div class="chips" id="skillFilters" style="margin-top:10px"></div>
       <div id="skillList"></div>
     </div>`;

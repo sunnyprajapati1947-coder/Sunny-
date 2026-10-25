@@ -21,6 +21,7 @@ import zlib
 from pathlib import Path
 
 from ..db import Database
+from ..textnorm import query_terms
 
 DATA_REL = Path("apps") / "jarvis-pocket" / "data"
 BUILTIN = Path(__file__).resolve().parent / "builtin.json"
@@ -316,27 +317,49 @@ class SkillLibrary:
             filters.append("s.builtin=1")
         extra = (" AND " + " AND ".join(filters)) if filters else ""
 
+        words = query_terms(term)
         rows = []
-        if term and self.db.has_skill_fts:
-            safe = re.sub(r"[^\w\s\u0900-\u097F]", " ", term).strip()
-            words = [word for word in safe.split() if len(word) > 1] or [safe]
-            if safe:
-                match = " OR ".join(f"{word}*" for word in words)
+        if words and self.db.has_skill_fts:
+            # AND first (precise), OR only when nothing matches (recall), then
+            # rank by how many query words actually occur in each row.
+            for joiner in (" AND ", " OR "):
+                match = joiner.join(f'"{word}"*' for word in words)
                 try:
                     rows = self.db.query(
                         "SELECT s.* FROM skills_fts f JOIN skills s ON s.id=f.id "
-                        f"WHERE skills_fts MATCH ?{extra} ORDER BY rank LIMIT ?",
-                        (match, *params, limit))
+                        f"WHERE skills_fts MATCH ?{extra} "
+                        "ORDER BY bm25(skills_fts, 0.0, 8.0, 1.0, 4.0), s.builtin DESC LIMIT ?",
+                        (match, *params, limit if joiner == " AND " else max(40, limit * 4)))
                 except Exception:
                     rows = []
+                if rows:
+                    break
+            if rows and len(words) > 1:
+                def score(row):
+                    title = str(row["title"] or "").lower()
+                    body = " ".join(str(row[k] or "").lower()
+                                    for k in ("description", "keywords"))
+                    hits = sum(1 for word in words if word in title or word in body)
+                    title_hits = sum(1 for word in words if word in title)
+                    return (-hits, -title_hits, 0 if row["builtin"] else 1)
+
+                rows = sorted(rows, key=score)[:limit]
         if not rows:
-            like = f"%{term}%" if term else "%"
             plain = [f.replace("s.", "") for f in filters]
             extra_plain = (" AND " + " AND ".join(plain)) if plain else ""
+            if words:
+                clause = " OR ".join(
+                    ["(title LIKE ? OR description LIKE ? OR keywords LIKE ?)"] * len(words))
+                like_params = []
+                for word in words:
+                    like_params.extend([f"%{word}%"] * 3)
+            else:
+                clause = "(title LIKE ? OR description LIKE ? OR keywords LIKE ?)"
+                like_params = [f"%{term}%" if term else "%"] * 3
             rows = self.db.query(
-                "SELECT * FROM skills WHERE (title LIKE ? OR description LIKE ? OR keywords LIKE ?)"
+                f"SELECT * FROM skills WHERE ({clause})"
                 f"{extra_plain} ORDER BY builtin DESC, length(title) LIMIT ?",
-                (like, like, like, *params, limit))
+                (*like_params, *params, limit))
         return [{"id": row["id"], "title": row["title"], "description": row["description"][:280],
                  "pack": row["pack"], "type": row["type"], "risk": row["risk"],
                  "builtin": bool(row["builtin"]), "path": row["path"]}

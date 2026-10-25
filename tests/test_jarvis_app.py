@@ -40,6 +40,7 @@ from jarvis.memory import MemoryStore, MemoryStoreError  # noqa: E402
 from jarvis.providers import Breaker, ProviderError, Reply, Router  # noqa: E402
 from jarvis.models import CATALOG, Downloader, ModelError, ModelManager  # noqa: E402
 from jarvis.skills import SkillLibrary, SkillRunner  # noqa: E402
+from jarvis.skills.library import query_terms  # noqa: E402
 from jarvis.skills.library import SkillError  # noqa: E402
 from jarvis.tasks import TaskStore  # noqa: E402
 from jarvis.tools import ToolBox  # noqa: E402
@@ -489,6 +490,12 @@ class MemoryTests(Base):
         self.assertTrue(self.memory.delete(entry.id))
         self.assertEqual(self.memory.search("Postgres"), [])
 
+    def test_hindi_and_hinglish_queries_find_memories(self):
+        self.memory.add("मेरा फोन नंबर 999 है", kind="fact")
+        self.memory.add("Boss ko English pasand hai", kind="preference")
+        for query in ("phone", "फोन", "मेरा फोन", "phone number kya hai"):
+            self.assertTrue(self.memory.search(query), query)
+
     def test_secret_is_refused(self):
         with self.assertRaises(MemoryStoreError):
             self.memory.add("key AIzaSyD1234567890abcdefghijklmnopqrstu", kind="fact")
@@ -821,6 +828,23 @@ class SkillTests(Base):
         self.assertEqual(stats["packs"], 2)          # demo + jarvis
         self.assertEqual(stats["imported_packs"], 1)
         self.assertTrue(stats["fts"])
+
+    def test_hinglish_queries_become_english_terms(self):
+        self.assertEqual(query_terms("mere phone ka checkup karo"), ["phone", "checkup"])
+        self.assertEqual(query_terms("फोन"), ["phone"])
+        self.assertEqual(query_terms("स्क्रीनशॉट"), ["screenshot"])
+        self.assertEqual(query_terms("email bhejo"), ["email", "bhejo"])
+        self.assertEqual(query_terms("the and of"), [])
+
+    def test_search_is_precise_then_falls_back(self):
+        self.library.sync()
+        self.assertEqual(self.library.search("pdf care")[0]["id"], "demo-alpha")
+        self.assertIn("jarvis-phone-checkup",
+                      [row["id"] for row in self.library.search("फोन", limit=5)])
+        self.assertIn("jarvis-phone-checkup",
+                      [row["id"] for row in self.library.search("phone checkup karo", limit=5)])
+        self.assertTrue(self.library.search(""))
+        self.assertTrue(self.library.search("", kind="agent"))
 
     def test_sync_is_idempotent_and_forced_on_new_build(self):
         self.library.sync()
