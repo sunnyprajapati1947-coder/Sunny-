@@ -1,0 +1,135 @@
+name: JARVIS Android APK
+
+on:
+  push:
+    paths:
+      - 'apps/jarvis-app/**'
+      - 'apps/jarvis-pocket/index.html'
+      - 'apps/jarvis-pocket/assets/**'
+      - 'apps/jarvis-pocket/icons/**'
+      - '.github/workflows/jarvis-android.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name to publish (blank = apps/jarvis-app/package.json)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jarvis-android-release
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/jarvis-app/package-lock.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Android SDK packages
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
+
+      - name: Web checks
+        run: |
+          node --check apps/jarvis-pocket/assets/js/native.js
+          node --check apps/jarvis-app/scripts/stage-web.mjs
+
+      - name: Install and stage the app
+        working-directory: apps/jarvis-app
+        run: |
+          npm ci
+          npm run android:sync
+
+      - name: Version
+        id: version
+        run: |
+          version="${{ inputs.version }}"
+          if [ -z "$version" ]; then
+            version=$(node -p "require('./apps/jarvis-app/package.json').version")
+          fi
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+          echo "code=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "JARVIS_VERSION_NAME=$version" >> "$GITHUB_ENV"
+          echo "JARVIS_VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "Publishing JARVIS $version (versionCode ${{ github.run_number }})"
+
+      - name: Prepare release signing
+        env:
+          JARVIS_RELEASE_KEYSTORE_BASE64: ${{ secrets.JARVIS_RELEASE_KEYSTORE_BASE64 }}
+          JARVIS_RELEASE_STORE_PASSWORD: ${{ secrets.JARVIS_RELEASE_STORE_PASSWORD }}
+          JARVIS_RELEASE_KEY_ALIAS: ${{ secrets.JARVIS_RELEASE_KEY_ALIAS }}
+          SPDYI_RELEASE_KEYSTORE_BASE64: ${{ secrets.SPDYI_RELEASE_KEYSTORE_BASE64 }}
+          SPDYI_RELEASE_STORE_PASSWORD: ${{ secrets.SPDYI_RELEASE_STORE_PASSWORD }}
+          SPDYI_RELEASE_KEY_ALIAS: ${{ secrets.SPDYI_RELEASE_KEY_ALIAS }}
+        run: bash apps/jarvis-app/scripts/prepare-signing.sh
+
+      - name: Assemble release APK
+        working-directory: apps/jarvis-app/android
+        run: |
+          chmod +x gradlew
+          set +e
+          ./gradlew :app:assembleRelease --no-daemon 2>&1 | tee /tmp/jarvis-build.log
+          result=${PIPESTATUS[0]}
+          if [ "$result" -ne 0 ]; then
+            while IFS= read -r line; do echo "::error::$line"; done < <(tail -80 /tmp/jarvis-build.log)
+          fi
+          exit "$result"
+
+      - name: Verify and package
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          apk=apps/jarvis-app/android/app/build/outputs/apk/release/app-release.apk
+          test -f "$apk"
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" verify --verbose --print-certs "$apk" | tee dist/SIGNATURE.txt
+          "$tools/aapt" dump badging "$apk" > dist/BADGING.txt
+          if grep -q 'application-debuggable' dist/BADGING.txt; then
+            echo '::error::Release APK must not be debuggable.'
+            exit 1
+          fi
+          grep -q "package: name='com.sunnyai.jarvis'" dist/BADGING.txt
+          name="JARVIS-${{ steps.version.outputs.name }}.apk"
+          cp "$apk" "dist/$name"
+          (cd dist && sha256sum "$name" > SHA256SUMS.txt)
+
+      - name: Publish GitHub release
+        run: |
+          set -euo pipefail
+          tag="jarvis-v${{ steps.version.outputs.name }}"
+          cat > /tmp/notes.md <<'NOTES'
+          Install the APK on your Android phone — no terminal, no Termux.
+
+          1. Tap the `.apk` below and allow "install unknown apps" for your browser/Files app.
+          2. Open **JARVIS**, paste a free Gemini key in Settings, and chat.
+          3. The 1,899-skill library is bundled and works offline.
+
+          This build is signed for in-place updates: when a newer `jarvis-v*` release appears, the app shows an update banner.
+
+          Honest limits: the assistant needs a model key (or you can use the offline library), and the phone must stay on while long tasks run. No analytics, no hidden uploads.
+          NOTES
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "JARVIS ${{ steps.version.outputs.name }} — Android APK" --latest=false \
+            --notes-file /tmp/notes.md dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS-apk
+          path: dist/
+          retention-days: 30

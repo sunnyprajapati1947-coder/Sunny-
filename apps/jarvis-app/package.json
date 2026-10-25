@@ -1,0 +1,19 @@
+{
+  "name": "jarvis-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "JARVIS — installable Android app (Capacitor shell around the offline skill library)",
+  "scripts": {
+    "stage": "node scripts/stage-web.mjs",
+    "android:sync": "npm run stage && cap sync android",
+    "android:build": "npm run android:sync && cd android && ./gradlew :app:assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}

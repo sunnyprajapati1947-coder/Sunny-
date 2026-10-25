@@ -1,0 +1,7 @@
+{
+  "appId": "com.sunnyai.jarvis",
+  "appName": "JARVIS",
+  "webDir": "www",
+  "android": { "allowMixedContent": false, "backgroundColor": "#07080d" },
+  "server": { "androidScheme": "https" }
+}
