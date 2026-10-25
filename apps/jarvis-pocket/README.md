@@ -9,7 +9,7 @@ Jarvis Pocket is two things in one installable web app:
 
 The model is yours, the knowledge is local, and nothing is sent anywhere except the provider you picked.
 
-**Live app: <https://PLACEHOLDER>** — open it on a phone and add it to the home screen.
+**Live app: <https://jarvis-pocket-red.vercel.app>** — open it on a phone and add it to the home screen.
 
 ## How the assistant stays grounded
 
