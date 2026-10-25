@@ -124,4 +124,12 @@ app.
 - Android wrapper: [`apps/jarvis-app`](../../apps/jarvis-app) (Capacitor).
 - Python/Termux app: [`jarvis`](../../jarvis) — see [`README-APP.md`](README-APP.md).
 - Tests: `python3 -m unittest tests.test_jarvis_app` (83) and
-  `npm --prefix tools/pocket-smoke test` (30 UI checks).
+  `npm --prefix tools/pocket-smoke test` (37 UI checks, including the engine wiring and
+  an English-only guardrail).
+- Web deploy: the app is static, so `build.sh` (repo root) copies
+  `apps/jarvis-pocket` into `dist/`. The Vercel project `jarvis-pocket` builds with
+  `bash build.sh` and output `dist`; a deployment is created with `build.sh` and a
+  `yarn.lock` in its file list (the API rejects raw JSON file contents, and without a
+  lockfile Vercel treats the upload as a static site and skips the build).
+- The on-device engine is vendored: `transformers.web.min.js.gz` (decompressed at
+  runtime), `ort.bundle.min.mjs`, `ort-wasm-simd-threaded.jsep.{mjs,wasm}`.

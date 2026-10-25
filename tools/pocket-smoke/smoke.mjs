@@ -223,6 +223,22 @@ check("engine loader decompresses and imports a blob", brainSrc.includes("Decomp
 const indexHtml = readFileSync(join(ROOT, "index.html"), "utf8");
 check("no stale import map in index.html", !indexHtml.includes('type="importmap"'));
 
+// --- English-only UI guardrail -------------------------------------------
+const hinglish = /\b(karo|karein|karna|karne|nahi|nahin|aap|apna|apne|apni|yeh|woh|kya|kaise|kuch|bahut|bohot|chahiye|milega|padega|kholo|bolo|poocho|dekho|samjho|theek|thik|galat|abhi|phir|sirf|sabse|dobara|taiyar|banao|banega|hoga|hogi|hota|raha|rahi|rahe|hai|hain|hoon|mujhe|tumhe|wala|wali|wale|jaise|warna|matlab|saath|bina|andar|upar|neeche)\b/i;
+const uiFiles = ["app.js", "chat.js", "library.js", "tasks.js", "connections.js", "video.js",
+  "setup.js", "llm.js", "voice.js", "brain.js", "local-brain.js", "native.js", "core.js"];
+const leftovers = [];
+for (const name of uiFiles) {
+  const src = readFileSync(join(ROOT, "assets", "js", name), "utf8");
+  for (const line of src.split("\n")) {
+    if (line.trimStart().startsWith("//") || line.trimStart().startsWith("/*")) continue;
+    if (/ready hai boss/.test(line)) continue;  // the one phrase the owner asked to keep
+    const hit = line.match(hinglish);
+    if (hit) leftovers.push(`${name}: ${hit[0]}`);
+  }
+}
+check("UI strings are English", leftovers.length === 0, leftovers.slice(0, 4).join(", "));
+
 check("no JS errors", errors.length === 0, errors.join(" | "));
 
 const failed = results.filter((r) => !r.ok);

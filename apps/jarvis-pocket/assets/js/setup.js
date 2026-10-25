@@ -50,7 +50,7 @@
   }
 
   function badge(done) {
-    return '<span class="pill ' + (done ? 'pill-ok' : 'pill-warn') + '">' + (done ? 'done' : 'left') + '</span>';
+    return '<span class="pill ' + (done ? 'pill-ok' : 'pill-warn') + '">' + (done ? 'done' : 'to do') + '</span>';
   }
 
   function screen() {
@@ -86,7 +86,7 @@
       '<div class="field-row"><input id="setupKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key" value="' + UI.esc(config.key) + '">' +
       '<button class="icon-btn" id="setupShowKey" aria-label="Show key">' + UI.icon('eye') + '</button></div></label>' +
       '<div class="card-actions"><button class="btn btn-primary btn-sm" id="setupSaveKey">' + UI.icon('bolt') + 'Save & test</button>' +
-      (provider.keys ? '<button class="btn btn-ghost btn-sm" id="setupGetKey">Free key lo</button>' : '') + '</div>' +
+      (provider.keys ? '<button class="btn btn-ghost btn-sm" id="setupGetKey">Get a free key</button>' : '') + '</div>' +
       '<p class="muted small" id="setupKeyNote">Provider: ' + UI.esc(provider.label) + ' · ' + UI.esc(config.model) + '</p></div>' +
 
       '<div class="card"><div class="card-head"><h2>' + UI.icon('play') + '4. YouTube (optional)</h2>' + badge(ytReady()) + '</div>' +
