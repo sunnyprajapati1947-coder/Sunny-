@@ -419,7 +419,7 @@
 .st-confirmed{color:#9fe8b1;border-color:#2f7a44;background:rgba(31,168,85,.12)}
 .st-done{color:#bfe3ff;border-color:#2a5f8f;background:rgba(60,140,220,.12)}
 .st-cancelled{color:#ff9d97;border-color:#8f2a24;background:rgba(224,35,28,.12)}
-.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
 .admin-stats div{border:1px solid var(--line);border-radius:14px;padding:.7rem;text-align:center;display:grid;gap:.1rem}
 .admin-stats strong{font-size:1.4rem;color:var(--gold-2)}
 .admin-stats span{color:var(--muted);font-size:.8rem}
@@ -483,3 +483,9 @@
 .phone-help{color:var(--gold-2);font-size:.8rem;font-weight:400}
 @media (max-width:1020px){.smart-grid{grid-template-columns:1fr}}
 button.style-card{font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}
+
+/* ===== pro live: FULL slot, live dot, customers ===== */
+.slot.full{border-color:rgba(224,35,28,.8);background:rgba(224,35,28,.1)}
+.live-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#37d67a;margin-left:.5rem;vertical-align:middle;animation:pulse 2s infinite}
+a.mini-btn{text-decoration:none;display:inline-block;text-align:center}
+@media (max-width:640px){.admin-stats{grid-template-columns:repeat(2,1fr)}}

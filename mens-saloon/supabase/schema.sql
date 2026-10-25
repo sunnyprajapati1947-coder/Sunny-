@@ -110,3 +110,36 @@ grant execute on function public.admin_change_pin(text, text) to anon, authentic
 --  RPCs:   public.admin_save_services(text, jsonb),
 --          public.admin_save_settings(text, jsonb)
 -- ============================================================
+
+-- ============================================================
+--  PRO LIVE SYSTEM
+--  slot_rush(date)        -> har slot ki booking ginti (sirf
+--                            count — bheed-meter ke liye, koi
+--                            personal data public nahi hota)
+--  admin_customers(pin)   -> customers ka pura online record:
+--                            phone, naam, kitni baar aaye,
+--                            last visit, done par kul kamai
+-- ============================================================
+create or replace function public.slot_rush(p_date date)
+returns table(appt_time text, bookings int)
+language sql security definer set search_path = public as $$
+  select appt_time, count(*)::int from public.bookings
+  where appt_date = p_date and status <> 'cancelled' and appt_time is not null
+  group by appt_time;
+$$;
+grant execute on function public.slot_rush(date) to anon, authenticated;
+
+create or replace function public.admin_customers(p_pin text)
+returns table(phone text, name text, visits int, last_date date, total_spent int)
+language sql security definer set search_path = public, extensions as $$
+  select public.norm_phone(b.phone),
+         (array_agg(b.name order by b.created_at desc))[1],
+         count(*)::int, max(b.appt_date),
+         coalesce(sum(case when b.status = 'done' then coalesce(b.price,0) else 0 end), 0)::int
+  from public.bookings b
+  where exists (select 1 from public.admin_settings where id = 1 and pin_hash = crypt(coalesce(p_pin,''), pin_hash))
+    and b.status <> 'cancelled'
+  group by public.norm_phone(b.phone)
+  order by visits desc, last_date desc nulls last limit 200;
+$$;
+grant execute on function public.admin_customers(text) to anon, authenticated;

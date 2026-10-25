@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import './App.css'
 import {
   BARBER,
@@ -17,7 +17,8 @@ import {
   type Service,
 } from './config'
 import {
-  saveBooking,
+  saveBookingSafe,
+  flushPendingBookings,
   fetchMyBookings,
   fetchAdminBookings,
   setBookingStatus,
@@ -27,6 +28,8 @@ import {
   adminSaveServices,
   adminSaveSettings,
   fetchSlotRush,
+  fetchAdminCustomers,
+  type DbCustomer,
   type DbBooking,
   type BookingStatus,
   type DbService,
@@ -52,7 +55,6 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-const todayISO = () => new Date().toISOString().slice(0, 10)
 const todayIST = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
 const istNow = () => new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
 const tomorrowIST = () => { const d = istNow(); d.setDate(d.getDate() + 1); return d.toLocaleDateString('en-CA') }
@@ -64,6 +66,10 @@ const slotToMins = (slot: string) => {
   return h * 60 + Number(m[2])
 }
 const nowMinsIST = () => { const d = istNow(); return d.getHours() * 60 + d.getMinutes() }
+/** Ek time slot me zyada-se-zyada itni website bookings — phir FULL. */
+const SLOT_CAP = 3
+/** Aaj ka agla khali time (beeta hua time kabhi default select nahi hoga). */
+const nextSlot = () => TIME_SLOTS.find((sl) => slotToMins(sl) > nowMinsIST()) ?? null
 
 type Booking = {
   name: string
@@ -257,6 +263,16 @@ const HT = {
     bInvalid: 'Naam aur sahi 10-digit mobile number daalo — shop aapko isi number par confirm karegi.',
     bSaved: '✓ WhatsApp khula hai — wahan Send dabao. Booking shop ke record me bhi save ho gayi hai.',
     comboBook: 'Book This Combo →',
+    full: '🔴 FULL',
+    bookingWord: 'booking hai',
+    liveTxt: 'Live — auto update',
+    dbQueued: '✓ Booking mil gayi! Net slow hai — record phone me safe hai, net aate hi shop ke cloud me sync ho jayega.',
+    pickHint: '👆 Upar list se service tick karo',
+    kamaiL: "Today's kamai (done)",
+    custRecord: '👥 Customers — Pura Online Record',
+    visitsWord: 'baar aaye',
+    lastVisit: 'Last visit',
+    spentL: 'Total diya',
     dbSaved: '✓ Saved in the shop cloud record — see it anytime in “My Bookings” below.',
     dbFailed: '(Network was slow — your booking still went on WhatsApp. Cloud copy will save with your next booking.)',
   },
@@ -331,6 +347,16 @@ const HT = {
     bInvalid: 'नाम और सही 10 अंकों का मोबाइल नंबर डालो — दुकान इसी नंबर पर कन्फ़र्म करेगी।',
     bSaved: '✓ WhatsApp खुल गया है — वहाँ Send दबाओ। बुकिंग दुकान के रिकॉर्ड में भी सेव हो गई है।',
     comboBook: 'यह कॉम्बो बुक करो →',
+    full: '🔴 FULL',
+    bookingWord: 'बुकिंग है',
+    liveTxt: 'लाइव — ऑटो अपडेट',
+    dbQueued: '✓ बुकिंग मिल गई! नेट धीमा है — रिकॉर्ड फ़ोन में सुरक्षित है, नेट आते ही दुकान के क्लाउड में सिंक हो जाएगा।',
+    pickHint: '👆 ऊपर लिस्ट से सर्विस टिक करो',
+    kamaiL: 'आज की कमाई (done)',
+    custRecord: '👥 कस्टमर्स — पूरा ऑनलाइन रिकॉर्ड',
+    visitsWord: 'बार आए',
+    lastVisit: 'आख़िरी विज़िट',
+    spentL: 'कुल दिया',
     dbSaved: '✓ दुकान के क्लाउड रिकॉर्ड में सेव हो गया — “मेरी बुकिंग्स” में कभी भी दिखेगा।',
     dbFailed: '(नेटवर्क धीमा था — आपकी बुकिंग WhatsApp पर चली गई है। क्लाउड कॉपी अगली बुकिंग पर सेव होगी।)',
   },
@@ -411,8 +437,8 @@ export default function App() {
     name: '',
     phone: '',
     serviceId: 'haircut-shaving',
-    date: todayISO(),
-    time: '11:00 AM',
+    date: todayIST(),
+    time: nextSlot() ?? '07:00 AM',
     notes: '',
   })
   const [errors, setErrors] = useState<Partial<Record<keyof Booking, string>>>({})
@@ -421,26 +447,46 @@ export default function App() {
   /* ---- Smart Chair: live bheed-meter + combo builder ---- */
   const [comboPreset, setComboPreset] = useState<{ name: string; price: number } | null>(null)
   const [builderSel, setBuilderSel] = useState<string[]>([])
-  const [builderDate, setBuilderDate] = useState<string>(() => todayIST())
-  const [builderTime, setBuilderTime] = useState('11:00 AM')
-  const [rushDay, setRushDay] = useState<'today' | 'tomorrow'>('today')
-  const [rush, setRush] = useState<Record<string, number>>({})
+  const [builderDate, setBuilderDate] = useState<string>(() => (nextSlot() ? todayIST() : tomorrowIST()))
+  const [builderTime, setBuilderTime] = useState<string>(() => nextSlot() ?? '07:00 AM')
+  const [rushDay, setRushDay] = useState<'today' | 'tomorrow'>(() => (nextSlot() ? 'today' : 'tomorrow'))
+  const [rushByDate, setRushByDate] = useState<Record<string, Record<string, number>>>({})
   const [builderBusy, setBuilderBusy] = useState(false)
   const [builderMsg, setBuilderMsg] = useState('')
+  const loadRush = useCallback((date: string) => {
+    fetchSlotRush(date)
+      .then((rows) => setRushByDate((m) => ({ ...m, [date]: Object.fromEntries(rows.map((r) => [r.appt_time, r.bookings])) })))
+      .catch(() => { /* meter na mile to purana count chalega — booking kabhi nahi rukegi */ })
+  }, [])
+  const rush = rushByDate[builderDate] ?? {}
+  const formRush = rushByDate[booking.date] ?? {}
+  useEffect(() => { loadRush(builderDate) }, [builderDate, loadRush])
+  useEffect(() => { loadRush(booking.date) }, [booking.date, loadRush])
+  /* LIVE system: har 30 sec + tab focus + net wapas aane par meter fresh,
+     aur pending offline bookings cloud me sync. */
   useEffect(() => {
-    let live = true
-    fetchSlotRush(builderDate)
-      .then((rows) => { if (live) setRush(Object.fromEntries(rows.map((r) => [r.appt_time, r.bookings]))) })
-      .catch(() => { /* rush na mile to sab khali dikhega — booking phir bhi chalegi */ })
-    return () => { live = false }
-  }, [builderDate])
+    const tick = () => { loadRush(builderDate); loadRush(booking.date); void flushPendingBookings() }
+    const id = window.setInterval(tick, 30_000)
+    const onVis = () => { if (document.visibilityState === 'visible') tick() }
+    document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('online', tick)
+    void flushPendingBookings()
+    return () => { window.clearInterval(id); document.removeEventListener('visibilitychange', onVis); window.removeEventListener('online', tick) }
+  }, [builderDate, booking.date, loadRush])
+  /** Booking hote hi slot ka count usi pal badha do — meter turant rang badlega. */
+  const bumpRush = (date: string, time: string) =>
+    setRushByDate((m) => ({ ...m, [date]: { ...m[date], [time]: (m[date]?.[time] ?? 0) + 1 } }))
   const builderItems = services.filter((sv) => builderSel.includes(sv.id))
   const builderTotal = builderItems.reduce((a, sv) => a + sv.price, 0) + (comboPreset?.price ?? 0)
 
   const submitBuilder = (ev: FormEvent) => {
     ev.preventDefault()
     const items = [...(comboPreset ? [comboPreset.name] : []), ...builderItems.map((sv) => sv.name)]
-    if (!items.length) { setBuilderMsg(ht.bNeed); return }
+    if (!items.length) {
+      setBuilderMsg(ht.bNeed)
+      document.querySelector('.builder-list')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
     const digits = booking.phone.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '')
     if (booking.name.trim().length < 3 || !/^[6-9]\d{9}$/.test(digits)) { setBuilderMsg(ht.bInvalid); return }
     if (builderBusy) return
@@ -457,16 +503,15 @@ export default function App() {
       `*Time:* ${builderTime}`, ``,
       `Please confirm my slot. Thank you!`,
     ].join('\n')
-    saveBooking({
+    bumpRush(builderDate, builderTime)
+    saveBookingSafe({
       name: booking.name.trim(), phone: booking.phone.trim(),
       service: label.slice(0, 118), price: builderTotal,
       appt_date: builderDate, appt_time: builderTime, notes: 'Smart Combo Builder se booking',
+    }).then((res) => {
+      setBuilderMsg(res === 'saved' ? ht.bSaved : ht.dbQueued)
+      if (res === 'saved') loadRush(builderDate)
     })
-      .then(() => {
-        setBuilderMsg(ht.bSaved)
-        fetchSlotRush(builderDate).then((rows) => setRush(Object.fromEntries(rows.map((r) => [r.appt_time, r.bookings])))).catch(() => { /* ignore */ })
-      })
-      .catch(() => setBuilderMsg(ht.bSaved))
     try {
       const key = 'mens-saloon-bookings'
       const prev = JSON.parse(localStorage.getItem(key) ?? '[]') as Booking[]
@@ -477,7 +522,7 @@ export default function App() {
     window.setTimeout(() => setBuilderBusy(false), 1500)
   }
   const ht = HT[lang]
-  const [dbState, setDbState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle')
+  const [dbState, setDbState] = useState<'idle' | 'saving' | 'saved' | 'queued' | 'failed'>('idle')
   const [histPhone, setHistPhone] = useState('')
   const [histRows, setHistRows] = useState<DbBooking[] | null>(null)
   const [histBusy, setHistBusy] = useState(false)
@@ -487,6 +532,7 @@ export default function App() {
     try { return sessionStorage.getItem('mens-saloon-admin-pin') ?? '' } catch { return '' }
   })
   const [adminRows, setAdminRows] = useState<DbBooking[] | null>(null)
+  const [customers, setCustomers] = useState<DbCustomer[] | null>(null)
   const [adminBusy, setAdminBusy] = useState(false)
   const [adminMsg, setAdminMsg] = useState('')
   const [newPin, setNewPin] = useState('')
@@ -541,6 +587,7 @@ export default function App() {
     try {
       const rows = await fetchAdminBookings(pin)
       setAdminRows(rows); setAdminPin(pin)
+      fetchAdminCustomers(pin).then(setCustomers).catch(() => { /* ignore */ })
       fetchSiteServices().then((svc) => setSvcDraft(svc.map((r) => ({ ...r, desc_hi: r.desc_hi || SERVICE_DESC_HI[r.id] || '' })))).catch(() => { /* ignore */ })
       fetchSiteSettings().then((st) => { if (st) { setSetDraft(st); setSiteSettings(st) } }).catch(() => { /* ignore */ })
       try { sessionStorage.setItem('mens-saloon-admin-pin', pin) } catch { /* ignore */ }
@@ -552,6 +599,17 @@ export default function App() {
   useEffect(() => {
     if (adminPin) void loadAdmin(adminPin)
   }, []) // first mount only — loadAdmin is intentionally not a dependency
+
+  /* Shop Panel LIVE: panel khula ho to har 30 sec nayi bookings khud aa jayengi. */
+  const panelOpen = adminRows !== null
+  useEffect(() => {
+    if (!adminPin || !panelOpen) return
+    const id = window.setInterval(() => {
+      fetchAdminBookings(adminPin).then(setAdminRows).catch(() => { /* ignore */ })
+      fetchAdminCustomers(adminPin).then(setCustomers).catch(() => { /* ignore */ })
+    }, 30_000)
+    return () => window.clearInterval(id)
+  }, [adminPin, panelOpen])
 
   const lookupHistory = async (ev: FormEvent) => {
     ev.preventDefault()
@@ -618,7 +676,7 @@ export default function App() {
     const digits = b.phone.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '')
     if (!/^[6-9]\d{9}$/.test(digits)) e.phone = 'Enter a valid 10-digit mobile number.'
     if (!b.date) e.date = 'Please pick a date.'
-    else if (b.date < todayISO()) e.date = 'Date cannot be in the past.'
+    else if (b.date < todayIST()) e.date = 'Date cannot be in the past.'
     if (!b.time) e.time = 'Please pick a preferred time.'
     return e
   }
@@ -665,7 +723,8 @@ export default function App() {
     }
     /* Cloud database me bhi save karo — fail ho to bhi WhatsApp booking rukti nahi. */
     setDbState('saving')
-    saveBooking({
+    bumpRush(booking.date, booking.time)
+    saveBookingSafe({
       name: booking.name.trim(),
       phone: booking.phone.trim(),
       service: selectedService.name,
@@ -673,9 +732,10 @@ export default function App() {
       appt_date: booking.date,
       appt_time: booking.time,
       notes: booking.notes.trim(),
+    }).then((res) => {
+      setDbState(res === 'saved' ? 'saved' : 'queued')
+      if (res === 'saved') loadRush(booking.date)
     })
-      .then(() => setDbState('saved'))
-      .catch(() => setDbState('failed'))
     setHistPhone(booking.phone)
 
     setSent(true)
@@ -834,7 +894,7 @@ export default function App() {
           <div className="smart-grid">
             {/* live bheed-meter */}
             <div className="smart-card reveal">
-              <h3>{ht.rushTitle}</h3>
+              <h3>{ht.rushTitle}<span className="live-dot" aria-label={ht.liveTxt} title={ht.liveTxt} /></h3>
               <div className="rush-days">
                 <button type="button" className={`opt ${rushDay === 'today' ? 'active' : ''}`}
                   aria-pressed={rushDay === 'today'}
@@ -848,14 +908,15 @@ export default function App() {
                 {TIME_SLOTS.map((slot) => {
                   const c = rush[slot] ?? 0
                   const past = builderDate === todayIST() && slotToMins(slot) <= nowMinsIST()
-                  const cls = past ? 'past' : c >= 2 ? 'busy' : c === 1 ? 'one' : 'free'
+                  const full = c >= SLOT_CAP
+                  const cls = past ? 'past' : full ? 'full' : c >= 1 ? 'one' : 'free'
                   return (
-                    <button key={slot} type="button" disabled={past}
+                    <button key={slot} type="button" disabled={past || full}
                       className={`slot ${cls} ${builderTime === slot ? 'sel' : ''}`}
                       aria-pressed={builderTime === slot}
                       onClick={() => setBuilderTime(slot)}>
                       <strong>{slot}</strong>
-                      <small>{past ? ht.past : c >= 2 ? ht.busy : c === 1 ? ht.oneBooked : ht.free}</small>
+                      <small>{past ? ht.past : full ? ht.full : c >= 1 ? `🟡 ${c} ${ht.bookingWord}` : ht.free}</small>
                     </button>
                   )
                 })}
@@ -885,8 +946,8 @@ export default function App() {
               </div>
               <div className="builder-total" aria-live="polite">
                 <span>{ht.totalL2}</span>
-                <strong>{inr(builderTotal)}</strong>
-                <small>{fmtDate(builderDate)} · {builderTime}</small>
+                <strong>{builderTotal > 0 ? inr(builderTotal) : '—'}</strong>
+                <small>{builderTotal > 0 ? `${fmtDate(builderDate)} · ${builderTime}` : ht.pickHint}</small>
               </div>
               <form className="hist-form" onSubmit={submitBuilder}>
                 <label>
@@ -1187,7 +1248,7 @@ export default function App() {
                 Date *
                 <input
                   type="date"
-                  min={todayISO()}
+                  min={todayIST()}
                   value={booking.date}
                   aria-invalid={!!errors.date}
                   onChange={(e) => setBooking({ ...booking, date: e.target.value })}
@@ -1201,7 +1262,15 @@ export default function App() {
                   aria-invalid={!!errors.time}
                   onChange={(e) => setBooking({ ...booking, time: e.target.value })}
                 >
-                  {TIME_SLOTS.map((t) => <option key={t} value={t}>{t}</option>)}
+                  {TIME_SLOTS.map((slotOpt) => {
+                    const c = formRush[slotOpt] ?? 0
+                    const dis = c >= SLOT_CAP || (booking.date === todayIST() && slotToMins(slotOpt) <= nowMinsIST())
+                    return (
+                      <option key={slotOpt} value={slotOpt} disabled={dis}>
+                        {slotOpt}{c >= SLOT_CAP ? ` — ${ht.full}` : c >= 1 ? ` · ${c} ${ht.bookingWord}` : ''}
+                      </option>
+                    )
+                  })}
                 </select>
                 {errors.time && <small className="error">{errors.time}</small>}
               </label>
@@ -1235,6 +1304,7 @@ export default function App() {
             )}
             {sent && dbState === 'saved' && <p className="form-note">{ht.dbSaved}</p>}
             {sent && dbState === 'failed' && <p className="form-note">{ht.dbFailed}</p>}
+            {sent && dbState === 'queued' && <p className="form-note">{ht.dbQueued}</p>}
           </form>
         </section>
 
@@ -1323,6 +1393,7 @@ export default function App() {
                     <div><strong>{adminRows.length}</strong><span>{ht.totalL}</span></div>
                     <div><strong>{adminRows.filter((r) => r.appt_date === todayIST()).length}</strong><span>{ht.todayL}</span></div>
                     <div><strong>{adminRows.filter((r) => r.status === 'pending').length}</strong><span>{ht.pendingL}</span></div>
+                    <div><strong>{inr(adminRows.filter((r) => r.appt_date === todayIST() && r.status === 'done').reduce((a, r) => a + (r.price ?? 0), 0))}</strong><span>{ht.kamaiL}</span></div>
                   </div>
                   <div className="admin-actions">
                     <button className="btn btn-ghost" onClick={() => void loadAdmin(adminPin)} disabled={adminBusy}>
@@ -1373,6 +1444,26 @@ export default function App() {
                         )
                       })}
                     </ul>
+                  )}
+                  {customers && customers.length > 0 && (
+                    <div className="svc-editor">
+                      <h4>{ht.custRecord}</h4>
+                      <ul className="hist-list">
+                        {customers.map((cu) => (
+                          <li className="hist-row" key={cu.phone}>
+                            <div>
+                              <strong>{cu.name}</strong>
+                              <span>📱 {cu.phone} · {cu.visits} {ht.visitsWord}</span>
+                              <span>{ht.lastVisit}: {fmtDate(cu.last_date)}{cu.total_spent > 0 ? ` · ${ht.spentL}: ${inr(cu.total_spent)}` : ''}</span>
+                            </div>
+                            <div className="row-side">
+                              <a className="mini-btn" href={`tel:+91${cu.phone}`}>☎ {ht.callL}</a>
+                              <a className="mini-btn" href={`https://wa.me/91${cu.phone}`} target="_blank" rel="noreferrer">WhatsApp</a>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   <form className="hist-form pin-change" onSubmit={submitPinChange}>
                     <label>

@@ -59,8 +59,7 @@ async function parse<T>(res: Response): Promise<T> {
   return (await res.json()) as T
 }
 
-/** Nayi booking database me save karo (form submit par). */
-export async function saveBooking(row: {
+export type BookingInsert = {
   name: string
   phone: string
   service: string
@@ -68,13 +67,49 @@ export async function saveBooking(row: {
   appt_date: string
   appt_time: string
   notes: string
-}): Promise<void> {
+}
+
+/** Nayi booking database me save karo (form submit par).
+    keepalive: WhatsApp app khulne par browser background ho jaye
+    tab bhi ye request poori hoti hai — booking kabhi nahi khoyegi. */
+export async function saveBooking(row: BookingInsert): Promise<void> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
     method: 'POST',
     headers: headers({ Prefer: 'return=minimal' }),
     body: JSON.stringify(row),
+    keepalive: true,
   })
   if (!res.ok) throw new Error(`save failed (${res.status})`)
+}
+
+/* Offline-safe save: net na ho to booking phone me queue ho jati hai,
+   net aate hi flushPendingBookings() use cloud me bhej deta hai.
+   Matlab: app ka pura data hamesha store — online ya offline. */
+const PENDING_KEY = 'mens-saloon-pending-bookings'
+
+export async function saveBookingSafe(row: BookingInsert): Promise<'saved' | 'queued'> {
+  try {
+    await saveBooking(row)
+    return 'saved'
+  } catch {
+    try {
+      const q = JSON.parse(localStorage.getItem(PENDING_KEY) ?? '[]') as BookingInsert[]
+      q.push(row)
+      localStorage.setItem(PENDING_KEY, JSON.stringify(q.slice(-20)))
+    } catch { /* storage band ho to bhi WhatsApp booking chalegi */ }
+    return 'queued'
+  }
+}
+
+export async function flushPendingBookings(): Promise<void> {
+  let q: BookingInsert[] = []
+  try { q = JSON.parse(localStorage.getItem(PENDING_KEY) ?? '[]') as BookingInsert[] } catch { return }
+  if (!q.length) return
+  const left: BookingInsert[] = []
+  for (const row of q) {
+    try { await saveBooking(row) } catch { left.push(row) }
+  }
+  try { localStorage.setItem(PENDING_KEY, JSON.stringify(left)) } catch { /* ignore */ }
 }
 
 async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
@@ -162,4 +197,16 @@ export function adminSaveSettings(pin: string, data: SiteSettings): Promise<bool
 export type SlotRush = { appt_time: string; bookings: number }
 export function fetchSlotRush(date: string): Promise<SlotRush[]> {
   return rpc<SlotRush[]>('slot_rush', { p_date: date })
+}
+
+/** Shop Panel: saare customers ka online record (visits, last visit, total) — sirf sahi PIN. */
+export type DbCustomer = {
+  phone: string
+  name: string
+  visits: number
+  last_date: string | null
+  total_spent: number
+}
+export function fetchAdminCustomers(pin: string): Promise<DbCustomer[]> {
+  return rpc<DbCustomer[]>('admin_customers', { p_pin: pin })
 }
