@@ -1,4 +1,4 @@
-# J.A.R.V.I.S. — MARK IX
+# J.A.R.V.I.S. — MARK X
 
 **Just A Rather Very Intelligent System** — a local-first voice assistant with a
 cinematic HUD, real system control, long-term memory and a security envelope
@@ -18,11 +18,13 @@ python3 jarvis.py --brain-setup   # exact Ollama / llama.cpp commands
 python3 jarvis.py --agent "goal"  # multi-step agent, plan saved to disk
 ```
 
-**v1.3.0** adds real **desktop control** (typing, hotkeys, mouse, window focus,
-screen OCR), **real sending** (SMTP email, `.ics` calendar events, WhatsApp
-auto-send) and an **installable phone app** (PWA + Termux launcher) on top of the
-local Qwen brain, agent loop, memory v2 and focus mode — **99 tools**, still
-stdlib-only by default.
+**v1.4.0** gives Jarvis a **real hand on the phone**: place calls, send SMS, post
+notifications, buzz, torch, volume, clipboard, speak, camera, contacts, location
+and the notification shade — all through Termux:API, with honest fallbacks on a
+PC. It sits on top of v1.3.0's **desktop control** (type, hotkeys, mouse, window
+focus, screen OCR), **real sending** (SMTP email, `.ics` calendar events, WhatsApp
+auto-send), the **installable PWA** and the approval-gated **coding agent** —
+**115 tools**, still stdlib-only by default.
 
 The assistant is **stdlib-only by default**. Optional packages
 (`requirements-jarvis.txt`) upgrade telemetry, terminal speech and vision.
@@ -170,7 +172,7 @@ expire after 180 seconds.
 
 ## 5. Security envelope
 
-* **One tool registry** — `jarvis/tools.py` declares 99 tools with argument
+* **One tool registry** — `jarvis/tools.py` declares 115 tools with argument
   schemas, categories and `high_impact` flags. Intents and the LLM planner both
   execute through `JarvisCore.call()`, so validation, approval and audit always
   apply.
@@ -244,7 +246,7 @@ jarvis/
   config.py               settings, env loading, validation
   security.py             approval gate, audit, path confinement, danger screen
   intents.py              deterministic NLU (English + Hinglish)
-  tools.py                central registry (99 tools)
+  tools.py                central registry (115 tools)
   brain.py                provider chain: Gemini / local Qwen planner, vision
   local_brain.py          lane discovery, Qwen catalog, RAM recommendations
   agent.py                bounded plan→act→observe loop, repo map
@@ -255,9 +257,10 @@ jarvis/
   scheduler.py            reminders, timers, alarms, battery/disk watchdogs
   server.py               stdlib HTTP server + static HUD
   cli.py                  terminal console, voice, diagnostics
-  skills/                 system, desktop, files, web, weather, media,
-                          productivity, communication (SMTP/WhatsApp/calendar),
-                          vision, assistant (brain/agent/memory)
+  skills/                 system, desktop, phone (Termux:API hand), files, web,
+                          weather, media, productivity, communication
+                          (SMTP/WhatsApp/calendar), vision, assistant
+                          (brain/agent/memory)
 web/                      HUD (index.html, assets/, manifest.webmanifest, sw.js)
 automation/termux_jarvis.sh  Android install / start / stop launcher
 config/jarvis.env.example settings template
@@ -349,7 +352,7 @@ adds these capabilities to the same core:
 | Wish & welcome, “daddy's home” (8, 29) | “I'm home” → `wake_greeting` with pending work |
 | Online/offline checks (14, 39) | `network_info`, live `LINK` pill, brain lane probe |
 | Random advice (15) | `random_advice` — Advice Slip API with an offline line bank |
-| All-possible automation (12, 16) | 99-tool registry: apps, volume, brightness, files, media, brain, agent |
+| All-possible automation (12, 16) | 115-tool registry: apps, volume, brightness, files, media, brain, agent |
 | Big data import (18) | `import_data` — JSON/CSV/TXT into long-term memory, 500 rows, secrets skipped |
 | Battery monitoring (20) | telemetry gauges + scheduler power alerts |
 | Wikipedia, Google, YouTube search (21–23) | `wikipedia`, `web_search`, `play_music` YouTube fallback |
@@ -511,7 +514,7 @@ for this repository.
 
 ---
 
-## 13. Desktop control, real sending and the phone app (v1.3.0)
+## 13. Desktop control, real sending, the phone hand and the phone app
 
 ### 13.1 Desktop control
 
@@ -623,7 +626,53 @@ unittest discover`, `npm test`) inside the home folder, caps the run at 300 s an
 returns the last lines of the log as a card. A suite that runs **zero** tests is
 called out instead of being reported as green.
 
-### 13.5 Hands-free voice (v1.3.0)
+### 13.5 The phone as a real hand (v1.4.0)
+
+Jarvis on Android is not a chat window — it has hands. Everything runs through
+Termux:API binaries with an explicit argv (never a shell):
+
+| Say | Real action |
+| --- | --- |
+| `phone check` | capability matrix: which of the 17 actions work, and how to fix the rest |
+| `phone status` / `phone battery` | battery %, charging, temperature, health, Wi-Fi |
+| `call ravi` | **places a call** (approval sheet first) |
+| `sms ravi saying running late` | **sends an SMS** from the SIM (approval first) |
+| `ravi ko sms bhejo main late hoon` | the same in Hinglish |
+| `notify me on the phone that tea is ready` | posts a notification |
+| `vibrate` · `torch on` · `torch off` | buzz, flashlight |
+| `phone volume 60` · `phone volume` | set or read every audio stream |
+| `phone clipboard` · `copy this to the phone` | clipboard read/write |
+| `say good morning on the phone` | the phone's own TTS speaks |
+| `take a photo with the phone` | camera photo, saved on the phone, file card in chat |
+| `phone contacts ravi` | searches the real contact list (`save: true` imports to Jarvis) |
+| `phone notifications` | reads the notification shade |
+| `where is my phone` | GPS/network location |
+| `open youtube on the phone` | opens a link or file on the phone |
+
+**Fallback on a PC.** The same commands stay honest: `call` and `sms` return a
+one-tap `tel:` / `sms:` link, everything else explains that the Android bridge is
+not on this machine and prints the two setup steps. Nothing claims success it did
+not observe.
+
+**Safety.** `phone_call`, `phone_sms` and `phone_photo` are high-impact and go
+through the approval sheet; the preflight validates the contact and the text
+before the gate opens. Messages are passed as a single argv entry, so `;`, `|`
+and `>` inside an SMS are literal characters — the binary is allow-listed and
+`shell=False` is used end to end. Actions are audited in `logs/jarvis.log` and a
+short trail lands in `data/jarvis/phone/hand.log`.
+
+**Setup** (both halves are needed):
+
+```bash
+pkg install termux-api                    # command line wrappers
+# plus the "Termux:API" app from F-Droid / Play Store, opened once
+bash automation/termux_jarvis.sh hand      # 17/17 expected
+python3 jarvis.py --phone-check            # same report from Python
+```
+
+`docs/PHONE_HAND.md` is the full setup + 17-step demo + OEM troubleshooting guide.
+
+### 13.6 Hands-free voice (v1.3.0)
 
 The HUD voice channel is now tuned for real rooms, not just headphones:
 
@@ -642,7 +691,7 @@ you have used the microphone once this session, through a short-lived watcher
 that only lives while Jarvis is speaking. It ignores the first 450 ms of its own
 speech so the reply cannot interrupt itself.
 
-### 13.6 Desktop readiness check
+### 13.7 Desktop readiness check
 
 ```bash
 python3 jarvis.py --desktop-check
@@ -654,7 +703,7 @@ the arming state, and every capability (`input`, `windows`, `ocr`, `screenshot`,
 `docs/DESKTOP_DEMO.md` is the 10-minute live demo script for Linux, Windows and
 macOS, including the safety drill.
 
-### 13.7 Hinglish time, done properly
+### 13.8 Hinglish time, done properly
 
 `jarvis/timeparse.py` now understands how people actually speak in Patna:
 
@@ -674,16 +723,18 @@ macOS, including the safety drill.
 Titles are cleaned too: “aaj shaam paune 5 baje gym yaad dilana” becomes the
 reminder **gym** at 4:45 PM, not a sentence.
 
-### 13.8 Verification
+### 13.9 Verification
 
 ```bash
 python3 -m unittest tests.test_desktop_comms -v   # 18 tests
 python3 -m unittest tests.test_coding_agent -v    # 11 tests
 python3 -m unittest tests.test_timeparse -v       # 16 tests
 python3 -m unittest tests.test_phase5_voice -v    # 14 tests
+python3 -m unittest tests.test_phone_hand -v      # 25 tests
 python3 -m unittest tests.test_local_brain -v     # 21 tests
 python3 jarvis.py --check                         # 14-point diagnostic
-python3 jarvis.py --desktop-check                 # capability report
+python3 jarvis.py --desktop-check                 # desktop capability report
+python3 jarvis.py --phone-check                   # Android hand capability report
 ```
 
 The desktop layer is tested on a headless machine by checking arming, gating,
@@ -691,7 +742,10 @@ key normalisation, destructive-combo blocking and honest fallbacks. Input
 backends are exercised on a real desktop session (see `docs/DESKTOP_DEMO.md`).
 Wake-word and barge-in behaviour is exercised in jsdom with a fake
 SpeechRecognition: wake-only speech sends no command, a wake+command phrase is
-stripped and dispatched, and talking over a reply cancels speech.
+stripped and dispatched, and talking over a reply cancels speech. The phone hand
+is tested against stub `termux-*` binaries on `PATH`, so each assertion checks
+the exact argv Android would receive — including a message full of shell
+metacharacters that must stay literal.
 
 ---
 

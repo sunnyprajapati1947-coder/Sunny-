@@ -281,6 +281,7 @@ def suggestions() -> list[dict]:
         ("YouTube SEO for a Python tutorial", "seo"),
         ("What's on my screen?", "screen"),
         ("Arm desktop control", "desktop"),
+        ("Phone check", "phone"),
         ("What can you do?", "help"),
     ]
     if current.hour >= 18:

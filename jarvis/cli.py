@@ -32,7 +32,7 @@ def _c(text: str, color: str) -> str:
 def banner() -> str:
     return (
         _c("╔══════════════════════════════════════════════════════════╗\n", CYAN)
-        + _c("║  J.A.R.V.I.S. · MARK IX · Just A Rather Very Intelligent System\n", CYAN)
+        + _c("║  J.A.R.V.I.S. · MARK X · Just A Rather Very Intelligent System\n", CYAN)
         + _c("╚══════════════════════════════════════════════════════════╝", CYAN)
     )
 

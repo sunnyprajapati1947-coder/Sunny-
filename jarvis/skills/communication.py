@@ -183,6 +183,14 @@ def email_compose(to: str = "", subject: str = "", body: str = "") -> dict:
 
 
 def call_contact(contact: str = "") -> dict:
+    # On the phone (Termux:API) this becomes a real call; on a PC it opens the dialer.
+    try:
+        from jarvis.skills import phone as phone_skill
+
+        if phone_skill.has("termux-telephony-call"):
+            return phone_skill.phone_call(contact)
+    except Exception:
+        pass
     number, label = _resolve_target(contact, "phone")
     if not number:
         return reply(

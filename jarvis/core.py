@@ -443,6 +443,15 @@ class JarvisCore:
         except Exception:
             return {"armed": False, "display": False, "platform": "", "ocr": False}
 
+    @staticmethod
+    def _phone_status() -> dict:
+        try:
+            from jarvis.skills import phone
+
+            return phone.phone_hand_summary()
+        except Exception:
+            return {"android": False, "ready": False, "available": [], "count": 0, "total": 0}
+
     def _agent_status(self) -> dict:
         try:
             return self.agent.status()
@@ -509,6 +518,7 @@ class JarvisCore:
             "plans": self._plan_status(),
             "focus": {"adhd_mode": self.adhd_enabled()},
             "desktop": self._desktop_status(),
+            "phone": self._phone_status(),
             "tools": len(tools.TOOLS),
             "tool_categories": categories,
             "scheduler": self.scheduler.pending(),

@@ -1,5 +1,5 @@
 /* J.A.R.V.I.S. service worker — installable, offline shell, API never cached. */
-const VERSION = "jarvis-v1.3.1";
+const VERSION = "jarvis-v1.4.0";
 const SHELL = [
   "/",
   "/assets/app.css",

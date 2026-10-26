@@ -5,6 +5,7 @@
 #   bash automation/termux_jarvis.sh start
 #   bash automation/termux_jarvis.sh stop
 #   bash automation/termux_jarvis.sh status
+#   bash automation/termux_jarvis.sh hand     # phone-hand doctor (Termux:API)
 #
 # The HUD opens in your browser; "Add to Home screen" gives you the PWA icon.
 set -euo pipefail
@@ -33,6 +34,9 @@ install_deps() {
   echo "Optional local brain (small, phone-friendly):"
   echo "  pkg install llama-cpp   # or build llama.cpp and pull Qwen3-1.7B Q4"
   echo "  JARVIS_QWEN_URL=http://127.0.0.1:8080/v1/chat/completions"
+  echo
+  echo "Phone hand: install the Termux:API app, then run"
+  echo "  bash automation/termux_jarvis.sh hand"
 }
 
 start() {
@@ -71,14 +75,43 @@ status() {
   fi
 }
 
+PHONE_BINARIES="termux-telephony-call termux-sms-send termux-notification termux-notification-list termux-toast termux-vibrate termux-torch termux-volume termux-battery-status termux-clipboard-get termux-clipboard-set termux-tts-speak termux-contact-list termux-location termux-camera-photo termux-open termux-open-url termux-wifi-connectioninfo"
+
+hand() {
+  need_termux
+  local ok=0 total=0
+  echo "PHONE HAND · Termux:API"
+  for binary in $PHONE_BINARIES; do
+    total=$((total + 1))
+    if command -v "$binary" >/dev/null 2>&1; then
+      ok=$((ok + 1))
+    else
+      echo "  missing: $binary"
+    fi
+  done
+  echo "  $ok/$total commands present"
+  if [ "$ok" -lt "$total" ]; then
+    echo
+    echo "Fix: pkg install termux-api"
+    echo "Then install the Termux:API app (F-Droid / Play Store) and open it once."
+  fi
+  echo
+  echo "Live probe (needs the Termux:API app installed):"
+  if command -v termux-battery-status >/dev/null 2>&1; then
+    termux-battery-status 2>&1 | head -c 240 || true
+    echo
+  fi
+}
+
 case "${1:-start}" in
   install) install_deps ;;
   start) start ;;
   stop) stop ;;
   restart) stop; start ;;
   status) status ;;
+  hand) hand ;;
   *)
-    echo "Usage: $0 {install|start|stop|restart|status}" >&2
+    echo "Usage: $0 {install|start|stop|restart|status|hand}" >&2
     exit 2
     ;;
 esac

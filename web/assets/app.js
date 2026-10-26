@@ -1,5 +1,5 @@
 /* ==========================================================================
-   J.A.R.V.I.S. · MARK IX — HUD controller
+   J.A.R.V.I.S. · MARK X — HUD controller
    Zero dependencies. Talks only to the local /api surface.
    ========================================================================== */
 (() => {
@@ -270,13 +270,19 @@
             <span>${esc(item.name)}</span>
             <span class="kind">${esc(item.size || "")}</span>
           </div>`).join("") || '<div class="list-row">Empty.</div>'}</div>`, card.footer);
-      case "list":
-        return cardShell(card.title || "LIST", `<div class="list-rows">${(card.items || []).map((item, index) => `
+      case "list": {
+        const rows = card.items || card.rows || [];
+        return cardShell(card.title || "LIST", `<div class="list-rows">${rows.map((item, index) => `
           <div class="list-row">
             <span class="idx">${String(index + 1).padStart(2, "0")}</span>
-            <span>${esc(item)}</span>
+            <span>${esc(typeof item === "string" ? item : (item.label || item.text || item.name || ""))}${typeof item === "object" && item.value ? ` <b>${esc(item.value)}</b>` : ""}</span>
           </div>`).join("") || '<div class="list-row">Nothing pending.</div>'}</div>`, card.footer);
+      }
       case "metrics":
+      case "telemetry":
+        if (!card.items && Array.isArray(card.rows)) {
+          return renderCard({ ...card, type: "list", items: card.rows });
+        }
         return cardShell(card.title || "TELEMETRY", `<div class="metric-grid">${(card.items || []).map((item) => `
           <div class="metric">
             <label>${esc(item.label)}</label>
@@ -943,6 +949,18 @@
       `${memory.count || 0} memories · ${plans.active || 0} plans · ` +
       `${agent.ready ? "agent armed" : "agent waiting"}` +
       ((status.desktop && status.desktop.armed) ? " · desktop ARMED" : "");
+    const phone = status.phone || {};
+    const phoneChip = $("footerPhone");
+    if (phoneChip) {
+      phoneChip.textContent = phone.ready
+        ? `${phone.count}/${phone.total}`
+        : (phone.android ? "SETUP" : "PC");
+      phoneChip.title = phone.ready
+        ? `Phone hand online: ${(phone.available || []).join(", ")}`
+        : (phone.android
+          ? "Termux:API is not answering — say “phone check”"
+          : "No Android hand here; run Jarvis in Termux on the phone");
+    }
     const focusBtn = $("brainFocusBtn");
     if (focusBtn) {
       const on = Boolean((status.focus || {}).adhd_mode);
@@ -1370,6 +1388,15 @@
     const desktop = (state.status && state.status.desktop) || {};
     $("setDesktop").checked = Boolean(desktop.armed);
     $("setDesktop").disabled = desktop.display === false;
+    const phone = (state.status && state.status.phone) || {};
+    const phoneNote = $("phoneNote");
+    if (phoneNote) {
+      phoneNote.textContent = phone.ready
+        ? `Phone hand ready (${phone.count}/${phone.total}): call, SMS, notify, torch, volume, clipboard, speak, camera, contacts, location.`
+        : (phone.android
+          ? "Termux:API is not answering on this phone — install the Termux:API app, then say “phone check”."
+          : "This session is a PC. Run Jarvis in Termux on Android for a real phone hand; say “phone check” for the setup list.");
+    }
     $("desktopNote").textContent = desktop.display === false
       ? "This session has no desktop surface (headless), so keyboard and mouse control is unavailable."
       : "Desktop control lets Jarvis type, press keys and click. Arm it only when you want hands-on automation; “desktop panic” disarms instantly.";

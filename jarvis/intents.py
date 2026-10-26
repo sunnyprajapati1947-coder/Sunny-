@@ -215,7 +215,9 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
     if re.search(r"\b(?:brief me|briefing|morning briefing|evening briefing|daily briefing|update me|what'?s the plan|what is the plan|aaj ka plan|start my day|daily report)\b", low):
         return _tool("briefing")
     if re.search(r"\b(?:battery|power cell|charge level|charging level|kitni battery)\b", low):
-        return _tool("battery_status")
+        # "phone battery" belongs to the phone hand, not this machine.
+        if not re.search(r"\b(?:phone|mobile|android|handset)\b", low):
+            return _tool("battery_status")
     if re.search(
         r"\b(?:internet|network|net|wifi|wi-?fi|broadband)\s+(?:speed|quality|check|test)\b"
         r"|\b(?:speed test|speedtest|bandwidth|download speed|upload speed|connection speed"
@@ -466,6 +468,80 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
             return _tool("calendar_event", title="", when=body)
         return _tool("calendar_event", title=body, when="")
 
+    # ------------------------------------------------------------- phone hand
+    if re.search(
+        r"\b(?:phone|android|hand)\s+(?:check|setup|doctor|requirements)\b"
+        r"|\b(?:check|test|diagnose)\s+(?:the\s+)?phone\b"
+        r"|\btermux\s+(?:check|status)\b",
+        low,
+    ):
+        return _tool("phone_check")
+    if re.search(r"\bphone (?:status|state|health)\b|\bhow is (?:my|the) phone\b", low):
+        return _tool("phone_status")
+    if re.search(r"\b(?:phone|mobile) battery\b|\bbattery (?:on|of) (?:my |the )?phone\b", low):
+        return _tool("phone_battery")
+    torch = re.match(
+        r"^(?:turn\s+)?(?:the\s+)?(?:torch|flashlight|flash light)\s*(on|off)?(?:\s+kar\s*do)?$",
+        low,
+    )
+    if torch:
+        return _tool("phone_torch", action=(torch.group(1) or "toggle"))
+    if re.search(r"\b(?:torch|flashlight)\s+(?:on|off)\b", low) and "phone" in low:
+        return _tool("phone_torch", action="on" if "on" in low else "off")
+    if re.fullmatch(r"(?:vibrate|buzz)(?:\s+(?:the\s+)?phone)?(?:\s+kar\s*do)?[\s!.]*", low):
+        return _tool("phone_vibrate")
+    if re.search(r"\bphone (?:volume|sound)\b|\bvolume (?:on|of) (?:my |the )?phone\b", low):
+        level = re.search(r"(\d{1,3})\s*(?:%|percent)?", low)
+        stream = next((name for name in ("music", "ring", "notification", "alarm", "call", "system") if name in low), "music")
+        return _tool("phone_volume", level=int(level.group(1)) if level else None, stream=stream)
+    if re.search(r"\bphone clipboard\b|\bclipboard (?:on|of) (?:my |the )?phone\b", low):
+        return _tool("phone_clipboard", action="read")
+    if re.search(r"\bphone notifications\b|\b(?:read|show) (?:my |the )?(?:phone )?notifications\b", low):
+        limit = re.search(r"(\d{1,2})", low)
+        return _tool("phone_notifications", limit=int(limit.group(1)) if limit else 8)
+    if re.search(r"\bphone (?:location|gps)\b|\bwhere is (?:my |the )?phone\b", low):
+        return _tool("phone_location")
+    if re.search(r"\bphone contacts\b|\bcontacts (?:on|in) (?:my |the )?phone\b", low):
+        query = re.sub(r".*\b(?:phone contacts|contacts (?:on|in) (?:my |the )?phone)\b", "", text, flags=re.I).strip(" :,")
+        return _tool("phone_contacts", query=query)
+    if re.search(r"\btake (?:a )?(?:photo|picture) (?:with|from) (?:the |my )?(?:phone|camera)\b", low):
+        return _tool("phone_photo")
+    speak_phone = re.match(r"^(?:say|speak|bol)\s+(.+?)\s+(?:on|through) (?:the |my )?phone$", text, re.I)
+    if speak_phone:
+        return _tool("phone_speak", text=speak_phone.group(1).strip())
+    notify_phone = re.match(
+        r"^(?:phone )?notif(?:y|ication)(?: me)?(?: on (?:the |my )?phone)?\s*(?:that|saying|:)?\s*(.+)$",
+        text,
+        re.I,
+    )
+    if notify_phone:
+        return _tool("phone_notify", title="J.A.R.V.I.S.", message=notify_phone.group(1).strip())
+    open_phone = re.match(r"^open\s+(.+?)\s+on (?:the |my )?phone$", text, re.I)
+    if open_phone:
+        return _tool("phone_open", target=open_phone.group(1).strip())
+    sms_match = re.match(
+        r"^(?:send\s+)?(?:an?\s+)?(?:sms|text)(?: message)?(?: to)?\s+"
+        r"([^,]+?)\s+(?:saying|that|about|message|:)\s*(.+)$",
+        text,
+        re.I,
+    )
+    if sms_match:
+        return _tool("phone_sms", contact=sms_match.group(1).strip(), message=sms_match.group(2).strip())
+    sms_hinglish = re.match(
+        r"^([^,]+?)\s+ko\s+(?:sms|message|msg|text)\s+(?:bhejo|bhej do|karo|kar do)\s*[:,]?\s*(.+)$",
+        text,
+        re.I,
+    )
+    if sms_hinglish:
+        return _tool("phone_sms", contact=sms_hinglish.group(1).strip(), message=sms_hinglish.group(2).strip())
+    call_hinglish = re.match(
+        r"^([^,]+?)\s+ko\s+(?:call|phone)\s+(?:karo|kar do|laga(?:o|do))$",
+        text,
+        re.I,
+    )
+    if call_hinglish:
+        return _tool("call_contact", contact=call_hinglish.group(1).strip(" ."))
+
     # ------------------------------------------------------------ messaging
     whatsapp_match = re.match(
         r"^(?:send\s+)?(?:a\s+)?whatsapp(?:\s+message)?\s+(?:to\s+)?(.+?)(?:\s*(?:saying|that|message|:)\s*(.+))?$",
@@ -500,7 +576,7 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
             subject=(email_match.group(2) or "").strip(),
             body=(email_match.group(3) or "").strip(),
         )
-    call_match = re.match(r"^(?:call|dial|phone)\s+(.+)$", text, re.I)
+    call_match = re.match(r"^(?:call|dial)\s+(.+)$", text, re.I)
     if call_match and call_match.group(1).strip().lower() not in {"me", "a cab", "an ambulance"}:
         return _tool("call_contact", contact=call_match.group(1).strip())
     if re.search(r"\b(?:my contacts|show contacts|contact list|phone book)\b", low):

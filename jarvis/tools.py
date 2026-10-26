@@ -16,6 +16,7 @@ from jarvis.skills import (
     files,
     language,
     media,
+    phone,
     productivity,
     system,
     vision,
@@ -623,6 +624,113 @@ register(
     assistant.repo_map,
     _obj({"path": {**TEXT, "description": "Directory path (default: current directory)"}}),
     category="files",
+)
+
+
+# ------------------------------------------------------------- phone hand
+register(
+    "phone_check",
+    "Diagnose the Android phone hand (Termux:API): which actions work and how to fix the rest.",
+    phone.phone_check,
+    _obj(),
+    category="phone",
+)
+register(
+    "phone_status",
+    "Phone battery, charging state, Wi-Fi and which hands-on actions are available.",
+    phone.phone_status,
+    _obj(),
+    category="phone",
+)
+register("phone_battery", "Read the phone battery with health and temperature.", phone.phone_battery, _obj(), category="phone")
+register(
+    "phone_call",
+    "Place a real call from the phone (requires approval).",
+    phone.phone_call,
+    _obj({"contact": {**TEXT, "description": "Contact name or phone number"}}, ["contact"]),
+    category="phone",
+    high_impact=True,
+)
+register(
+    "phone_sms",
+    "Send a real SMS from the phone's SIM (requires approval).",
+    phone.phone_sms,
+    _obj({"contact": {**TEXT, "description": "Contact name or number"}, "message": TEXT}, ["contact", "message"]),
+    category="phone",
+    high_impact=True,
+    preflight=phone.phone_sms_preflight,
+)
+register(
+    "phone_notify",
+    "Post a notification on the phone.",
+    phone.phone_notify,
+    _obj({"title": TEXT, "message": TEXT}),
+    category="phone",
+)
+register(
+    "phone_vibrate",
+    "Buzz the phone for a moment.",
+    phone.phone_vibrate,
+    _obj({"duration_ms": {"type": "integer", "minimum": 50, "maximum": 3000}}),
+    category="phone",
+)
+register(
+    "phone_torch",
+    "Turn the phone flashlight on, off or toggle it.",
+    phone.phone_torch,
+    _obj({"action": {"type": "string", "enum": ["on", "off", "toggle"]}}),
+    category="phone",
+)
+register(
+    "phone_volume",
+    "Read or set a phone volume stream (music, ring, alarm, call...).",
+    phone.phone_volume,
+    _obj({"level": {"type": "integer", "minimum": 0, "maximum": 100}, "stream": TEXT}),
+    category="phone",
+)
+register(
+    "phone_clipboard",
+    "Read or write the phone clipboard.",
+    phone.phone_clipboard,
+    _obj({"action": {"type": "string", "enum": ["read", "write"]}, "text": TEXT}),
+    category="phone",
+)
+register(
+    "phone_speak",
+    "Speak text out loud through the phone's own speech engine.",
+    phone.phone_speak,
+    _obj({"text": TEXT}, ["text"]),
+    category="phone",
+)
+register(
+    "phone_photo",
+    "Take a photo with the phone camera and save it on the phone.",
+    phone.phone_photo,
+    _obj({"path": TEXT}),
+    category="phone",
+    high_impact=True,
+)
+register(
+    "phone_contacts",
+    "Search the phone's real contact list (optionally import matches).",
+    phone.phone_contacts,
+    _obj({"query": TEXT, "save": {"type": "boolean"}}),
+    category="phone",
+)
+register(
+    "phone_notifications",
+    "Read the phone's notification shade.",
+    phone.phone_notifications,
+    _obj({"limit": {"type": "integer", "minimum": 1, "maximum": 20}}),
+    category="phone",
+)
+register("phone_location", "Get the phone's current location.", phone.phone_location, _obj(), category="phone")
+register(
+    "phone_open",
+    "Open a link or file on the phone itself.",
+    phone.phone_open,
+    _obj({"target": TEXT}, ["target"]),
+    category="phone",
 )
 
 
