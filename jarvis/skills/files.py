@@ -11,11 +11,16 @@ from pathlib import Path
 
 from jarvis.config import DATA_DIR, get_settings
 from jarvis.security import is_within, safe_path
-from jarvis.util import human_size, reply
+from jarvis.util import human_size, reply, truncate
 
 SYSTEM = platform.system().lower()
 HOME = Path.home().resolve()
 MAX_READ = 64_000
+SECRET_KEY = re.compile(
+    r"(?:pass(?:word|wd|phrase)?|secret|token|api[_-]?key|private[_-]?key|credential|auth|cookie"
+    r"|session[_-]?id|recovery|seed[_-]?phrase)",
+    re.I,
+)
 SECRET_NAME = re.compile(
     r"(?:\.env(?:\..*)?$|secret|token|credential|password|passwd|shadow|id_rsa|id_ed25519"
     r"|\.pem$|\.key$|netrc|keyring|\.git$|client_secret)",
@@ -343,6 +348,120 @@ def read_file(path: str = "") -> dict:
             {"type": "file", "name": resolved.name, "path": _display(resolved), "size": human_size(size)},
         ],
         data={"path": str(resolved), "bytes": size, "content": body[:20_000]},
+    )
+
+
+def import_data(path: str = "") -> dict:
+    """Episode 18: expand Jarvis with a big dataset from one file."""
+    import json
+
+    from jarvis.store import get_store
+
+    if not str(path or "").strip():
+        return reply(
+            "Point me at a file, Sir — for example “import data from notes.json”. "
+            "JSON objects, lists of key/value pairs, or “key: value” lines all work.",
+            speech="Which file should I import, Sir?",
+        )
+    try:
+        resolved = _resolve_existing(path)
+    except ValueError as exc:
+        return reply(f"I cannot read that dataset, Sir — {exc}.")
+    if resolved.is_dir():
+        return reply("That is a folder, Sir, not a dataset file.")
+    try:
+        size = resolved.stat().st_size
+    except OSError as exc:
+        return reply(f"I could not inspect that file, Sir ({type(exc).__name__}).")
+    if size > 2_000_000:
+        return reply("That dataset is larger than 2 MB, Sir. Split it and try again.")
+    if resolved.suffix.lower() not in {".json", ".txt", ".csv", ".md", ".tsv"}:
+        return reply("I can import .json, .txt, .csv, .tsv or .md datasets, Sir.")
+    try:
+        raw = resolved.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return reply(f"I could not open that file, Sir ({type(exc).__name__}).")
+
+    pairs: list[tuple[str, str]] = []
+    if resolved.suffix.lower() == ".json":
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError:
+            payload = None
+        if isinstance(payload, dict):
+            pairs = [(str(key), str(value)) for key, value in payload.items()]
+        elif isinstance(payload, list):
+            for item in payload:
+                if isinstance(item, dict):
+                    key = item.get("key") or item.get("question") or item.get("name")
+                    value = item.get("value") or item.get("answer") or item.get("text")
+                    if key and value:
+                        pairs.append((str(key), str(value)))
+                elif isinstance(item, str):
+                    pairs.append((f"note {len(pairs) + 1}", item))
+    else:
+        for line in raw.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            for separator in ("|", "=>", "=", ":", "\t"):
+                if separator in line:
+                    key, _, value = line.partition(separator)
+                    if key.strip() and value.strip():
+                        pairs.append((key.strip(), value.strip()))
+                        break
+
+    if not pairs:
+        return reply(
+            "I could not find any key/value pairs in that file, Sir. "
+            "JSON objects or “key: value” lines work best."
+        )
+    if len(pairs) > 500:
+        pairs = pairs[:500]
+
+    store = get_store()
+    imported = replaced = skipped = 0
+    existing = {str(item.get("key", "")).lower() for item in store.facts(limit=10_000)}
+    samples: list[str] = []
+    for key, value in pairs:
+        key = str(key).strip()[:120]
+        value = str(value).strip()[:1000]
+        if not key or not value:
+            continue
+        if store.looks_secret(f"{key} {value}") or SECRET_KEY.search(key) or SECRET_KEY.search(value[:120]):
+            skipped += 1
+            continue
+        if key.lower() in existing:
+            replaced += 1
+        else:
+            imported += 1
+            existing.add(key.lower())
+        store.remember(key, value)
+        if len(samples) < 8:
+            samples.append(f"{key} → {truncate(value, 60)}")
+
+    total = len(store.facts(limit=10_000))
+    return reply(
+        f"Imported {imported + replaced} entries from {resolved.name}, Sir — "
+        f"{imported} new, {replaced} updated"
+        + (f", {skipped} skipped as credentials" if skipped else "")
+        + f". Memory bank now holds {total} facts.",
+        speech=f"Imported {imported + replaced} entries, Sir. Memory holds {total} facts.",
+        cards=[
+            {
+                "type": "list",
+                "title": f"IMPORTED · {resolved.name}",
+                "items": samples,
+                "footer": f"{imported} new · {replaced} updated · {skipped} skipped",
+            }
+        ],
+        data={
+            "path": str(resolved),
+            "imported": imported,
+            "updated": replaced,
+            "skipped": skipped,
+            "total": total,
+        },
     )
 
 

@@ -248,9 +248,23 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
         return _tool("news", topic=_extract_news_topic(text))
 
     # -------------------------------------------------------------- leisure
+    # ------------------------------------------------------- advice + welcome
+    if re.search(
+        r"\b(?:random advice|give me (?:some |an? )?advice|advice chahiye|koi advice"
+        r"|motivate me|motivation do|inspire me|something motivational)\b",
+        low,
+    ):
+        return _tool("random_advice")
+    if re.fullmatch(
+        r"(?:i'?m|i am) (?:home|back|here)|(?:daddy|dad)(?:'s| is) home|welcome me"
+        r"|wake up(?: jarvis)?|jarvis wake up|ghar aa gaya(?: hoon)?|main aa gaya",
+        low,
+    ):
+        return _tool("wake_greeting")
+
     if re.search(r"\b(?:joke|jokes|chutkula|make me laugh|something funny)\b", low):
         return _tool("joke")
-    if re.search(r"\b(?:quote|quotes|motivate me|motivation|inspire me|shayari)\b", low):
+    if re.search(r"\b(?:quote|quotes|shayari)\b", low):
         return _tool("quote")
     if re.search(r"\b(?:fun fact|interesting fact|random fact|tell me something interesting|tell me a fact)\b", low):
         return _tool("fun_fact")
@@ -554,6 +568,43 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
             )
 
     # ---------------------------------------------------------- web search
+    translate_match = re.match(
+        r"^(?:translate|how do you say|how to say|say)\s+(.+?)\s+(?:in|to|into)\s+([a-zA-Z\u0900-\u097F]+)[\s?.!]*$",
+        text,
+        re.I,
+    )
+    if translate_match:
+        return _tool(
+            "translate_text",
+            text=translate_match.group(1).strip(" \"'"),
+            target=translate_match.group(2).strip(),
+        )
+    hinglish_translate = re.match(
+        r"^([a-zA-Z]+)\s+(?:me|mein)\s+(?:translate|bolo|kaho|kaise bolte(?: hain)?)\s+(.+)$",
+        text,
+        re.I,
+    )
+    if hinglish_translate:
+        return _tool(
+            "translate_text",
+            text=hinglish_translate.group(2).strip(" \"'?"),
+            target=hinglish_translate.group(1).strip(),
+        )
+    seo_match = re.match(
+        r"^(?:youtube\s+|video\s+)?seo(?:\s+pack)?(?:\s+(?:for|on|about|of))?\s*(.*)$",
+        text,
+        re.I,
+    )
+    if seo_match:
+        return _tool("seo_pack", topic=seo_match.group(1).strip(" ?.!"))
+    import_match = re.match(
+        r"^(?:import|load|expand|ingest)\s+(?:my\s+|your\s+)?(?:jarvis\s+)?"
+        r"(?:datasets?|knowledge|data|memory|facts|brain)\b\s*(?:from\s+|file\s+)?(.+)$",
+        text,
+        re.I,
+    )
+    if import_match:
+        return _tool("import_data", path=import_match.group(1).strip(" \"'"))
     wiki_match = re.match(r"^(?:wikipedia|wiki)\s+(?:for\s+|about\s+)?(.+)$", text, re.I)
     if wiki_match:
         return _tool("wikipedia", query=wiki_match.group(1).strip(" ?."))

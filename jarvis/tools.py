@@ -8,7 +8,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from jarvis.skills import communication, files, media, productivity, system, vision, weather, web
+from jarvis.skills import (
+    communication,
+    creator,
+    files,
+    language,
+    media,
+    productivity,
+    system,
+    vision,
+    weather,
+    web,
+)
 
 
 @dataclass(frozen=True)
@@ -150,6 +161,27 @@ register(
     category="web",
 )
 register("news", "Latest headlines, optionally on a topic.", web.news, _obj({"topic": TEXT}), category="web")
+register(
+    "translate_text",
+    "Translate a phrase into another language.",
+    language.translate_text,
+    _obj(
+        {
+            "text": {**TEXT, "description": "Text to translate"},
+            "target": {**TEXT, "description": "Target language, e.g. hindi"},
+            "source": {**TEXT, "description": "Source language or auto"},
+        },
+        ["text"],
+    ),
+    category="web",
+)
+register(
+    "seo_pack",
+    "Build a YouTube SEO pack: titles, description and tags.",
+    creator.build_seo_pack,
+    _obj({"topic": {**TEXT, "description": "Video topic"}}),
+    category="web",
+)
 register("weather", "Current weather and today's forecast for a city.", weather.weather, _obj({"city": TEXT}), category="weather")
 
 # ------------------------------------------------------------------ media
@@ -242,6 +274,20 @@ register(
 )
 register("joke", "Tell a short joke.", productivity.joke, _obj(), category="leisure")
 register("quote", "Share a motivational quote.", productivity.quote, _obj(), category="leisure")
+register(
+    "random_advice",
+    "Give one piece of practical advice.",
+    productivity.random_advice,
+    _obj(),
+    category="leisure",
+)
+register(
+    "wake_greeting",
+    "Greet the owner when they get home and summarise pending work.",
+    productivity.wake_greeting,
+    _obj(),
+    category="core",
+)
 register("fun_fact", "Share an interesting fact.", productivity.fun_fact, _obj(), category="leisure")
 register("coin_flip", "Flip a coin.", productivity.coin_flip, _obj(), category="leisure")
 register("roll_dice", "Roll a die.", productivity.roll_dice, _obj({"sides": {"type": "integer", "minimum": 2, "maximum": 1000}}), category="leisure")
@@ -314,6 +360,13 @@ register(
     preflight=files.delete_preflight,
 )
 register("read_file", "Read the text contents of a file.", files.read_file, _obj({"path": TEXT}, ["path"]), category="files")
+register(
+    "import_data",
+    "Import key/value facts from a JSON/CSV/TXT file into long-term memory.",
+    files.import_data,
+    _obj({"path": {**TEXT, "description": "Dataset file path"}}),
+    category="files",
+)
 register("open_path", "Open a file or folder with the default application.", files.open_path, _obj({"path": TEXT}, ["path"]), category="files")
 
 # ----------------------------------------------------------------- vision

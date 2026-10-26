@@ -273,6 +273,16 @@
         <span>Wake word</span>
         <input id="setWakeWord" maxlength="24" placeholder="jarvis" />
       </label>
+      <div class="field wide">
+        <span>Assistant voice</span>
+        <div class="voice-row">
+          <select id="setVoice">
+            <option value="">Auto · British male</option>
+          </select>
+          <button id="testVoice" class="mini-btn" type="button" title="Preview the selected voice">PREVIEW</button>
+        </div>
+        <small class="field-note" id="voiceNote">Voices come from your browser — pick a female or regional voice here.</small>
+      </div>
       <label class="field wide">
         <span>Music folder</span>
         <input id="setMusicDir" maxlength="300" placeholder="~/Music" />

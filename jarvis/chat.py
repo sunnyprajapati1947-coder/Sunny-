@@ -276,6 +276,9 @@ def suggestions() -> list[dict]:
         ("Set a 5 minute timer", "timer"),
         ("Tell me a joke", "joke"),
         ("Play music", "music"),
+        ("Give me advice", "advice"),
+        ("Translate good morning to Hindi", "translate"),
+        ("YouTube SEO for a Python tutorial", "seo"),
         ("What can you do?", "help"),
     ]
     if current.hour >= 18:

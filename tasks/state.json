@@ -63,5 +63,35 @@
     "next_task_id": null,
     "created_at": 1790682365.8228319,
     "updated_at": 1790682365.8256955
+  },
+  "nova-587474b5a0": {
+    "task_id": "nova-587474b5a0",
+    "description": "Task A",
+    "status": "COMPLETED",
+    "current_step": 1,
+    "completed_steps": [
+      "step-1"
+    ],
+    "attempts": 0,
+    "checkpoint": {
+      "verified": true
+    },
+    "error": "",
+    "next_task_id": "nova-65cc2fe529",
+    "created_at": 1793013302.6834402,
+    "updated_at": 1793013302.6850846
+  },
+  "nova-65cc2fe529": {
+    "task_id": "nova-65cc2fe529",
+    "description": "Task B",
+    "status": "PENDING",
+    "current_step": 0,
+    "completed_steps": [],
+    "attempts": 1,
+    "checkpoint": {},
+    "error": "",
+    "next_task_id": null,
+    "created_at": 1793013302.6840334,
+    "updated_at": 1793013302.6873126
   }
 }

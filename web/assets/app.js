@@ -48,6 +48,7 @@
     let out = esc(text);
     out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
     out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    out = out.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
     out = out.replace(/(^|\n)\s*[-•]\s+/g, "$1• ");
     return out;
   }
@@ -318,6 +319,34 @@
   }
 
   /* ----------------------------------------------------------------- speech */
+  function loadVoices() {
+    const synth = window.speechSynthesis;
+    const select = $("setVoice");
+    if (!synth) return [];
+    state.voices = synth.getVoices() || [];
+    if (!select) return state.voices;
+    const current = select.value || (state.settings && state.settings.voice_name) || "";
+    select.innerHTML = '<option value="">Auto · British male</option>';
+    [...state.voices]
+      .sort((a, b) => a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name))
+      .forEach((voice) => {
+        const option = document.createElement("option");
+        option.value = voice.name;
+        option.textContent = `${voice.name} · ${voice.lang}`;
+        select.appendChild(option);
+      });
+    select.value = current;
+    if (select.value !== current) select.value = "";
+    const note = $("voiceNote");
+    if (note) {
+      const female = state.voices.filter((v) => /female|zira|samantha|karen|veena|heera|google uk english female/i.test(v.name)).length;
+      note.textContent = state.voices.length
+        ? `${state.voices.length} browser voices · ${female} female — pick one and press PREVIEW.`
+        : "Voices come from your browser — pick a female or regional voice here.";
+    }
+    return state.voices;
+  }
+
   function pickVoice() {
     const synth = window.speechSynthesis;
     if (!synth) return null;
@@ -1154,11 +1183,14 @@
 
   /* --------------------------------------------------------------- settings */
   function openSettings() {
+    loadVoices();
     const settings = state.settings || {};
     $("setOwner").value = settings.owner || "Sir";
     $("setCity").value = settings.city || "";
     $("setLanguage").value = settings.language || "en-IN";
     $("setWakeWord").value = settings.wake_word || "jarvis";
+    $("setVoice").value = settings.voice_name || "";
+    if ($("setVoice").value !== (settings.voice_name || "")) $("setVoice").value = "";
     $("setMusicDir").value = settings.music_dir || "";
     $("setRate").value = settings.voice_rate || 0.98;
     $("rateOut").textContent = Number(settings.voice_rate || 0.98).toFixed(2);
@@ -1179,6 +1211,7 @@
       city: $("setCity").value.trim(),
       language: $("setLanguage").value,
       wake_word: $("setWakeWord").value.trim() || "jarvis",
+      voice_name: $("setVoice").value,
       music_dir: $("setMusicDir").value.trim(),
       voice_rate: Number($("setRate").value),
       speak: $("setSpeak").checked,
@@ -1354,6 +1387,14 @@
     $("saveSettings").addEventListener("click", saveSettings);
     $("approveBtn").addEventListener("click", () => decide(true));
     $("denyBtn").addEventListener("click", () => decide(false));
+    $("testVoice").addEventListener("click", () => {
+      if (!state.settings) state.settings = {};
+      const previous = state.settings.voice_name;
+      state.settings.voice_name = $("setVoice").value;
+      stopSpeech();
+      speak("All systems nominal, Sir. Voice channel calibrated.", { interrupt: true });
+      state.settings.voice_name = previous;
+    });
     $("setRate").addEventListener("input", (event) => {
       $("rateOut").textContent = Number(event.target.value).toFixed(2);
       if (state.settings) state.settings.voice_rate = Number(event.target.value);
@@ -1385,11 +1426,9 @@
 
     if (window.speechSynthesis) {
       if (typeof window.speechSynthesis.addEventListener === "function") {
-        window.speechSynthesis.addEventListener("voiceschanged", () => {
-          state.voices = window.speechSynthesis.getVoices();
-        });
+        window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
       }
-      state.voices = window.speechSynthesis.getVoices();
+      loadVoices();
     }
   }
 

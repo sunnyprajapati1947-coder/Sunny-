@@ -22,10 +22,11 @@ The assistant is **stdlib-only by default**. Optional packages
 
 ## 1. What it can do
 
-The feature set follows the *Jarvis 2.0* build series by NetHyTech (43 episodes):
-speech recognition, TTS, automation, music, alarms, time management, internet
-checks, vision, weather and WhatsApp automation — reimplemented here as a
-maintainable Python package with a browser HUD.
+The feature set follows both NetHyTech build series — *Jarvis 2.0* (43 episodes)
+and *Jarvis 1.0* (41 episodes): speech recognition, TTS with multiple voices,
+automation, music, alarms, time management, internet checks, vision, weather,
+translation, random advice, YouTube SEO and WhatsApp automation — reimplemented
+here as a maintainable Python package with a browser HUD.
 
 | Area | Commands (examples) |
 | --- | --- |
@@ -42,6 +43,11 @@ maintainable Python package with a browser HUD.
 | System control | “status”, “battery”, “network speed”, “volume 40”, “brightness 70”, “open youtube”, “lock screen”, “shutdown” |
 | Vision | HUD eye button → image → description (needs `GEMINI_API_KEY`) |
 | Briefing | “brief me” — time, weather, tasks, reminders, battery, storage in one call |
+| Welcome home | “I'm home”, “daddy's home”, “wake up Jarvis” — greeting with pending work |
+| Advice | “give me some advice”, “motivate me” (Advice Slip API + offline lines) |
+| Translation | “translate good morning to Hindi”, “how do you say thank you in French”, “hindi me bolo good night” |
+| Creator tools | “YouTube SEO for a Python tutorial” — titles, description, tags |
+| Bulk memory | “import data from notes.json” — up to 500 facts from JSON/CSV/TXT |
 
 Everything is available in the HUD, the terminal, and over HTTP.
 
@@ -63,8 +69,9 @@ Everything is available in the HUD, the terminal, and over HTTP.
   180-second countdown. Nothing executes without *Authorize*.
 * **Voice** — browser `SpeechRecognition` (Chrome/Edge best) and
   `speechSynthesis`; optionally gate commands behind the wake word.
-* **Settings** — owner, city, recognition language, wake word, speech rate,
-  spoken replies, interface sounds, music folder, cloud reasoning toggle.
+* **Settings** — owner, city, recognition language, wake word, **voice picker with
+  preview (male/female/regional)**, speech rate, spoken replies, interface sounds,
+  music folder, cloud reasoning toggle.
 
 Accessibility: keyboard focus rings, `aria-live` conversation, reduced-motion
 support, and a responsive layout down to phones.
@@ -134,7 +141,7 @@ expire after 180 seconds.
 
 ## 5. Security envelope
 
-* **One tool registry** — `jarvis/tools.py` declares 66 tools with argument
+* **One tool registry** — `jarvis/tools.py` declares 71 tools with argument
   schemas, categories and `high_impact` flags. Intents and the LLM planner both
   execute through `JarvisCore.call()`, so validation, approval and audit always
   apply.
@@ -170,6 +177,7 @@ environment variables, which always win.
 | `JARVIS_WAKE_WORD_ENABLED` | `false` | require the wake word |
 | `JARVIS_HOST` / `JARVIS_PORT` | `0.0.0.0` / `7777` | HTTP bind |
 | `JARVIS_SPEAK` / `JARVIS_SOUND` | `true` | speech and UI sound |
+| `JARVIS_VOICE` | auto (British male) | preferred `speechSynthesis` voice name |
 | `JARVIS_VOICE_RATE` | `0.98` | TTS rate |
 | `JARVIS_MUSIC_DIR` | `~/Music` | local library for “play music” |
 | `JARVIS_LLM_ENABLED` | `true` | allow cloud/local reasoning |
@@ -194,7 +202,7 @@ jarvis/
   config.py               settings, env loading, validation
   security.py             approval gate, audit, path confinement, danger screen
   intents.py              deterministic NLU (English + Hinglish)
-  tools.py                central registry (66 tools)
+  tools.py                central registry (71 tools)
   brain.py                Gemini / Qwen planner, vision, cooldowns
   core.py                 orchestrator: handle → intent/LLM → tool → envelope
   scheduler.py            reminders, timers, alarms, battery/disk watchdogs
@@ -250,6 +258,8 @@ For a local model, run any OpenAI-compatible server on `:8080` / `:8081`
 | Weather/news offline | outbound HTTPS is blocked; the assistant offers a search link |
 | Port busy | `--port 7788` (or let it walk forward automatically) |
 | Wake word ignored | “Wake word listening” must be on, then say “Jarvis, …”. |
+| Translation unavailable | offline phrasebook covers common phrases; arbitrary text needs a Gemini key or internet |
+| Wrong voice | open Settings → Assistant voice → PREVIEW, then save |
 
 ---
 
@@ -272,10 +282,52 @@ curl -s -X POST localhost:7777/api/command \
 
 ---
 
-## 11. Credits
+## 11. Jarvis 1.0 additions
 
-Feature scope inspired by the public **Jarvis 2.0** tutorial playlist by
-*Anubhav Chaturvedi / NetHyTech*. This is an independent implementation: the
-architecture, security model, tools and interface were written for this
-repository and do not reuse the tutorial's source code or its third-party
-assets. Voice cloning segments of that series were intentionally not reproduced.
+The second playlist — *Build Your Own Jarvis 1.0 Desktop Assistant* (41 episodes) —
+adds these capabilities to the same core:
+
+| Episode theme | Implementation |
+| --- | --- |
+| Speech-to-text, advanced listen (ep 2) | browser `SpeechRecognition`, terminal `--voice --wake` |
+| TTS, British Brian, female & 11 voices (3, 11, 25, 27) | voice picker + preview in Settings, `JARVIS_VOICE` |
+| Brain / ML model, second model, brain optimisation (5–7, 19, 38) | Gemini → Qwen → fast Qwen → offline chain |
+| Wish & welcome, “daddy's home” (8, 29) | “I'm home” → `wake_greeting` with pending work |
+| Online/offline checks (14, 39) | `network_info`, live `LINK` pill, brain lane probe |
+| Random advice (15) | `random_advice` — Advice Slip API with an offline line bank |
+| All-possible automation (12, 16) | 71-tool registry: apps, volume, brightness, files, media |
+| Big data import (18) | `import_data` — JSON/CSV/TXT into long-term memory, 500 rows, secrets skipped |
+| Battery monitoring (20) | telemetry gauges + scheduler power alerts |
+| Wikipedia, Google, YouTube search (21–23) | `wikipedia`, `web_search`, `play_music` YouTube fallback |
+| Play music on YouTube (24) | `play_music` — local library first, YouTube search fallback |
+| Internet speed (28) | `internet_speed` via Cloudflare speed endpoint |
+| Time, jokes, IP, temperature (30–33) | `get_time`, `joke`, `network_info`, `weather` |
+| Speed & code optimisation, driver-free (34, 37) | stdlib server, no Chrome driver, 2 s telemetry cache |
+| Speech recognition & translation (35) | `translate_text` — phrasebook → MyMemory → neural |
+| LLM integration (36, 39) | planner with JSON tool calls and approval-aware execution |
+| YouTube SEO for creators (40) | `seo_pack` — 6 titles, description, tags, hashtags |
+| Zero to hero recap (41) | `--check` diagnostics + this document |
+
+**Dataset format** for `import_data` (JSON shown; CSV/TXT use `key: value` or `key = value`):
+
+```json
+{
+  "favourite food": "litti chokha",
+  "office": "Patna, Bihar",
+  "project code": "MARK VII"
+}
+```
+
+Values that look like credentials (tokens, passwords, keys) are skipped and
+reported, never stored.
+
+---
+
+## 12. Credits
+
+Feature scope inspired by two public tutorial playlists by *Anubhav Chaturvedi /
+NetHyTech*: **Jarvis 2.0** (43 episodes) and **Build Your Own Jarvis 1.0**
+(41 episodes). This is an independent implementation: the architecture, security
+model, tools and interface were written for this repository and do not reuse the
+tutorials' source code or their third-party assets. Voice cloning segments were
+intentionally not reproduced — licensed/browser voices only.

@@ -740,6 +740,10 @@ body[data-state="thinking"] .statusbar .dot { background: var(--accent); box-sha
 .field input:focus, .field select:focus { border-color: var(--line-strong); box-shadow: 0 0 0 3px rgba(94, 234, 255, 0.08); }
 .field input[type="range"] { padding: 0; accent-color: var(--cyan); background: transparent; }
 .field output { color: var(--accent); letter-spacing: 0.08em; }
+.voice-row { display: flex; gap: 8px; align-items: stretch; }
+.voice-row select { flex: 1; min-width: 0; }
+.voice-row .mini-btn { flex: none; padding: 0 12px; }
+.field-note { font-size: 10.5px; color: var(--muted-2); line-height: 1.45; }
 .switch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
 .switch { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--text); cursor: pointer; }
 .switch input { accent-color: var(--cyan); width: 15px; height: 15px; }

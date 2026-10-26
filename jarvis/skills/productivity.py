@@ -473,6 +473,108 @@ def coin_flip() -> dict:
     return reply(f"{side}, Sir.", speech=f"{side}, Sir.", cards=[{"type": "coin", "result": side}])
 
 
+ADVICE_LINES = [
+    "Do the smallest version of the thing today; momentum beats planning.",
+    "If it takes less than two minutes, do it now instead of noting it.",
+    "You do not need more motivation, Sir. You need a shorter first step.",
+    "Say no once this week to something that does not move your work forward.",
+    "Write the problem down before you write the solution.",
+    "Slow is smooth, smooth is fast — especially in your first draft.",
+    "Protect one hour for deep work and treat it like a meeting with yourself.",
+    "Ask for the thing directly. Clarity is cheaper than guessing.",
+    "Ship the imperfect version; feedback is worth more than polish.",
+    "Automate the third time you do the same task, not the first.",
+    "Track the input you control, not the outcome you do not.",
+    "A bad decision made quickly can be fixed; drift cannot.",
+    "Keep a boring backup plan and take the interesting risk.",
+    "Read your own code six months later before judging others' code.",
+    "Sleep is a performance feature, not a reward.",
+    "Your calendar reveals your real priorities — check it before you promise anything.",
+    "When stuck for twenty minutes, explain the problem out loud to someone.",
+    "Finish two things before starting a fourth.",
+    "Money follows clarity: know exactly who you are helping and how.",
+    "Learn the tool only as deep as the current problem needs.",
+]
+
+ADVICE_URL = "https://api.adviceslip.com/advice"
+
+
+def random_advice() -> dict:
+    """Episode 15 of the Jarvis 1.0 series: a random piece of advice."""
+    line, source = "", "offline"
+    try:
+        from jarvis import net
+
+        data = net.get_json(ADVICE_URL, timeout=5.0)
+        slip = (data or {}).get("slip") if isinstance(data, dict) else None
+        if isinstance(slip, dict):
+            line = str(slip.get("advice") or "").strip()
+            source = "adviceslip"
+    except Exception:
+        line = ""
+    if not line:
+        line = random.choice(ADVICE_LINES)
+    return reply(
+        line,
+        speech=line,
+        cards=[{"type": "quote", "text": line, "author": "advice" if source == "adviceslip" else "J.A.R.V.I.S."}],
+        data={"advice": line, "source": source},
+    )
+
+
+def wake_greeting() -> dict:
+    """Episode 29: greet when the owner gets home / wakes the assistant."""
+    from jarvis import sysinfo
+
+    settings = get_settings()
+    store = get_store()
+    current = now()
+    owner = settings.owner
+    opened = "Good morning" if current.hour < 12 else "Good afternoon" if current.hour < 17 else "Good evening"
+    todos = [item for item in store.todos() if not item.get("done")]
+    reminders = store.reminders()
+    timers = store.timers()
+    alarms = store.alarms()
+
+    lines = []
+    if todos:
+        lines.append(f"{len(todos)} open task{'s' if len(todos) != 1 else ''} — first: {truncate(todos[0].get('text', ''), 60)}")
+    else:
+        lines.append("No open tasks — the slate is clean")
+    if reminders:
+        lines.append(f"{len(reminders)} reminder{'s' if len(reminders) != 1 else ''} queued")
+    if timers:
+        lines.append(f"{len(timers)} timer{'s' if len(timers) != 1 else ''} running")
+    if alarms:
+        lines.append(f"{len(alarms)} alarm{'s' if len(alarms) != 1 else ''} standing by")
+    try:
+        metrics = sysinfo.metrics()
+        battery = metrics.get("battery") or {}
+        if battery.get("present") and battery.get("percent") is not None:
+            lines.append(f"Power cell at {battery['percent']} percent")
+        else:
+            lines.append("Running on mains power")
+        if metrics.get("cpu") is not None:
+            lines.append(f"CPU resting at {metrics['cpu']} percent")
+    except Exception:
+        pass
+
+    line = f"{opened}, {owner}. Welcome home — all systems are warm."
+    return reply(
+        line,
+        speech=f"{opened}, {owner}. Welcome home. All systems are online.",
+        cards=[
+            {
+                "type": "list",
+                "title": "WELCOME BACK",
+                "items": lines,
+                "footer": current.strftime("%A, %d %B · %I:%M %p"),
+            }
+        ],
+        data={"wake": True, "tasks": len(todos), "reminders": len(reminders)},
+    )
+
+
 def roll_dice(sides: int = 6) -> dict:
     sides = max(2, min(1000, int(sides or 6)))
     value = random.randint(1, sides)
