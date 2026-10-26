@@ -57,10 +57,10 @@
   </div>
 
   <h1>One APK. <span>Just install it.</span></h1>
-  <p class="lead">1,899 skills, tasks that retry themselves, a video studio that saves to the gallery — all inside the phone.</p>
+  <p class="lead">A local-first assistant: Qwen3.5 runs inside the phone, 1,899 skills are offline, and Android actions are verified or reported as unverified. No API keys, no cloud AI.</p>
 
   <div class="card">
-    <a class="cta" id="download" href="https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/jarvis-v0.4.0/JARVIS-0.4.0.apk" rel="noopener">
+    <a class="cta" id="download" href="https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/jarvis-v1.0.0/JARVIS-1.0.0.apk" rel="noopener">
       Download APK
     </a>
     <div class="meta">
@@ -77,23 +77,27 @@
     <ol class="steps">
       <li><b>Download the APK</b><p>Tap the button. Chrome will ask "allow the file download?" — allow it.</p></li>
       <li><b>Install it</b><p>When the download finishes, tap it → allow Chrome/Files under "Install unknown apps".</p></li>
-      <li><b>Open the app</b><p>The Setup wizard opens on first launch: notifications, updates, AI brain — 3 taps.</p></li>
-      <li><b>Add an AI key</b><p>Free Gemini key: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:#7dd3fc">aistudio.google.com/apikey</a> → paste → Save &amp; test. The library works even without a key.</p></li>
+      <li><b>Open the app</b><p>The Setup wizard opens on first launch: notifications, updates, permissions — a few taps.</p></li>
+      <li><b>Install the brain once</b><p>Settings → Local brain → <b>Download</b> (~490 MB, Wi-Fi). After that, chat works in airplane mode. No key, no account.</p></li>
+      <li><b>Allow what you want</b><p>Microphone, calendar and notifications are requested by the feature that needs them. Anything Android cannot verify is shown as <i>unverified</i>, never as success.</p></li>
     </ol>
   </div>
 
   <div class="card">
     <h2>What is inside</h2>
     <ul class="chips">
+      <li>Qwen3.5 on device</li>
+      <li>Airplane-mode chat</li>
       <li>1899 skills offline</li>
+      <li>SQLite memory</li>
+      <li>Document search (BM25)</li>
+      <li>Verified phone tools</li>
+      <li>Offline voice input</li>
       <li>Task queue + retry</li>
       <li>Prompt → video</li>
       <li>Gallery auto-save</li>
-      <li>YouTube search</li>
-      <li>Share sheet</li>
       <li>In-app update</li>
-      <li>Qwen3.5 on device</li>
-      <li>Voice in + out</li>
+      <li>No API keys</li>
     </ul>
   </div>
 
@@ -109,7 +113,7 @@
   <div class="card">
     <h2>Straight talk</h2>
     <p style="margin:0;color:var(--muted);font-size:13.5px">
-      No analytics, no hidden uploads. API keys stay on the phone and requests go straight to the provider.
+      No analytics, no hidden uploads, no cloud AI. The model file download is the only network call JARVIS needs.
       Video is currently an AI script plus animated scenes rendered to WebM (real AI footage needs a paid API).
       Nothing is auto-posted without a tap — content is saved to the gallery and posted through the share sheet.
     </p>

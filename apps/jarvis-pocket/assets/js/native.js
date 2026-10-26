@@ -39,10 +39,22 @@
       if (self._active) return;
       self._active = true;
       if (self.onstart) self.onstart();
-      call('listen', { lang: self.lang })
+      var tools = null;
+      try {
+        tools = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.JarvisTools) || null;
+      } catch (error) { tools = null; }
+      var request = tools && typeof tools.listenOffline === 'function'
+        ? tools.listenOffline({ lang: self.lang, prompt: 'Speak now' })
+        : call('listen', { lang: self.lang });
+      request
         .then(function (result) {
           var text = (result && result.text) || '';
           self._active = false;
+          if (result && result.permission) {
+            if (self.onerror) self.onerror({ error: 'permission', message: result.evidence || '' });
+            if (self.onend) self.onend();
+            return;
+          }
           if (text) {
             var alternative = { transcript: text, confidence: 1 };
             var list = [alternative];

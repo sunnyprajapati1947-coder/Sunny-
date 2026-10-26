@@ -46,7 +46,16 @@ const dom = new JSDOM(html, {
       }
       return globalThis.fetch(new URL(url, ORIGIN).toString(), init);
     };
-    window.localStorage.setItem("jp.llm", JSON.stringify({ provider: "gemini", key: "test-key", model: "gemini-2.5-flash", stream: true }));
+    window.__JARVIS_TEST_COMPLETE = (opts) => {
+      const system = String(opts.system || "");
+      if (mode.fail > 0) { mode.fail -= 1; return Promise.reject(new Error("boom")); }
+      let text = "Step result: done";
+      if (system.includes("You plan work") || system.includes("vertical-video")) text = mode.plan;
+      else if (mode.chat) { text = mode.chat; mode.chat = ""; }
+      if (opts.onDelta) opts.onDelta(text);
+      return text;
+    };
+    window.localStorage.setItem("jp.llm", JSON.stringify({ provider: "local", model: "qwen3.5-0.8b", stream: true }));
     window.scrollTo = () => {};
     const stubCtx = () => ({
       createLinearGradient: () => ({ addColorStop() {} }),
@@ -96,6 +105,8 @@ const results = [];
 function check(name, ok, extra = "") { results.push({ name, ok }); console.log(`${ok ? "PASS" : "FAIL"}  ${name}${extra ? " — " + extra : ""}`); }
 
 await until("boot", () => text("#brandSub").includes("items"));
+// The scripted brain stands in for the model; mark it ready so planning runs.
+window.JarvisLocalBrain.isReady = () => true;
 check("five tabs including Tasks", qa(".tab").length === 5, qa(".tab").map((t) => t.textContent.trim()).join(","));
 check("task engine loaded", !!window.JarvisTasks);
 check("connections loaded", !!window.JarvisConnections);
@@ -169,15 +180,14 @@ check("video result panel shown", !document.getElementById("videoResult").hidden
 
 // first-run setup wizard
 window.location.hash = "#/setup";
-await until("setup screen", () => q("#setupSaveKey"));
+await until("setup screen", () => q("#setupFinish"));
 check("setup wizard renders four steps", /1\. Notifications/.test(text("#view")) && /4\. YouTube/.test(text("#view")));
+check("setup offers the on-device brain", /On-device brain/.test(text("#view")) && /#\/local/.test(q("#view").innerHTML));
 window.localStorage.removeItem("jp.setup.done");
-window.localStorage.setItem("jp.llm", JSON.stringify({ provider: "gemini", key: "", model: "gemini-2.5-flash", stream: true }));
-check("setup auto-opens when no key", window.JarvisSetup.shouldAutoOpen() === true);
-document.getElementById("setupKey").value = "test-key-2";
-q("#setupSaveKey").click();
-await until("setup key saved", () => window.JarvisLLM.isReady(), 8000);
-check("setup saves and tests the key", window.JarvisLLM.isReady());
+const readyStub = window.JarvisLocalBrain.isReady;
+window.JarvisLocalBrain.isReady = () => false;
+check("setup auto-opens without a brain", window.JarvisSetup.shouldAutoOpen() === true);
+window.JarvisLocalBrain.isReady = readyStub;
 await until("setup finish", () => q("#setupFinish"));
 document.getElementById("setupFinish").click();
 await until("chat opened", () => window.location.hash === "#/" || window.location.hash === "", 4000);
@@ -185,10 +195,15 @@ check("setup marks itself done", window.JarvisUI.storeGet("setup.done", false) =
 
 // local brain (Qwen3.5 on device)
 window.location.hash = "#/local";
-await until("local brain screen", () => q("[data-prepare]"));
-check("local brain catalog has Qwen3.5", window.JarvisLocalBrain.catalog().some((m) => /Qwen3\.5/.test(m.label)) &&
-  window.JarvisLocalBrain.catalog().length >= 1);
-check("local brain screen renders models", /Qwen3\.5 0\.8B/.test(text("#view")) && /Download & load/.test(text("#view")));
+await until("local brain screen", () => q("#brainDownload"));
+check("model catalog is Qwen3.5", window.JarvisModel.catalog().some((m) => /Qwen3\.5/.test(m.label)));
+check("model manager lists the exact files", window.JarvisModel.filesFor(window.JarvisModel.find("qwen3.5-0.8b"), "webgpu")
+  .some((f) => f.path === "onnx/model_q4f16.onnx_data") &&
+  window.JarvisModel.filesFor(window.JarvisModel.find("qwen3.5-0.8b"), "wasm")
+  .some((f) => f.path === "onnx/model_q4.onnx"));
+check("model cache keys match the engine", window.JarvisModel.canonical("a/b", "config.json")
+  === "https://huggingface.co/a/b/resolve/main/config.json");
+check("model manager screen renders", /Local brain/.test(text("#view")) && /Diagnose/.test(text("#view")));
 const realGenerate = window.JarvisLocalBrain.generate;
 const realReady = window.JarvisLocalBrain.isReady;
 window.JarvisLocalBrain.generate = (opts) => { if (opts.onDelta) opts.onDelta("hello "); if (opts.onDelta) opts.onDelta("boss"); return Promise.resolve("hello boss"); };
@@ -196,16 +211,19 @@ window.JarvisLocalBrain.isReady = () => true;
 window.JarvisLLM.save({ provider: "local", model: "qwen3.5-0.8b" });
 check("local provider is ready without a key", window.JarvisLLM.isReady() === true);
 let deltas = "";
+const seam = window.__JARVIS_TEST_COMPLETE;
+window.__JARVIS_TEST_COMPLETE = undefined;
 const localReply = await window.JarvisLLM.complete({ system: "sys", messages: [{ role: "user", content: "hi" }], onDelta: (t) => { deltas += t; } });
+window.__JARVIS_TEST_COMPLETE = seam;
 check("local provider streams through JarvisLocalBrain", localReply === "hello boss" && deltas === "hello boss", `${localReply}/${deltas}`);
 window.JarvisLocalBrain.generate = realGenerate;
 window.JarvisLocalBrain.isReady = realReady;
-window.JarvisLLM.save({ provider: "gemini", model: "gemini-2.5-flash" });
 
 window.location.hash = "#/settings";
-await until("settings", () => q("#keyInput"));
+await until("settings", () => q('[href="#/local"]'));
 check("settings links connections", /Connections/.test(text("#view")));
 check("settings links the local brain", /Local brain/.test(text("#view")) && !!q('[href="#/local"]'));
+check("settings has no cloud key field", !q("#keyInput"));
 
 // --- on-device engine wiring (static files, no network) --------------------
 const vendor = join(ROOT, "vendor", "transformers");
@@ -223,10 +241,48 @@ check("engine loader decompresses and imports a blob", brainSrc.includes("Decomp
 const indexHtml = readFileSync(join(ROOT, "index.html"), "utf8");
 check("no stale import map in index.html", !indexHtml.includes('type="importmap"'));
 
+// --- local knowledge base (BM25 on the phone) ------------------------------
+const kb = window.JarvisKB;
+const added = kb.add({ title: "Voice notes", text: "Jarvis can record a voice note and store it locally. ".repeat(6) });
+check("knowledge base indexes a document", added.ok && added.parts >= 1, JSON.stringify(added));
+const kbHits = kb.search("voice note", 3);
+check("knowledge base ranks the right passage", kbHits.length > 0 && /voice/i.test(kbHits[0].text), JSON.stringify(kbHits[0] || {}).slice(0, 80));
+check("knowledge base ignores a stop word only query", kb.search("the and", 3).length === 0);
+
+// --- verified tool layer ---------------------------------------------------
+const T = window.JarvisTools;
+check("tools validate required arguments", T.validate("open_app", {}).ok === false &&
+  T.validate("open_app", { app: "YouTube" }).ok === true);
+check("tools reject unknown names", T.validate("rm_rf", {}).ok === false);
+check("router maps a battery question", (() => {
+  const r = T.routeCommand("check my battery");
+  return r && r.tool === "device_stats";
+})());
+check("router maps 'open <app>'", (() => {
+  const r = T.routeCommand("open YouTube");
+  return r && r.tool === "open_app" && r.args.app === "YouTube";
+})());
+const toolRun = await T.run("phone_capabilities", {});
+check("tool run reports verification honestly", toolRun.tool === "phone_capabilities" &&
+  typeof toolRun.verified === "boolean" && typeof toolRun.text === "string");
+
+// --- memory guard ----------------------------------------------------------
+const secretSave = window.JarvisMemory.add("api_key = sk-abcdefghijklmnop123456");
+check("memory refuses secrets", secretSave.ok === false);
+const plainSave = window.JarvisMemory.add("I build Android apps");
+check("memory stores a normal fact", plainSave.ok === true);
+
+// --- dashboard -------------------------------------------------------------
+window.location.hash = "#/dash";
+await until("dashboard", () => q("#dashDiag"));
+check("dashboard renders every panel", /On-device brain/.test(text("#view")) && /Permissions/.test(text("#view")) &&
+  /Local knowledge/.test(text("#view")) && /Privacy/.test(text("#view")));
+
 // --- English-only UI guardrail -------------------------------------------
 const hinglish = /\b(karo|karein|karna|karne|nahi|nahin|aap|apna|apne|apni|yeh|woh|kya|kaise|kuch|bahut|bohot|chahiye|milega|padega|kholo|bolo|poocho|dekho|samjho|theek|thik|galat|abhi|phir|sirf|sabse|dobara|taiyar|banao|banega|hoga|hogi|hota|raha|rahi|rahe|hai|hain|hoon|mujhe|tumhe|wala|wali|wale|jaise|warna|matlab|saath|bina|andar|upar|neeche)\b/i;
 const uiFiles = ["app.js", "chat.js", "library.js", "tasks.js", "connections.js", "video.js",
-  "setup.js", "llm.js", "voice.js", "brain.js", "local-brain.js", "native.js", "core.js"];
+  "setup.js", "llm.js", "voice.js", "brain.js", "local-brain.js", "native.js", "core.js",
+  "db.js", "kb.js", "model.js", "tools.js", "dash.js", "memory.js"];
 const leftovers = [];
 for (const name of uiFiles) {
   const src = readFileSync(join(ROOT, "assets", "js", name), "utf8");

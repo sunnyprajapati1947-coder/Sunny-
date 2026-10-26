@@ -38,7 +38,8 @@
     if (path === '/library' || path.indexOf('/pack/') === 0 || path.indexOf('/item/') === 0 ||
       path.indexOf('/collection/') === 0 || path === '/saved' || path === '/search') return 'library';
     if (path === '/tasks') return 'tasks';
-    if (path === '/connections' || path === '/video' || path === '/setup' || path === '/local') return 'settings';
+    if (path === '/connections' || path === '/video' || path === '/setup' || path === '/local' ||
+      path === '/dash' || path === '/tools' || path === '/diag') return 'settings';
     if (path === '/memory') return 'memory';
     if (path === '/settings' || path === '/about') return 'settings';
     return 'chat';
@@ -120,6 +121,8 @@
         html = window.JarvisSetup.screen();
       } else if (path === '/local') {
         html = window.JarvisBrainUI.screen();
+      } else if (path === '/dash' || path === '/tools' || path === '/diag') {
+        html = window.JarvisDash.screen();
       } else if (path === '/memory') {
         html = memoryScreen();
       } else if (path === '/settings') {
@@ -149,6 +152,7 @@
       else if (path === '/video') window.JarvisVideo.mount();
       else if (path === '/setup') window.JarvisSetup.mount();
       else if (path === '/local') window.JarvisBrainUI.mount();
+      else if (path === '/dash' || path === '/tools' || path === '/diag') window.JarvisDash.mount();
       else if (path === '/memory') mountMemory();
       else if (path === '/settings') mountSettings();
       else if (path === '/about') mountAbout();
@@ -196,8 +200,9 @@
         event.preventDefault();
         var value = input ? input.value.trim() : '';
         if (!value) return;
-        Memory.add(value);
-        UI.toast('Yaad rakh liya', { icon: 'check', tone: 'ok' });
+        var saved = Memory.add(value);
+        if (saved && saved.ok === false) UI.toast(saved.error, { tone: 'warn' });
+        UI.toast('Saved to memory', { icon: 'check', tone: 'ok' });
         render();
       });
     }
@@ -247,33 +252,16 @@
           '<p class="muted small">Notifications, updates, brain — the phone is ready in 2 minutes.</p></a>' +
 
         '<section class="card">' +
-          '<div class="card-head"><h2>' + UI.icon('key') + 'AI provider</h2>' +
-            '<span class="pill ' + (LLM.isReady(config) ? 'pill-ok' : 'pill-warn') + '">' + (LLM.isReady(config) ? 'connected' : 'library mode') + '</span></div>' +
-          '<p class="muted small">The key is stored only in your browser and goes straight to the provider. There is no server in between.</p>' +
-          '<div class="chips-wrap" id="providerChips">' + providerChips + '</div>' +
-          '<label class="field"><span>API key</span>' +
-            '<div class="field-row">' +
-              '<input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key" value="' + UI.esc(config.key) + '">' +
-              '<button class="icon-btn" id="showKey" aria-label="Show key">' + UI.icon('eye') + '</button>' +
-            '</div>' +
-          '</label>' +
-          (provider.keys ? '<p class="muted small">Get a key here: <a href="' + UI.esc(provider.keys) + '" target="_blank" rel="noopener noreferrer">' + UI.esc(provider.keys.replace(/^https?:\/\//, '')) + '</a></p>' : '') +
-          '<label class="field"><span>Model</span>' +
-            '<input id="modelInput" type="text" autocomplete="off" spellcheck="false" value="' + UI.esc(config.model) + '" placeholder="model name">' +
-          '</label>' +
-          (modelChips ? '<div class="chips-wrap">' + modelChips + '</div>' : '') +
-          '<label class="field"><span>Base URL (optional)</span>' +
-            '<input id="baseInput" type="url" autocomplete="off" spellcheck="false" placeholder="' + UI.esc(provider.base || 'https://…/v1') + '" value="' + UI.esc(config.base) + '">' +
-          '</label>' +
-          '<label class="field"><span>Temperature · <b id="tempValue">' + Number(config.temperature).toFixed(1) + '</b></span>' +
-            '<input id="tempInput" type="range" min="0" max="1" step="0.1" value="' + Number(config.temperature) + '">' +
-          '</label>' +
-          '<label class="switch"><input type="checkbox" id="streamToggle" ' + (config.stream ? 'checked' : '') + '><span>Streaming replies</span></label>' +
+          '<div class="card-head"><h2>' + UI.icon('brain') + 'AI brain</h2>' +
+            '<span class="pill ' + (LLM.isReady(config) ? 'pill-ok' : 'pill-warn') + '">' +
+            (LLM.isReady(config) ? 'on device' : 'not loaded') + '</span></div>' +
+          '<p class="muted small">JARVIS 1.0 is local only: no cloud model, no API key, no prompt ever leaves this phone. ' +
+          'The brain is Qwen3.5 running through the ONNX engine inside the app.</p>' +
           '<div class="card-actions">' +
-            '<button class="btn btn-primary" id="testKey">' + UI.icon('bolt') + 'Test connection</button>' +
-            '<button class="btn btn-ghost" id="clearKey">' + UI.icon('trash') + 'Remove key</button>' +
+            '<a class="btn btn-primary" href="#/local">Model manager</a>' +
+            '<a class="btn btn-ghost" href="#/dash">Permissions &amp; tools</a>' +
+            '<a class="btn btn-ghost" href="#/dash">Dashboard</a>' +
           '</div>' +
-          '<p class="muted small" id="providerNote">' + UI.esc(provider.note || '') + '</p>' +
         '</section>' +
 
         '<section class="card">' +
@@ -748,6 +736,9 @@
     var size = UI.storeGet('textSize', 'm');
     document.documentElement.dataset.textSize = /^(s|m|l|xl)$/.test(size) ? size : 'm';
     bindGlobal();
+    if (window.JarvisDB && window.JarvisDB.init) {
+      window.JarvisDB.init().then(function () { render(); });
+    }
     render();
     loadPack();
     if (window.JarvisSetup && window.JarvisSetup.shouldAutoOpen() &&

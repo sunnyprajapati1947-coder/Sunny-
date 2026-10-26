@@ -42,8 +42,8 @@
         hint: 'You will get an alert when the task finishes.' },
       { id: 'install', title: 'App updates', done: canInstall(),
         hint: 'A new version can install itself inside the app.' },
-      { id: 'brain', title: 'AI brain', done: LLM.isReady() || (window.JarvisLocalBrain && window.JarvisLocalBrain.isReady()),
-        hint: 'Gemini or any OpenAI-compatible key. Without it only the 1,899-skill library works.' },
+      { id: 'brain', title: 'On-device brain', done: !!(window.JarvisLocalBrain && window.JarvisLocalBrain.isReady()),
+        hint: 'Qwen3.5 inside the phone. Download once (about 490 MB) and it answers with no internet and no API key.' },
       { id: 'youtube', title: 'YouTube (optional)', done: ytReady(),
         hint: 'Data API key for video search and channel work.' }
     ];
@@ -79,15 +79,11 @@
       '<p class="muted small">Qwen3.5 inside the phone — one download (~490 MB), then answers with no internet.</p>' +
       '<div class="card-actions"><a class="btn btn-ghost btn-sm" href="#/local">Open local brain</a></div></div>' +
 
-      '<div class="card"><div class="card-head"><h2>' + UI.icon('spark') + '3b. Cloud AI brain (optional)</h2>' +
-      badge(LLM.isReady() && LLM.providerOf(LLM.settings()).kind !== 'local') + '</div>' +
-      '<p class="muted small">' + list[2].hint + '</p>' +
-      '<label class="field"><span>API key</span>' +
-      '<div class="field-row"><input id="setupKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key" value="' + UI.esc(config.key) + '">' +
-      '<button class="icon-btn" id="setupShowKey" aria-label="Show key">' + UI.icon('eye') + '</button></div></label>' +
-      '<div class="card-actions"><button class="btn btn-primary btn-sm" id="setupSaveKey">' + UI.icon('bolt') + 'Save & test</button>' +
-      (provider.keys ? '<button class="btn btn-ghost btn-sm" id="setupGetKey">Get a free key</button>' : '') + '</div>' +
-      '<p class="muted small" id="setupKeyNote">Provider: ' + UI.esc(provider.label) + ' · ' + UI.esc(config.model) + '</p></div>' +
+      '<div class="card"><div class="card-head"><h2>' + UI.icon('shield') + '3b. Microphone &amp; phone tools</h2>' +
+      badge(!!(window.JarvisTools && true)) + '</div>' +
+      '<p class="muted small">Voice input, calendar, notes and app launching each ask for their own Android permission the first time they are used. ' +
+      'Nothing is granted silently, and anything Android will not let me verify is reported as unverified.</p>' +
+      '<div class="card-actions"><a class="btn btn-ghost btn-sm" href="#/dash">Permissions &amp; dashboard</a></div></div>' +
 
       '<div class="card"><div class="card-head"><h2>' + UI.icon('play') + '4. YouTube (optional)</h2>' + badge(ytReady()) + '</div>' +
       '<p class="muted small">' + list[3].hint + '</p>' +

@@ -1,9 +1,9 @@
 {
   "name": "jarvis-app",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "JARVIS \u2014 installable Android app (Capacitor shell around the offline skill library)",
+  "description": "JARVIS 1.0 \u2014 local-only Android assistant: on-device Qwen3.5, SQLite memory, verified phone tools",
   "scripts": {
     "stage": "node scripts/stage-web.mjs",
     "android:sync": "npm run stage && cap sync android",

@@ -255,7 +255,7 @@
       (items.some(function (t) { return t.status === 'FAILED'; })
         ? '<button class="btn btn-ghost" id="taskRetryAll">Retry failed</button>' : '') +
       '</div>' +
-      (LLM.isReady() ? '' : '<p class="muted small">Add an AI key in Settings for planning. Without a key the task runs as a single step.</p>') +
+      (LLM.isReady() ? '' : '<p class="muted small">Planning needs the on-device brain (Settings → Local brain). Without it a task runs as a single step.</p>') +
       '</div>';
 
     var rows = items.map(function (task) {

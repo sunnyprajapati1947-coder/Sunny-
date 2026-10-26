@@ -51,7 +51,9 @@
 
   function start(options) {
     if (!sttSupported()) {
-      UI.toast('This browser has no voice input. Try Chrome or Safari.', { tone: 'warn' });
+      UI.toast(window.JarvisNative && window.JarvisNative.available
+        ? 'Voice input needs the microphone permission. Open Dashboard → Permissions.'
+        : 'This browser has no voice input. Use the installed Android app.', { tone: 'warn' });
       return false;
     }
     if (listening) stop();
@@ -88,8 +90,8 @@
     recognition.onerror = function (event) {
       listening = false;
       var code = event.error || 'error';
-      var message = code === 'not-allowed' || code === 'service-not-allowed'
-        ? 'Microphone permission is needed. Allow it in browser settings.'
+      var message = code === 'not-allowed' || code === 'service-not-allowed' || code === 'permission'
+        ? 'The microphone is not allowed yet. Open Dashboard → Permissions and tap Allow next to Microphone.'
         : code === 'no-speech'
           ? 'I did not hear anything — say it again.'
           : code === 'network'

@@ -103,10 +103,10 @@
         '<h1>Hello, I am Jarvis</h1>' +
         '<p>' + (ready
           ? 'Ask me anything — I answer from ' + stats.items + ' skills, agents and guides across your ' + stats.packs + ' repos.'
-          : 'I can answer from the library. For full AI answers you need an API key — the Gemini free tier is enough.') + '</p>' +
+          : 'I answer from the library right now. Install the on-device brain and I can think for myself — fully offline.') + '</p>' +
         (ready ? '' :
-          '<a class="btn btn-primary" href="#/settings">' +
-            UI.icon('key') + 'add an AI key</a>') +
+          '<a class="btn btn-primary" href="#/local">' +
+            UI.icon('brain') + 'install the on-device brain</a>') +
         '<div class="suggestions">' + suggestions.map(function (text) {
           return '<button class="suggestion" data-suggest="' + UI.esc(text) + '">' + UI.esc(text) + '</button>';
         }).join('') + '</div>' +
@@ -181,7 +181,7 @@
     var config = LLM.settings();
     var provider = LLM.providerOf(config);
     var ready = LLM.isReady(config);
-    els.note.textContent = ready ? (provider.label + ' · ' + config.model) : 'library mode (no AI key)';
+    els.note.textContent = ready ? (provider.label + ' · ' + config.model) : 'library mode (brain not loaded)';
     els.note.classList.toggle('is-off', !ready);
     if (els.speakToggle) els.speakToggle.checked = !!UI.storeGet('voice.speak', false);
   }
@@ -412,7 +412,8 @@
     }
     if (name === 'remember') {
       var entry = Memory.add(tool.text || '');
-      return Promise.resolve(entry ? 'Saved to memory: ' + entry.text : 'Nothing to save.');
+      if (!entry || entry.ok === false) return Promise.resolve((entry && entry.error) || 'Nothing to save.');
+      return Promise.resolve('Saved to memory: ' + entry.text);
     }
     if (name === 'task_create') {
       var Tasks = window.JarvisTasks;
@@ -438,6 +439,13 @@
       return Promise.resolve(queue.slice(0, 8).map(function (task) {
         return '- ' + task.id + ' | ' + task.status + ' | ' + task.title;
       }).join('\n'));
+    }
+    if (window.JarvisTools && window.JarvisTools.get(name)) {
+      return window.JarvisTools.run(name, tool).then(function (result) {
+        var status = result.verified ? 'verified' : 'unverified';
+        return 'TOOL ' + name + ' (' + status + '): ' + (result.text || '') +
+          (result.evidence ? '\nEVIDENCE: ' + result.evidence : '');
+      });
     }
     return Promise.resolve('Unknown tool: ' + name);
   }
@@ -478,6 +486,18 @@
     var liveIndex = placeholderIndex;
     var liveText = '';
 
+    function finishedFromTool(text) {
+      state.controller = null;
+      setBusy(false);
+      chat.messages[liveIndex] = { r: 'a', t: text, ts: Date.now() };
+      chat.updated = Date.now();
+      persist();
+      if (els.scroll) {
+        renderMessages();
+        scrollBottom(false);
+      }
+    }
+
     function paint(force) {
       var now = Date.now();
       if (!force && now - lastRenderAt < 110) return;
@@ -513,6 +533,24 @@
           rate: UI.storeGet('voice.rate', 1)
         });
       }
+    }
+
+    // Commands that touch the phone run through the verified tool layer first,
+    // so they work even before the model is installed.
+    var routed = window.JarvisTools && window.JarvisTools.routeCommand
+      ? window.JarvisTools.routeCommand(userText) : null;
+    if (routed) {
+      window.JarvisTools.run(routed.tool, routed.args).then(function (result) {
+        var head = result.verified
+          ? (result.ok ? '**Done — verified.** ' : '**Not done.** ')
+          : (result.ok ? '**Requested (not verifiable by Android).** ' : '**Not done.** ');
+        var text = head + (result.text || '') +
+          (result.evidence ? '\n\n_' + result.evidence + '_' : '');
+        finishedFromTool(text);
+      }).catch(function (error) {
+        finishedFromTool('**Not done.** ' + error.message);
+      });
+      return;
     }
 
     if (!LLM.isReady()) {

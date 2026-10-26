@@ -73,9 +73,9 @@
   };
 
   var DEFAULTS = {
-    provider: 'gemini',
+    provider: 'local',
     key: '',
-    model: 'gemini-2.5-flash',
+    model: 'qwen3.5-0.8b',
     base: '',
     temperature: 0.6,
     maxTokens: 1400,
@@ -85,10 +85,17 @@
     assistantName: 'Jarvis'
   };
 
+  /* 1.0 is local only. Any older setting that pointed at a cloud provider is
+     migrated on read, so an update cannot silently call a remote model. */
   function settings() {
     var stored = UI.storeGet('llm', {}) || {};
     var merged = Object.assign({}, DEFAULTS, stored);
-    if (!stored.provider) merged.model = DEFAULTS.model;
+    if (merged.provider !== 'local') {
+      merged.provider = 'local';
+      merged.model = 'qwen3.5-0.8b';
+      merged.key = '';
+      merged.base = '';
+    }
     return merged;
   }
 
@@ -123,7 +130,7 @@
     if (status === 401 || status === 403) return 'The API key was rejected. Check the key again in Settings.';
     if (status === 404) return 'Model "' + (config ? config.model : '') + '" was not found. Change the model name in Settings.';
     if (status === 429) return 'Rate limit hit. Try again in a moment or pick another model.';
-    if (status === 400) return 'Request reject hui: ' + message;
+    if (status === 400) return 'The request was rejected: ' + message;
     if (status >= 500) return 'The provider is down (' + status + '). Try again later.';
     if (/Failed to fetch|fetch failed|NetworkError|Load failed|ECONNREFUSED|ERR_NETWORK/i.test(message)) {
       return 'Network/CORS block. Either check the internet connection or use the OpenRouter provider (browser-friendly).';
@@ -313,65 +320,27 @@
     var messages = options.messages || [];
     var system = options.system || '';
     var onDelta = options.onDelta;
-    var signal = options.signal;
-    var wantStream = options.stream !== false && config.stream !== false;
-    var provider = providerOf(config);
 
-    if (provider.kind === 'local') {
-      if (!window.JarvisLocalBrain) {
-        return Promise.reject(new Error('The local brain module did not load.'));
-      }
-      return window.JarvisLocalBrain.generate({
+    // Test seam: the smoke suite replaces the model with a scripted reply so
+    // the UI can be exercised without loading half a gigabyte of weights.
+    if (typeof window.__JARVIS_TEST_COMPLETE === 'function') {
+      return Promise.resolve(window.__JARVIS_TEST_COMPLETE({
         system: system,
         messages: messages,
-        onDelta: onDelta,
-        maxTokens: Math.min(768, config.maxTokens || 512),
-        temperature: typeof config.temperature === 'number' ? config.temperature : 0.5
-      });
+        onDelta: onDelta
+      }));
     }
 
-    if (!config.key || !config.model) {
-      return Promise.reject(new Error('No API key yet. Add your key in Settings.'));
+    // JARVIS 1.0 has exactly one brain: the model on this phone.
+    if (!window.JarvisLocalBrain) {
+      return Promise.reject(new Error('The local brain module did not load.'));
     }
-
-    var body = payload(config, system, messages, wantStream);
-    var url = wantStream ? endpoint(config) : plainEndpoint(config);
-
-    return fetch(url, {
-      method: 'POST',
-      headers: requestHeaders(config),
-      body: JSON.stringify(body),
-      signal: signal
-    }).then(function (response) {
-      if (!response.ok) {
-        return response.text().then(function (text) {
-          var message = text;
-          try {
-            var parsed = JSON.parse(text);
-            message = (parsed.error && (parsed.error.message || parsed.error)) || text;
-            if (typeof message !== 'string') message = JSON.stringify(message);
-          } catch (error) { /* raw text is fine */ }
-          var failure = new Error(message.slice(0, 300));
-          failure.status = response.status;
-          throw failure;
-        });
-      }
-      if (wantStream && /text\/event-stream/.test(response.headers.get('content-type') || '')) {
-        return readStream(response, config, onDelta).then(function (text) {
-          return text;
-        });
-      }
-      return response.json().then(function (json) {
-        var text = extractFull(config, json);
-        if (text && onDelta) onDelta(text);
-        return text;
-      });
-    }).catch(function (error) {
-      if (error && error.name === 'AbortError') throw error;
-      var wrapped = new Error(friendlyError(error, config));
-      wrapped.status = error && error.status;
-      wrapped.cause = error;
-      throw wrapped;
+    return window.JarvisLocalBrain.generate({
+      system: system,
+      messages: messages,
+      onDelta: onDelta,
+      maxTokens: Math.min(768, config.maxTokens || 512),
+      temperature: typeof config.temperature === 'number' ? config.temperature : 0.5
     });
   }
 
@@ -431,15 +400,23 @@
     if (memory) {
       lines.push('', 'Things the user asked you to remember:', memory);
     }
+    var toolLines = window.JarvisTools && window.JarvisTools.promptLines
+      ? window.JarvisTools.promptLines()
+      : '';
     lines.push(
       '',
-      'Tools — only when the context above is not enough. Emit one tag per line, exactly like this:',
-      '<tool>{"name":"kb_search","query":"voice cloning"}</tool>',
-      '<tool>{"name":"kb_open","id":"ecc-skills-voice"}</tool>',
-      '<tool>{"name":"remember","text":"User builds Android apps in Kotlin"}</tool>',
-      'Available tools: kb_search {query}, kb_open {id}, remember {text}, ' +
-      'task_create {goal, title?}, task_status {id?}.',
-      'After a tool call the app replies with <tool_result>. Then answer the user normally. Never show tool tags in your final answer.'
+      'Actions on this phone — only when the user actually asks for one. Emit one tag per line, exactly like this:',
+      '<tool>{"name":"device_stats"}</tool>',
+      '<tool>{"name":"open_app","app":"YouTube"}</tool>',
+      '<tool>{"name":"search_knowledge","query":"voice cloning"}</tool>',
+      'Available actions:',
+      toolLines,
+      '',
+      'Rules for actions:',
+      '- Never claim an action happened. The app runs it and sends the real result back as <tool_result>.',
+      '- The result says verified or unverified. Repeat that honestly, including when Android could not confirm it.',
+      '- If an action is impossible on this phone, say so instead of inventing a workaround.',
+      '- Never show tool tags in your final answer.'
     );
     if (options.context) {
       lines.push('', 'Relevant library context:', '"""', options.context, '"""');
@@ -451,18 +428,18 @@
     return Pack.contextFor(question, 4).then(function (context) {
       var hits = Pack.searchScored(question, 5);
       if (!hits.length) {
-        return 'I am in **offline library mode** right now (no AI key set).\n\n' +
-          'This question is not answered by the library. Add your key in **Settings → AI provider** ' +
-          '(the Gemini free tier is enough) and I can give a full answer.\n\n' +
+        return 'I am in **library mode** right now (the on-device brain is not installed).\n\n' +
+          'This question is not answered by the library. Open **Settings → Local brain** and download ' +
+          'Qwen3.5 once (about 490 MB) and I can answer it fully, offline.\n\n' +
           'Meanwhile you can search the library: **Library → Search**.';
       }
-      var lines = ['I am in **offline library mode** right now (no AI key set), so here is a direct answer from the library:\n'];
+      var lines = ['I am in **library mode** right now (the on-device brain is not installed), so here is a direct answer from the library:\n'];
       hits.forEach(function (hit, index) {
         var pack = Pack.packOf(hit.item);
         lines.push((index + 1) + '. **' + hit.item.t + '** — ' + (pack ? pack.name : '') + ' · ' + Pack.typeOf(hit.item) +
           '\n   ' + (hit.item.d || '').slice(0, 160) + '\n   [Open](#/item/' + encodeURIComponent(hit.item.i) + ')');
       });
-      lines.push('\nWant a full AI answer? Add a key in **Settings → AI provider** (the Gemini free tier is enough).');
+      lines.push('\nWant full answers? Install the on-device brain in **Settings → Local brain**.');
       return { text: lines.join('\n'), context: context, offline: true };
     });
   }

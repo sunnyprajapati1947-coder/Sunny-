@@ -126,14 +126,27 @@
     return source.replace(pattern, '<mark>$1</mark>');
   }
 
+  var toastSeen = {};
+
   function toast(message, opts) {
     var host = document.getElementById('toasts');
     if (!host) return;
+    // Identical messages collapse into one bubble: a retry loop must never
+    // bury the screen under copies of the same line.
+    var id = String(message) + '|' + ((opts && opts.tone) || '');
+    var now = Date.now();
+    if (toastSeen[id]) {
+      if (now - toastSeen[id].at < 8000 && toastSeen[id].node && toastSeen[id].node.isConnected) {
+        toastSeen[id].at = now;
+        return;
+      }
+    }
     var node = document.createElement('div');
     node.className = 'toast' + (opts && opts.tone ? ' toast-' + opts.tone : '');
     node.setAttribute('role', 'status');
     node.innerHTML = (opts && opts.icon ? icon(opts.icon) : '') + '<span>' + esc(message) + '</span>';
     host.appendChild(node);
+    toastSeen[id] = { at: now, node: node };
     requestAnimationFrame(function () { node.classList.add('is-in'); });
     setTimeout(function () {
       node.classList.remove('is-in');
