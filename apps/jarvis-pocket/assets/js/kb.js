@@ -1,170 +1,165 @@
 /* JARVIS — local knowledge base.
  *
- * Documents are split into passages and ranked with BM25, computed on the
- * phone. No embeddings service, no cloud vector store: the index is rebuilt
- * from the local rows whenever it is stale.
+ * Documents you add (pasted text or a .txt/.md file) are split into passages,
+ * stored in the on-device database and ranked with BM25. No embeddings service,
+ * no network, no model: search keeps working in airplane mode and costs no RAM.
  */
 (function () {
   'use strict';
 
-  var UI = window.JarvisUI;
   var DB = window.JarvisDB;
 
-  var CHUNK = 800;
-  var OVERLAP = 120;
-  var STOP = ('the a an and or but if then of to in on at for with from by is are was were be been being this that these those it its as not no yes ' +
-    'i you he she we they me my your our their do does did have has had can could should would will just about into over under than so such').split(' ');
+  var CHUNK = 900;
+  var OVERLAP = 140;
+  var K1 = 1.5;
+  var B = 0.75;
 
-  var stop = {};
-  STOP.forEach(function (word) { stop[word] = true; });
+  var STOP = ('a an and are as at be but by for from has have he her his i if in into is it its of on or ' +
+    'our she so that the their them then there these they this to was we were what when where which who will ' +
+    'with you your').split(/\s+/);
 
-  function tokenize(text) {
-    var raw = String(text || '').toLowerCase().match(/[\u0900-\u097F]+|[a-z0-9][a-z0-9'_-]*/g) || [];
-    var out = [];
-    raw.forEach(function (word) {
-      if (word.length < 2) return;
-      if (stop[word]) return;
-      out.push(word);
-    });
-    return out;
+  function tokens(text) {
+    return String(text || '').toLowerCase()
+      .replace(/[^a-z0-9\u0900-\u097F]+/g, ' ')
+      .split(/\s+/)
+      .filter(function (word) { return word && word.length > 1 && STOP.indexOf(word) === -1; });
   }
 
-  function chunks(text) {
-    var clean = String(text || '').replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
+  function split(text) {
+    var clean = String(text || '').replace(/\r\n?/g, '\n').trim();
     if (!clean) return [];
-    if (clean.length <= CHUNK) return [clean];
     var parts = [];
-    var start = 0;
-    while (start < clean.length) {
-      var end = Math.min(clean.length, start + CHUNK);
+    var i = 0;
+    while (i < clean.length) {
+      var end = Math.min(clean.length, i + CHUNK);
       if (end < clean.length) {
-        var cut = clean.lastIndexOf('\n', end);
-        if (cut > start + CHUNK * 0.5) end = cut;
+        var slice = clean.slice(i, end);
+        var cut = Math.max(slice.lastIndexOf('\n\n'), slice.lastIndexOf('. '));
+        if (cut > CHUNK * 0.5) end = i + cut + 1;
       }
-      parts.push(clean.slice(start, end).trim());
+      parts.push(clean.slice(i, end).trim());
       if (end >= clean.length) break;
-      start = Math.max(end - OVERLAP, start + 1);
+      i = Math.max(end - OVERLAP, i + 1);
     }
-    return parts.filter(Boolean);
+    return parts.filter(function (part) { return part.length > 20; });
   }
 
-  function documents() {
-    if (!DB) return [];
+  function rows() {
     return DB.all('docs');
   }
 
-  function add(options) {
-    var title = String((options && options.title) || 'Untitled document').trim().slice(0, 120);
-    var text = String((options && options.text) || '');
-    if (!text.trim()) return { ok: false, error: 'The document is empty.' };
-    if (!DB) return { ok: false, error: 'Document storage did not load.' };
-    var parts = chunks(text);
-    var created = Date.now();
-    var ids = parts.map(function (part, index) {
-      var row = DB.insert('docs', {
-        title: title + (parts.length > 1 ? ' · part ' + (index + 1) : ''),
+  function add(input) {
+    var title = String((input && input.title) || '').trim() || 'Untitled document';
+    var text = String((input && input.text) || '');
+    if (text.trim().length < 20) {
+      return { ok: false, error: 'That text is too short to index (20 characters minimum).' };
+    }
+    var parts = split(text);
+    if (!parts.length) return { ok: false, error: 'Nothing indexable in that text.' };
+    parts.forEach(function (part, index) {
+      DB.insert('docs', {
+        id: DB.uid('d'),
+        title: title,
         body: part,
-        source: (options && options.source) || 'paste',
-        created: created + index
+        source: (input && input.source) || 'paste',
+        kind: String(index + 1) + '/' + parts.length,
+        created: new Date().toISOString()
       });
-      return row.id;
     });
-    stale = true;
-    return { ok: true, id: ids[0], parts: parts.length, chars: text.length };
+    return { ok: true, parts: parts.length, title: title, chars: text.length };
   }
 
-  function remove(id) {
-    if (!DB) return false;
-    DB.remove('docs', id);
-    stale = true;
-    return true;
+  function list() {
+    var seen = {};
+    return rows().filter(function (row) {
+      if (seen[row.title]) return false;
+      seen[row.title] = true;
+      return true;
+    }).map(function (row) {
+      var count = rows().filter(function (other) { return other.title === row.title; }).length;
+      return { id: row.id, title: row.title, parts: count, created: row.created, source: row.source };
+    });
+  }
+
+  function remove(title) {
+    rows().filter(function (row) { return row.title === title; }).forEach(function (row) {
+      if (DB.remove) DB.remove('docs', row.id);
+    });
   }
 
   function clear() {
-    if (!DB) return;
-    DB.clear('docs');
-    stale = true;
-  }
-
-  /* --------------------------------------------------------------- ranking */
-
-  var index = null;
-  var stale = true;
-
-  function build() {
-    var rows = documents();
-    var postings = {};
-    var lengths = [];
-    var docs = rows.map(function (row, position) {
-      var tokens = tokenize(row.body);
-      var counts = {};
-      tokens.forEach(function (token) { counts[token] = (counts[token] || 0) + 1; });
-      Object.keys(counts).forEach(function (token) {
-        if (!postings[token]) postings[token] = [];
-        postings[token].push({ pos: position, tf: counts[token] });
-      });
-      lengths.push(tokens.length);
-      return { row: row, position: position, length: tokens.length };
-    });
-    var avg = lengths.length ? lengths.reduce(function (a, b) { return a + b; }, 0) / lengths.length : 0;
-    index = { docs: docs, postings: postings, avg: avg || 1, total: docs.length };
-    stale = false;
-    return index;
-  }
-
-  function ensure() {
-    if (!index || stale) build();
-    return index;
-  }
-
-  function search(query, limit) {
-    var idx = ensure();
-    if (!idx.docs.length) return [];
-    var terms = tokenize(query);
-    if (!terms.length) return [];
-    var k1 = 1.4;
-    var b = 0.72;
-    var scores = {};
-    terms.forEach(function (term) {
-      var rows = idx.postings[term];
-      if (!rows) return;
-      var idf = Math.log(1 + (idx.total - rows.length + 0.5) / (rows.length + 0.5));
-      rows.forEach(function (row) {
-        var doc = idx.docs[row.pos];
-        var norm = row.tf + k1 * (1 - b + b * (doc.length / idx.avg));
-        var score = idf * ((row.tf * (k1 + 1)) / (norm || 1));
-        scores[row.pos] = (scores[row.pos] || 0) + score;
-      });
-    });
-    return Object.keys(scores).map(function (pos) {
-      var doc = idx.docs[Number(pos)];
-      return { score: Math.round(scores[pos] * 100) / 100, title: doc.row.title, text: doc.row.body, id: doc.row.id };
-    }).sort(function (a, b2) { return b2.score - a.score; }).slice(0, limit || 5);
-  }
-
-  function context(query, limit) {
-    var hits = search(query, limit || 3);
-    if (!hits.length) return '';
-    return hits.map(function (hit, i) {
-      return '[' + (i + 1) + '] ' + hit.title + '\n' + hit.text.slice(0, 700);
-    }).join('\n\n');
+    if (DB.clear) DB.clear('docs');
   }
 
   function stats() {
-    var rows = documents();
-    var chars = rows.reduce(function (sum, row) { return sum + String(row.body || '').length; }, 0);
-    return { documents: rows.length, chars: chars, backend: DB ? DB.stats().backend : 'none' };
+    var all = rows();
+    var titles = {};
+    all.forEach(function (row) { titles[row.title] = true; });
+    return { documents: Object.keys(titles).length, passages: all.length, backend: DB.available ? 'sqlite' : 'localStorage' };
+  }
+
+  /* ----------------------------------------------------------------- BM25 */
+
+  function search(query, limit) {
+    var q = tokens(query);
+    if (!q.length) return [];
+    var docs = rows();
+    if (!docs.length) return [];
+    var count = docs.length;
+    var df = {};
+    var lengths = [];
+    var bag = docs.map(function (row) {
+      var list = tokens((row.title || '') + ' ' + (row.body || ''));
+      lengths.push(list.length);
+      var freq = {};
+      list.forEach(function (word) { freq[word] = (freq[word] || 0) + 1; });
+      Object.keys(freq).forEach(function (word) { df[word] = (df[word] || 0) + 1; });
+      return freq;
+    });
+    var avg = lengths.reduce(function (sum, n) { return sum + n; }, 0) / Math.max(1, count);
+    var scored = [];
+    docs.forEach(function (row, index) {
+      var score = 0;
+      q.forEach(function (term) {
+        var f = bag[index][term] || 0;
+        if (!f) return;
+        var idf = Math.log(1 + (count - (df[term] || 0) + 0.5) / ((df[term] || 0) + 0.5));
+        score += idf * ((f * (K1 + 1)) / (f + K1 * (1 - B + B * (lengths[index] / avg))));
+      });
+      if (score > 0) scored.push({ row: row, score: score });
+    });
+    scored.sort(function (a, b) { return b.score - a.score; });
+    return scored.slice(0, Math.max(1, limit || 5)).map(function (hit) {
+      var snippet = String(hit.row.body || '').slice(0, 320);
+      return {
+        title: hit.row.title,
+        part: hit.row.kind || '',
+        score: Math.round(hit.score * 100) / 100,
+        snippet: snippet,
+        text: hit.row.title + ' — ' + snippet
+      };
+    });
+  }
+
+  /* Text for the model's context, capped so it cannot eat the window. */
+  function context(query, limit) {
+    var hits = search(query, limit || 4);
+    if (!hits.length) return '';
+    return hits.map(function (hit, index) {
+      return '[' + (index + 1) + '] ' + hit.title + (hit.part ? ' (' + hit.part + ')' : '') + '\n' + hit.snippet;
+    }).join('\n\n').slice(0, 3200);
   }
 
   window.JarvisKB = {
     add: add,
+    list: list,
     remove: remove,
     clear: clear,
-    list: documents,
+    stats: stats,
     search: search,
     context: context,
-    stats: stats,
-    tokenize: tokenize,
-    chunks: chunks
+    split: split,
+    tokens: tokens,
+    backend: function () { return DB.available ? 'sqlite' : 'localStorage'; }
   };
 })();

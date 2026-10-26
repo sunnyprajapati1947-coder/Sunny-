@@ -149,7 +149,7 @@
     var task = find(id);
     if (!task) return Promise.resolve(null);
     if (!LLM.isReady()) {
-      patch(id, { status: 'BLOCKED', error: 'No AI key set — Settings → AI provider.' });
+      patch(id, { status: 'BLOCKED', error: 'The on-device brain is not loaded — Settings → Local brain.' });
       render();
       return Promise.resolve(null);
     }

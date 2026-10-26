@@ -16,8 +16,8 @@
     plugin = null;
   }
 
-  var TABLES = ['memory', 'docs', 'history'];
-  var mirror = { memory: [], docs: [], history: [] };
+  var TABLES = ['memory', 'docs', 'history', 'projects', 'files'];
+  var mirror = { memory: [], docs: [], history: [], projects: [], files: [] };
   var kv = {};
   var available = !!plugin;
   var ready = false;
@@ -189,6 +189,7 @@
       memories: (mirror.memory || []).length,
       documents: (mirror.docs || []).length,
       history: (mirror.history || []).length,
+      projects: (mirror.projects || []).length,
       kv: Object.keys(kv).length
     };
   }

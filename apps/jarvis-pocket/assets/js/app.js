@@ -123,6 +123,10 @@
         html = window.JarvisBrainUI.screen();
       } else if (path === '/dash' || path === '/tools' || path === '/diag') {
         html = window.JarvisDash.screen();
+      } else if (path === '/code') {
+        html = window.JarvisCode.screen();
+      } else if (path.indexOf('/code/') === 0) {
+        html = window.JarvisCode.screen(decodeURIComponent(path.slice(6)));
       } else if (path === '/memory') {
         html = memoryScreen();
       } else if (path === '/settings') {
@@ -153,6 +157,8 @@
       else if (path === '/setup') window.JarvisSetup.mount();
       else if (path === '/local') window.JarvisBrainUI.mount();
       else if (path === '/dash' || path === '/tools' || path === '/diag') window.JarvisDash.mount();
+      else if (path === '/code') window.JarvisCode.mount();
+      else if (path.indexOf('/code/') === 0) window.JarvisCode.mount(decodeURIComponent(path.slice(6)));
       else if (path === '/memory') mountMemory();
       else if (path === '/settings') mountSettings();
       else if (path === '/about') mountAbout();
@@ -229,15 +235,7 @@
 
   function settingsScreen() {
     var config = LLM.settings();
-    var provider = LLM.providerOf(config);
-    var providerChips = Object.keys(LLM.PROVIDERS).map(function (key) {
-      return '<button class="chip' + (key === config.provider ? ' is-on' : '') + '" data-provider="' + key + '">' +
-        UI.esc(LLM.PROVIDERS[key].label) + '</button>';
-    }).join('');
-    var modelChips = (provider.models || []).map(function (model) {
-      return '<button class="chip chip-mono' + (model === config.model ? ' is-on' : '') + '" data-model="' + UI.esc(model) + '">' +
-        UI.esc(model) + '</button>';
-    }).join('');
+    // Local only: there is no provider picker and no key field to render.
 
     return '' +
       '<section class="screen settings-screen">' +
@@ -247,6 +245,9 @@
           '<p class="muted small">' + ((window.JarvisLocalBrain && window.JarvisLocalBrain.isReady())
             ? 'Loaded — offline chat is ready.'
             : 'Run Qwen3.5 inside the phone — download once, then use it without internet.') + '</p></a>' +
+        '<a class="card card-link" href="#/code"><div class="card-head"><h2>' +
+          UI.icon('code') + 'Code studio</h2><span class="row-chev">' + UI.icon('chevron') + '</span></div>' +
+          '<p class="muted small">Small web projects stored on this phone, run in a sandbox. No terminal.</p></a>' +
         '<a class="card card-link" href="#/setup"><div class="card-head"><h2>' +
           UI.icon('spark') + 'Setup wizard</h2><span class="row-chev">' + UI.icon('chevron') + '</span></div>' +
           '<p class="muted small">Notifications, updates, brain — the phone is ready in 2 minutes.</p></a>' +
@@ -259,8 +260,8 @@
           'The brain is Qwen3.5 running through the ONNX engine inside the app.</p>' +
           '<div class="card-actions">' +
             '<a class="btn btn-primary" href="#/local">Model manager</a>' +
-            '<a class="btn btn-ghost" href="#/dash">Permissions &amp; tools</a>' +
-            '<a class="btn btn-ghost" href="#/dash">Dashboard</a>' +
+            '<a class="btn btn-ghost" href="#/dash">Dashboard &amp; permissions</a>' +
+            '<a class="btn btn-ghost" href="#/code">Code</a>' +
           '</div>' +
         '</section>' +
 
@@ -372,34 +373,6 @@
       if (rerender) render();
     }
 
-    var providerChips = document.getElementById('providerChips');
-    if (providerChips) {
-      providerChips.addEventListener('click', function (event) {
-        var chip = event.target.closest('[data-provider]');
-        if (!chip) return;
-        var key = chip.getAttribute('data-provider');
-        var provider = LLM.PROVIDERS[key];
-        LLM.save({
-          provider: key,
-          model: (provider.models && provider.models[0]) || (provider.kind === 'local' ? 'qwen3.5-0.8b' : ''),
-          base: ''
-        });
-        render();
-      });
-    }
-
-    var keyInput = document.getElementById('keyInput');
-    if (keyInput) {
-      keyInput.addEventListener('change', function () { saveField({ key: keyInput.value.trim() }); });
-    }
-    var showKey = document.getElementById('showKey');
-    if (showKey && keyInput) {
-      showKey.addEventListener('click', function () {
-        var isPassword = keyInput.type === 'password';
-        keyInput.type = isPassword ? 'text' : 'password';
-        showKey.innerHTML = UI.icon(isPassword ? 'eye-off' : 'eye');
-      });
-    }
     var modelInput = document.getElementById('modelInput');
     if (modelInput) {
       modelInput.addEventListener('change', function () { saveField({ model: modelInput.value.trim() }); });
@@ -603,7 +576,7 @@
         '<section class="card">' +
           '<div class="card-head"><h2>How it works</h2></div>' +
           '<ul class="about-list">' +
-            '<li><b>Bring your own key.</b> Your API key stays on this device and goes straight to the provider — no server in between.</li>' +
+            '<li><b>No key, no account.</b> JARVIS 1.0 has no cloud model at all: the brain runs on this phone and prompts never leave it.</li>' +
             '<li><b>Library grounding.</b> For every question the app finds the most relevant docs in its packs and gives them to the model, so answers come from your own repositories.</li>' +
             '<li><b>Tools.</b> The model can search the library itself, read a full document and save something to memory.</li>' +
             '<li><b>Offline.</b> After downloading a pack you can read it without internet; chat itself needs internet (or the on-device brain).</li>' +

@@ -102,31 +102,46 @@ The rule: **`ok` is only true when the phone actually did the thing**, and a sec
 says whether the result is `verified` or merely dispatched. Android restrictions are
 reported, never simulated.
 
-## 5. Dashboard
+## 5. Code studio
+
+`Settings → Code studio` keeps small web projects on the phone:
+
+- create a project (starter `index.html`, `style.css`, `app.js`), add files,
+  edit them in a monospace editor;
+- **Save** writes to the SQLite database, so a project survives a restart;
+- **Run** builds one document and renders it in a sandboxed iframe
+  (`allow-scripts`, no same-origin), so a project cannot read JARVIS's data;
+- delete a project and all of its files.
+
+There is no shell, no Python and no native execution — Android does not allow
+that without a terminal, and JARVIS does not pretend it does.
+
+## 6. Dashboard
 
 `Settings → Dashboard` (route `#/dash`) shows, live:
 
 - on-device brain state and file count;
-- RAM, storage, battery, cores, Android version (installed app only);
+- RAM, storage, battery, cores, Android version (installed app only), re-measured live;
+- a memory budget (1–10 GB) with a guard that refuses a brain load that cannot fit;
 - permission state with **Allow** buttons for microphone, calendar and notifications;
 - the local knowledge base (index a document, search it);
 - recent tool calls with their verification status;
 - cache/storage diagnostics and privacy switches (clear memories, clear documents).
 
-## 6. Library (offline)
+## 7. Library (offline)
 
 1,899 skills, agents, commands and guides curated from 23 open-source repositories.
 Search, read, bookmark, and save a whole pack for offline reading. Content belongs to
 its original authors and keeps its own license (MIT / Apache-2.0 …).
 
-## 7. Tasks
+## 8. Tasks
 
 Say or type what you want done. JARVIS plans the steps, runs them one by one, retries
 failures, and resumes pending work when the app is opened again. Progress is visible
 in **Tasks**, with pause / resume / cancel / retry and a foreground-service
 notification while work is running.
 
-## 8. Video studio
+## 9. Video studio
 
 `Settings → Video studio` (or ask: *"make a video about …"*):
 
@@ -137,28 +152,28 @@ notification while work is running.
 - honest limit: this is a scripted, animated video, **not real AI footage**. Real
   footage (Veo, Runway, …) is a separate paid API — it is not included.
 
-## 9. Connections
+## 10. Connections
 
 - **YouTube Data API key** (optional): test the key, search videos/channels in-app.
 - **Share sheet**: the safest route to post — the content comes from JARVIS, you tap
   the app you want, and it posts there. JARVIS never gets your Google password.
 - **Device card**: permissions, notifications, updates, storage.
 
-## 10. Updates
+## 11. Updates
 
 The app checks GitHub releases at start. When a newer `jarvis-v*` build exists it shows
 a banner, downloads the APK and opens the installer. The APK is signed with a stable CI
 key (kept in the Actions cache and refreshed weekly), so updates install over the old
 app.
 
-## 11. Privacy and security
+## 12. Privacy and security
 
 - API keys and settings stay on the phone (`localStorage`), never in this repository.
 - No analytics, no hidden uploads, no third-party SDKs.
 - Cloud requests go straight from the phone to the provider you configured.
 - The Python server (optional) keeps its token in `~/.openjarvis/dashboard.token`.
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -169,7 +184,7 @@ app.
 | Voice input missing | the WebView has no speech service — use a key + chat, or the browser version |
 | Update banner does nothing | allow “install unknown apps” for JARVIS in Android settings |
 
-## 13. Still open (honest backlog)
+## 14. Still open (honest backlog)
 
 - Real AI footage (a paid model) is not wired; the studio writes the script and renders
   animated scenes locally, saved to the gallery.
@@ -177,14 +192,17 @@ app.
 - A 4B/8B on-device model needs a native `llama.cpp` build, not a WebView.
 - The on-device 0.8B model has not been benchmarked on the OPPO CPH2695 yet; the
   tokens/second figure is the expected range, not a measured result.
-- The in-app coding editor is not built yet. What exists is honest: the video studio,
-  notes and the knowledge base, not a code IDE.
+- The code studio runs HTML/CSS/JS only; Python and native code need a terminal,
+  which JARVIS does not use.
+- Offline speech still depends on the phone's installed offline language pack for the
+  recogniser, and on an installed offline TTS voice. Bundled Whisper/Piper models are
+  not shipped yet — see `SPEC-1.0.md`.
 - Background survival still depends on OPPO battery settings (allow auto-start and
   "no restrictions" for JARVIS). The foreground service is real; the OEM is the variable.
 - `open_app`, reminders, notifications, sharing and links cannot be confirmed by Android.
   They are always labelled unverified; that is a platform limit, not a bug.
 
-## 14. Developer notes
+## 15. Developer notes
 
 - Web app source: [`apps/jarvis-pocket`](../../apps/jarvis-pocket) (plain static files,
   no bundler).

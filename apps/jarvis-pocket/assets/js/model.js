@@ -510,8 +510,18 @@
       }).catch(function () { return null; })
       : Promise.resolve(null);
 
+    var cached = openCache().then(function (cache) {
+      return cache.keys().then(function (keys) {
+        environment.cachedFiles = keys.length;
+        return null;
+      });
+    }).catch(function () {
+      environment.cachedFiles = null;
+      return null;
+    });
+
     return Promise.all(checks).then(function (results) {
-      return storage.then(function () {
+      return Promise.all([storage, cached]).then(function () {
         return { model: model, sources: results, environment: environment, log: state.log.slice(-10) };
       });
     });

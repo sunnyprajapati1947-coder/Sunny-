@@ -1,103 +1,70 @@
-/* JARVIS — verified tool layer.
+/* JARVIS — verified phone tools.
  *
- * The model may ask for an action; it may not perform one. Each tool declares
- * its arguments, whether a human must confirm it, and what a real result looks
- * like. Every call returns { ok, verified, evidence } and "ok" is only true
- * when the phone actually did the thing. Anything Android cannot verify is
- * reported as unverified instead of being dressed up as success.
+ * One registry, one argument validator and one result shape for every action:
+ *   { ok, tool, verified, evidence, data }
+ *
+ * `ok` is only true when the action actually ran. `verified` says whether the
+ * result could be confirmed (a read-back, a provider query, a broadcast) or is
+ * merely a request Android accepted (opening another app, showing a
+ * notification). High-impact actions ask the user first.
  */
 (function () {
   'use strict';
 
   var UI = window.JarvisUI;
+  var N = window.JarvisNative;
+  var KB = window.JarvisKB;
+  var Memory = window.JarvisMemory;
   var DB = window.JarvisDB;
-  var N = null;
 
-  function nativePlugins() {
-    var plugins = (window.Capacitor && window.Capacitor.Plugins) || {};
-    return { tools: plugins.JarvisTools || null, native: plugins.JarvisNative || null };
-  }
+  var HISTORY_KEY = 'tools.history';
 
-  function call(name, args) {
-    var plugins = nativePlugins();
-    if (!plugins.tools) {
-      return Promise.reject(new Error('Android tools are only available inside the installed app.'));
-    }
-    if (typeof plugins.tools[name] !== 'function') {
-      return Promise.reject(new Error('this build does not expose ' + name));
-    }
-    return Promise.resolve(plugins.tools[name](args || {}));
-  }
-
-  function callNative(name, args) {
-    var plugins = nativePlugins();
-    if (!plugins.native || typeof plugins.native[name] !== 'function') {
-      return Promise.reject(new Error('that action needs the installed app'));
-    }
-    return Promise.resolve(plugins.native[name](args || {}));
-  }
-
-  /* --------------------------------------------------------------- confirm */
-
-  function confirmSheet(title, body, danger) {
-    return new Promise(function (resolve) {
-      var host = document.createElement('div');
-      host.className = 'confirm-host';
-      host.innerHTML = '<div class="confirm-back" data-cancel="1"></div>' +
-        '<div class="confirm-panel" role="dialog" aria-modal="true" aria-label="' + UI.esc(title) + '">' +
-        '<h2>' + UI.esc(title) + '</h2>' +
-        '<p>' + UI.esc(body) + '</p>' +
-        '<div class="confirm-actions">' +
-        '<button class="btn btn-ghost" data-cancel="1">Cancel</button>' +
-        '<button class="btn ' + (danger ? 'btn-danger' : 'btn-primary') + '" data-allow="1">Allow</button>' +
-        '</div></div>';
-      document.body.appendChild(host);
-      function done(value) {
-        host.remove();
-        resolve(value);
-      }
-      host.addEventListener('click', function (event) {
-        if (event.target.closest('[data-allow]')) done(true);
-        else if (event.target.closest('[data-cancel]')) done(false);
-      });
-    });
-  }
-
-  var styleInjected = false;
-
-  function ensureStyle() {
-    if (styleInjected) return;
-    styleInjected = true;
-    var style = document.createElement('style');
-    style.textContent = [
-      '.confirm-host{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px}',
-      '.confirm-back{position:absolute;inset:0;background:rgba(4,6,12,.72);backdrop-filter:blur(3px)}',
-      '.confirm-panel{position:relative;width:100%;max-width:420px;background:var(--card,#111624);',
-      'border:1px solid var(--line,#28304a);border-radius:18px;padding:20px;color:var(--text,#eef2ff);',
-      'box-shadow:0 24px 60px rgba(0,0,0,.55)}',
-      '.confirm-panel h2{font-size:18px;margin:0 0 8px}',
-      '.confirm-panel p{margin:0 0 16px;color:var(--muted,#a9b3c9);line-height:1.5;white-space:pre-wrap}',
-      '.confirm-actions{display:flex;gap:10px;justify-content:flex-end}'
-    ].join('');
-    document.head.appendChild(style);
-  }
-
-  /* ------------------------------------------------------------ definitions */
+  /* ------------------------------------------------------------- schemas */
 
   var TOOLS = [
     {
       name: 'device_stats',
-      summary: 'Battery, RAM, free storage and uptime of this phone.',
-      args: {},
-      run: function () {
-        return call('deviceStats').then(function (data) {
+      title: 'Phone status',
+      hint: 'battery, memory, storage, cores',
+      schema: {},
+      confirm: false,
+      call: function () {
+        return native('deviceStats').then(function (data) {
           return {
-            ok: !!data.ok,
-            verified: !!data.verified,
-            evidence: data.evidence || '',
-            text: data.availRamMb + ' MB RAM free of ' + data.totalRamMb + ' MB, ' +
-              data.freeStorageMb + ' MB storage free, battery ' + data.batteryPct + '%, ' +
-              data.cores + ' cores',
+            ok: true,
+            verified: true,
+            evidence: 'read from Android memory, storage and battery APIs',
+            data: data
+          };
+        });
+      }
+    },
+    {
+      name: 'phone_capabilities',
+      title: 'What can this phone do?',
+      hint: 'reports which action bridges and permissions are available',
+      schema: {},
+      confirm: false,
+      call: function () {
+        return Promise.all([
+          native('deviceStats').catch(function () { return null; }),
+          native('permissions').catch(function () { return null; })
+        ]).then(function (out) {
+          var stats = out[0];
+          var perms = out[1];
+          var data = {
+            native: !!stats,
+            device: (stats && stats.device) || '',
+            sdk: stats ? stats.sdk : 0,
+            permissions: (perms && perms.permissions) || {},
+            modelReady: !!(window.JarvisLocalBrain && window.JarvisLocalBrain.isReady()),
+            documents: window.JarvisKB ? window.JarvisKB.stats().passages : 0
+          };
+          return {
+            ok: true,
+            verified: !!stats,
+            evidence: stats ? 'read from the native bridge and Android permission state'
+              : 'the native bridge is not available in a browser',
             data: data
           };
         });
@@ -105,33 +72,31 @@
     },
     {
       name: 'list_apps',
-      summary: 'List the apps installed on this phone.',
-      args: { query: 'text' },
-      run: function (args) {
-        return call('listApps', { query: args.query || '' }).then(function (data) {
-          var apps = (data.apps || []).map(function (row) { return row.label; });
-          return {
-            ok: !!data.ok,
-            verified: !!data.verified,
-            evidence: data.evidence || '',
-            text: apps.length ? apps.slice(0, 20).join(', ') : 'no matching app',
-            data: data
-          };
+      title: 'List apps',
+      hint: 'installed apps that can be opened',
+      schema: { query: 'string?' },
+      confirm: false,
+      call: function (args) {
+        return native('listApps', { query: args.query || '' }).then(function (data) {
+          return { ok: true, verified: true, data: data, evidence: 'PackageManager returned ' + ((data && data.apps || []).length) + ' apps' };
         });
       }
     },
     {
       name: 'open_app',
-      summary: 'Open an installed app by name.',
-      args: { app: 'text' },
+      title: 'Open an app',
+      hint: 'launches an installed app by name',
+      schema: { app: 'string' },
       confirm: true,
-      run: function (args) {
-        return call('launchApp', { label: args.app || '' }).then(function (data) {
+      call: function (args) {
+        return native('launchApp', { app: args.app }).then(function (data) {
+          if (!data || data.ok === false) {
+            return { ok: false, verified: true, evidence: (data && data.evidence) || 'no matching app', data: data };
+          }
           return {
-            ok: !!data.ok,
+            ok: true,
             verified: !!data.verified,
-            evidence: data.evidence || '',
-            text: data.ok ? 'asked Android to open ' + (args.app || data.package) : 'could not open ' + (args.app || ''),
+            evidence: data.evidence || 'launch intent handed to Android',
             data: data
           };
         });
@@ -139,32 +104,16 @@
     },
     {
       name: 'write_note',
-      summary: 'Save a note inside JARVIS storage and read it back.',
-      args: { name: 'text', text: 'text' },
-      run: function (args) {
-        return call('writeNote', { name: args.name || '', text: args.text || '' }).then(function (data) {
+      title: 'Save a note',
+      hint: 'writes a text file in the app folder, then reads it back',
+      schema: { name: 'string', text: 'string' },
+      confirm: false,
+      call: function (args) {
+        return native('writeNote', { name: args.name, text: args.text }).then(function (data) {
           return {
-            ok: !!data.ok,
-            verified: !!data.verified,
-            evidence: data.evidence || '',
-            text: data.ok ? 'note ' + data.name + ' saved (' + data.bytes + ' bytes, checksum verified)' : 'the note was not written',
-            data: data
-          };
-        });
-      }
-    },
-    {
-      name: 'list_notes',
-      summary: 'List the notes saved in this app.',
-      args: {},
-      run: function () {
-        return call('listNotes').then(function (data) {
-          var names = (data.notes || []).map(function (row) { return row.name; });
-          return {
-            ok: !!data.ok,
-            verified: !!data.verified,
-            evidence: data.evidence || '',
-            text: names.length ? names.join(', ') : 'no notes yet',
+            ok: !!(data && data.ok),
+            verified: !!(data && data.verified),
+            evidence: (data && data.evidence) || 'file written',
             data: data
           };
         });
@@ -172,37 +121,43 @@
     },
     {
       name: 'read_note',
-      summary: 'Read one saved note.',
-      args: { name: 'text' },
-      run: function (args) {
-        return call('readNote', { name: args.name || '' }).then(function (data) {
-          return {
-            ok: !!data.ok,
-            verified: !!data.verified,
-            evidence: data.ok ? 'the note was read from app storage' : (data.evidence || ''),
-            text: data.ok ? String(data.text || '').slice(0, 800) : 'no such note',
-            data: { name: data.name, bytes: data.bytes }
-          };
+      title: 'Read a note',
+      hint: 'reads a note that was saved earlier',
+      schema: { name: 'string' },
+      confirm: false,
+      call: function (args) {
+        return native('readNote', { name: args.name }).then(function (data) {
+          return { ok: !!(data && data.ok), verified: true, evidence: (data && data.evidence) || 'read back from storage', data: data };
+        });
+      }
+    },
+    {
+      name: 'list_notes',
+      title: 'List notes',
+      hint: 'notes saved in the app folder',
+      schema: {},
+      confirm: false,
+      call: function () {
+        return native('listNotes').then(function (data) {
+          return { ok: !!(data && data.ok), verified: true, evidence: 'directory listing', data: data };
         });
       }
     },
     {
       name: 'add_calendar_event',
-      summary: 'Create a calendar event and confirm it exists.',
-      args: { title: 'text', minutes: 'number' },
+      title: 'Add a calendar event',
+      hint: 'writes to the phone calendar and reads it back',
+      schema: { title: 'string', minutes: 'number?' },
       confirm: true,
-      run: function (args) {
-        var start = Date.now() + Math.max(1, Number(args.minutes) || 30) * 60000;
-        return call('addCalendarEvent', {
-          title: args.title || 'JARVIS event',
-          start: start,
-          minutes: Number(args.length) || 30
+      call: function (args) {
+        return native('addCalendarEvent', {
+          title: args.title,
+          minutes: typeof args.minutes === 'number' ? args.minutes : 60
         }).then(function (data) {
           return {
-            ok: !!data.ok,
-            verified: !!data.verified,
-            evidence: data.evidence || '',
-            text: data.ok ? 'event "' + data.title + '" is in the calendar (id ' + data.id + ')' : 'the calendar refused the event',
+            ok: !!(data && data.ok),
+            verified: !!(data && data.verified),
+            evidence: (data && data.evidence) || 'calendar insert',
             data: data
           };
         });
@@ -210,34 +165,19 @@
     },
     {
       name: 'set_reminder',
-      summary: 'Open the clock with a reminder set.',
-      args: { text: 'text', minutes: 'number' },
+      title: 'Set a reminder',
+      hint: 'opens the clock app with the reminder filled in',
+      schema: { text: 'string', minutes: 'number?' },
       confirm: true,
-      run: function (args) {
-        return call('setReminder', { text: args.text || 'Reminder', minutes: Number(args.minutes) || 10 })
-          .then(function (data) {
-            return {
-              ok: !!data.ok,
-              verified: !!data.verified,
-              evidence: data.evidence || '',
-              text: data.ok ? 'the clock was opened with the alarm — confirm it there' : 'no clock app accepted the alarm',
-              data: data
-            };
-          });
-      }
-    },
-    {
-      name: 'media_control',
-      summary: 'Play, pause or skip the music that is playing.',
-      args: { action: 'text' },
-      run: function (args) {
-        var action = ['playpause', 'next', 'previous', 'stop'].indexOf(args.action) >= 0 ? args.action : 'playpause';
-        return call('mediaControl', { action: action }).then(function (data) {
+      call: function (args) {
+        return native('setReminder', {
+          text: args.text,
+          minutes: typeof args.minutes === 'number' ? args.minutes : 10
+        }).then(function (data) {
           return {
-            ok: !!data.ok,
-            verified: !!data.verified,
-            evidence: data.evidence || '',
-            text: 'music is ' + (data.playing ? 'playing' : 'not playing') + ' after the ' + action + ' key',
+            ok: !!(data && data.ok),
+            verified: !!(data && data.verified),
+            evidence: (data && data.evidence) || 'alarm intent handed to Android',
             data: data
           };
         });
@@ -245,266 +185,404 @@
     },
     {
       name: 'notify',
-      summary: 'Post a notification on this phone.',
-      args: { title: 'text', body: 'text' },
-      run: function (args) {
-        return callNative('notify', { title: args.title || 'JARVIS', body: args.body || '' }).then(function () {
-          return { ok: true, verified: false, text: 'notification posted (Android does not report back whether it was shown)', evidence: 'the notification call returned without an error' };
+      title: 'Post a notification',
+      hint: 'shows a notification right now',
+      schema: { title: 'string', body: 'string?' },
+      confirm: false,
+      call: function (args) {
+        return native('notify', { title: args.title, body: args.body || '' }).then(function (data) {
+          return { ok: !!(data && data.ok !== false), verified: false, evidence: 'notification posted; Android does not report delivery', data: data };
         });
       }
     },
     {
       name: 'share_text',
-      summary: 'Send text to another app through the Android share sheet.',
-      args: { text: 'text' },
+      title: 'Share text',
+      hint: 'opens the Android share sheet',
+      schema: { text: 'string' },
       confirm: true,
-      run: function (args) {
-        return callNative('share', { text: args.text || '' }).then(function () {
-          return { ok: true, verified: false, text: 'the share sheet was opened', evidence: 'Android opened the chooser; the other app decides what happens next' };
+      call: function (args) {
+        return native('share', { text: args.text, url: '' }).then(function (data) {
+          return { ok: !!(data && data.ok !== false), verified: false, evidence: 'share sheet opened; the app you pick handles it', data: data };
         });
       }
     },
     {
       name: 'open_url',
-      summary: 'Open a web link in the browser.',
-      args: { url: 'text' },
+      title: 'Open a link',
+      hint: 'opens an https link in the browser',
+      schema: { url: 'string' },
       confirm: true,
-      run: function (args) {
-        var url = String(args.url || '').trim();
-        if (!/^https:\/\/[^\s]+\.[^\s]+$/i.test(url)) {
-          return Promise.resolve({ ok: false, verified: true, text: 'only https links can be opened', evidence: 'the link failed validation' });
+      call: function (args) {
+        var url = String(args.url || '');
+        if (!/^https:\/\//i.test(url)) {
+          return Promise.resolve({ ok: false, verified: true, evidence: 'refused: only https links are opened', data: null });
         }
-        return callNative('openUrl', { url: url }).then(function () {
-          return { ok: true, verified: false, text: 'the browser was asked to open the link', evidence: 'the intent was dispatched to the browser' };
+        return native('openUrl', { url: url }).then(function (data) {
+          return { ok: !!(data && data.ok !== false), verified: false, evidence: 'browser intent dispatched', data: data };
         });
       }
     },
     {
-      name: 'search_knowledge',
-      summary: 'Search the documents and notes stored on this phone.',
-      args: { query: 'text' },
-      run: function (args) {
-        if (!window.JarvisKB) return Promise.resolve({ ok: false, verified: true, text: 'the knowledge base did not load', evidence: '' });
-        var hits = window.JarvisKB.search(args.query || '', 4);
+      name: 'media_control',
+      title: 'Control music',
+      hint: 'play, pause, next, previous',
+      schema: { action: 'string' },
+      confirm: false,
+      call: function (args) {
+        var action = String(args.action || 'toggle').toLowerCase();
+        return native('mediaControl', { action: action }).then(function (data) {
+          return {
+            ok: !!(data && data.ok !== false),
+            verified: !!(data && data.verified),
+            evidence: (data && data.evidence) || 'media key event',
+            data: data
+          };
+        });
+      }
+    },
+    {
+      name: 'search_documents',
+      title: 'Search my documents',
+      hint: 'local search over documents you indexed',
+      schema: { query: 'string' },
+      confirm: false,
+      call: function (args) {
+        var hits = KB.search(args.query, 5);
         return Promise.resolve({
           ok: true,
           verified: true,
-          text: hits.length ? hits.map(function (hit) { return hit.title + ': ' + String(hit.text).slice(0, 160); }).join('\n') : 'nothing in the local documents matches',
-          evidence: hits.length + ' passages scored in the local index',
-          data: { hits: hits }
+          evidence: hits.length + ' passage(s) matched locally',
+          data: hits
         });
       }
     },
     {
       name: 'remember',
-      summary: 'Store a durable fact about the owner.',
-      args: { text: 'text' },
-      run: function (args) {
-        var entry = window.JarvisMemory.add(args.text || '');
-        return Promise.resolve(entry.ok === false
-          ? { ok: false, verified: true, text: entry.error, evidence: 'the memory guard refused the text' }
-          : { ok: true, verified: true, text: 'remembered: ' + entry.text, evidence: 'the row was written to the local database' });
-      }
-    },
-    {
-      name: 'phone_capabilities',
-      summary: 'What this phone allows JARVIS to do right now.',
-      args: {},
-      run: function () {
-        return permissions().then(function (state) {
-          var lines = Object.keys(state).filter(function (key) { return typeof state[key] === 'boolean'; })
-            .map(function (key) { return key + ': ' + (state[key] ? 'allowed' : 'not allowed'); });
-          return {
-            ok: true,
-            verified: true,
-            text: lines.join(', '),
-            evidence: 'read from the Android permission manager',
-            data: state
-          };
+      title: 'Remember something',
+      hint: 'stores a fact in on-device memory',
+      schema: { text: 'string' },
+      confirm: false,
+      call: function (args) {
+        var entry = Memory.add(args.text, { kind: 'tool' });
+        if (!entry || entry.ok === false) {
+          return Promise.resolve({ ok: false, verified: true, evidence: (entry && entry.error) || 'memory refused', data: null });
+        }
+        var back = Memory.list().filter(function (row) { return row.id === entry.id; })[0];
+        return Promise.resolve({
+          ok: !!back,
+          verified: !!back,
+          evidence: back ? 'read back from the memory store' : 'not visible after the write',
+          data: entry
         });
       }
     }
   ];
 
-  function map() {
-    var out = {};
-    TOOLS.forEach(function (tool) { out[tool.name] = tool; });
-    return out;
-  }
+  /* --------------------------------------------------------------- native */
 
-  function list() {
-    return TOOLS.map(function (tool) {
-      return { name: tool.name, summary: tool.summary, args: tool.args, confirm: !!tool.confirm };
-    });
-  }
-
-  function get(name) {
-    return map()[String(name || '').toLowerCase()] || null;
-  }
-
-  function validate(name, args) {
-    var tool = get(name);
-    if (!tool) return { ok: false, error: 'unknown tool: ' + name };
-    var input = args && typeof args === 'object' ? args : {};
-    var clean = {};
-    var schema = tool.args || {};
-    var keys = Object.keys(schema);
-    for (var i = 0; i < keys.length; i += 1) {
-      var key = keys[i];
-      var value = input[key];
-      if (value == null || value === '') {
-        return { ok: false, error: tool.name + ' needs "' + key + '"' };
-      }
-      var text = String(value).replace(/\s+/g, ' ').trim();
-      if (text.length > 2000) text = text.slice(0, 2000);
-      clean[key] = schema[key] === 'number' ? Number(text) || 0 : text;
-    }
-    Object.keys(input).forEach(function (key) {
-      if (!(key in clean) && schema[key] === undefined) return;
-    });
-    return { ok: true, args: clean, tool: tool };
-  }
-
-  function permissions() {
-    var plugins = nativePlugins();
-    if (!plugins.tools) {
-      return Promise.resolve({ native: false });
-    }
-    return call('permissions').then(function (data) {
-      return Object.assign({ native: true }, (data && data.permissions) || {});
-    }).catch(function () {
-      return { native: false, error: 'permission state unavailable' };
-    });
-  }
-
-  function requestPermission(name) {
-    return call('requestPermission', { name: name }).then(function (data) {
-      return (data && data.permissions) || {};
-    });
-  }
-
-  var history = [];
-
-  function remember(entry) {
-    history.unshift(entry);
-    history = history.slice(0, 40);
-    if (DB) {
-      try {
-        DB.insert('history', {
-          kind: 'tool',
-          title: entry.name,
-          body: (entry.text || '').slice(0, 400),
-          created: Date.now()
-        });
-      } catch (error) { /* history is best effort */ }
+  function plugins() {
+    try {
+      return (window.Capacitor && window.Capacitor.Plugins) || {};
+    } catch (error) {
+      return {};
     }
   }
 
-  function run(name, args, options) {
-    options = options || {};
-    var checked = validate(name, args);
-    if (!checked.ok) {
-      return Promise.resolve({ ok: false, verified: true, text: checked.error, evidence: 'arguments failed validation', tool: name });
-    }
-    var tool = checked.tool;
-    var finish = function (result) {
-      var row = {
-        name: tool.name,
-        ok: !!result.ok,
-        verified: !!result.verified,
-        text: result.text || '',
-        evidence: result.evidence || '',
-        at: Date.now()
-      };
-      remember(row);
-      return Object.assign({ tool: tool.name }, result);
-    };
-
-    var gate = Promise.resolve(true);
-    if (tool.confirm && !options.confirmed) {
-      ensureStyle();
-      gate = confirmSheet('Allow ' + tool.name.replace(/_/g, ' ') + '?',
-        (tool.summary || '') + '\n\n' + Object.keys(checked.args).map(function (key) {
-          return key + ': ' + checked.args[key];
-        }).join('\n'),
-        tool.name === 'open_url' || tool.name === 'share_text');
-    }
-
-    return gate.then(function (allowed) {
-      if (!allowed) {
-        return finish({ ok: false, verified: true, text: 'the owner declined this action', evidence: 'no Android call was made' });
-      }
-      return tool.run(checked.args).then(finish).catch(function (error) {
-        return finish({
-          ok: false,
-          verified: true,
-          text: String((error && error.message) || error).slice(0, 240),
-          evidence: 'the native call failed'
-        });
-      });
-    });
-  }
-
-  function recent() {
-    if (history.length) return history.slice();
-    if (!DB) return [];
-    return DB.all('history').filter(function (row) { return row.kind === 'tool'; })
-      .sort(function (a, b) { return Number(b.created) - Number(a.created); })
-      .slice(0, 20)
-      .map(function (row) {
-        return { name: row.title, text: row.body, at: Number(row.created), ok: true, verified: true };
-      });
-  }
-
-  function promptLines() {
-    return TOOLS.map(function (tool) {
-      var args = Object.keys(tool.args || {});
-      return tool.name + (args.length ? ' {' + args.join(', ') + '}' : '') + ' — ' + tool.summary;
-    }).join('\n');
-  }
-
-  /* A deterministic router for the small set of commands that must never
-     depend on the model guessing correctly. */
-  function routeCommand(text) {
-    var raw = String(text || '').trim();
-    var lower = raw.toLowerCase();
-    if (!lower) return null;
-    var rules = [
-      { re: /^(check|what('| i)?s|show|tell me)?\s*(my |the )?battery( level| status| percentage)?\??$/, tool: 'device_stats', args: {} },
-      { re: /^(how much|show|check)?\s*(ram|memory|storage|space)( is)?( free| left| available)?\??$/, tool: 'device_stats', args: {} },
-      { re: /^(list|show)( me)?( my)? apps$/, tool: 'list_apps', args: {} },
-      { re: /^open (?:the )?(?:app )?(.+)$/, tool: 'open_app', args: function (m) { return { app: m[1] }; } },
-      { re: /^(?:search|find)(?: my)? (?:documents|notes|knowledge) (?:for )?(.+)$/, tool: 'search_knowledge', args: function (m) { return { query: m[1] }; } },
-      { re: /^remind me(?: to)? (.+?) in (\d+) ?(minute|minutes|hour|hours)$/, tool: 'set_reminder', args: function (m) {
-        var minutes = Number(m[2]) * (/hour/i.test(m[3]) ? 60 : 1);
-        return { text: m[1], minutes: minutes };
-      } },
-      { re: /^(?:save|write) (?:a )?note(?: (?:called|named) (.+?))?(?::| that says| saying)? (.+)$/, tool: 'write_note', args: function (m) {
-        return { name: m[1] || 'note-' + new Date().toISOString().slice(0, 10), text: m[2] };
-      } },
-      { re: /^(?:remember|note) that (.+)$/, tool: 'remember', args: function (m) { return { text: m[1] }; } },
-      { re: /^(?:what can|which) (?:you|jarvis) do\??$/, tool: 'phone_capabilities', args: {} }
-    ];
-    for (var i = 0; i < rules.length; i += 1) {
-      var match = raw.match(rules[i].re);
-      if (!match) continue;
-      // "open the door" must not be treated as an app name; require a short tail.
-      if (rules[i].tool === 'open_app' && match[1].length > 40) return null;
-      return { tool: rules[i].tool, args: typeof rules[i].args === 'function' ? rules[i].args(match) : rules[i].args };
+  function bridge(method) {
+    var all = plugins();
+    var candidates = [all.JarvisTools, all.JarvisNative];
+    for (var i = 0; i < candidates.length; i += 1) {
+      if (candidates[i] && typeof candidates[i][method] === 'function') return candidates[i];
     }
     return null;
   }
 
+  function native(method, args) {
+    var target = bridge(method);
+    if (!target) {
+      return Promise.reject(new Error('This action needs the installed Android app (' + method + ').'));
+    }
+    return Promise.resolve(target[method](args || {})).catch(function (error) {
+      throw new Error((error && error.message) || (method + ' failed'));
+    });
+  }
+
+  function nativeReady() {
+    return !!bridge('deviceStats');
+  }
+
+  /* ----------------------------------------------------------- validation */
+
+  function coerce(value, type) {
+    var optional = /\?$/.test(type);
+    var base = type.replace(/\?$/, '');
+    if (value == null || value === '') {
+      if (optional) return { ok: true, value: undefined };
+      return { ok: false, error: 'missing value' };
+    }
+    if (base === 'string') return { ok: true, value: String(value) };
+    if (base === 'number') {
+      var num = Number(value);
+      if (!isFinite(num)) return { ok: false, error: 'not a number' };
+      return { ok: true, value: num };
+    }
+    if (base === 'boolean') return { ok: true, value: !!value };
+    return { ok: true, value: value };
+  }
+
+  function validate(name, args) {
+    var tool = byName(name);
+    if (!tool) return { ok: false, error: 'Unknown tool: ' + name };
+    var input = args && typeof args === 'object' ? args : {};
+    var out = {};
+    var keys = Object.keys(tool.schema || {});
+    for (var i = 0; i < keys.length; i += 1) {
+      var key = keys[i];
+      var result = coerce(input[key], tool.schema[key]);
+      if (!result.ok) return { ok: false, error: 'Tool ' + name + ' needs "' + key + '" (' + tool.schema[key] + ')' };
+      if (result.value !== undefined) out[key] = result.value;
+    }
+    var unknown = Object.keys(input).filter(function (key) { return keys.indexOf(key) === -1; });
+    return { ok: true, args: out, ignored: unknown };
+  }
+
+  function byName(name) {
+    var wanted = String(name || '');
+    return TOOLS.filter(function (tool) { return tool.name === wanted; })[0] || null;
+  }
+
+  /* --------------------------------------------------------------- history */
+
+  function history() {
+    var rows = [];
+    try { rows = JSON.parse(sessionStorage.getItem(HISTORY_KEY) || '[]') || []; } catch (error) { rows = []; }
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  function record(entry) {
+    var rows = history();
+    rows.unshift(entry);
+    rows = rows.slice(0, 40);
+    try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(rows)); } catch (error) { /* ignore */ }
+    if (DB && DB.available) {
+      try {
+        DB.insert('history', {
+          id: DB.uid('h'),
+          kind: 'tool',
+          title: entry.tool,
+          body: (entry.ok ? 'ok' : 'failed') + (entry.verified ? ' · verified' : ' · unverified') + ' — ' + entry.evidence,
+          created: new Date().toISOString()
+        });
+      } catch (error) { /* history is best-effort */ }
+    }
+    return entry;
+  }
+
+  /* ----------------------------------------------------------- confirmation */
+
+  function confirmSheet(tool, args) {
+    return new Promise(function (resolve) {
+      var host = document.createElement('div');
+      host.className = 'jconfirm-host';
+      host.innerHTML =
+        '<div class="jconfirm-backdrop"></div>' +
+        '<div class="jconfirm" role="dialog" aria-modal="true" aria-label="Allow ' + UI.esc(tool.title) + '">' +
+          '<h3>Allow ' + UI.esc(tool.title) + '?</h3>' +
+          '<p class="small muted">' + UI.esc(tool.hint) + '</p>' +
+          '<pre class="jconfirm-args">' + UI.esc(JSON.stringify(args || {}, null, 2)) + '</pre>' +
+          '<div class="jconfirm-actions">' +
+            '<button class="btn btn-ghost" data-answer="no">Cancel</button>' +
+            '<button class="btn btn-primary" data-answer="yes">Allow</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(host);
+      requestAnimationFrame(function () { host.classList.add('is-open'); });
+      function close(answer) {
+        host.classList.remove('is-open');
+        setTimeout(function () { host.remove(); }, 180);
+        resolve(answer);
+      }
+      host.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-answer]');
+        if (button) close(button.getAttribute('data-answer') === 'yes');
+        else if (event.target.classList.contains('jconfirm-backdrop')) close(false);
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------- run */
+
+  function fail(name, evidence, extra) {
+    var out = {
+      tool: name,
+      ok: false,
+      verified: true,
+      evidence: evidence,
+      text: evidence,
+      data: null,
+      ms: 0
+    };
+    if (extra) Object.keys(extra).forEach(function (key) { out[key] = extra[key]; });
+    return out;
+  }
+
+  function run(name, args, options) {
+    options = options || {};
+    var tool = byName(name);
+    if (!tool) return Promise.resolve(fail(name, 'There is no such action on this phone.'));
+    var checked = validate(name, args);
+    if (!checked.ok) return Promise.resolve(fail(name, checked.error));
+    if (!nativeReady() && tool.name !== 'search_documents' && tool.name !== 'remember' && tool.name !== 'phone_capabilities') {
+      return Promise.resolve(fail(name, 'This action needs the installed Android app; the browser build cannot touch the phone.'));
+    }
+
+    var start = Date.now();
+    var go = tool.confirm && !options.confirmed
+      ? confirmSheet(tool, checked.args).then(function (yes) {
+          if (!yes) {
+            return { ok: false, cancelled: true, tool: name, verified: true, evidence: 'You cancelled it, so nothing was done.', data: null };
+          }
+          return tool.call(checked.args);
+        })
+      : Promise.resolve().then(function () { return tool.call(checked.args); });
+
+    return go.then(function (result) {
+      var out = {
+        tool: name,
+        ok: !!result.ok,
+        verified: !!result.verified,
+        evidence: result.evidence || (result.ok ? 'done' : 'failed'),
+        data: result.data == null ? null : result.data,
+        ms: Date.now() - start
+      };
+      out.text = out.ok ? summarize(name, out) : (out.evidence || 'The action did not run.');
+      if (result.cancelled) out.cancelled = true;
+      return record(out);
+    }).catch(function (error) {
+      return record({
+        tool: name,
+        ok: false,
+        verified: true,
+        evidence: String((error && error.message) || error),
+        data: null,
+        ms: Date.now() - start
+      });
+    });
+  }
+
+
+  /* A short, factual sentence for the chat bubble. It never says more than the
+     tool actually established. */
+  function summarize(name, result) {
+    var data = result.data || {};
+    if (!result.ok) return '';
+    if (name === 'device_stats') {
+      return 'Battery ' + (data.batteryPct == null ? '?' : data.batteryPct) + '%, ' +
+        Math.round((data.availMb || 0) / 101.3) / 10 + ' GB RAM free of ' +
+        Math.round((data.totalMb || 0) / 101.3) / 10 + ' GB, ' +
+        Math.round((data.freeStorageMb || 0) / 101.3) / 10 + ' GB storage free, ' +
+        (data.cores || '?') + ' cores, Android ' + (data.android || '?') + '.';
+    }
+    if (name === 'phone_capabilities') {
+      var permsOn = Object.keys(data.permissions || {}).filter(function (key) { return data.permissions[key]; });
+      return (data.native ? ('Installed app on ' + (data.device || 'this phone') + ' (SDK ' + data.sdk + '). ') : 'Browser build: phone actions are unavailable. ') +
+        'Permissions on: ' + (permsOn.length ? permsOn.join(', ') : 'none yet') + '. ' +
+        (data.modelReady ? 'On-device brain loaded.' : 'On-device brain not loaded yet.') + ' ' +
+        data.documents + ' indexed passage(s).';
+    }
+    if (name === 'list_apps') {
+      var apps = data.apps || [];
+      return apps.length + ' app(s) available' + (apps.length ? ': ' + apps.slice(0, 12).map(function (a) { return a.label || a.package; }).join(', ') + (apps.length > 12 ? '…' : '') : '.');
+    }
+    if (name === 'open_app') return 'Asked Android to open ' + (data.app || data.package || 'the app') + '.';
+    if (name === 'write_note') return 'Saved "' + (data.name || '') + '" and read it back (' + (data.bytes || 0) + ' bytes).';
+    if (name === 'read_note') return '"' + (data.name || '') + '": ' + String(data.text || '').slice(0, 400);
+    if (name === 'list_notes') return (data.notes || []).length + ' note(s): ' + (data.notes || []).join(', ');
+    if (name === 'add_calendar_event') return 'Event "' + (data.title || '') + '" saved' + (data.when ? ' for ' + data.when : '') + '.';
+    if (name === 'set_reminder') return 'Reminder handoff to the clock app for "' + (data.text || '') + '".';
+    if (name === 'notify') return 'Notification posted.';
+    if (name === 'share_text') return 'Share sheet opened.';
+    if (name === 'open_url') return 'Link opened.';
+    if (name === 'media_control') return 'Media action sent: ' + (data.action || '');
+    if (name === 'search_documents') {
+      var hits = data || [];
+      if (!hits.length) return 'No passage in your documents matches that.';
+      return hits.map(function (hit, index) {
+        return (index + 1) + '. ' + hit.title + (hit.part ? ' (' + hit.part + ')' : '') + ' — ' + hit.snippet.slice(0, 160);
+      }).join('\n');
+    }
+    if (name === 'remember') return 'Saved to memory: ' + (data.text || '');
+    return '';
+  }
+
+  /* Deterministic routing for the phrases people actually type, so the phone
+     actions work even before the model is downloaded. */
+  function routeCommand(text) {
+    var raw = String(text || '').trim();
+    var value = raw.toLowerCase();
+    if (!value) return null;
+    if (/^(hi|hello|hey|namaste)\b/.test(value)) return null;
+    if (/(battery|ram|storage|memory|phone status|device status|kitni battery|kitni ram)/.test(value)) {
+      return { tool: 'device_stats', args: {} };
+    }
+    var open = raw.match(/^(?:open|launch)\s+(.+)$/i) || raw.match(/^khol(?:o|do)?\s+(.+)$/i);
+    if (open) return { tool: 'open_app', args: { app: open[1].replace(/\s+(app|application)$/i, '').trim() } };
+    var note = value.match(/^(?:save (?:a )?note|note (?:down )?|likho)\s*[:\-]?\s*(.+)$/);
+    if (note) {
+      return { tool: 'write_note', args: { name: 'note-' + new Date().toISOString().slice(0, 10), text: note[1] } };
+    }
+    var remind = value.match(/remind me (?:to )?(.+?)(?: in (\d+) ?(min|minutes|hour|hours|ghante))?$/);
+    if (remind) {
+      var minutes = 10;
+      if (remind[2]) minutes = /hour|ghante/.test(remind[3] || '') ? Number(remind[2]) * 60 : Number(remind[2]);
+      return { tool: 'set_reminder', args: { text: remind[1], minutes: minutes } };
+    }
+    var search = value.match(/^(?:search|find|dhundo)\s+(?:my )?(?:documents?|notes?|files?)\s+(?:for\s+)?(.+)$/);
+    if (search) return { tool: 'search_documents', args: { query: search[1] } };
+    var remember = value.match(/^(?:remember|yaad rakho)[:\s]+(.+)$/);
+    if (remember) return { tool: 'remember', args: { text: remember[1] } };
+    return null;
+  }
+
+  /* ------------------------------------------------------------ permissions */
+
+  function permissions() {
+    return native('permissions').catch(function (error) {
+      return { native: false, error: error.message, permissions: {} };
+    });
+  }
+
+  function request(name) {
+    return native('requestPermission', { name: name });
+  }
+
+  /* --------------------------------------------------------- model prompt */
+
+  function promptLines() {
+    return TOOLS.map(function (tool) {
+      var args = Object.keys(tool.schema || {}).map(function (key) {
+        return key + ':' + tool.schema[key];
+      }).join(', ');
+      return '- ' + tool.name + '(' + args + ') — ' + tool.hint;
+    }).join('\n');
+  }
+
   window.JarvisTools = {
-    list: list,
-    get: get,
+    list: function () { return TOOLS.slice(); },
+    get: byName,
     validate: validate,
     run: run,
-    permissions: permissions,
-    requestPermission: requestPermission,
-    recent: recent,
-    promptLines: promptLines,
     confirmSheet: confirmSheet,
-    routeCommand: routeCommand
+    history: history,
+    permissions: permissions,
+    requestPermission: request,
+    promptLines: promptLines,
+    routeCommand: routeCommand,
+    summarize: summarize,
+    nativeReady: nativeReady,
+    clearHistory: function () {
+      try { sessionStorage.removeItem(HISTORY_KEY); } catch (error) { /* ignore */ }
+    }
   };
 })();

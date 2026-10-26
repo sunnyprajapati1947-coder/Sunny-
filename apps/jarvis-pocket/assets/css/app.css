@@ -989,3 +989,31 @@ body.is-locked { overflow: hidden; }
 /* local brain */
 .brain-card.is-selected { border-color: color-mix(in srgb, var(--accent, #38bdf8) 45%, transparent); }
 .brain-screen .video-bar { margin: .5rem 0 .4rem; }
+
+
+/* ---- tool confirmation (high-impact actions ask first) ---- */
+.jconfirm-host { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-end; justify-content: center; }
+.jconfirm-backdrop { position: absolute; inset: 0; background: rgba(2, 4, 9, .66); opacity: 0; transition: opacity .18s ease; }
+.jconfirm-host.is-open .jconfirm-backdrop { opacity: 1; }
+.jconfirm {
+  position: relative; width: min(560px, 100%); margin: 0 8px 8px; padding: 18px 16px 16px;
+  border-radius: 18px; border: 1px solid var(--line); background: var(--surface, #11141d);
+  transform: translateY(12px); opacity: 0; transition: transform .18s ease, opacity .18s ease;
+}
+.jconfirm-host.is-open .jconfirm { transform: none; opacity: 1; }
+.jconfirm h3 { margin: 0 0 6px; font-size: 1rem; }
+.jconfirm-args {
+  margin: 10px 0 12px; padding: 10px; border-radius: 10px; background: rgba(255, 255, 255, .04);
+  font-size: .78rem; max-height: 140px; overflow: auto; white-space: pre-wrap;
+}
+.jconfirm-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ---- code studio ---- */
+.code-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 12px; }
+.code-area {
+  width: 100%; min-height: 260px; padding: 12px; border-radius: 12px;
+  border: 1px solid var(--line); background: #0a0d15; color: #dfe6f5;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem; line-height: 1.5;
+  resize: vertical; tab-size: 2;
+}
+.code-frame { width: 100%; height: 320px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }

@@ -45,7 +45,7 @@
       { id: 'brain', title: 'On-device brain', done: !!(window.JarvisLocalBrain && window.JarvisLocalBrain.isReady()),
         hint: 'Qwen3.5 inside the phone. Download once (about 490 MB) and it answers with no internet and no API key.' },
       { id: 'youtube', title: 'YouTube (optional)', done: ytReady(),
-        hint: 'Data API key for video search and channel work.' }
+        hint: 'Optional: a Google Data API key for video search and channel work. Not needed for chat or the phone tools.' }
     ];
   }
 
@@ -57,7 +57,6 @@
     var list = steps();
     var done = list.filter(function (step) { return step.done; }).length;
     var config = LLM.settings();
-    var provider = LLM.providerOf(config);
 
     return '<section class="screen setup-screen">' +
       '<div class="screen-head"><h1>Setup</h1>' +
@@ -118,41 +117,7 @@
       setTimeout(function () { refreshCheck().then(refresh); }, 900);
     });
 
-    var show = document.getElementById('setupShowKey');
-    var keyInput = document.getElementById('setupKey');
-    if (show && keyInput) show.addEventListener('click', function () {
-      keyInput.type = keyInput.type === 'password' ? 'text' : 'password';
-    });
-
-    var save = document.getElementById('setupSaveKey');
-    if (save) save.addEventListener('click', function () {
-      var value = keyInput ? keyInput.value.trim() : '';
-      if (!value) {
-        UI.toast('Paste the key first', { tone: 'warn' });
-        return;
-      }
-      LLM.save({ key: value });
-      var note = document.getElementById('setupKeyNote');
-      if (note) note.textContent = 'Checking…';
-      save.disabled = true;
-      LLM.testConnection().then(function () {
-        UI.toast('AI brain ready ✅', { tone: 'ok' });
-        if (N.available && N.secureSet) N.secureSet('llm.key', value).catch(function () {});
-        refresh();
-      }).catch(function (error) {
-        UI.toast('Key fail: ' + error.message, { tone: 'warn' });
-        if (note) note.textContent = 'Key saved, but the test failed: ' + error.message;
-      }).then(function () { save.disabled = false; });
-    });
-
-    var getKey = document.getElementById('setupGetKey');
-    if (getKey) getKey.addEventListener('click', function () {
-      var provider = LLM.providerOf(LLM.settings());
-      var url = provider.keys || 'https://aistudio.google.com/apikey';
-      if (N.available && N.openUrl) N.openUrl(url).catch(function () { window.open(url, '_blank'); });
-      else window.open(url, '_blank');
-    });
-
+    // JARVIS 1.0 has no key step: the brain is downloaded once, on this phone.
     var finish = document.getElementById('setupFinish');
     if (finish) finish.addEventListener('click', function () {
       UI.storeSet(FLAG, true);

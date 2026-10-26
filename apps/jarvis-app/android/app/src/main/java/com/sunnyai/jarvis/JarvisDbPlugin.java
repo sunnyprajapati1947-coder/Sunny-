@@ -32,6 +32,8 @@ public class JarvisDbPlugin extends Plugin {
         db.execSQL("CREATE TABLE IF NOT EXISTS memory (id TEXT PRIMARY KEY, text TEXT, kind TEXT, source TEXT, created TEXT)");
         db.execSQL("CREATE TABLE IF NOT EXISTS docs (id TEXT PRIMARY KEY, title TEXT, body TEXT, source TEXT, created TEXT)");
         db.execSQL("CREATE TABLE IF NOT EXISTS history (id TEXT PRIMARY KEY, kind TEXT, title TEXT, body TEXT, created TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS projects (id TEXT PRIMARY KEY, name TEXT, created TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS files (id TEXT PRIMARY KEY, project TEXT, name TEXT, body TEXT, updated TEXT)");
         return db;
     }
 

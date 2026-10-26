@@ -272,6 +272,46 @@ check("memory refuses secrets", secretSave.ok === false);
 const plainSave = window.JarvisMemory.add("I build Android apps");
 check("memory stores a normal fact", plainSave.ok === true);
 
+// --- memory guard (10 GB budget, runtime measurement) ----------------------
+const mem = window.JarvisMem;
+check("memory budget caps at 10 GB", mem.CAP_MB === 10240);
+mem.setBudget(1024);
+const tight = mem.check(1400);
+check("guard blocks a brain that does not fit the budget", tight.ok === false && tight.reason === "budget",
+  JSON.stringify(tight).slice(0, 120));
+mem.setBudget(4096);
+const recovered = await mem.recover("smoke test");
+check("memory recovery explains what happened", typeof recovered.released === "boolean" &&
+  /unload/i.test(recovered.advice) && !!recovered.snapshot);
+
+// --- coding studio (sandboxed, on-device files) ----------------------------
+const Code = window.JarvisCode;
+const projectId = Code.create("Smoke project");
+check("code project is created with starter files", Code.filesOf(projectId).length === 3,
+  String(Code.filesOf(projectId).length));
+const preview = Code.buildDocument(projectId);
+check("preview inlines css and js into one sandboxed document",
+  /<style>/.test(preview) && /<script>/.test(preview) && !/src="app\.js"/.test(preview));
+Code.remove(projectId);
+check("project delete removes its files", Code.filesOf(projectId).length === 0);
+
+// --- policy: no cloud AI anywhere, confirmation before risky actions -------
+const cloudHosts = ["api.openai.com", "generativelanguage.googleapis.com", "openrouter.ai",
+  "api.anthropic.com", "api.groq.com", "api.deepseek.com"];
+const shipped = ["app.js", "chat.js", "library.js", "tasks.js", "connections.js", "video.js",
+  "setup.js", "llm.js", "voice.js", "brain.js", "local-brain.js", "native.js", "core.js",
+  "db.js", "kb.js", "model.js", "tools.js", "dash.js", "memory.js", "code.js", "mem.js"];
+const cloudHits = shipped.filter((name) => {
+  const src = readFileSync(join(ROOT, "assets", "js", name), "utf8");
+  return cloudHosts.some((host) => src.includes(host));
+});
+check("no cloud AI endpoint in the shipped code", cloudHits.length === 0, cloudHits.join(", "));
+const risky = ["open_app", "add_calendar_event", "set_reminder", "share_text", "open_url"];
+check("high-impact tools ask before running", risky.every((name) => T.get(name) && T.get(name).confirm === true));
+check("tool registry covers the phone actions", ["device_stats", "list_apps", "write_note", "read_note",
+  "list_notes", "media_control", "notify", "search_documents", "remember"]
+  .every((name) => !!T.get(name)));
+
 // --- dashboard -------------------------------------------------------------
 window.location.hash = "#/dash";
 await until("dashboard", () => q("#dashDiag"));
@@ -282,7 +322,7 @@ check("dashboard renders every panel", /On-device brain/.test(text("#view")) && 
 const hinglish = /\b(karo|karein|karna|karne|nahi|nahin|aap|apna|apne|apni|yeh|woh|kya|kaise|kuch|bahut|bohot|chahiye|milega|padega|kholo|bolo|poocho|dekho|samjho|theek|thik|galat|abhi|phir|sirf|sabse|dobara|taiyar|banao|banega|hoga|hogi|hota|raha|rahi|rahe|hai|hain|hoon|mujhe|tumhe|wala|wali|wale|jaise|warna|matlab|saath|bina|andar|upar|neeche)\b/i;
 const uiFiles = ["app.js", "chat.js", "library.js", "tasks.js", "connections.js", "video.js",
   "setup.js", "llm.js", "voice.js", "brain.js", "local-brain.js", "native.js", "core.js",
-  "db.js", "kb.js", "model.js", "tools.js", "dash.js", "memory.js"];
+  "db.js", "kb.js", "model.js", "tools.js", "dash.js", "memory.js", "code.js", "mem.js"];
 const leftovers = [];
 for (const name of uiFiles) {
   const src = readFileSync(join(ROOT, "assets", "js", name), "utf8");

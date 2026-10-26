@@ -70,7 +70,8 @@
       return 'There is not enough free storage for the model (about 550 MB). Free some space and retry.';
     }
     if (/HTTP 40[134]|Failed to fetch|NetworkError|network error|ECONN|Load failed/i.test(message)) {
-      return 'The model server could not be reached. Open Settings → Local brain → Diagnose to see which source failed, then retry on Wi-Fi.';
+      return 'The model server could not be reached. Open Settings → Local brain → Diagnose to see which ' +
+        'source failed, then retry on Wi-Fi (or import the model files from storage). Detail: ' + message.slice(0, 160);
     }
     if (/SharedArrayBuffer|threads/i.test(message)) {
       return 'This WebView cannot use WASM threads, so the single-thread path is used.';
@@ -185,7 +186,8 @@
     };
   }
 
-  function prepare(id, onProgress) {
+  function prepare(id, onProgress, options) {
+    options = options || {};
     var model = id ? Model.find(id) : selected();
     if (state.pipe && state.loadedId === model.id) {
       return Model.inspect(model, state.device || 'wasm').then(function () { return status(); });
@@ -194,6 +196,20 @@
 
     state.loadingId = model.id;
     state.error = '';
+
+    // Memory budget: refuse a load that cannot fit instead of letting Android
+    // kill the WebView mid-warmup. `force` is only used by the explicit
+    // "Load anyway" button in the model manager.
+    var guard = window.JarvisMem ? window.JarvisMem.check(model.ramMb) : null;
+    if (guard && !guard.ok && !options.force) {
+      state.loadingId = '';
+      state.error = guard.advice;
+      var guardError = new Error(guard.advice);
+      guardError.code = 'mem-budget';
+      guardError.guard = guard;
+      return Promise.reject(guardError);
+    }
+    if (guard && window.JarvisMem) window.JarvisMem.status();
 
     return detectDevice().then(function (device) {
       return Model.ensure(model, {
@@ -314,9 +330,13 @@
         if (!text) throw new Error('The model returned an empty answer. Try again.');
         return text;
       }).catch(function (error) {
-        // One recovery attempt for memory pressure: free everything, then report.
-        if (/out of memory|OOM|Allocation failed|memory access out of bounds/i.test(String(error && error.message))) {
-          release();
+        // Memory pressure: release the engine through the guard so the rest of
+        // the app (tools, memory, library) keeps running instead of dying.
+        var pressure = window.JarvisMem ? window.JarvisMem.shouldRecover(error) : '';
+        if (pressure) {
+          return window.JarvisMem.recover('out of memory during generation').then(function () {
+            throw new Error(friendly(error));
+          });
         }
         throw new Error(friendly(error));
       });
@@ -349,6 +369,21 @@
     return !!(state.pipe && state.loadedId === selected().id);
   }
 
+  /* Drop in-memory engine state only. The model files in CacheStorage stay, so
+     a memory recovery never costs the user another download. */
+  function clearTransient() {
+    state.progress = null;
+    state.lib = null;
+    state.libPromise = null;
+    return Promise.resolve(true);
+  }
+
+  function memCheck(force) {
+    if (!window.JarvisMem) return { ok: true, advice: '' };
+    var verdict = window.JarvisMem.check(selected().ramMb);
+    return force ? Object.assign({}, verdict, { ok: true, forced: true }) : verdict;
+  }
+
   function filesReady() {
     return Model.inspect(selected(), state.device || 'wasm').then(function (info) {
       state.filesReady = !!info.ready;
@@ -371,6 +406,8 @@
     ensureLoaded: ensureLoaded,
     generate: generate,
     release: release,
+    clearTransient: clearTransient,
+    memCheck: memCheck,
     removeModel: removeModel,
     filesReady: filesReady,
     isReady: isReady,

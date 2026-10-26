@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -1342,3 +1343,92 @@ class LogRedactionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+# ------------------------------------------------- local-only PWA guarantees
+
+
+class LocalOnlyAppTests(unittest.TestCase):
+    """Static guarantees for the shipped Android/PWA app.
+
+    These are cheap and catch the failures that matter most: a cloud endpoint
+    sneaking back in, the service worker not caching a script (so the app
+    breaks offline), a version mismatch between the APK and the install page.
+    """
+
+    PWA = ROOT / "apps" / "jarvis-pocket"
+
+    def read(self, *parts):
+        return (self.PWA.joinpath(*parts)).read_text(encoding="utf-8")
+
+    def scripts(self):
+        html = self.read("index.html")
+        return re.findall(r'<script src="([^"]+)"', html)
+
+    def test_no_cloud_ai_endpoint_is_shipped(self):
+        banned = [
+            "api.openai.com", "generativelanguage.googleapis.com", "openrouter.ai",
+            "api.anthropic.com", "api.groq.com", "api.deepseek.com",
+        ]
+        offenders = []
+        for path in (self.PWA / "assets" / "js").glob("*.js"):
+            text = path.read_text(encoding="utf-8")
+            for host in banned:
+                if host in text:
+                    offenders.append(f"{path.name}: {host}")
+        self.assertEqual(offenders, [])
+
+    def test_llm_module_makes_no_network_call(self):
+        source = self.read("assets", "js", "llm.js")
+        self.assertNotIn("fetch(", source)
+        self.assertNotIn("XMLHttpRequest", source)
+        self.assertNotIn("apiKey", source)
+
+    def test_offline_shell_caches_every_script(self):
+        cached = self.read("sw.js")
+        missing = [src for src in self.scripts() if src not in cached]
+        self.assertEqual(missing, [], f"service worker does not cache: {missing}")
+
+    def test_memory_guard_loads_before_the_brain(self):
+        order = self.scripts()
+        self.assertIn("assets/js/mem.js", order)
+        self.assertLess(order.index("assets/js/mem.js"), order.index("assets/js/local-brain.js"))
+        self.assertLess(order.index("assets/js/db.js"), order.index("assets/js/kb.js"))
+        self.assertLess(order.index("assets/js/tools.js"), order.index("assets/js/chat.js"))
+
+    def test_memory_budget_caps_at_ten_gigabytes(self):
+        source = self.read("assets", "js", "mem.js")
+        self.assertIn("var CAP_MB = 10240;", source)
+        self.assertIn("function recover(", source)
+        self.assertIn("function check(", source)
+
+    def test_high_impact_tools_require_confirmation(self):
+        source = self.read("assets", "js", "tools.js")
+        for name in ("open_app", "add_calendar_event", "set_reminder", "share_text", "open_url"):
+            block = re.search(r"name: '" + name + r"',(.*?)confirm: (true|false)", source, re.S)
+            self.assertIsNotNone(block, f"{name} is not registered")
+            self.assertEqual(block.group(2), "true", f"{name} must ask before running")
+
+    def test_database_creates_the_code_studio_tables(self):
+        plugin = (ROOT / "apps" / "jarvis-app" / "android" / "app" / "src" / "main" /
+                  "java" / "com" / "sunnyai" / "jarvis" / "JarvisDbPlugin.java").read_text(encoding="utf-8")
+        self.assertIn("CREATE TABLE IF NOT EXISTS projects", plugin)
+        self.assertIn("CREATE TABLE IF NOT EXISTS files", plugin)
+        source = self.read("assets", "js", "db.js")
+        self.assertIn("'projects'", source)
+        self.assertIn("'files'", source)
+
+    def test_manifest_keeps_queries_at_manifest_level(self):
+        manifest = (ROOT / "apps" / "jarvis-app" / "android" / "app" / "src" / "main" /
+                    "AndroidManifest.xml").read_text(encoding="utf-8")
+        self.assertIn("<queries>", manifest)
+        self.assertLess(manifest.index("<queries>"), manifest.index("<application"))
+        self.assertIn("android.permission.RECORD_AUDIO", manifest)
+        self.assertIn("android.permission.WRITE_CALENDAR", manifest)
+
+    def test_install_page_and_app_version_agree(self):
+        package = json.loads((ROOT / "apps" / "jarvis-app" / "package.json").read_text(encoding="utf-8"))
+        version = package["version"]
+        install = self.read("install.html")
+        self.assertIn(f"releases/download/jarvis-v{version}/JARVIS-{version}.apk", install)
+        self.assertNotIn("bring your own key", self.read("index.html").lower())

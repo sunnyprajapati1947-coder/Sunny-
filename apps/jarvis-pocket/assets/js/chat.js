@@ -179,9 +179,8 @@
   function updateStatus() {
     if (!els.note) return;
     var config = LLM.settings();
-    var provider = LLM.providerOf(config);
     var ready = LLM.isReady(config);
-    els.note.textContent = ready ? (provider.label + ' · ' + config.model) : 'library mode (brain not loaded)';
+    els.note.textContent = ready ? ('On-device Qwen3.5 · ' + config.model) : 'library mode (brain not loaded)';
     els.note.classList.toggle('is-off', !ready);
     if (els.speakToggle) els.speakToggle.checked = !!UI.storeGet('voice.speak', false);
   }
@@ -570,7 +569,8 @@
     Pack.contextFor(userText, 3).then(function (context) {
       var hits = Pack.searchScored(userText, 3).map(function (hit) { return hit.item.i; });
       chat._src = hits;
-      var system = LLM.buildSystem({ context: context, memory: Memory.list() });
+      var documents = window.JarvisKB ? window.JarvisKB.context(userText, 3) : '';
+      var system = LLM.buildSystem({ context: context, documents: documents, memory: Memory.list() });
       var messages = modelMessages(chat, liveIndex);
       if (!messages.length) {
         finish('', 'Message history is empty — send it again.');

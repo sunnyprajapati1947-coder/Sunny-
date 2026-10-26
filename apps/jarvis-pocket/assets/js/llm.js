@@ -1,82 +1,30 @@
-/* Jarvis Pocket — provider adapters, streaming and the system prompt. */
+/* Jarvis Pocket — the on-device brain adapter and the system prompt.
+   Local only by construction: there is no network call in this file. */
 (function () {
   'use strict';
 
   var UI = window.JarvisUI;
   var Pack = window.JarvisPack;
 
+  /* JARVIS 1.0 is local only. There is deliberately no provider table, no
+     endpoint builder and no key handling anywhere in this file: the single
+     brain is the on-device model, so no prompt can leave the phone. */
   var PROVIDERS = {
     local: {
-      label: 'On-device (Qwen)',
+      label: 'On-device (Qwen3.5)',
       kind: 'local',
       base: '',
       models: ['qwen3.5-0.8b'],
-      keys: 'https://huggingface.co/onnx-community/Qwen3.5-0.8B-Text-ONNX',
-      note: 'Qwen3.5 runs inside the phone, even without internet. Download the model first (Settings → Local brain).'
-    },
-    gemini: {
-      label: 'Google Gemini',
-      kind: 'gemini',
-      base: 'https://generativelanguage.googleapis.com/v1beta',
-      models: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'],
-      keys: 'https://aistudio.google.com/apikey',
-      note: 'Free tier available, works directly from the browser.'
-    },
-    openrouter: {
-      label: 'OpenRouter',
-      kind: 'openai',
-      base: 'https://openrouter.ai/api/v1',
-      models: ['openai/gpt-4o-mini', 'anthropic/claude-3.5-haiku', 'google/gemini-2.0-flash-001', 'deepseek/deepseek-chat'],
-      keys: 'https://openrouter.ai/keys',
-      note: 'One key for many models. Browser friendly.'
-    },
-    openai: {
-      label: 'OpenAI',
-      kind: 'openai',
-      base: 'https://api.openai.com/v1',
-      models: ['gpt-4o-mini', 'gpt-4.1-mini', 'gpt-4o'],
-      keys: 'https://platform.openai.com/api-keys',
-      note: 'If the browser blocks the request, use OpenRouter with the same models.'
-    },
-    anthropic: {
-      label: 'Anthropic Claude',
-      kind: 'anthropic',
-      base: 'https://api.anthropic.com',
-      models: ['claude-sonnet-4-5', 'claude-haiku-4-5', 'claude-3-5-haiku-latest'],
-      keys: 'https://console.anthropic.com/settings/keys',
-      note: 'Direct browser access is enabled for this app.'
-    },
-    groq: {
-      label: 'Groq',
-      kind: 'openai',
-      base: 'https://api.groq.com/openai/v1',
-      models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'openai/gpt-oss-20b'],
-      keys: 'https://console.groq.com/keys',
-      note: 'Extremely fast open models, free tier.'
-    },
-    deepseek: {
-      label: 'DeepSeek',
-      kind: 'openai',
-      base: 'https://api.deepseek.com/v1',
-      models: ['deepseek-chat', 'deepseek-reasoner'],
-      keys: 'https://platform.deepseek.com/api_keys',
-      note: 'Cheap reasoning models.'
-    },
-    custom: {
-      label: 'Custom / local',
-      kind: 'openai',
-      base: '',
-      models: [],
       keys: '',
-      note: 'Any OpenAI-compatible endpoint, e.g. http://192.168.1.5:11434/v1 for Ollama.'
+      note: 'Qwen3.5 runs inside the phone. Download the model once, then it works in airplane mode.'
     }
   };
 
   var DEFAULTS = {
     provider: 'local',
-    key: '',
+    key: '',            // kept in the shape for stored-setting migration; never read
     model: 'qwen3.5-0.8b',
-    base: '',
+    base: '',           // same: no endpoint is ever built
     temperature: 0.6,
     maxTokens: 1400,
     stream: true,
@@ -106,213 +54,21 @@
   }
 
   function providerOf(config) {
-    return PROVIDERS[config.provider] || PROVIDERS.custom;
+    return PROVIDERS.local;
   }
 
-  function baseUrl(config) {
-    var provider = providerOf(config);
-    var base = (config.base || provider.base || '').trim().replace(/\/+$/, '');
-    return base;
-  }
 
   function isReady(config) {
     var settingsNow = config || settings();
-    var provider = providerOf(settingsNow);
-    if (provider.kind === 'local') {
-      return !!(window.JarvisLocalBrain && window.JarvisLocalBrain.isReady());
-    }
-    return !!(settingsNow.key && settingsNow.model && baseUrl(settingsNow));
+    return !!(settingsNow && window.JarvisLocalBrain && window.JarvisLocalBrain.isReady());
   }
 
-  function friendlyError(error, config) {
+  function friendlyError(error) {
     var message = String((error && error.message) || error || 'Unknown error');
-    var status = error && error.status;
-    if (status === 401 || status === 403) return 'The API key was rejected. Check the key again in Settings.';
-    if (status === 404) return 'Model "' + (config ? config.model : '') + '" was not found. Change the model name in Settings.';
-    if (status === 429) return 'Rate limit hit. Try again in a moment or pick another model.';
-    if (status === 400) return 'The request was rejected: ' + message;
-    if (status >= 500) return 'The provider is down (' + status + '). Try again later.';
-    if (/Failed to fetch|fetch failed|NetworkError|Load failed|ECONNREFUSED|ERR_NETWORK/i.test(message)) {
-      return 'Network/CORS block. Either check the internet connection or use the OpenRouter provider (browser-friendly).';
+    if (window.JarvisLocalBrain && window.JarvisLocalBrain.friendly) {
+      return window.JarvisLocalBrain.friendly(message);
     }
     return message;
-  }
-
-  function requestHeaders(config) {
-    var provider = providerOf(config);
-    if (provider.kind === 'anthropic') {
-      return {
-        'content-type': 'application/json',
-        'x-api-key': config.key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      };
-    }
-    var headers = {
-      'content-type': 'application/json',
-      authorization: 'Bearer ' + config.key
-    };
-    if (config.provider === 'openrouter') {
-      headers['HTTP-Referer'] = location.origin;
-      headers['X-Title'] = 'Jarvis Pocket';
-    }
-    return headers;
-  }
-
-  function endpoint(config) {
-    var provider = providerOf(config);
-    var base = baseUrl(config);
-    if (provider.kind === 'anthropic') return base + '/v1/messages';
-    if (provider.kind === 'gemini') {
-      return base + '/models/' + encodeURIComponent(config.model) + ':streamGenerateContent?alt=sse&key=' + encodeURIComponent(config.key);
-    }
-    return base + '/chat/completions';
-  }
-
-  function plainEndpoint(config) {
-    var provider = providerOf(config);
-    var base = baseUrl(config);
-    if (provider.kind === 'anthropic') return base + '/v1/messages';
-    if (provider.kind === 'gemini') {
-      return base + '/models/' + encodeURIComponent(config.model) + ':generateContent?key=' + encodeURIComponent(config.key);
-    }
-    return base + '/chat/completions';
-  }
-
-  function payload(config, system, messages, stream) {
-    var provider = providerOf(config);
-    if (provider.kind === 'anthropic') {
-      return {
-        model: config.model,
-        max_tokens: config.maxTokens || 1400,
-        temperature: config.temperature,
-        system: system,
-        stream: stream,
-        messages: messages.map(function (message) {
-          return { role: message.role === 'assistant' ? 'assistant' : 'user', content: message.content };
-        })
-      };
-    }
-    if (provider.kind === 'gemini') {
-      return {
-        systemInstruction: { parts: [{ text: system }] },
-        contents: messages.map(function (message) {
-          return {
-            role: message.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: message.content }]
-          };
-        }),
-        generationConfig: {
-          temperature: config.temperature,
-          maxOutputTokens: config.maxTokens || 1400
-        }
-      };
-    }
-    return {
-      model: config.model,
-      stream: stream,
-      temperature: config.temperature,
-      max_tokens: config.maxTokens || 1400,
-      messages: [{ role: 'system', content: system }].concat(messages.map(function (message) {
-        return { role: message.role === 'assistant' ? 'assistant' : 'user', content: message.content };
-      }))
-    };
-  }
-
-  function extractDelta(config, json) {
-    var provider = providerOf(config);
-    try {
-      if (provider.kind === 'anthropic') {
-        if (json.type === 'content_block_delta' && json.delta && json.delta.text) return json.delta.text;
-        return '';
-      }
-      if (provider.kind === 'gemini') {
-        var candidate = json.candidates && json.candidates[0];
-        if (!candidate || !candidate.content || !candidate.content.parts) return '';
-        return candidate.content.parts.map(function (part) { return part.text || ''; }).join('');
-      }
-      var choice = json.choices && json.choices[0];
-      if (!choice) return '';
-      if (choice.delta && typeof choice.delta.content === 'string') return choice.delta.content;
-      if (choice.message && typeof choice.message.content === 'string') return choice.message.content;
-      return '';
-    } catch (error) {
-      return '';
-    }
-  }
-
-  function extractFull(config, json) {
-    var provider = providerOf(config);
-    if (provider.kind === 'anthropic') {
-      return (json.content || []).map(function (part) { return part.text || ''; }).join('');
-    }
-    if (provider.kind === 'gemini') {
-      var candidate = json.candidates && json.candidates[0];
-      if (!candidate || !candidate.content || !candidate.content.parts) return '';
-      return candidate.content.parts.map(function (part) { return part.text || ''; }).join('');
-    }
-    var choice = json.choices && json.choices[0];
-    return (choice && choice.message && choice.message.content) || '';
-  }
-
-  function parseSseChunk(config, raw, onDelta) {
-    var text = '';
-    var blocks = raw.split('\n\n');
-    for (var i = 0; i < blocks.length; i += 1) {
-      var lines = blocks[i].split('\n');
-      var data = null;
-      for (var j = 0; j < lines.length; j += 1) {
-        var line = lines[j];
-        if (line.indexOf('data:') === 0) {
-          var value = line.slice(5).trim();
-          if (value && value !== '[DONE]') data = value;
-        }
-      }
-      if (!data) continue;
-      var json;
-      try {
-        json = JSON.parse(data);
-      } catch (error) {
-        continue;
-      }
-      var delta = extractDelta(config, json);
-      if (delta) {
-        text += delta;
-        if (onDelta) onDelta(delta);
-      }
-    }
-    return text;
-  }
-
-  function readStream(response, config, onDelta) {
-    if (!response.body || !response.body.getReader) {
-      return response.json().then(function (json) {
-        var text = extractFull(config, json);
-        if (text && onDelta) onDelta(text);
-        return text;
-      });
-    }
-    var reader = response.body.getReader();
-    var decoder = new TextDecoder('utf-8');
-    var buffer = '';
-    var full = '';
-    function pump() {
-      return reader.read().then(function (result) {
-        if (result.done) {
-          if (buffer.trim()) full += parseSseChunk(config, buffer, onDelta);
-          return full;
-        }
-        buffer += decoder.decode(result.value, { stream: true });
-        var splitAt = buffer.lastIndexOf('\n\n');
-        if (splitAt >= 0) {
-          var ready = buffer.slice(0, splitAt + 2);
-          buffer = buffer.slice(splitAt + 2);
-          full += parseSseChunk(config, ready, onDelta);
-        }
-        return pump();
-      });
-    }
-    return pump();
   }
 
   function complete(options) {
@@ -345,23 +101,18 @@
   }
 
   function testConnection() {
-    var provider = providerOf(settings());
-    if (provider.kind === 'local') {
-      if (!window.JarvisLocalBrain) return Promise.reject(new Error('The local brain module did not load.'));
-      return window.JarvisLocalBrain.ensureLoaded()
-        .then(function () { return window.JarvisLocalBrain.generate({ system: 'Reply with exactly: ready', messages: [{ role: 'user', content: 'ping' }], maxTokens: 24, temperature: 0 }); })
-        .then(function (text) { return { ok: true, text: (text || '').slice(0, 80) }; })
-        .catch(function (error) { return { ok: false, error: error.message }; });
-    }
-    return complete({
-      system: 'Reply with exactly: ready',
-      messages: [{ role: 'user', content: 'ping' }],
-      stream: false
-    }).then(function (text) {
-      return { ok: true, text: (text || '').slice(0, 80) };
-    }).catch(function (error) {
-      return { ok: false, error: error.message };
-    });
+    if (!window.JarvisLocalBrain) return Promise.reject(new Error('The local brain module did not load.'));
+    return window.JarvisLocalBrain.ensureLoaded()
+      .then(function () {
+        return window.JarvisLocalBrain.generate({
+          system: 'Reply with exactly: ready',
+          messages: [{ role: 'user', content: 'ping' }],
+          maxTokens: 24,
+          temperature: 0
+        });
+      })
+      .then(function (text) { return { ok: true, text: (text || '').slice(0, 80) }; })
+      .catch(function (error) { return { ok: false, error: error.message }; });
   }
 
   function memoryLines(memory) {
@@ -408,18 +159,22 @@
       'Actions on this phone — only when the user actually asks for one. Emit one tag per line, exactly like this:',
       '<tool>{"name":"device_stats"}</tool>',
       '<tool>{"name":"open_app","app":"YouTube"}</tool>',
-      '<tool>{"name":"search_knowledge","query":"voice cloning"}</tool>',
-      'Available actions:',
-      toolLines,
+      '<tool>{"name":"search_documents","query":"battery saver"}</tool>',
+      'Available actions (name(required args) — purpose):',
+      toolLines || '- device_stats() — phone status',
       '',
       'Rules for actions:',
       '- Never claim an action happened. The app runs it and sends the real result back as <tool_result>.',
-      '- The result says verified or unverified. Repeat that honestly, including when Android could not confirm it.',
-      '- If an action is impossible on this phone, say so instead of inventing a workaround.',
+      '- Each result says verified or unverified. Repeat that honestly, including when Android could not confirm it.',
+      '- If an action is impossible on this phone, say so instead of inventing a workaround. There is no shell, no terminal and no unrestricted background work.',
       '- Never show tool tags in your final answer.'
     );
     if (options.context) {
       lines.push('', 'Relevant library context:', '"""', options.context, '"""');
+    }
+    if (options.documents) {
+      lines.push('', 'Passages from the user\'s own documents (search results, ranked locally):', '"""', options.documents, '"""',
+        'When you use these, say which document the answer came from. If they do not contain the answer, say so.');
     }
     return lines.join('\n');
   }
