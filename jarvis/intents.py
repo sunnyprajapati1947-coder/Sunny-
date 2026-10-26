@@ -383,6 +383,18 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
         if due:
             return _tool("reminder_add", text=cleaned or body, due=due.isoformat())
         return _tool("reminder_add", text=body)
+    trailing_reminder = re.match(
+        r"^(.+?)\s+(?:yaad\s+dila(?:o|na|do|ao)|yaad\s+rakhna|yaad\s+rakho|"
+        r"remind\s+me|reminder\s+(?:laga|set)\s*do)$",
+        text,
+        re.I,
+    )
+    if trailing_reminder and not re.match(r"^(?:remember|yaad rakh(?:o|na)?)\b", low):
+        body = trailing_reminder.group(1).strip()
+        due, cleaned = parse_when(body, reference)
+        if due:
+            return _tool("reminder_add", text=cleaned or body, due=due.isoformat())
+        return _tool("reminder_add", text=body)
     if re.match(r"^remember to\b", low):
         body = re.sub(r"^remember to\s+", "", text, flags=re.I)
         due, cleaned = parse_when(body, reference)
@@ -668,6 +680,12 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
         low,
     ):
         return _tool("desktop_arm", action="on")
+    if re.search(
+        r"\b(?:desktop|input) (?:control )?(?:check|setup|doctor|requirements)\b"
+        r"|\b(?:check|diagnose|test)\s+(?:the\s+)?desktop(?: control)?\b",
+        low,
+    ):
+        return _tool("desktop_check")
     if re.search(
         r"\b(?:desktop|input) (?:control )?(?:status|state)\b"
         r"|\b(?:control|drive|take over)\s+(?:my|the)\s+(?:pc|computer|laptop|desktop)\b"

@@ -14,8 +14,14 @@ v1.3.0 adds **real desktop control** (type, hotkeys, mouse, window focus, screen
 **real sending** (SMTP email, .ics calendar events, WhatsApp auto-send), an
 **installable phone app** (PWA + Termux launcher) and a **coding agent** that
 patches files with a backup and runs the project's own tests — on top of the local
-Qwen brain, agent loop, compressed memory and focus mode. **98 tools**, still
+Qwen brain, agent loop, compressed memory and focus mode. **99 tools**, still
 stdlib-only.
+
+Hands-free voice is tuned for real rooms: wake-word aliases, instant beep,
+barge-in that stops a reply when you start talking, backoff instead of a hot
+mic loop, and a **Barge-in** switch in Settings. `python3 jarvis.py
+--desktop-check` prints exactly which desktop helpers are missing, and
+`docs/DESKTOP_DEMO.md` is the 10-minute live demo script.
 
 ```bash
 python3 jarvis.py            # HUD on http://localhost:7777

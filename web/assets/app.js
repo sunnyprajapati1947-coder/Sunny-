@@ -30,6 +30,11 @@
     pendingApproval: null,
     approvalTimer: null,
     wakeLoop: false,
+    wakeHeardAt: 0,
+    micGranted: false,
+    restartDelay: 700,
+    speechStartedAt: 0,
+    bargeRec: null,
     interim: "",
     uptimeBase: 0,
     uptimeStamp: 0,
@@ -394,6 +399,7 @@
 
   function stopSpeech() {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
+    stopBargeWatch();
     state.speaking = false;
     if (body.dataset.state === "speaking") setState(state.listening ? "listening" : "idle");
   }
@@ -411,14 +417,18 @@
     utterance.pitch = (state.settings && Number(state.settings.voice_pitch)) || 0.85;
     utterance.onstart = () => {
       state.speaking = true;
+      state.speechStartedAt = Date.now();
       if (!state.listening) setState("speaking");
+      startBargeWatch();
     };
     utterance.onend = () => {
       state.speaking = false;
+      stopBargeWatch();
       if (!state.listening && body.dataset.state === "speaking") setState("idle");
     };
     utterance.onerror = () => {
       state.speaking = false;
+      stopBargeWatch();
       if (!state.listening && body.dataset.state === "speaking") setState("idle");
     };
     synth.speak(utterance);
@@ -449,6 +459,62 @@
   }
 
   /* ------------------------------------------------------------ recognition */
+  const WAKE_ALIASES = {
+    jarvis: ["jarvis", "jarvice", "jarvis.", "jaarvis", "jervis", "javis", "j.a.r.v.i.s", "जार्विस"],
+  };
+
+  function wakeWords() {
+    const base = String((state.settings && state.settings.wake_word) || "jarvis").toLowerCase().trim();
+    const extra = WAKE_ALIASES[base] || [];
+    return Array.from(new Set([base, ...extra])).filter(Boolean);
+  }
+
+  function findWake(text) {
+    const lower = String(text || "").toLowerCase();
+    for (const word of wakeWords()) {
+      const index = lower.indexOf(word);
+      if (index !== -1) return { index, word };
+    }
+    return null;
+  }
+
+  function bargeInEnabled() {
+    return !(state.settings && state.settings.barge_in === false);
+  }
+
+  function startBargeWatch() {
+    if (!bargeInEnabled() || !state.micGranted || state.listening || document.hidden) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    stopBargeWatch();
+    const rec = new SR();
+    rec.lang = (state.settings && state.settings.language) || "en-IN";
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.maxAlternatives = 1;
+    rec.onresult = (event) => {
+      let heard = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) heard += event.results[i][0].transcript;
+      if (!heard.trim()) return;
+      if (Date.now() - state.speechStartedAt < 450) return;  // ignore the reply's own onset
+      stopBargeWatch();
+      stopSpeech();
+      logLine("barge-in · you took the floor");
+      beep(660, 0.05, 0.02);
+      handleTranscript(heard.trim());
+    };
+    rec.onerror = () => { if (state.bargeRec === rec) state.bargeRec = null; };
+    rec.onend = () => { if (state.bargeRec === rec) state.bargeRec = null; };
+    state.bargeRec = rec;
+    try { rec.start(); } catch { state.bargeRec = null; }
+  }
+
+  function stopBargeWatch() {
+    const rec = state.bargeRec;
+    state.bargeRec = null;
+    if (rec) { try { rec.abort(); } catch { /* already closed */ } }
+  }
+
   function setupRecognition() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
@@ -468,6 +534,8 @@
 
     recognition.onstart = () => {
       state.listening = true;
+      state.micGranted = true;
+      state.restartDelay = 700;
       $("micBtn").setAttribute("aria-pressed", "true");
       $("voiceHint").textContent = state.settings && state.settings.wake_word_enabled
         ? `Listening for “${state.settings.wake_word || "jarvis"}”…`
@@ -485,7 +553,22 @@
         else interim += chunk;
       }
       state.interim = interim;
-      if (interim) $("voiceHint").textContent = `“${interim.trim()}”`;
+      const spoken = `${interim}${final}`.trim();
+      if (spoken && state.speaking && bargeInEnabled()) {
+        stopSpeech();
+        logLine("barge-in · reply interrupted");
+        setState("listening");
+      }
+      if (interim) {
+        const heard = findWake(interim);
+        if (state.wakeLoop && heard && Date.now() - state.wakeHeardAt > 1200) {
+          state.wakeHeardAt = Date.now();
+          beep(980, 0.05, 0.02);
+          $("voiceHint").textContent = "Wake word heard · go ahead";
+        } else {
+          $("voiceHint").textContent = `“${interim.trim()}”`;
+        }
+      }
       if (final) handleTranscript(final.trim());
     };
 
@@ -494,10 +577,12 @@
       if (code === "not-allowed" || code === "service-not-allowed") {
         toast("Microphone blocked", "Allow microphone access in the browser, or keep using text.", "alert");
         state.wakeLoop = false;
+        state.micGranted = false;
       } else if (code === "no-speech") {
         $("voiceHint").textContent = "No speech detected";
       } else if (code !== "aborted") {
         logLine(`voice error: ${code}`, "alert");
+        state.restartDelay = Math.min(8000, Math.max(700, state.restartDelay) * 1.6);
       }
     };
 
@@ -505,7 +590,16 @@
       state.listening = false;
       $("micBtn").setAttribute("aria-pressed", "false");
       if (state.wakeLoop) {
-        try { recognition.start(); } catch { /* restart race */ }
+        if (document.hidden) {
+          $("voiceHint").textContent = "Wake word paused (tab hidden)";
+          return;
+        }
+        const delay = Math.max(700, state.restartDelay);
+        state.restartDelay = Math.min(8000, delay * 1.6);
+        setTimeout(() => {
+          if (!state.wakeLoop || document.hidden || state.listening) return;
+          try { recognition.start(); } catch { /* restart race */ }
+        }, delay);
         return;
       }
       $("voiceHint").textContent = "Voice channel · standby";
@@ -519,15 +613,13 @@
     if (!transcript) return;
     const settings = state.settings || {};
     let text = transcript.trim();
-    const wake = String(settings.wake_word || "jarvis").toLowerCase();
     if (settings.wake_word_enabled) {
-      const lower = text.toLowerCase();
-      const index = lower.indexOf(wake);
-      if (index === -1) {
-        $("voiceHint").textContent = `Wake word “${wake}” not heard`;
+      const heard = findWake(text);
+      if (!heard) {
+        $("voiceHint").textContent = `Wake word “${settings.wake_word || "jarvis"}” not heard`;
         return;
       }
-      text = text.slice(index + wake.length).replace(/^[\s,:.!?-]+/, "").trim();
+      text = text.slice(heard.index + heard.word.length).replace(/^[\s,:.!?-]+/, "").trim();
       if (!text) {
         beep(980, 0.05, 0.02);
         $("voiceHint").textContent = "Listening…";
@@ -562,6 +654,7 @@
     state.recognition.lang = (state.settings && state.settings.language) || "en-IN";
     state.recognition.continuous = Boolean(state.settings && state.settings.wake_word_enabled);
     state.wakeLoop = Boolean(state.settings && state.settings.wake_word_enabled);
+    state.restartDelay = 700;
     try {
       state.recognition.start();
     } catch {
@@ -1283,6 +1376,7 @@
     $("setSpeak").checked = settings.speak !== false;
     $("setSound").checked = settings.sound !== false;
     $("setWake").checked = Boolean(settings.wake_word_enabled);
+    $("setBarge").checked = settings.barge_in !== false;
     $("setLlm").checked = settings.llm_enabled !== false;
     const local = (state.status && state.status.brain && state.status.brain.local) || {};
     const lanes = (state.status && state.status.brain && state.status.brain.lanes) || [];
@@ -1309,6 +1403,7 @@
       speak: $("setSpeak").checked,
       sound: $("setSound").checked,
       wake_word_enabled: $("setWake").checked,
+      barge_in: $("setBarge").checked,
       llm_enabled: $("setLlm").checked,
       brain_mode: $("setBrainMode").value,
       agent_enabled: $("setAgent").checked,
@@ -1519,6 +1614,14 @@
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
+    document.addEventListener("visibilitychange", () => {
+      if (!state.recognition) return;
+      if (document.hidden) {
+        try { state.recognition.stop(); } catch { /* already idle */ }
+      } else if (state.wakeLoop && !state.listening) {
+        try { state.recognition.start(); } catch { /* restart race */ }
+      }
+    });
 
     $("bootEnter").addEventListener("click", enterSystem);
     $("settingsBtn").addEventListener("click", openSettings);

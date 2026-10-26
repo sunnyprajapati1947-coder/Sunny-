@@ -21,7 +21,7 @@ python3 jarvis.py --agent "goal"  # multi-step agent, plan saved to disk
 **v1.3.0** adds real **desktop control** (typing, hotkeys, mouse, window focus,
 screen OCR), **real sending** (SMTP email, `.ics` calendar events, WhatsApp
 auto-send) and an **installable phone app** (PWA + Termux launcher) on top of the
-local Qwen brain, agent loop, memory v2 and focus mode — **98 tools**, still
+local Qwen brain, agent loop, memory v2 and focus mode — **99 tools**, still
 stdlib-only by default.
 
 The assistant is **stdlib-only by default**. Optional packages
@@ -170,7 +170,7 @@ expire after 180 seconds.
 
 ## 5. Security envelope
 
-* **One tool registry** — `jarvis/tools.py` declares 98 tools with argument
+* **One tool registry** — `jarvis/tools.py` declares 99 tools with argument
   schemas, categories and `high_impact` flags. Intents and the LLM planner both
   execute through `JarvisCore.call()`, so validation, approval and audit always
   apply.
@@ -244,7 +244,7 @@ jarvis/
   config.py               settings, env loading, validation
   security.py             approval gate, audit, path confinement, danger screen
   intents.py              deterministic NLU (English + Hinglish)
-  tools.py                central registry (98 tools)
+  tools.py                central registry (99 tools)
   brain.py                provider chain: Gemini / local Qwen planner, vision
   local_brain.py          lane discovery, Qwen catalog, RAM recommendations
   agent.py                bounded plan→act→observe loop, repo map
@@ -349,7 +349,7 @@ adds these capabilities to the same core:
 | Wish & welcome, “daddy's home” (8, 29) | “I'm home” → `wake_greeting` with pending work |
 | Online/offline checks (14, 39) | `network_info`, live `LINK` pill, brain lane probe |
 | Random advice (15) | `random_advice` — Advice Slip API with an offline line bank |
-| All-possible automation (12, 16) | 98-tool registry: apps, volume, brightness, files, media, brain, agent |
+| All-possible automation (12, 16) | 99-tool registry: apps, volume, brightness, files, media, brain, agent |
 | Big data import (18) | `import_data` — JSON/CSV/TXT into long-term memory, 500 rows, secrets skipped |
 | Battery monitoring (20) | telemetry gauges + scheduler power alerts |
 | Wikipedia, Google, YouTube search (21–23) | `wikipedia`, `web_search`, `play_music` YouTube fallback |
@@ -623,18 +623,75 @@ unittest discover`, `npm test`) inside the home folder, caps the run at 300 s an
 returns the last lines of the log as a card. A suite that runs **zero** tests is
 called out instead of being reported as green.
 
-### 13.5 Verification
+### 13.5 Hands-free voice (v1.3.0)
+
+The HUD voice channel is now tuned for real rooms, not just headphones:
+
+| Behaviour | Detail |
+| --- | --- |
+| Wake aliases | `jarvis`, `jarvice`, `javis`, `jaarvis`, `j.a.r.v.i.s`, `जार्विस` all count |
+| Wake feedback | soft double beep + “Wake word heard · go ahead” as soon as it is recognised |
+| Barge-in | start talking while Jarvis replies and the reply stops, then your sentence runs |
+| Barge-in toggle | Settings → **Barge-in (interrupt me)** / `JARVIS_BARGE_IN=true` |
+| Auto-restart | the microphone re-arms after every end, with exponential backoff (0.7 s → 8 s) instead of a hot loop |
+| Tab visibility | the mic is released while the tab is hidden and re-armed when you return |
+| Errors | `not-allowed` stops the loop and says exactly what to fix; network/busy errors back off quietly |
+
+Barge-in works two ways: while the wake loop is listening (hands-free) and, if
+you have used the microphone once this session, through a short-lived watcher
+that only lives while Jarvis is speaking. It ignores the first 450 ms of its own
+speech so the reply cannot interrupt itself.
+
+### 13.6 Desktop readiness check
+
+```bash
+python3 jarvis.py --desktop-check
+```
+
+or say `desktop check`. It reports the platform, whether a display is attached,
+the arming state, and every capability (`input`, `windows`, `ocr`, `screenshot`,
+`clipboard`) with the helper it found or the exact install command to run.
+`docs/DESKTOP_DEMO.md` is the 10-minute live demo script for Linux, Windows and
+macOS, including the safety drill.
+
+### 13.7 Hinglish time, done properly
+
+`jarvis/timeparse.py` now understands how people actually speak in Patna:
+
+| You say | It means |
+| --- | --- |
+| `sawa 5 baje` / `sawa paanch baje` | 5:15 |
+| `paune 5 baje` | 4:45 |
+| `saadhe 5 baje` | 5:30 |
+| `dedh baje` / `dhai baje` | 1:30 / 2:30 |
+| `aadhe ghante baad` / `dedh ghante baad` | +30 min / +90 min |
+| `dhai ghante me` / `sawa ghante baad` | +150 min / +75 min |
+| `20 minute me` | +20 min |
+| `agle hafte` / `agle somvaar ko 5 baje` | next week / next Monday 5 PM |
+| `aaj raat 12 baje` | tonight 00:00, not noon |
+| `… yaad dilana` (trailing) | reminder — time-first word order included |
+
+Titles are cleaned too: “aaj shaam paune 5 baje gym yaad dilana” becomes the
+reminder **gym** at 4:45 PM, not a sentence.
+
+### 13.8 Verification
 
 ```bash
 python3 -m unittest tests.test_desktop_comms -v   # 18 tests
 python3 -m unittest tests.test_coding_agent -v    # 11 tests
+python3 -m unittest tests.test_timeparse -v       # 16 tests
+python3 -m unittest tests.test_phase5_voice -v    # 14 tests
 python3 -m unittest tests.test_local_brain -v     # 21 tests
 python3 jarvis.py --check                         # 14-point diagnostic
+python3 jarvis.py --desktop-check                 # capability report
 ```
 
 The desktop layer is tested on a headless machine by checking arming, gating,
 key normalisation, destructive-combo blocking and honest fallbacks. Input
-backends are exercised on a real desktop session.
+backends are exercised on a real desktop session (see `docs/DESKTOP_DEMO.md`).
+Wake-word and barge-in behaviour is exercised in jsdom with a fake
+SpeechRecognition: wake-only speech sends no command, a wake+command phrase is
+stripped and dispatched, and talking over a reply cancels speech.
 
 ---
 

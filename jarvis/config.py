@@ -76,6 +76,7 @@ class Settings:
     language: str = "en-IN"
     wake_word: str = "jarvis"
     wake_word_enabled: bool = False
+    barge_in: bool = True
     speak: bool = True
     sound: bool = True
     voice_name: str = ""
@@ -144,6 +145,7 @@ def _env_settings() -> Settings:
         language=os.getenv("JARVIS_LANGUAGE", "en-IN"),
         wake_word=os.getenv("JARVIS_WAKE_WORD", "jarvis"),
         wake_word_enabled=env_bool("JARVIS_WAKE_WORD_ENABLED", False),
+        barge_in=env_bool("JARVIS_BARGE_IN", True),
         speak=env_bool("JARVIS_SPEAK", True),
         sound=env_bool("JARVIS_SOUND", True),
         voice_name=os.getenv("JARVIS_VOICE", ""),
@@ -202,6 +204,7 @@ USER_TUNABLE = {
     "language",
     "wake_word",
     "wake_word_enabled",
+    "barge_in",
     "speak",
     "sound",
     "voice_name",
@@ -235,7 +238,7 @@ def _apply_overrides(settings: Settings, overrides: dict) -> Settings:
             continue
         value = overrides[key]
         try:
-            if key in {"wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode", "smtp_tls"}:
+            if key in {"wake_word_enabled", "barge_in", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode", "smtp_tls"}:
                 value = bool(value)
             elif key in {"voice_rate", "voice_pitch"}:
                 value = float(value)
@@ -297,7 +300,7 @@ def validate_patch(patch: dict) -> tuple[dict, list[str]]:
             low, high = (0.6, 1.4) if key == "voice_rate" else (0.5, 1.5)
             clean[key] = max(low, min(high, value))
 
-    for key in ("wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode", "smtp_tls"):
+    for key in ("wake_word_enabled", "barge_in", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode", "smtp_tls"):
         if key in patch:
             clean[key] = bool(patch[key])
 

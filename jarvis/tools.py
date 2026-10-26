@@ -635,6 +635,13 @@ register(
     category="desktop",
 )
 register(
+    "desktop_check",
+    "Diagnose desktop control: display, helpers, OCR and exact install command.",
+    desktop.desktop_check,
+    _obj(),
+    category="desktop",
+)
+register(
     "desktop_arm",
     "Arm or disarm real keyboard/mouse control. Say 'desktop panic' to lock input.",
     desktop.desktop_arm,

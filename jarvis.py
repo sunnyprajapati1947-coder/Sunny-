@@ -53,6 +53,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--voice", action="store_true", help="Voice I/O in CLI mode (implies --cli)")
     parser.add_argument("--wake", default="", help="Require this wake word in voice mode")
     parser.add_argument("--check", action="store_true", help="Run self-diagnostics and exit")
+    parser.add_argument("--desktop-check", dest="desktop_check", action="store_true",
+                        help="Report desktop-control readiness and exit")
     parser.add_argument("--brain", action="store_true", help="Show local brain status and exit")
     parser.add_argument("--brain-setup", dest="brain_setup", action="store_true", help="Print local Qwen setup commands and exit")
     parser.add_argument("--test-brain", dest="test_brain", action="store_true", help="Ping the fastest local Qwen lane and exit")
@@ -75,6 +77,7 @@ def main(argv: list[str] | None = None) -> int:
         return run_checks()
 
     terminal_actions = {
+        "desktop_check": ("desktop_check", {}),
         "brain": ("brain_status", {}),
         "brain_setup": ("brain_setup", {}),
         "test_brain": ("brain_test", {}),

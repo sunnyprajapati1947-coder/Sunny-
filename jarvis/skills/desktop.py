@@ -228,6 +228,92 @@ def desktop_status() -> dict:
     )
 
 
+BACKENDS = {
+    "linux": {
+        "input": ("xdotool",),
+        "windows": ("wmctrl",),
+        "ocr": ("tesseract",),
+        "screenshot": ("scrot", "gnome-screenshot", "import"),
+        "clipboard": ("xclip", "xsel"),
+        "install": "sudo apt install xdotool wmctrl tesseract-ocr scrot xclip",
+    },
+    "darwin": {
+        "input": ("osascript",),
+        "windows": ("osascript",),
+        "ocr": ("tesseract",),
+        "screenshot": ("screencapture",),
+        "clipboard": ("pbcopy",),
+        "install": "brew install tesseract cliclick",
+    },
+    "windows": {
+        "input": ("powershell", "pwsh"),
+        "windows": ("powershell", "pwsh"),
+        "ocr": ("tesseract",),
+        "screenshot": ("powershell", "pwsh"),
+        "clipboard": ("powershell", "pwsh"),
+        "install": "winget install UB-Mannheim.TesseractOCR",
+    },
+}
+CAPABILITY_TEXT = {
+    "input": "type text / press hotkeys",
+    "windows": "list and focus windows",
+    "ocr": "read the screen (OCR)",
+    "screenshot": "capture the screen",
+    "clipboard": "paste long text safely",
+}
+
+
+def desktop_check() -> dict:
+    """Environment report for the desktop demo: what works, what is missing, how to fix."""
+    spec = BACKENDS.get(SYSTEM) or BACKENDS["linux"]
+    checks: dict[str, dict] = {}
+    for capability, binaries in spec.items():
+        if capability == "install":
+            continue
+        found = next((name for name in binaries if shutil.which(name)), "")
+        checks[capability] = {
+            "ok": bool(found),
+            "tool": found,
+            "needs": list(binaries),
+            "what": CAPABILITY_TEXT.get(capability, capability),
+        }
+    display = _display_ok()
+    ready = display and checks["input"]["ok"]
+    rows = [
+        f"platform: {SYSTEM}",
+        f"display: {'attached' if display else 'headless (no window server)'}",
+        f"armed: {'yes' if armed() else 'no — say “arm desktop control”'}",
+        "",
+    ]
+    for capability, info in checks.items():
+        mark = "ok" if info["ok"] else "missing"
+        tool = info["tool"] or ", ".join(info["needs"])
+        rows.append(f"{info['what']}: {mark} ({tool})")
+    missing = [cap for cap, info in checks.items() if not info["ok"]]
+    if missing:
+        rows += ["", f"install: {spec['install']}"]
+    rows += ["", "next: arm desktop control → “type hello” → “press ctrl+s” → “desktop panic”"]
+    headline = (
+        "Desktop control is ready for the demo, Sir."
+        if ready
+        else "Desktop control cannot drive this session yet, Sir."
+    )
+    return reply(
+        headline,
+        speech="Desktop check complete, Sir.",
+        cards=[{"type": "list", "title": "DESKTOP CHECK", "rows": rows}],
+        data={
+            "ready": ready,
+            "platform": SYSTEM,
+            "display": display,
+            "armed": armed(),
+            "checks": checks,
+            "missing": missing,
+            "install": spec["install"] if missing else "",
+        },
+    )
+
+
 def desktop_arm(action: str = "status") -> dict:
     value = str(action or "status").lower()
     if value in {"on", "arm", "enable", "true", "yes"}:

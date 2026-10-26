@@ -109,6 +109,67 @@ MERIDIEM_HINTS = {
 }
 
 
+HINGLISH_DURATIONS = (
+    (re.compile(r"\b(?:aadha|aadhe|adha|adhe)\s+ghant[ae]\b", re.I), "30 minutes"),
+    (re.compile(r"\b(?:dedh|deedh|dhedh)\s+ghant[ae]\b", re.I), "90 minutes"),
+    (re.compile(r"\b(?:dhai|dhaai|dhaayi|dhaie)\s+ghant[ae]\b", re.I), "150 minutes"),
+    (re.compile(r"\b(?:sawa|sava|sawai)\s+ghant[ae]\b", re.I), "75 minutes"),
+    (re.compile(r"\b(?:paune|pone)\s+ghant[ae]\b", re.I), "45 minutes"),
+)
+
+CLOCK_IDIOMS = (
+    (re.compile(r"\b(?:sawa|sava|sawai)\s+(\d{1,2}|[a-z]+)\s*(?:baje|bje)\b", re.I), 15, 0),
+    (re.compile(r"\b(?:saadhe|sadhe|saade)\s+(\d{1,2}|[a-z]+)\s*(?:baje|bje)\b", re.I), 30, 0),
+    (re.compile(r"\b(?:paune|pone|pune)\s+(\d{1,2}|[a-z]+)\s*(?:baje|bje)\b", re.I), 45, -1),
+    (re.compile(r"\bdedh\s+(?:baje|bje)\b", re.I), 30, 1),
+    (re.compile(r"\bdhai\s+(?:baje|bje)\b", re.I), 30, 2),
+)
+
+WEEKDAYS = {
+    "monday": 0, "mon": 0, "somvaar": 0, "somwar": 0,
+    "tuesday": 1, "tue": 1, "mangalvaar": 1, "mangalwar": 1,
+    "wednesday": 2, "wed": 2, "budhvaar": 2, "budhwar": 2,
+    "thursday": 3, "thu": 3, "guruvaar": 3, "guruwar": 3, "guruvwar": 3,
+    "friday": 4, "fri": 4, "shukravaar": 4, "shukrawar": 4,
+    "saturday": 5, "sat": 5, "shanivaar": 5, "shaniwar": 5,
+    "sunday": 6, "sun": 6, "ravivaar": 6, "raviwar": 6, "itvaar": 6,
+}
+
+
+def _normalize_hinglish(text: str) -> str:
+    """Rewrite Hinglish duration idioms into plain minutes so the parser sees numbers."""
+    value = str(text or "")
+    for pattern, replacement in HINGLISH_DURATIONS:
+        value = pattern.sub(replacement, value)
+    return value
+
+
+def _strip_hinglish_duration(text: str) -> str:
+    """Remove a Hinglish duration idiom and its preposition from a leftover title."""
+    value = str(text or "")
+    for pattern, _ in HINGLISH_DURATIONS:
+        value = pattern.sub(" ", value)
+    value = re.sub(r"\b(?:ke\s+baad|baad|bad|mein|me|later|se|ke)\b", " ", value, flags=re.I)
+    return value
+
+
+def _clock_idiom(text: str) -> tuple[int, int, int, int] | None:
+    """Understand “sawa 5 baje”, “paune 5 baje”, “saadhe 5”, “dedh baje”, “dhai baje”."""
+    for pattern, minute, shift in CLOCK_IDIOMS:
+        found = pattern.search(text)
+        if not found:
+            continue
+        if found.groups():
+            raw_hour = _number(found.group(1))
+            hour = int(raw_hour) + shift
+        else:
+            hour = shift
+        if not 0 <= hour <= 23:
+            continue
+        return hour % 24, minute, found.start(), found.end()
+    return None
+
+
 def _number(value: str) -> float:
     lowered = value.lower()
     if lowered in NUMBER_WORDS:
@@ -121,7 +182,7 @@ def _number(value: str) -> float:
 
 def parse_duration(text: str) -> int | None:
     """Return total seconds from a duration phrase, or None."""
-    raw = str(text or "").lower()
+    raw = _normalize_hinglish(str(text or "")).lower()
     total = 0.0
     matched = False
     for match in DURATION_RE.finditer(raw):
@@ -163,24 +224,28 @@ def parse_when(text: str, reference: datetime | None = None) -> tuple[datetime |
     # 1) relative duration: "in 10 minutes", "10 minute baad"
     duration = parse_duration(raw)
     if duration:
+        cleaned = _strip_hinglish_duration(raw)
         for pattern in (
             rf"\b{TIME_PREPOSITIONS}\s+[^,.]*?\d[^,.]*?(?:second|minute|min|hour|hr|day|week|sekund|minat|ghanta|ghante|din|hafta)[a-z]*\b",
             r"\b\d+(?:\.\d+)?\s*(?:second|minute|min|hour|hr|day|week)[a-z]*\s+(?:later|baad|bad|ke\s+baad)\b",
             r"\b(?:half|a|an|one|two|three|four|five|six|seven|eight|nine|ten|fifteen|twenty|thirty|forty|ek|do|teen|char|paanch|panch|saat|aath|nau|das|bees|tees|adha|aadha)\s+"
             r"(?:second|minute|min|hour|hr|day|week|ghanta|ghante|din|hafta)s?\b",
         ):
-            cleaned = re.sub(pattern, " ", raw, count=1, flags=re.I)
-            if cleaned.strip() != raw.strip():
-                raw = cleaned
+            stripped = re.sub(pattern, " ", cleaned, count=1, flags=re.I)
+            if stripped.strip() != cleaned.strip():
+                cleaned = stripped
                 break
         else:
-            raw = DURATION_RE.sub(" ", raw, count=1)
-        return reference + timedelta(seconds=duration), _tidy(raw)
+            cleaned = DURATION_RE.sub(" ", cleaned, count=1)
+        cleaned = re.sub(r"\b(?:me|mein|baad|bad|later|ke|in|after|within)\b", " ", cleaned, flags=re.I)
+        return reference + timedelta(seconds=duration), _tidy(cleaned)
 
     # 2) relative day words + optional clock
     day_offset = 0
     day_pattern = None
     for pattern, offset in (
+        (r"\bnext week\b|\bagle\s+hafte?\b", 7),
+        (r"\bnext month\b|\bagle\s+mahine\b", 30),
         (r"\bday\s+after\s+tomorrow\b|\bparso\b", 2),
         (r"\btomorrow\b|\bkal\b", 1),
         (r"\btoday\b|\baaj\b", 0),
@@ -190,12 +255,45 @@ def parse_when(text: str, reference: datetime | None = None) -> tuple[datetime |
             day_pattern = pattern
             break
 
+    if not day_pattern:
+        weekday_match = re.search(
+            r"\b(?:agle|agley|next)\s+(" + "|".join(WEEKDAYS) + r")\b",
+            lowered,
+        )
+        if weekday_match:
+            day_offset = (WEEKDAYS[weekday_match.group(1)] - reference.weekday()) % 7 or 7
+            day_pattern = re.escape(weekday_match.group(0))
+
     # 3) explicit clock: "at 7:30 pm", "7 baje", "subah 8 baje"
+    idiom = _clock_idiom(lowered)
+    if idiom:
+        hour, minute, start, end = idiom
+        marker = _meridiem_for(lowered, hour)
+        if "pm" in lowered or "raat" in lowered or "shaam" in lowered or "dopahar" in lowered:
+            marker = "pm"
+        if marker == "pm" and hour < 12:
+            hour += 12
+        elif marker == "am" and hour == 12:
+            hour = 0
+        elif marker is None and 1 <= hour <= 7:
+            hour += 12
+        if hour == 12 and re.search(r"\braat\b", lowered):
+            hour = 0
+        target = reference.replace(hour=hour % 24, minute=minute, second=0, microsecond=0)
+        target += timedelta(days=day_offset)
+        if target <= reference:
+            target += timedelta(days=1)
+        cleaned = raw[:start] + " " + raw[end:]
+        if day_pattern:
+            cleaned = re.sub(day_pattern, " ", cleaned, flags=re.I)
+        cleaned = re.sub(r"\b(?:at|by|around|baje|bje|o'?clock)\b", " ", cleaned, flags=re.I)
+        return target, _tidy(cleaned)
+
     clock_match = None
     for pattern in (
         r"(?:\bat\s+|\bby\s+|\baround\s+)(\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?)",
         r"(\d{1,2}(?::\d{2})?)\s*(?:baje|bje|o'?clock)",
-        r"(\d{1,2}:\d{2}\s*(?:a\.?m\.?|p\.?m\.?))",
+        r"(\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?))",
     ):
         match = re.search(pattern, lowered)
         if match:
@@ -219,6 +317,8 @@ def parse_when(text: str, reference: datetime | None = None) -> tuple[datetime |
             elif marker is None and 1 <= hour <= 7:
                 # Jarvis default: ambiguous early hours are PM (e.g. "at 5" -> 5 PM)
                 hour += 12
+            if hour == 12 and re.search(r"\braat\b", lowered):
+                hour = 0
             target = reference.replace(hour=hour % 24, minute=minute, second=0, microsecond=0)
             target += timedelta(days=day_offset)
             if target <= reference:
@@ -247,6 +347,21 @@ def parse_when(text: str, reference: datetime | None = None) -> tuple[datetime |
 def parse_alarm_time(text: str, reference: datetime | None = None) -> tuple[int, int] | None:
     reference = reference or now()
     lowered = str(text or "").lower()
+    idiom = _clock_idiom(lowered)
+    if idiom:
+        hour, minute, _start, _end = idiom
+        marker = _meridiem_for(lowered, hour)
+        if "raat" in lowered or "shaam" in lowered or "dopahar" in lowered:
+            marker = "pm"
+        if marker == "pm" and hour < 12:
+            hour += 12
+        elif marker == "am" and hour == 12:
+            hour = 0
+        elif marker is None and 1 <= hour <= 7:
+            hour += 12
+        if hour == 12 and re.search(r"\braat\b", lowered):
+            hour = 0
+        return hour, minute
     match = re.search(
         r"(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?|baje|bje|o'?clock)?",
         lowered,
@@ -273,8 +388,16 @@ def parse_alarm_time(text: str, reference: datetime | None = None) -> tuple[int,
     return hour, minute
 
 
+MERIDIEM_WORDS = re.compile(
+    r"\b(?:subah|savere|dopahar|shaam|sham|raat|morning|afternoon|evening|night)\b",
+    re.I,
+)
+
 def _tidy(text: str) -> str:
-    value = re.sub(r"\s+", " ", str(text or "")).strip(" ,.-")
+    value = MERIDIEM_WORDS.sub(" ", str(text or ""))
+    value = re.sub(r"\bko\b", " ", value)
+    value = re.sub(r"\s+", " ", value).strip(" ,.-")
     value = re.sub(r"^(?:to|that|about|for|ki|ke|ka)\s+", "", value, flags=re.I)
     value = re.sub(r"\s+(?:at|par|pe|ko)$", "", value, flags=re.I)
+    value = re.sub(r"\s+(?:hai|hain|ha|ho|hoga|hogi|hona|thi|tha)$", "", value, flags=re.I)
     return value.strip(" ,.-")
