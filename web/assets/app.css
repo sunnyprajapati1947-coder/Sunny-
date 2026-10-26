@@ -762,18 +762,22 @@ body[data-state="thinking"] .statusbar .dot { background: var(--accent); box-sha
   .app { padding: 0 12px; }
   .deck { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 12px; }
   .rail-left { grid-row: 1; flex-direction: row; overflow: visible; gap: 12px; }
-  .reactor-panel { flex: 1 1 46%; }
-  .telemetry-panel { flex: 1 1 54%; }
-  .reactor-stage { margin: 2px 6px 0; }
+  .reactor-panel { flex: 0 0 42%; }
+  .telemetry-panel { flex: 1 1 58%; }
+  .reactor-stage { margin: 2px 6px 0; max-height: 168px; }
+  .panel-hint { display: none; }
   .console { grid-row: 2; }
   .rail-right { grid-row: 3; }
-  .wave { height: 24px; }
+  .wave { display: none; }
   .topbar { gap: 10px; }
   .clock span { display: none; }
   .brand-text p { display: none; }
   .pill { font-size: 8.5px; padding: 3px 8px; }
   .gauges { padding: 6px 4px 0; }
-  .facts > div { padding: 6px 9px; }
+  .gauge svg { max-width: 66px; }
+  .facts { grid-template-columns: 1fr 1fr 1fr; }
+  .facts > div { padding: 5px 8px; }
+  .facts > div:nth-child(n + 5) { display: none; }
 }
 
 @media (max-width: 720px) {
@@ -795,16 +799,22 @@ body[data-state="thinking"] .statusbar .dot { background: var(--accent); box-sha
   .clock time { font-size: 14px; }
   .topbar-pills #brainPill { display: none; }
   .msg .cards { grid-template-columns: 1fr; }
-  .rail-left { flex-direction: column; }
-  .reactor-panel, .telemetry-panel { flex: none; }
-  .reactor-stage { max-height: 240px; }
-  .wave { display: none; }
+  .reactor-panel { flex: 0 0 38%; }
+  .reactor-stage { max-height: 136px; }
+  .reactor-center b { font-size: 10px; letter-spacing: 0.2em; }
+  .reactor-center small { display: none; }
+  .state-label { font-size: 8px; padding: 1px 5px; }
+  .facts { grid-template-columns: 1fr 1fr; }
+  .facts > div:nth-child(n + 3) { display: none; }
 }
 
 @media (max-width: 480px) {
   .brand-text h1 { font-size: 12px; letter-spacing: 0.16em; }
   .pill#netPill { display: none; }
   .statusbar .status-item:nth-child(2) { display: none; }
+  .reactor-panel { flex: 0 0 34%; }
+  .reactor-stage { max-height: 112px; }
+  .telemetry-panel .panel-head .mini { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

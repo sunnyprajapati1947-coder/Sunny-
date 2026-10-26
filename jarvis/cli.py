@@ -284,4 +284,6 @@ def run_checks() -> int:
     print()
     print(_c(f"  {len(results) - failures}/{len(results)} checks passed. Start the HUD with: python3 jarvis.py", DIM))
     print()
-    return 0 if failures < 6 else 1
+    critical = {"Python", "Tools registered", "Data directory", "Telemetry", "Brain mode"}
+    core_failures = sum(1 for label, state, _ in results if state != "PASS" and label in critical)
+    return 0 if core_failures == 0 else 1

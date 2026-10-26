@@ -860,11 +860,18 @@ def status_report() -> dict:
     open_tasks = [item for item in store.todos() if not item.get("done")]
     reminders = store.reminders()
     next_reminder = reminders[0] if reminders else None
-    brain = (
-        "Gemini uplink available"
-        if settings.gemini_key and settings.llm_enabled
-        else ("local model lane configured" if settings.llm_enabled else "offline personality core")
-    )
+    try:
+        from jarvis.brain import get_brain
+
+        probe = get_brain()
+        if probe.gemini_available():
+            brain = "Gemini uplink available"
+        elif probe.qwen_available():
+            brain = "local Qwen lane online"
+        else:
+            brain = "offline personality core"
+    except Exception:
+        brain = "offline personality core"
 
     parts = [
         f"CPU {metrics['cpu']} percent",

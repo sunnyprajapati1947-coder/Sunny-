@@ -310,7 +310,7 @@ class JarvisHandler(BaseHTTPRequestHandler):
             self._text("Cannot read file", 500)
             return
         content_type = MIME.get(candidate.suffix.lower()) or mimetypes.guess_type(str(candidate))[0] or "application/octet-stream"
-        cache = "no-cache" if candidate.suffix.lower() == ".html" else "public, max-age=300"
+        cache = "no-cache" if candidate.suffix.lower() in {".html", ".js", ".css"} else "public, max-age=300"
         self._bytes(body, content_type, cache=cache)
 
     def _serve_data_file(self, relative: str) -> None:
