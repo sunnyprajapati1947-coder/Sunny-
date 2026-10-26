@@ -403,6 +403,119 @@ class CoreReadyTests(unittest.TestCase):
         self.assertFalse(self._core(llm_enabled=False, routes=True)._brain_ready())
 
 
+KEYLESS_PRESET = {
+    "id": "keyless",
+    "label": "Keyless route",
+    "kind": "keyless",
+    "base_url": "https://text.pollinations.ai/openai",
+    "model": "free-fast",
+    "priority": 10,
+    "enabled": True,
+    "keyless": True,
+}
+
+
+class KeylessTests(RouteTestCase):
+    """The no-key lane: no install, no signup — but never a fake success."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        routes.invalidate()
+        self.presets = mock.patch.object(routes, "PRESETS", (KEYLESS_PRESET,))
+        self.presets.start()
+
+    def _route(self) -> dict:
+        return routes.get("keyless")
+
+    def test_preset_is_keyless_and_needs_no_install(self) -> None:
+        with mock.patch.object(routes, "PRESETS", REAL_PRESETS):
+            keyless = [item for item in routes.routes() if item.get("keyless")]
+        self.assertEqual(len(keyless), 1)
+        self.assertTrue(keyless[0]["keyless"])
+        self.assertFalse(keyless[0].get("key_env"))
+        self.assertTrue(keyless[0]["base_url"].startswith("https://"))
+        self.assertIn("no api key", keyless[0]["install"].lower())
+
+    def test_status_summary_never_dials_the_remote_lane(self) -> None:
+        with mock.patch.object(routes, "_reachable", side_effect=AssertionError("dialled")):
+            summary = routes.summary()
+        self.assertEqual(summary["online"], 0)
+        self.assertTrue(summary["ready"])
+        self.assertEqual(summary["keyless"], 1)
+        self.assertEqual(summary["best"], "keyless")
+        row = summary["routes"][0]
+        self.assertTrue(row["keyless"])
+        self.assertTrue(row["ready"])
+        self.assertFalse(row["checked"])
+
+    def test_reachable_host_marks_the_lane_ready(self) -> None:
+        with mock.patch.object(routes, "_reachable", return_value=True):
+            info = routes.probe(self._route(), fresh=True, remote=True)
+        self.assertTrue(info["online"])
+        self.assertTrue(info["ready"])
+        self.assertTrue(info["checked"])
+        self.assertEqual(info["error"], "")
+
+    def test_unreachable_host_is_reported_honestly(self) -> None:
+        with mock.patch.object(routes, "_reachable", return_value=False):
+            info = routes.probe(self._route(), fresh=True, remote=True)
+        self.assertFalse(info["online"])
+        self.assertFalse(info["ready"])
+        self.assertIn("cannot reach", info["error"])
+
+    def test_answer_through_the_keyless_lane(self) -> None:
+        with FakeGateway() as gateway:
+            preset = dict(KEYLESS_PRESET, base_url=gateway.base_url)
+            with mock.patch.object(routes, "PRESETS", (preset,)), mock.patch.object(routes, "_reachable", return_value=True):
+                text, provider, meta = routes.route_chat([{"role": "user", "content": "hi"}])
+                self.assertEqual(text, "ONLINE")
+                self.assertEqual(provider, "route:keyless")
+                summary = routes.summary()
+        self.assertEqual(summary["online"], 1)
+        self.assertEqual(summary["best"], "keyless")
+        self.assertEqual(meta.get("routed_via"), "test/free-large")
+
+    def test_failure_cools_the_lane_down(self) -> None:
+        with FakeGateway(fail=True) as gateway:
+            preset = dict(KEYLESS_PRESET, base_url=gateway.base_url)
+            with mock.patch.object(routes, "PRESETS", (preset,)), mock.patch.object(routes, "_reachable", return_value=True):
+                text, meta = routes.chat(routes.get("keyless"), [{"role": "user", "content": "hi"}])
+                self.assertIsNone(text)
+                self.assertIn("error", meta)
+                cooling = routes.probe(routes.get("keyless"), fresh=True, remote=True)
+                self.assertFalse(cooling["ready"])
+                self.assertIn("cooling", cooling["error"])
+
+    def test_env_switch_turns_the_lane_off(self) -> None:
+        with mock.patch.dict("os.environ", {"JARVIS_KEYLESS": "0"}):
+            with mock.patch.object(routes, "PRESETS", REAL_PRESETS):
+                items = [item for item in routes.routes() if item.get("keyless")]
+        self.assertTrue(items)
+        self.assertFalse(items[0]["enabled"])
+
+    def test_brain_answers_without_any_key(self) -> None:
+        with FakeGateway() as gateway:
+            preset = dict(KEYLESS_PRESET, base_url=gateway.base_url)
+            settings = Settings(brain_mode="auto", llm_enabled=True, gemini_key="")
+            brain = Brain()
+            brain._settings = lambda: settings  # type: ignore[method-assign]
+            with mock.patch.object(routes, "PRESETS", (preset,)), mock.patch.object(routes, "_reachable", return_value=True), \
+                    mock.patch("jarvis.brain.get_local_brain", return_value=mock.Mock(
+                        status=lambda: {"online": False, "lanes": []},
+                        available=lambda: False,
+                    )):
+                text, provider = brain.complete("sys", "hello")
+                self.assertTrue(brain.routes_available())
+        self.assertEqual(provider, "route:keyless")
+        self.assertEqual(text, "ONLINE")
+
+    def test_route_status_names_the_no_key_lane(self) -> None:
+        result = ai_routes.route_status()
+        rows = " ".join(result["cards"][0]["rows"]).lower()
+        self.assertIn("keyless route", rows)
+        self.assertIn("no api key", rows)
+
+
 class RegistryTests(RouteTestCase):
     def test_tools_registered_in_brain_category(self) -> None:
         for name in (

@@ -768,6 +768,14 @@ Jarvis treats them as **routes**, not as a hard-coded client: an OpenAI-compatib
 `/v1/chat/completions` endpoint plus a model. Both presets use model `auto`, so
 the gateway picks whichever free provider is healthy right now.
 
+A third preset is **keyless** — a public endpoint that needs no signup and no
+install (`https://text.pollinations.ai/openai`, model `openai-fast`). It is
+best effort: Jarvis never probes it during HUD status polls, the first real
+answer proves it, and a failure puts it on a 90-second cooldown while Jarvis
+says so. That is what lets a fresh Termux install answer questions with zero
+API keys; `JARVIS_KEYLESS=0` turns it off and `JARVIS_KEYLESS_URL` points it at
+any other no-key OpenAI-compatible server.
+
 ### 14.1 Brain modes
 
 ```
@@ -795,6 +803,7 @@ questions even when Gemini has no key and Ollama is not running.
 | "models on freellmapi" | `route_models` |
 | "route test omniroute", "test freellmapi" | `route_test` |
 | "use free models", "switch to free route" | `route_use route` |
+| "route test keyless" | `route_test` on the no-key lane |
 | "use auto brain", "use local qwen", "use gemini", "go offline" | `route_use <mode>` |
 | "add route mybox at http://192.168.1.20:3001/v1 model llama3" | `route_add` |
 | "connect endpoint http://127.0.0.1:8080/v1 as llama" | `route_add` |
@@ -833,13 +842,15 @@ guide.
 ### 14.5 Verification
 
 ```bash
-python3 -m unittest tests.test_free_routes -v   # 33 tests
+python3 -m unittest tests.test_free_routes -v   # 42 tests
 ```
 
 A stdlib `ThreadingHTTPServer` plays the gateway: probes, model lists, `auto`
 routing, `X-Routed-Via` parsing, 4xx/5xx, timeouts, key masking, per-route
 cooldown, brain-mode order, the route provider id and honest fallbacks when
-every route is down.
+every route is down. The keyless lane is covered separately: no dial during
+status polls, reachability check, 90-second cooldown after a failure, the
+`JARVIS_KEYLESS=0` switch and a full answer with no key configured.
 
 ---
 

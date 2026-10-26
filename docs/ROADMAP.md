@@ -1,6 +1,6 @@
 # Baaki kya hai — MARK XI ke baad ka honest checklist
 
-**Updated:** 26 Oct 2026 · **Build:** v1.5.0 MARK XI · **Commit:** `7ac69f0`
+**Updated:** 26 Oct 2026 · **Build:** v1.5.1 MARK XI
 
 Yeh list "kya karna hai" ka sach hai, marketing nahi. Har item ke saath likha hai
 ki woh **aapke haath** mein hai ya **code** mein, aur kitna kaam hai
@@ -15,10 +15,22 @@ ki woh **aapke haath** mein hai ya **code** mein, aur kitna kaam hai
 | Tools | **123** capabilities, 16 categories (`python3 jarvis.py --check`) |
 | Jarvis tests | **141** tests, sab pass (7 focused files) |
 | Live prove hua | fake FreeLLMAPI gateway se poora route flow (`route:freellmapi`, `X-Routed-Via`), voice intents, time parsing, HUD |
-| **Live prove nahi hua** | asli FreeLLMAPI / OmniRoute, Gemini, Ollama/Qwen, desktop control (headless), Termux phone hand, Windows, macOS |
-| Brain abhi | `offline` — koi Gemini key nahi, koi local model nahi, koi gateway nahi |
+| **Live prove nahi hua** | asli pollinations endpoint (sandbox se reachable nahi — fake gateway se poora flow test hua), asli FreeLLMAPI / OmniRoute, Gemini, Ollama/Qwen, desktop control (headless), Termux phone hand, Windows, macOS |
+| Brain abhi | **keyless lane** (bina API key) + local reflexes — phone par internet ho to general sawaal bhi |
 
 Yani **machine ka har hissa taiyaar hai, par asli duniya se wiring abhi baaki hai.**
+
+---
+
+## 0.1 · v1.5.1 mein band ho gaya
+
+* **Keyless lane** — bina key wala brain (`text.pollinations.ai`), default on,
+  `JARVIS_KEYLESS=0` se off. HUD chip `KEYLESS`, cooldown 90 s, koi status-poll
+  network call nahi. 42 route tests.
+* **Ek command Termux boot** — `bash automation/termux_jarvis.sh up`.
+* **HUD bug fix** — `routeLane` TDZ error jo poora status render tod deta tha.
+* **`models_connected` / `route_status`** keyless ko honestly dikhate hain.
+* Guide: `docs/TERMUX_ONLY.md`.
 
 ---
 
@@ -28,7 +40,7 @@ Yani **machine ka har hissa taiyaar hai, par asli duniya se wiring abhi baaki ha
 | --- | --- | --- | --- |
 | 1.1 | **Gemini key** | `export GEMINI_API_KEY=...` | Cloud reasoning + screen/camera vision + planner |
 | 1.2 | **Local Qwen** | `python3 jarvis.py --brain-setup` → `ollama pull qwen3:4b` | Private offline brain, agent loop |
-| 1.3 | **Free gateway** | `curl -fsSL https://freellmapi.co/install.sh \| bash` ya `npm i -g omniroute && omniroute` | 5–600+ free models, `use free models` |
+| 1.3 | **Free gateway** (optional) | `curl -fsSL https://freellmapi.co/install.sh \| bash` ya `npm i -g omniroute && omniroute` | 5–600+ free models; keyless lane ke bina bhi chalta hai |
 | 1.4 | **Desktop helpers** | `sudo apt install xdotool wmctrl tesseract-ocr scrot xclip` | Asli typing, hotkeys, window focus, OCR |
 | 1.5 | **Phone hand** | Termux + Termux:API app → `bash automation/termux_jarvis.sh install` | Call, SMS, torch, camera, contacts, location |
 | 1.6 | **SMTP email** | `JARVIS_SMTP_HOST/USER/PASS` | Asli email bhejna (abhi draft) |
@@ -92,7 +104,7 @@ Yani **machine ka har hissa taiyaar hai, par asli duniya se wiring abhi baaki ha
 ## 6 · Meri recommendation — agle 3 kaam
 
 1. **2.1 HUD auth** (safety) + **2.2 Jarvis CI** + **2.3 `requests` fix** → ek hi pass mein ho sakta hai, phir `main` hamesha green.
-2. **1.3 Free gateway + 2.4 asli test** → aap gateway chala do, main real traffic par verify karke v1.5.1 patch dunga.
+2. **2.4 Asli keyless endpoint test** — phone par `route test keyless` chala kar batao; agar 429/401 aaye to main doosra no-key endpoint jod dunga.
 3. **3.1 + 3.3 auto-start + installer** → "PC on, Jarvis on" wala feel.
 
 Bas bolo kaunsa number uthaun — main usi par kaam shuru kar deta hoon.

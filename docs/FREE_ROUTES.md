@@ -22,6 +22,7 @@ ne diya, aur Jarvis wahi sach aapko dikhata hai.
 | --- | --- | --- | --- | --- |
 | **FreeLLMAPI** | `http://127.0.0.1:3001/v1` | `auto` | `curl -fsSL https://freellmapi.co/install.sh \| bash` ya Docker | `freellmapi-…` (dashboard `:3001`) |
 | **OmniRoute** | `http://127.0.0.1:20128/v1` | `auto` | `npm install -g omniroute && omniroute` | koi bhi string |
+| **Keyless** | `https://text.pollinations.ai/openai` | `openai-fast` | kuch nahi | ❌ nahi chahiye |
 
 * **FreeLLMAPI** — 34 free providers, ~635 endpoints, ~7.4B free tokens/month,
   keys SQLite mein encrypted, local-first. Docker:
@@ -31,6 +32,26 @@ ne diya, aur Jarvis wahi sach aapko dikhata hai.
 
 Dono ko ek saath chalane ki zaroorat nahi — Jarvis dono ko parallel probe karta
 hai aur jo pehle jawab de use use karta hai.
+
+### 0.1 Teesra, sasta option — keyless lane
+
+Kuch bhi install nahi karna? Jarvis ke paas ek **keyless** lane already hai:
+koi bhi public OpenAI-compatible endpoint jo bina key chalta hai
+(default `https://text.pollinations.ai/openai`, model `openai-fast`).
+
+```bash
+export JARVIS_KEYLESS=1          # default already on
+# ya apna no-key server:
+export JARVIS_KEYLESS_URL=http://192.168.1.20:8080/v1
+export JARVIS_KEYLESS_MODEL=llama3
+```
+
+* **Best-effort** hai: rate limit ya downtime par 90 second ke liye chup ho jati
+  hai aur Jarvis saaf bolta hai ki route ne jawab nahi diya.
+* Local gateways (`freellmapi`, `omniroute`) usse pehle priority par hain — jab
+  woh chal rahe hain, keyless lane sirf backup hai.
+* HUD footer ise `KEYLESS` chip se dikhata hai jab sirf yahi lane ready ho.
+* Band karna ho: `export JARVIS_KEYLESS=0`.
 
 ---
 
@@ -163,6 +184,7 @@ hai kaun kyun fail hua.
 | `401` / `403` | Key galat — dashboard se naya unified key, `JARVIS_FREELLMAPI_KEY` update |
 | `404` on `/chat/completions` | URL mein `/v1` chhoot gaya (`…:3001/v1`) |
 | `429` bahut zyada | Free provider ki limit — model `auto` rakho, gateway rotate kar lega |
+| Keyless lane `○ offline` | internet ya endpoint down; 90 s baad khud retry, ya `JARVIS_KEYLESS_URL` do |
 | Route online par jawab slow | OmniRoute mein doosra provider ya model `auto:fast` try karo |
 | HUD purana dikh raha | Hard refresh; `web/sw.js` cache version `jarvis-v1.5.0` hai |
 

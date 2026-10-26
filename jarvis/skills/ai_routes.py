@@ -31,43 +31,71 @@ def _setup_rows() -> list[str]:
         rows.append(f"  {preset['note']}")
     rows += [
         "",
+        "No key at all? The keyless lane needs nothing — just internet. Say “route test keyless”.",
         "Then in Jarvis: “route test freellmapi” or “use free models”.",
         "Another machine? “add route mybox at http://192.168.1.20:3001/v1”.",
     ]
     return rows
 
 
+def _route_row(item: dict) -> str:
+    """One honest line per route, including the keyless lane."""
+    if item.get("keyless"):
+        if item.get("online"):
+            return f"{item['label']}: ● online · no API key · model {item.get('model', 'auto')}"
+        if item.get("ready") and not item.get("checked"):
+            return f"{item['label']}: ● ready · no API key needed · checked on first use"
+        return f"{item['label']}: ○ offline · {item.get('error') or 'not reachable'} · no API key needed"
+    if item["online"]:
+        return (
+            f"{item['label']}: ● online · {item['models']} models · "
+            f"{(item.get('latency_ms') or 0):.0f} ms · model {item['model']}"
+        )
+    return f"{item['label']}: ○ offline · {item['error']} ({item['base_url']})"
+
+
 def route_status() -> dict:
     items = routes.status_all()
     online = [item for item in items if item["online"]]
-    rows: list[str] = []
-    for item in items:
-        state = f"{_dot(item['online'])} {'online' if item['online'] else 'offline'}"
-        if item["online"]:
-            rows.append(
-                f"{item['label']}: {state} · {item['models']} models · "
-                f"{item['latency_ms']:.0f} ms · model {item['model']}"
-            )
-        else:
-            rows.append(f"{item['label']}: {state} · {item['error']} ({item['base_url']})")
+    ready = [item for item in items if item.get("ready")]
+    keyless = [item for item in items if item.get("keyless") and item.get("ready")]
+    gateways = [item for item in online if not item.get("keyless")]
+    rows: list[str] = [_route_row(item) for item in items]
     settings = get_settings()
     rows += ["", f"brain mode: {MODE_LABELS.get(settings.brain_mode, settings.brain_mode)}"]
     rows.append(f"free models available: {sum(item['models'] for item in online)}")
-    if online:
-        rows.append(f"preferred route: {online[0]['label']}")
+    if gateways:
+        rows.append(f"preferred route: {gateways[0]['label']}")
+    elif keyless:
+        rows.append(f"no-key lane ready: {keyless[0]['label']} — no install, no key")
     else:
         rows += ["", "No route is answering yet — say “free route setup” for the two install commands."]
-    headline = (
-        f"{len(online)} free route{'s' if len(online) != 1 else ''} online, Sir — "
-        f"{sum(item['models'] for item in online)} models reachable."
-        if online
-        else "No free route is answering, Sir. Both gateways are optional and self-hosted."
-    )
+    if gateways:
+        headline = (
+            f"{len(gateways)} free route{'s' if len(gateways) != 1 else ''} online, Sir — "
+            f"{sum(item['models'] for item in gateways)} models reachable."
+        )
+    elif online:
+        headline = "The keyless lane is answering, Sir — no API key involved."
+    elif keyless:
+        headline = (
+            "No gateway is running, Sir, but the keyless lane is ready — "
+            "I can still answer without any API key."
+        )
+    else:
+        headline = "No free route is answering, Sir. Both gateways are optional and self-hosted."
     return reply(
         headline,
         speech=headline,
         cards=[{"type": "list", "title": "FREE AI ROUTES", "rows": rows}],
-        data={"ok": True, "online": len(online), "routes": items, "brain_mode": settings.brain_mode},
+        data={
+            "ok": True,
+            "online": len(online),
+            "ready": len(ready),
+            "keyless": len(keyless),
+            "routes": items,
+            "brain_mode": settings.brain_mode,
+        },
     )
 
 
@@ -242,15 +270,30 @@ def models_connected() -> dict:
         state = "online" if lane.get("online") else "offline"
         rows.append(f"  · {lane.get('name')}: {state} {lane.get('model', '')}")
     for item in route_info["routes"]:
-        state = f"online · {item['models']} models" if item["online"] else f"offline · {item['error']}"
+        if item.get("keyless"):
+            state = (
+                "online · no API key"
+                if item["online"]
+                else ("ready · no API key (checked on use)" if item.get("ready") else f"offline · {item.get('error') or 'not reachable'}")
+            )
+        else:
+            state = f"online · {item['models']} models" if item["online"] else f"offline · {item['error']}"
         rows.append(f"{item['label']}: {state}")
     rows += ["", f"brain mode: {MODE_LABELS.get(settings.brain_mode, settings.brain_mode)}"]
-    total = (1 if settings.gemini_key else 0) + (len(local.get("lanes") or []) if local.get("online") else 0) + route_info["models"]
-    headline = (
-        f"{total} model endpoint{'s' if total != 1 else ''} can answer right now, Sir."
-        if total
-        else "Nothing can answer yet, Sir — add a Gemini key, start Ollama, or bring up a free route."
+    keyless_ready = [
+        item for item in route_info["routes"]
+        if item.get("keyless") and (item.get("online") or item.get("ready"))
+    ]
+    total = (
+        (1 if settings.gemini_key else 0)
+        + (len(local.get("lanes") or []) if local.get("online") else 0)
+        + route_info["models"]
+        + len(keyless_ready)
     )
+    if total:
+        headline = f"{total} model endpoint{'s' if total != 1 else ''} can answer right now, Sir."
+    else:
+        headline = "Nothing can answer yet, Sir — add a Gemini key, start Ollama, or bring up a free route."
     return reply(
         headline,
         speech=headline,

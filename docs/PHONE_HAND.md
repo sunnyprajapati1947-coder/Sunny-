@@ -4,6 +4,7 @@ Jarvis par PC bas baat karta hai. Phone par woh **haath** lagata hai: call, SMS,
 notification, torch, volume, clipboard, camera, contacts, location.
 
 Yeh guide do cheezein cover karti hai: **setup** (5 minute) aur **demo** (5 minute).
+Sirf phone par, bina PC aur bina API key chalane ka guide: `docs/TERMUX_ONLY.md`.
 
 ---
 
@@ -50,11 +51,17 @@ Notifications — whichever you want Jarvis to use).
 
 ## 2 · Start Jarvis
 
+Ek command — dependencies check karke HUD chalu ho jata hai (koi API key nahi
+chahiye):
+
 ```bash
-bash automation/termux_jarvis.sh start     # wake-lock + HUD + open browser
+bash automation/termux_jarvis.sh up        # packages + keyless brain + HUD + browser
 ```
 
+Purani commands bhi kaam karti hain (`install`, `start`, `stop`, `status`).
+
 The HUD footer now shows **PHONE 17/17**. Green means every action is live.
+Phone-only setup ka poora guide: `docs/TERMUX_ONLY.md`.
 
 ---
 

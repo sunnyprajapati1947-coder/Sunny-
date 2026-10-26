@@ -16,6 +16,12 @@ keep the ``X-Routed-Via`` header to say honestly which provider answered.
 Any other OpenAI-compatible endpoint (llama.cpp, LM Studio, vLLM, a remote
 gateway) can be added as a custom route.
 
+A third preset is **keyless**: a public, no-signup OpenAI-compatible endpoint
+(``text.pollinations.ai`` by default) so Jarvis can reason with zero API keys
+and zero installs. It is best effort by design — when it rate-limits or the
+phone is offline the route goes quiet for a minute and Jarvis says so, then
+falls back to its deterministic core.
+
 Nothing here invents success: an offline route reports the error, and the
 brain falls through to the next provider instead of pretending.
 """
@@ -33,6 +39,10 @@ from jarvis.config import DATA_DIR
 
 ROUTES_FILE = DATA_DIR / "routes.json"
 PROBE_TTL = 15.0
+KEYLESS_TTL = 120.0
+KEYLESS_COOLDOWN = 90.0
+KEYLESS_URL = os.getenv("JARVIS_KEYLESS_URL", "https://text.pollinations.ai/openai")
+KEYLESS_MODEL = os.getenv("JARVIS_KEYLESS_MODEL", "openai-fast")
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{1,24}$")
 CHAT_TIMEOUT = 60.0
 PROBE_TIMEOUT = 1.6
@@ -67,6 +77,22 @@ PRESETS: tuple[dict, ...] = (
         "install": "npm install -g omniroute && omniroute",
         "note": "Dashboard on http://localhost:20128 — connect free providers, then use any string as the key.",
     },
+    {
+        "id": "keyless",
+        "label": "Keyless route",
+        "kind": "keyless",
+        "base_url": KEYLESS_URL,
+        "model": KEYLESS_MODEL,
+        "priority": 30,
+        "enabled": True,
+        "keyless": True,
+        "homepage": "https://pollinations.ai",
+        "install": "nothing to install — needs internet only, no API key",
+        "note": (
+            "Best-effort public endpoint. Set JARVIS_KEYLESS_URL to any other "
+            "OpenAI-compatible server that needs no key, or JARVIS_KEYLESS=0 to turn it off."
+        ),
+    },
 )
 
 _cache: dict[str, dict] = {}
@@ -77,6 +103,32 @@ def _host(url: str) -> str:
         return urlsplit(url).netloc or url
     except Exception:
         return url
+
+
+def _root(url: str) -> str:
+    """scheme://host of an endpoint — used for a cheap reachability check."""
+    try:
+        parts = urlsplit(url)
+        if parts.scheme and parts.netloc:
+            return f"{parts.scheme}://{parts.netloc}/"
+    except Exception:
+        pass
+    return url
+
+
+def _reachable(url: str, timeout: float = 2.6) -> bool:
+    """Any HTTP answer means the host is up; only network errors count as down."""
+    request = urllib.request.Request(
+        url, headers={"User-Agent": "JARVIS/1.0 (+keyless-route)", "Accept": "*/*"}, method="GET"
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            response.read(1)
+            return True
+    except urllib.error.HTTPError:
+        return True
+    except Exception:
+        return False
 
 
 # ------------------------------------------------------------------ storage
@@ -127,8 +179,17 @@ def _normalize(route: dict, preset: dict | None = None) -> dict:
     except (TypeError, ValueError):
         base["priority"] = 50
     base["enabled"] = bool(base.get("enabled", True))
+    base["keyless"] = bool(base.get("keyless"))
     base["api_key"] = str(base.get("api_key") or "").strip() or _key_from_env(base)
     return base
+
+
+def keyless_enabled() -> bool:
+    """Global switch for the no-key lane: ``JARVIS_KEYLESS=0`` turns it off."""
+    return str(os.getenv("JARVIS_KEYLESS", "1")).strip().lower() not in {"0", "false", "off", "no"}
+
+
+_keyless_until = 0.0
 
 
 def routes() -> list[dict]:
@@ -147,6 +208,10 @@ def routes() -> list[dict]:
     for extra in by_id.values():
         merged.append(_normalize(extra))
     merged.sort(key=lambda item: (item["priority"], item["id"]))
+    if not keyless_enabled():
+        for route in merged:
+            if route.get("keyless"):
+                route["enabled"] = False
     return merged
 
 
@@ -199,13 +264,53 @@ def _http_json(
         return None, meta, status, "response was not JSON"
 
 
-def probe(route: dict, *, timeout: float = PROBE_TIMEOUT, fresh: bool = False) -> dict:
-    """Is this gateway answering, and how many models does it expose?"""
+def _keyless_view(route: dict, *, checked: bool) -> dict:
+    """A keyless route is "ready" without a probe; only a real call proves it."""
+    route_id = str(route.get("id", ""))
+    cooling = time.time() < _keyless_until
+    return {
+        "id": route_id,
+        "label": route.get("label") or route_id,
+        "base_url": route.get("base_url", ""),
+        "model": route.get("model", "auto"),
+        "online": False,
+        "ready": not cooling and bool(route.get("enabled", True)),
+        "checked": checked,
+        "keyless": True,
+        "status": 0,
+        "latency_ms": None,
+        "models": 0,
+        "sample": [],
+        "error": "last call failed — cooling down" if cooling else "",
+        "note": "no API key needed — checked on first use",
+        "enabled": bool(route.get("enabled", True)),
+    }
+
+
+def probe(route: dict, *, timeout: float = PROBE_TIMEOUT, fresh: bool = False, remote: bool = True) -> dict:
+    """Is this gateway answering, and how many models does it expose?
+
+    Keyless routes are never probed by ``summary()`` (that runs on every HUD
+    poll); only an actual message or an explicit test touches the network.
+    """
     route_id = str(route.get("id", ""))
     now = time.time()
     cached = _cache.get(route_id)
     if not fresh and cached and now - cached["ts"] < PROBE_TTL:
         return {**cached["value"], "cached": True}
+    if route.get("keyless"):
+        if not remote or now < _keyless_until:
+            return _keyless_view(route, checked=False)
+        reachable = _reachable(_root(route["base_url"]))
+        value = {
+            **_keyless_view(route, checked=True),
+            "online": reachable,
+            "ready": reachable and bool(route.get("enabled", True)),
+            "error": "" if reachable else f"cannot reach {_host(route['base_url'])}",
+            "note": "no API key needed — first answer proves it" if reachable else "",
+        }
+        _cache[route_id] = {"ts": now, "value": value}
+        return value
 
     url = route["base_url"] + "/models"
     started = time.perf_counter()
@@ -229,53 +334,64 @@ def probe(route: dict, *, timeout: float = PROBE_TIMEOUT, fresh: bool = False) -
         "sample": models[:8],
         "error": "" if online else (error or "not answering"),
         "enabled": bool(route.get("enabled", True)),
+        "keyless": bool(route.get("keyless")),
+        "ready": online,
     }
+    if route.get("keyless"):
+        value["checked"] = True
     _cache[route_id] = {"ts": now, "value": value}
     return value
 
 
-def status_all(*, fresh: bool = False) -> list[dict]:
-    return [probe(route, fresh=fresh) for route in routes()]
+def status_all(*, fresh: bool = False, remote: bool = True) -> list[dict]:
+    return [probe(route, fresh=fresh, remote=remote) for route in routes()]
 
 
 _negative_until = 0.0
 
 
-def available(*, fresh: bool = False, cooldown: float = 45.0) -> bool:
-    """True when at least one enabled route answers.
+def available(*, fresh: bool = False, cooldown: float = 45.0, remote: bool = True) -> bool:
+    """True when at least one enabled route can answer.
 
-    A failed sweep is remembered for ``cooldown`` seconds so an offline gateway
-    costs one short probe, not one per message.
+    Local gateways are probed for real. A keyless route counts as ready until
+    it actually fails, so a phone with no keys still has a brain — and the
+    first failed call puts it on cooldown for ``KEYLESS_COOLDOWN`` seconds.
     """
     global _negative_until
     now = time.time()
     if not fresh and now < _negative_until:
         return False
-    online = any(item["online"] for item in status_all(fresh=fresh) if item["enabled"])
-    if not online:
+    items = [item for item in status_all(fresh=fresh, remote=remote) if item["enabled"]]
+    online = any(item["online"] for item in items)
+    ready = online or any(item.get("keyless") and item.get("ready") for item in items)
+    if not online and remote:
         _negative_until = now + cooldown
-    else:
+    if online:
         _negative_until = 0.0
-    return online
+    return ready
 
 
 def summary() -> dict:
-    """Compact view for /api/status — cheap because probes are cached."""
-    items = status_all()
+    """Compact view for /api/status — cheap: keyless routes are not dialled here."""
+    items = status_all(remote=False)
     online = [item for item in items if item["online"]]
+    ready = online or [item for item in items if item.get("keyless") and item.get("ready")]
     return {
         "count": len(items),
         "online": len(online),
-        "ready": bool(online),
+        "ready": bool(ready),
+        "keyless": len([item for item in items if item.get("keyless") and item.get("enabled")]),
         "routes": items,
         "models": sum(item["models"] for item in online),
-        "best": online[0]["id"] if online else "",
+        "best": (online or ready)[0]["id"] if (online or ready) else "",
     }
 
 
 # -------------------------------------------------------------------- models
 def models(route_id: str = "", *, fresh: bool = False) -> dict:
-    targets = [get(route_id)] if route_id else [r for r in routes() if r.get("enabled")]
+    targets = [get(route_id)] if route_id else [
+        r for r in routes() if r.get("enabled") and not r.get("keyless")
+    ]
     targets = [route for route in targets if route]
     if not targets:
         return {"ok": False, "error": f"Unknown route “{route_id}”.", "routes": []}
@@ -318,6 +434,7 @@ def chat(
         "stream": False,
     }
     url = route["base_url"] + "/chat/completions"
+    global _keyless_until
     started = time.perf_counter()
     data, headers, status, error = _http_json(url, payload=payload, api_key=route.get("api_key", ""), timeout=timeout)
     elapsed = round((time.perf_counter() - started) * 1000, 1)
@@ -332,10 +449,16 @@ def chat(
     }
     if not isinstance(data, dict):
         meta["error"] = error or f"HTTP {status}"
+        if route.get("keyless"):
+            _keyless_until = time.time() + KEYLESS_COOLDOWN
+            _cache.pop(route["id"], None)
         return None, meta
     choices = data.get("choices") or []
     if not choices or not isinstance(choices[0], dict):
         meta["error"] = (data.get("error") or {}).get("message") if isinstance(data.get("error"), dict) else "no choices in response"
+        if route.get("keyless"):
+            _keyless_until = time.time() + KEYLESS_COOLDOWN
+            _cache.pop(route["id"], None)
         return None, meta
     content = str((choices[0].get("message") or {}).get("content") or "").strip()
     if not content:
@@ -345,6 +468,18 @@ def chat(
     if isinstance(usage, dict):
         meta["tokens"] = int(usage.get("total_tokens") or 0)
     meta["model"] = str(data.get("model") or payload["model"])
+    if route.get("keyless"):
+        _keyless_until = 0.0
+        _cache[route["id"]] = {"ts": time.time(), "value": {
+            **_keyless_view(route, checked=True),
+            "online": True,
+            "ready": True,
+            "status": status,
+            "latency_ms": elapsed,
+            "models": 0,
+            "error": "",
+            "note": "answering without a key",
+        }}
     return content, meta
 
 
@@ -471,9 +606,10 @@ def mask(route: dict) -> str:
 
 
 def invalidate() -> None:
-    global _negative_until
+    global _negative_until, _keyless_until
     _cache.clear()
     _negative_until = 0.0
+    _keyless_until = 0.0
 
 
 def adhoc(base_url: str, api_key: str = "", model: str = "auto") -> dict:

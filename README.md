@@ -31,8 +31,9 @@ mic loop, and a **Barge-in** switch in Settings. `python3 jarvis.py
 --desktop-check` prints exactly which desktop helpers are missing, and
 `docs/DESKTOP_DEMO.md` is the 10-minute live demo script. `python3 jarvis.py
 --phone-check` does the same for the Android hand; `docs/PHONE_HAND.md` is the
-phone setup + demo guide, and `docs/FREE_ROUTES.md` wires up the free model
-routes behind the `route` brain mode.
+phone setup + demo guide, `docs/FREE_ROUTES.md` wires up the free model
+routes (plus the no-key lane) behind the `route` brain mode, and
+`docs/TERMUX_ONLY.md` is the zero-config phone boot.
 
 ```bash
 python3 jarvis.py            # HUD on http://localhost:7777
@@ -40,7 +41,15 @@ python3 jarvis.py --cli      # terminal console
 python3 jarvis.py --check    # self-diagnostic
 python3 jarvis.py --brain    # local Qwen status and recommendation
 python3 jarvis.py --agent "goal"   # multi-step agent with on-disk plan
+
+# phone only, no PC and no API key (Termux):
+bash automation/termux_jarvis.sh up
 ```
+
+**No API key? Jarvis still answers.** A keyless lane (a public
+OpenAI-compatible endpoint, `JARVIS_KEYLESS=0` to disable) sits behind the local
+reflexes, so a fresh phone install can talk without a Gemini key, an Ollama
+install or a gateway. Phone-only guide: `docs/TERMUX_ONLY.md`.
 
 Runs on the Python standard library alone; every extra package is optional.
 Full documentation: **[JARVIS.md](JARVIS.md)**.

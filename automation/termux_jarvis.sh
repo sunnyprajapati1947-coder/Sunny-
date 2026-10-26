@@ -1,6 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # J.A.R.V.I.S. on Android — install once, then start/stop from Termux.
 #
+#   bash automation/termux_jarvis.sh up        # one command: deps + start + ready
 #   bash automation/termux_jarvis.sh install
 #   bash automation/termux_jarvis.sh start
 #   bash automation/termux_jarvis.sh stop
@@ -47,6 +48,8 @@ start() {
   else
     cd "$ROOT"
     termux-wake-lock 2>/dev/null || true
+    # No API key required: the keyless lane needs only internet.
+    export JARVIS_KEYLESS="${JARVIS_KEYLESS:-1}"
     nohup python3 jarvis.py --no-browser --host 127.0.0.1 --port "$PORT" \
       >> "$LOG_DIR/termux.log" 2>&1 &
     echo $! > "$PID_FILE"
@@ -103,7 +106,38 @@ hand() {
   fi
 }
 
-case "${1:-start}" in
+ready_panel() {
+  local hand_ok=0
+  for binary in $PHONE_BINARIES; do
+    if command -v "$binary" >/dev/null 2>&1; then hand_ok=$((hand_ok + 1)); fi
+  done
+  echo
+  echo "  +----------------------------------------------+"
+  echo "  |  J.A.R.V.I.S. is UP - no API key needed      |"
+  echo "  +----------------------------------------------+"
+  echo "    HUD      http://127.0.0.1:$PORT"
+  echo "    Brain    keyless lane (internet only) + local reflexes"
+  echo "    Hands    $hand_ok/${#PHONE_BINARIES} Termux:API commands"
+  echo "    Logs     $LOG_DIR/termux.log"
+  echo
+  echo "    Add to Home screen in Chrome for the PWA icon."
+  echo "    Stop later:  bash automation/termux_jarvis.sh stop"
+  echo
+}
+
+up() {
+  need_termux
+  echo "[1/3] packages"
+  command -v python3 >/dev/null 2>&1 || pkg install -y python
+  command -v termux-battery-status >/dev/null 2>&1 || pkg install -y termux-api
+  echo "[2/3] starting Jarvis"
+  start || true
+  echo "[3/3] readiness"
+  ready_panel
+}
+
+case "${1:-up}" in
+  up) up ;;
   install) install_deps ;;
   start) start ;;
   stop) stop ;;
@@ -111,7 +145,7 @@ case "${1:-start}" in
   status) status ;;
   hand) hand ;;
   *)
-    echo "Usage: $0 {install|start|stop|restart|status|hand}" >&2
+    echo "Usage: $0 {up|install|start|stop|restart|status|hand}" >&2
     exit 2
     ;;
 esac

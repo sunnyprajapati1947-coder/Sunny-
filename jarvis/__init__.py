@@ -5,5 +5,5 @@ A local-first, voice-capable AI assistant layer for the SunnyAI repository.
 
 __all__ = ["__version__", "CODENAME"]
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 CODENAME = "MARK XI"

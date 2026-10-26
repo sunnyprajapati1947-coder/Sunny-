@@ -91,7 +91,8 @@ class Brain:
         preferred = self.brain_mode()
         route_ready = False
         try:
-            route_ready = routes.available()
+            # status() runs on every HUD poll — never dial a remote keyless lane here
+            route_ready = routes.available(remote=False)
         except Exception:
             route_ready = False
         mode = "offline"
@@ -273,7 +274,8 @@ class Brain:
                 messages,
                 temperature=0.3 if json_mode else 0.45,
                 max_tokens=1200 if task in {"plan", "deep", "code"} else 700,
-                timeout=max(20.0, timeout),
+                # a keyless public endpoint must not hang the phone for a minute
+                timeout=min(18.0, max(12.0, timeout)) if route.get("keyless") else max(20.0, timeout),
             )
             if text:
                 routes.invalidate()

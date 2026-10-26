@@ -949,6 +949,7 @@
     const agent = status.agent || {};
     const memory = status.memory || {};
     const plans = status.plans || {};
+    const routeLane = (status.brain && status.brain.routes) || {};
     $("brainMeta").textContent =
       `${preferred} · ${local.online ? "local ready" : "local offline"} · ` +
       `${local.ram_gb || (local.runtime || {}).ram_gb || "?"} GB RAM · ` +
@@ -957,14 +958,15 @@
       `${agent.ready ? "agent armed" : "agent waiting"}` +
       ((routeLane.ready) ? ` · ${routeLane.models} free models` : "") +
       ((status.desktop && status.desktop.armed) ? " · desktop ARMED" : "");
-    const routeLane = (status.brain && status.brain.routes) || {};
     const routeChip = $("footerRoute");
     if (routeChip) {
       routeChip.textContent = routeLane.ready
-        ? `${routeLane.online}/${routeLane.count}`
+        ? (routeLane.online ? `${routeLane.online}/${routeLane.count}` : "KEYLESS")
         : (routeLane.count ? "OFF" : "—");
       routeChip.title = routeLane.ready
-        ? `${routeLane.models} free models via ${(routeLane.routes || []).filter((r) => r.online).map((r) => r.label).join(", ")}`
+        ? routeLane.online
+          ? `${routeLane.models} free models via ${(routeLane.routes || []).filter((r) => r.online).map((r) => r.label).join(", ")}`
+          : "Keyless lane ready — no API key needed"
         : "No free route answering — say “free route setup”";
     }
     const phone = status.phone || {};
@@ -1400,25 +1402,36 @@
       return;
     }
     box.innerHTML = items.map((route) => {
-      const meta = route.online
-        ? `${route.models} models · ${Math.round(route.latency_ms || 0)} ms · ${esc(route.model || "auto")}`
-        : esc(route.error || "offline");
-      return `<div class="route-row ${route.online ? "online" : ""}">
+      let meta;
+      if (route.online) {
+        meta = route.keyless
+          ? `no key needed · ${esc(route.model || "auto")}`
+          : `${route.models} models · ${Math.round(route.latency_ms || 0)} ms · ${esc(route.model || "auto")}`;
+      } else if (route.keyless && route.ready) {
+        meta = "no key needed · checked on first use";
+      } else {
+        meta = esc(route.error || "offline");
+      }
+      const on = route.online || (route.keyless && route.ready);
+      return `<div class="route-row ${on ? "online" : ""}${route.keyless ? " keyless" : ""}">
         <i class="dot"></i><b>${esc(route.label || route.id)}</b>
         <span class="meta">${meta}</span>
       </div>`;
     }).join("");
     const note = $("routeNote");
     if (note) {
+      const readyCount = (lane.routes || []).filter((r) => r.online || (r.keyless && r.ready)).length;
       note.innerHTML = lane.ready
-        ? `${lane.online}/${lane.count} route online · <b>${lane.models}</b> free models reachable. Brain mode: <code>${esc((state.settings && state.settings.brain_mode) || "auto")}</code>.`
-        : 'No free route answering. Say <code>free route setup</code> for the FreeLLMAPI and OmniRoute install commands.';
+        ? `${lane.online}/${lane.count} gateway online · ${readyCount} ready` +
+          (lane.keyless ? ` · keyless lane needs no API key` : "") +
+          ` · <b>${lane.models}</b> free models reachable. Brain mode: <code>${esc((state.settings && state.settings.brain_mode) || "auto")}</code>.`
+        : 'No route answering. Say <code>free route setup</code> for the install commands — or check the keyless lane needs only internet.';
     }
   }
 
   async function testRoute() {
     const lane = routeLane();
-    const online = (lane.routes || []).filter((route) => route.online);
+    const online = (lane.routes || []).filter((route) => route.online || (route.keyless && route.ready));
     if (!online.length) {
       toast("No route online", "Say “free route setup” for the install commands.", "gold", 7000);
       return;
