@@ -191,9 +191,16 @@ jobs:
           printf '\n**Signer certificate SHA-256:** `%s`\n' "$cert" >> /tmp/notes.md
           printf '**Signing key:** %s\n' "${JARVIS_SIGNING_ORIGIN}" >> /tmp/notes.md
           printf '\nIf Android says \"App not installed\", your old JARVIS was signed with a different key: uninstall it once, then install this APK. Later updates install in place.\n' >> /tmp/notes.md
-          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "JARVIS ${{ steps.version.outputs.name }} — Android APK" --latest=false \
-            --notes-file /tmp/notes.md dist/*
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            # A re-run for the same version (docs, PWA-only fixes) refreshes the
+            # assets instead of failing on an existing tag.
+            gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber dist/*
+            gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --notes-file /tmp/notes.md
+          else
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "JARVIS ${{ steps.version.outputs.name }} — Android APK" --latest=false \
+              --notes-file /tmp/notes.md dist/*
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
