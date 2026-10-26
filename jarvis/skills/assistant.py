@@ -104,6 +104,8 @@ def brain_setup() -> dict:
         "OLLAMA",
     ]
     lines += [f"  {command}" for command in guide.get("steps") or []]
+    lines += ["", "WINDOWS"]
+    lines += [f"  {command}" for command in guide.get("windows") or []]
     lines += ["", "LLAMA.CPP"]
     lines += [f"  {command}" for command in guide.get("llama_cpp") or []]
     lines += ["", guide.get("note", "")]

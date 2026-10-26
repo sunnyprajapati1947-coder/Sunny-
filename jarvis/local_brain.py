@@ -458,6 +458,12 @@ class LocalBrain:
             f"# 2. llama-server -m {model['gguf']} -c {model['context']} --port 8080",
             f"# 3. Jarvis auto-detects http://127.0.0.1:8080",
         ]
+        windows = [
+            f"winget install Ollama.Ollama   # or download from https://ollama.com/download",
+            f"ollama pull {model['ollama']}",
+            "ollama serve",
+            "# Ollama opens on http://127.0.0.1:11434 — Jarvis finds it automatically",
+        ]
         return {
             "ok": True,
             "model": key,
@@ -466,6 +472,7 @@ class LocalBrain:
             "recommended": recommended,
             "runtime": runtime,
             "steps": steps,
+            "windows": windows,
             "llama_cpp": llama_cpp,
             "note": (
                 "Jarvis never downloads weights by itself. Install Ollama or llama.cpp, "

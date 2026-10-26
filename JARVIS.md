@@ -404,6 +404,9 @@ by task:
 curl -fsSL https://ollama.com/install.sh | sh
 ollama pull qwen3:4b
 ollama serve            # Jarvis auto-detects :11434
+# Windows:
+winget install Ollama.Ollama
+ollama pull qwen3:4b
 # or, without Ollama:
 llama-server -m Qwen3-4B-Instruct-Q4_K_M.gguf -c 32768 --port 8080
 ```
