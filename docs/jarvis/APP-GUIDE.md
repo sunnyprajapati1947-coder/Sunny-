@@ -70,6 +70,8 @@ Honest limits of the on-device model:
 ## 3. Chat, voice, memory
 
 - Text chat with streaming answers, markdown, copy/share/speak on every reply.
+- Voice commands you can say: *"play kesariya"*, *"set alarm 7:30"*, *"mausam in Patna"*,
+  *"internet speed check"*, *"whatsapp 98xxxx hello"*, *"remind me to call mom in 20 minutes"*.
 - Voice input: the installed app prefers the **on-device recogniser** and asks for the
   microphone permission the first time. Spoken answers use the phone's TTS engine.
 - Memory lives in **SQLite** on the phone (memories, notes, tool history), with a
@@ -97,6 +99,11 @@ Every action is a single, declared tool with validated arguments. Sensitive ones
 | `notify`, `share_text`, `open_url` | dispatched — **unverified** by design |
 | `search_knowledge` | local BM25 scores |
 | `remember` | written to SQLite (after the secret guard) |
+| `play_music` | YouTube search opened — **unverified**, playback is not confirmable |
+| `add_alarm` | the clock app opened with the time filled in — **unverified**, that app saves it |
+| `send_message` | WhatsApp opened with the text written — **unverified**, you tap Send |
+| `weather` | current readings returned by Open-Meteo for the city you named |
+| `net_speed` | real bytes downloaded and timed, reported in Mbps |
 
 The rule: **`ok` is only true when the phone actually did the thing**, and a second field
 says whether the result is `verified` or merely dispatched. Android restrictions are

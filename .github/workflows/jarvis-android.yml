@@ -149,7 +149,7 @@ jobs:
           3. Open **Settings → Local brain** and tap **Download** once (~490 MB over Wi-Fi).
              After that, chat works in airplane mode.
 
-          **New in 1.1.0 — local only**
+          **New in 1.2.0 — local only**
           - **One brain, and it is on the phone.** Qwen3.5 (text build) runs through Transformers.js + ONNX Runtime Web
             bundled inside the app. WebGPU when the phone has it, otherwise CPU/WASM.
           - **No cloud AI at all.** The API-key path is gone; an older setting that pointed at a cloud provider is
@@ -172,6 +172,9 @@ jobs:
             when the phone runs out of memory.
           - **Code studio (new).** Projects and files live in the app's SQLite database; the editor saves on this phone
             and runs the project in a sandboxed iframe. No terminal.
+          - **Voice actions from the tutorial playlist.** "play <song>" opens YouTube search (confirmation first),
+            alarms are filled into the clock app, WhatsApp messages are drafted for you to tap Send, weather comes from
+            Open-Meteo (no key) and the speed test measures a real download.
           - **Dashboard (new).** Live device readings, memory budget, permissions with Allow buttons, knowledge base,
             action log, engine diagnostics and privacy switches.
 

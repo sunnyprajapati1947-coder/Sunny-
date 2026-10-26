@@ -242,6 +242,148 @@
       }
     },
     {
+      name: 'play_music',
+      title: 'Play music',
+      hint: 'opens YouTube search for the song you asked for',
+      schema: { query: 'string' },
+      confirm: true,
+      call: function (args) {
+        return native('playMusic', { query: args.query }).then(function (data) {
+          return {
+            ok: !!(data && data.ok),
+            verified: !!(data && data.verified),
+            evidence: (data && data.evidence) || 'YouTube search opened',
+            data: data
+          };
+        });
+      }
+    },
+    {
+      name: 'add_alarm',
+      title: 'Set an alarm',
+      hint: 'fills in an alarm in the clock app',
+      schema: { hour: 'number', minute: 'number?', label: 'string?' },
+      confirm: true,
+      call: function (args) {
+        return native('setAlarm', {
+          hour: args.hour,
+          minute: typeof args.minute === 'number' ? args.minute : 0,
+          label: args.label || 'JARVIS alarm'
+        }).then(function (data) {
+          return {
+            ok: !!(data && data.ok),
+            verified: !!(data && data.verified),
+            evidence: (data && data.evidence) || 'clock app opened',
+            data: data
+          };
+        });
+      }
+    },
+    {
+      name: 'send_message',
+      title: 'Draft a WhatsApp message',
+      hint: 'opens WhatsApp with the text written; you tap Send',
+      schema: { number: 'string?', text: 'string' },
+      confirm: true,
+      call: function (args) {
+        return native('messageDraft', { number: args.number || '', text: args.text }).then(function (data) {
+          return {
+            ok: !!(data && data.ok),
+            verified: !!(data && data.verified),
+            evidence: (data && data.evidence) || 'WhatsApp opened with the draft',
+            data: data
+          };
+        });
+      }
+    },
+    {
+      name: 'weather',
+      title: 'Weather right now',
+      hint: 'current weather for a city, from Open-Meteo (no key)',
+      schema: { city: 'string' },
+      confirm: false,
+      call: function (args) {
+        var city = String(args.city || '').trim();
+        if (!city) return Promise.resolve({ ok: false, verified: true, evidence: 'which city? Say "weather in Patna".', data: null });
+        var geo = 'https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=' +
+          encodeURIComponent(city);
+        return fetch(geo).then(function (response) {
+          if (!response.ok) throw new Error('the weather service answered HTTP ' + response.status);
+          return response.json();
+        }).then(function (found) {
+          var place = (found && found.results && found.results[0]) || null;
+          if (!place) throw new Error('no place called "' + city + '" was found');
+          var url = 'https://api.open-meteo.com/v1/forecast?current=temperature_2m,relative_humidity_2m,' +
+            'apparent_temperature,precipitation,wind_speed_10m&timezone=auto&latitude=' +
+            place.latitude + '&longitude=' + place.longitude;
+          return fetch(url).then(function (response) {
+            if (!response.ok) throw new Error('the forecast answered HTTP ' + response.status);
+            return response.json();
+          }).then(function (forecast) {
+            var now = (forecast && forecast.current) || {};
+            return {
+              ok: true,
+              verified: true,
+              evidence: 'measured by Open-Meteo for ' + place.name + ', ' + (place.country || '') + ' at ' + (now.time || 'now'),
+              data: {
+                city: place.name,
+                country: place.country || '',
+                temperature: now.temperature_2m,
+                feels: now.apparent_temperature,
+                humidity: now.relative_humidity_2m,
+                wind: now.wind_speed_10m,
+                rain: now.precipitation,
+                time: now.time || ''
+              }
+            };
+          });
+        }).catch(function (error) {
+          return { ok: false, verified: true, evidence: 'weather needs internet: ' + error.message, data: null };
+        });
+      }
+    },
+    {
+      name: 'net_speed',
+      title: 'Internet speed',
+      hint: 'measures download speed from the app host',
+      schema: {},
+      confirm: false,
+      call: function () {
+        var url = 'assets/js/vendor/marked.js?speed=' + Date.now();
+        var started = (window.performance && performance.now) ? performance.now() : Date.now();
+        var bytes = 0;
+        return fetch(url, { cache: 'no-store' }).then(function (response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          var reader = response.body && response.body.getReader ? response.body.getReader() : null;
+          if (!reader) {
+            return response.blob().then(function (blob) {
+              bytes = blob.size || 0;
+              return null;
+            });
+          }
+          return (function pump() {
+            return reader.read().then(function (chunk) {
+              if (chunk.done) return null;
+              bytes += chunk.value.byteLength;
+              return pump();
+            });
+          })();
+        }).then(function () {
+          var ended = (window.performance && performance.now) ? performance.now() : Date.now();
+          var seconds = Math.max(0.05, (ended - started) / 1000);
+          var mbps = Math.round(((bytes * 8) / seconds / 1000000) * 10) / 10;
+          return {
+            ok: true,
+            verified: true,
+            evidence: 'measured: ' + Math.round(bytes / 1024) + ' KB in ' + seconds.toFixed(2) + ' s',
+            data: { mbps: mbps, bytes: bytes, seconds: Math.round(seconds * 100) / 100 }
+          };
+        }).catch(function (error) {
+          return { ok: false, verified: true, evidence: 'the speed test needs internet: ' + error.message, data: null };
+        });
+      }
+    },
+    {
       name: 'search_documents',
       title: 'Search my documents',
       hint: 'local search over documents you indexed',
@@ -505,6 +647,14 @@
     if (name === 'share_text') return 'Share sheet opened.';
     if (name === 'open_url') return 'Link opened.';
     if (name === 'media_control') return 'Media action sent: ' + (data.action || '');
+    if (name === 'play_music') return 'YouTube search opened for "' + (data.query || '') + '". Playback itself is not confirmable.';
+    if (name === 'add_alarm') return 'Alarm filled in for ' + String(data.hour).padStart(2, '0') + ':' + String(data.minute).padStart(2, '0') + ' — the clock app saves it.';
+    if (name === 'send_message') return 'WhatsApp opened with a message to ' + (data.number || 'a new chat') + '. Tap Send to deliver it.';
+    if (name === 'weather') {
+      return (data.city + (data.country ? ', ' + data.country : '') + ': ' + data.temperature + '°C (feels ' + data.feels +
+        '°C), humidity ' + data.humidity + '%, wind ' + data.wind + ' km/h, rain ' + data.rain + ' mm — read at ' + data.time + '.');
+    }
+    if (name === 'net_speed') return 'Download speed ≈ ' + data.mbps + ' Mbps (' + Math.round(data.bytes / 1024) + ' KB measured).';
     if (name === 'search_documents') {
       var hits = data || [];
       if (!hits.length) return 'No passage in your documents matches that.';
@@ -542,6 +692,34 @@
     if (search) return { tool: 'search_documents', args: { query: search[1] } };
     var remember = value.match(/^(?:remember|yaad rakho)[:\s]+(.+)$/);
     if (remember) return { tool: 'remember', args: { text: remember[1] } };
+
+    var play = raw.match(/^(?:play|bajao|chalao)\s+(.+)$/i) || raw.match(/^(.+?)\s+(?:bajao|chalao|play karo)$/i); // i18n-ok: Hinglish input pattern, not UI copy
+    if (play) {
+      var song = play[1].replace(/\s+(?:on youtube|youtube par|gaana|song)$/i, '').trim();
+      return { tool: 'play_music', args: { query: song } };
+    }
+
+    var alarm = value.match(/(?:alarm|uthao|wake me)[^0-9]*(\d{1,2})[:. ]?(\d{2})?/);
+    if (alarm) {
+      var hour = Number(alarm[1]);
+      var minute = Number(alarm[2] || 0);
+      if (/(pm|shaam|raat)/.test(value) && hour < 12) hour += 12;
+      if (/(am|subah)/.test(value) && hour === 12) hour = 0;
+      return { tool: 'add_alarm', args: { hour: Math.min(23, hour), minute: Math.min(59, minute), label: 'JARVIS alarm' } };
+    }
+
+    var msg = raw.match(/^whatsapp\s+(?:to\s+|par\s+)?(\+?\d{10,15})\s*[:\-]?\s*(.+)$/i);
+    if (msg) return { tool: 'send_message', args: { number: msg[1], text: msg[2] } };
+
+    var weather = value.length <= 48 ? value.match(/(?:weather|mausam|temperature|garmi|sardi)/) : null;
+    if (weather) {
+      var cityMatch = raw.match(/(?:in|of|ka|ki)\s+([a-zA-Z ]{2,30})$/i);
+      return { tool: 'weather', args: { city: cityMatch ? cityMatch[1].trim() : '' } };
+    }
+
+    if (value.length <= 48 && /(?:internet speed|speed test|net speed|speed check|kitna speed)/.test(value)) {
+      return { tool: 'net_speed', args: {} };
+    }
     return null;
   }
 

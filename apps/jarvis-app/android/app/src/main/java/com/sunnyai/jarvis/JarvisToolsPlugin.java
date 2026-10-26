@@ -522,6 +522,88 @@ public class JarvisToolsPlugin extends Plugin {
         }
     }
 
+    /* ----------------------------------------------------------------- media */
+
+    @PluginMethod
+    public void playMusic(PluginCall call) {
+        String query = call.getString("query", "");
+        if (query == null || query.trim().isEmpty()) {
+            call.reject("query required");
+            return;
+        }
+        JSObject out = new JSObject();
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://www.youtube.com/results?search_query=" + Uri.encode(query)));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            getContext().startActivity(intent);
+            out.put("ok", true);
+            out.put("verified", false);
+            out.put("query", query);
+            out.put("evidence", "YouTube search opened; Android cannot confirm that playback started");
+        } catch (Exception error) {
+            out.put("ok", false);
+            out.put("verified", true);
+            out.put("evidence", "no app can open YouTube: " + error.getMessage());
+        }
+        call.resolve(out);
+    }
+
+    @PluginMethod
+    public void setAlarm(PluginCall call) {
+        int hour = Math.max(0, Math.min(23, call.getInt("hour", 7)));
+        int minute = Math.max(0, Math.min(59, call.getInt("minute", 0)));
+        String label = call.getString("label", "JARVIS alarm");
+        JSObject out = new JSObject();
+        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
+        intent.putExtra(AlarmClock.EXTRA_HOUR, hour);
+        intent.putExtra(AlarmClock.EXTRA_MINUTES, minute);
+        intent.putExtra(AlarmClock.EXTRA_MESSAGE, label);
+        intent.putExtra(AlarmClock.EXTRA_SKIP_UI, false);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            getContext().startActivity(intent);
+            out.put("ok", true);
+            out.put("verified", false);
+            out.put("hour", hour);
+            out.put("minute", minute);
+            out.put("label", label);
+            out.put("evidence", "the clock app opened with the alarm filled in; saving it is that app's job");
+        } catch (Exception error) {
+            out.put("ok", false);
+            out.put("verified", true);
+            out.put("evidence", "no alarm app accepted the intent: " + error.getMessage());
+        }
+        call.resolve(out);
+    }
+
+    @PluginMethod
+    public void messageDraft(PluginCall call) {
+        String number = call.getString("number", "");
+        String text = call.getString("text", "");
+        String digits = number == null ? "" : number.replaceAll("[^0-9]", "");
+        String body = text == null ? "" : text;
+        JSObject out = new JSObject();
+        String url = digits.isEmpty()
+                ? "https://wa.me/?text=" + Uri.encode(body)
+                : "https://wa.me/" + digits + "?text=" + Uri.encode(body);
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            getContext().startActivity(intent);
+            out.put("ok", true);
+            out.put("verified", false);
+            out.put("number", digits);
+            out.put("text", body);
+            out.put("evidence", "WhatsApp opened with the message written; you still tap Send");
+        } catch (Exception error) {
+            out.put("ok", false);
+            out.put("verified", true);
+            out.put("evidence", "no app can open WhatsApp: " + error.getMessage());
+        }
+        call.resolve(out);
+    }
+
     /* ----------------------------------------------------------------- voice */
 
     @PluginMethod

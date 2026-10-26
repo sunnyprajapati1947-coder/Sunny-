@@ -262,6 +262,30 @@ check("router maps 'open <app>'", (() => {
   const r = T.routeCommand("open YouTube");
   return r && r.tool === "open_app" && r.args.app === "YouTube";
 })());
+check("router maps 'play <song>'", (() => {
+  const r = T.routeCommand("play kesariya");
+  return r && r.tool === "play_music" && r.args.query === "kesariya";
+})());
+check("router maps a Hinglish music command", (() => {
+  const r = T.routeCommand("tum hi ho bajao");
+  return r && r.tool === "play_music" && /tum hi ho/i.test(r.args.query);
+})());
+check("router maps an alarm time", (() => {
+  const r = T.routeCommand("set alarm 7:30");
+  return r && r.tool === "add_alarm" && r.args.hour === 7 && r.args.minute === 30;
+})());
+check("router maps a WhatsApp draft", (() => {
+  const r = T.routeCommand("whatsapp 919876543210 hello boss");
+  return r && r.tool === "send_message" && r.args.number === "919876543210" && /hello boss/.test(r.args.text);
+})());
+check("router maps a weather question", (() => {
+  const r = T.routeCommand("mausam in Patna");
+  return r && r.tool === "weather" && /patna/i.test(r.args.city);
+})());
+check("router does not hijack a normal sentence", T.routeCommand(
+  "explain how gradient descent works in simple words with an example") === null);
+check("new media/message tools are registered", ["play_music", "add_alarm", "send_message",
+  "weather", "net_speed"].every((name) => !!T.get(name)));
 const toolRun = await T.run("phone_capabilities", {});
 check("tool run reports verification honestly", toolRun.tool === "phone_capabilities" &&
   typeof toolRun.verified === "boolean" && typeof toolRun.text === "string");
@@ -329,6 +353,7 @@ for (const name of uiFiles) {
   for (const line of src.split("\n")) {
     if (line.trimStart().startsWith("//") || line.trimStart().startsWith("/*")) continue;
     if (/ready hai boss/.test(line)) continue;  // the one phrase the owner asked to keep
+    if (/i18n-ok/.test(line)) continue;  // command patterns accept Hindi input; the UI stays English
     const hit = line.match(hinglish);
     if (hit) leftovers.push(`${name}: ${hit[0]}`);
   }
