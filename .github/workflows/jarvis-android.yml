@@ -110,7 +110,11 @@ jobs:
           ./gradlew :app:assembleRelease --no-daemon 2>&1 | tee /tmp/jarvis-build.log
           result=${PIPESTATUS[0]}
           if [ "$result" -ne 0 ]; then
-            while IFS= read -r line; do echo "::error::$line"; done < <(tail -80 /tmp/jarvis-build.log)
+            echo "---- first errors ----"
+            grep -nE "error:|error;|e: |FAILURE|Execution failed|What went wrong|Caused by" /tmp/jarvis-build.log | head -40 || true
+            echo "---- last 120 lines ----"
+            tail -120 /tmp/jarvis-build.log
+            while IFS= read -r line; do echo "::error::$line"; done < <(grep -nE "error:|error;|e: |Execution failed|What went wrong|Caused by" /tmp/jarvis-build.log | head -10)
           fi
           exit "$result"
 
