@@ -725,6 +725,100 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
             return _tool("clipboard", action="copy", text=content.group(1) if content else "")
         return _tool("clipboard", action="read")
 
+    # --------------------------------------------------------- free AI routes
+    if re.search(
+        r"\b(?:free|ai)[ -]?route(?:s)?\b.*\b(?:setup|set up|install|configure|lagao|banao)\b"
+        r"|\b(?:setup|install|configure)\b.*\b(?:free|ai)[ -]?route(?:s)?\b"
+        r"|\bfree (?:models?|ai) (?:setup|install|connect|lagao)\b"
+        r"|\bconnect (?:free )?(?:models?|routes?|ai)\b"
+        r"|\bhow (?:do i|to) (?:get|connect) free (?:models?|ai)\b",
+        low,
+    ):
+        return _tool("route_setup")
+    if re.fullmatch(
+        r"routes?|(?:the\s+)?(?:free|ai)[ -]?routes?(\s+(?:status|state|health|list|check))?"
+        r"|routes?\s+list|route\s+(?:status|list|health|check)"
+        r"|(?:freellmapi|free\s*llm\s*api|omniroute|omni\s*route)(\s+(?:status|check|health))?"
+        r"|(?:which|what)\s+(?:free\s+)?routes?\s+(?:are|is)\s+(?:up|online|running)",
+        low,
+    ):
+        return _tool("route_status")
+    if re.search(
+        r"\b(?:which|what|kaun se|kaunse|kitne)\b.*\bmodels?\b.*\b(?:connected|available|use|reachable|hain|hai)\b"
+        r"|\b(?:models connected|connected models|available models|list models|model list)\b"
+        r"|\b(?:kaun se|kaunse) models?\b"
+        r"|\bhow many models\b",
+        low,
+    ):
+        return _tool("models_connected")
+    route_models = re.match(
+        r"^(?:list\s+)?(?:models?|model list)\s+(?:on|in|from|of)\s+(?:the\s+)?(?:route\s+)?(\w[\w-]*)$",
+        text,
+        re.I,
+    )
+    if route_models:
+        return _tool("route_models", route_id=route_models.group(1).strip().lower())
+    if re.search(r"\b(?:route_models|route models)\b", low):
+        return _tool("route_models")
+    route_test = re.match(
+        r"^(?:route\s+test|test\s+(?:the\s+)?route|test\s+(?:my\s+)?(?:free\s+)?(?:route|gateway))"
+        r"(?:\s+(\w[\w-]*))?$",
+        text,
+        re.I,
+    )
+    if route_test:
+        return _tool("route_test", route_id=(route_test.group(1) or "").strip().lower())
+    provider_test = re.match(r"^test\s+(freellmapi|free llm api|omniroute|omni route)$", text, re.I)
+    if provider_test:
+        raw = provider_test.group(1).lower().replace(" ", "")
+        return _tool("route_test", route_id="freellmapi" if raw.startswith("free") else "omniroute")
+    if re.search(
+        r"\b(?:use|switch to|route through|chalao|istamal|use karo)\b.*\bfree (?:models?|routes?|ai)\b"
+        r"|\bfree models? (?:use karo|chalao|on karo)\b"
+        r"|\bprefer free (?:models?|routes?)\b",
+        low,
+    ):
+        return _tool("route_use", mode="route")
+    if re.search(r"\b(?:use|switch to|set)\b.*\bauto (?:brain|mode)\b|\bauto brain\b", low):
+        return _tool("route_use", mode="auto")
+    if re.search(r"\b(?:use|switch to|set)\b.*\blocal (?:brain|model|qwen)\b|\bqwen brain\b", low):
+        return _tool("route_use", mode="local")
+    if re.search(r"\b(?:use|switch to|set)\b.*\bgemini\b|\bcloud brain\b", low):
+        return _tool("route_use", mode="gemini")
+    if re.search(r"^(?:go |switch |use )?offline(?: mode)?$|\buse offline(?: mode)?\b", low):
+        return _tool("route_use", mode="offline")
+    add_route = re.match(
+        r"^(?:add|connect|register|save)\s+(?:a\s+)?route\s+(?:called\s+|named\s+)?([\w-]+)"
+        r"(?:\s+(?:at|to|on|using)\s+(https?://\S+))?"
+        r"(?:\s+(?:model|using model)\s+([\w.:/-]+))?"
+        r"(?:\s+(?:key|api key)\s+(\S+))?$",
+        text,
+        re.I,
+    )
+    if add_route:
+        return _tool(
+            "route_add",
+            route_id=add_route.group(1).strip().lower(),
+            base_url=(add_route.group(2) or "").strip(),
+            model=(add_route.group(3) or "auto").strip(),
+            api_key=(add_route.group(4) or "").strip(),
+        )
+    add_endpoint = re.match(
+        r"^(?:add|connect)\s+(?:an?\s+)?(?:openai[- ]compatible\s+)?(?:endpoint|gateway)\s+(https?://\S+)"
+        r"(?:\s+(?:as|called|named)\s+([\w-]+))?$",
+        text,
+        re.I,
+    )
+    if add_endpoint:
+        return _tool(
+            "route_add",
+            route_id=(add_endpoint.group(2) or "custom").strip().lower(),
+            base_url=add_endpoint.group(1).strip(),
+        )
+    remove_route = re.match(r"^(?:remove|delete|forget)\s+(?:the\s+)?route\s+([\w-]+)$", text, re.I)
+    if remove_route:
+        return _tool("route_remove", route_id=remove_route.group(1).strip().lower())
+
     # -------------------------------------------------------- calculation
     expression = _math_expression(text)
     if expression:

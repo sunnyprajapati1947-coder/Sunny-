@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from jarvis.skills import (
+    ai_routes,
     assistant,
     communication,
     desktop,
@@ -624,6 +625,73 @@ register(
     assistant.repo_map,
     _obj({"path": {**TEXT, "description": "Directory path (default: current directory)"}}),
     category="files",
+)
+
+
+# --------------------------------------------------------- free AI routes
+register(
+    "route_status",
+    "Which free AI routes (FreeLLMAPI, OmniRoute, custom) are online, with latency and model counts.",
+    ai_routes.route_status,
+    _obj(),
+    category="brain",
+)
+register(
+    "route_setup",
+    "Exact install commands for FreeLLMAPI and OmniRoute, and how to point Jarvis at them.",
+    ai_routes.route_setup,
+    _obj(),
+    category="brain",
+)
+register(
+    "route_models",
+    "List the free models reachable through the configured routes.",
+    ai_routes.route_models,
+    _obj({"route_id": {**TEXT, "description": "Route id (freellmapi, omniroute, custom)"}}),
+    category="brain",
+)
+register(
+    "route_test",
+    "Send a real ping through one free route and report which provider served it.",
+    ai_routes.route_test,
+    _obj({"route_id": {**TEXT, "description": "Route id, defaults to the first online one"}}),
+    category="brain",
+)
+register(
+    "route_use",
+    "Switch the brain to free routes, auto, local Qwen, Gemini or offline.",
+    ai_routes.route_use,
+    _obj(
+        {
+            "mode": {"type": "string", "enum": ["route", "auto", "local", "gemini", "offline"]},
+            "model": {**TEXT, "description": "Optional model override for the first online route"},
+        },
+        ["mode"],
+    ),
+    category="brain",
+)
+register(
+    "route_add",
+    "Point Jarvis at any OpenAI-compatible endpoint (another machine, LM Studio, vLLM, a gateway).",
+    ai_routes.route_add,
+    _obj({"route_id": TEXT, "base_url": TEXT, "model": TEXT, "api_key": TEXT}, ["base_url"]),
+    category="brain",
+    preflight=ai_routes.route_add_preflight,
+)
+register(
+    "route_remove",
+    "Remove custom settings for a route; presets stay available.",
+    ai_routes.route_remove,
+    _obj({"route_id": TEXT}, ["route_id"]),
+    category="brain",
+    high_impact=True,
+)
+register(
+    "models_connected",
+    "One table of every model that can answer now: Gemini, local Qwen lanes and free routes.",
+    ai_routes.models_connected,
+    _obj(),
+    category="brain",
 )
 
 

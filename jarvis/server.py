@@ -391,7 +391,7 @@ def banner(host: str, port: int) -> str:
     return (
         "\n"
         "  ╔══════════════════════════════════════════════════════════╗\n"
-        "  ║   J . A . R . V . I . S .   ·   MARK X                   ║\n"
+        "  ║   J . A . R . V . I . S .   ·   MARK XI                  ║\n"
         "  ║   Just A Rather Very Intelligent System                  ║\n"
         "  ╠══════════════════════════════════════════════════════════╣\n"
         f"  ║   LOCAL    http://{shown}:{port}".ljust(60)

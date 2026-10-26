@@ -318,7 +318,7 @@ def validate_patch(patch: dict) -> tuple[dict, list[str]]:
 
     if "brain_mode" in patch:
         mode = str(patch["brain_mode"] or "auto").strip().lower()
-        if mode not in {"auto", "gemini", "local", "offline"}:
+        if mode not in {"auto", "gemini", "local", "offline", "route", "free"}:
             mode = "auto"
             warnings.append("Unknown brain mode; using auto")
         clean["brain_mode"] = mode

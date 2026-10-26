@@ -13,7 +13,7 @@ import threading
 import time
 from pathlib import Path
 
-from jarvis import net, tools
+from jarvis import net, routes, tools
 from jarvis.config import get_settings
 from jarvis.local_brain import get_local_brain
 from jarvis.util import now, spoken_date, spoken_time, strip_markdown, truncate
@@ -47,6 +47,7 @@ class Brain:
         self._lock = threading.RLock()
         self._provider_fail: dict[str, float] = {}
         self.last_provider = "offline"
+        self.last_route: dict = {}
         self.last_error = ""
 
     # ----------------------------------------------------------------- probe
@@ -71,6 +72,16 @@ class Brain:
     def brain_mode(self) -> str:
         return str(getattr(self._settings(), "brain_mode", "auto") or "auto").lower()
 
+    def routes_available(self, *, fresh: bool = False) -> bool:
+        """True when a free route (FreeLLMAPI, OmniRoute, custom) is answering."""
+        settings = self._settings()
+        if not settings.llm_enabled:
+            return False
+        try:
+            return routes.available(fresh=fresh)
+        except Exception:
+            return False
+
     def vision_available(self) -> bool:
         return self.gemini_available()
 
@@ -78,10 +89,17 @@ class Brain:
         settings = self._settings()
         local = self.local.status()
         preferred = self.brain_mode()
+        route_ready = False
+        try:
+            route_ready = routes.available()
+        except Exception:
+            route_ready = False
         mode = "offline"
         if settings.llm_enabled:
             if preferred == "gemini" and settings.gemini_key:
                 mode = "gemini"
+            elif preferred in {"route", "free"} and route_ready:
+                mode = "route"
             elif preferred == "local" and local.get("online"):
                 mode = "local"
             elif preferred == "offline":
@@ -90,9 +108,17 @@ class Brain:
                 mode = "gemini"
             elif local.get("online"):
                 mode = "local"
+            elif route_ready:
+                mode = "route"
+        route_info = {"count": 0, "online": 0, "ready": False, "routes": [], "models": 0, "best": ""}
+        try:
+            route_info = routes.summary()
+        except Exception:
+            pass
         return {
             "enabled": settings.llm_enabled,
             "mode": mode,
+            "routes": route_info,
             "preferred": preferred,
             "gemini": bool(settings.gemini_key),
             "gemini_model": settings.gemini_model,
@@ -103,6 +129,7 @@ class Brain:
             "local": local,
             "lanes": local.get("lanes", []),
             "last_provider": self.last_provider,
+            "last_route": self.last_route,
             "vision": self.vision_available(),
             "last_error": self.last_error,
         }
@@ -217,6 +244,44 @@ class Brain:
         self._mark_failed("local", getattr(local, "last_error", "local lane unavailable"))
         return None, ""
 
+    def _route(
+        self,
+        system: str,
+        user: str,
+        *,
+        json_mode: bool = False,
+        timeout: float = 30.0,
+        task: str = "general",
+    ) -> tuple[str | None, str, dict]:
+        """Try configured free routes in priority order, honouring backoff."""
+        prompt = user
+        if json_mode:
+            prompt += "\n\nReturn one JSON object and nothing else."
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ]
+        errors: list[str] = []
+        for route in routes.routes():
+            if not route.get("enabled"):
+                continue
+            key = f"route:{route['id']}"
+            if self._recently_failed(key, 30):
+                continue
+            text, meta = routes.chat(
+                route,
+                messages,
+                temperature=0.3 if json_mode else 0.45,
+                max_tokens=1200 if task in {"plan", "deep", "code"} else 700,
+                timeout=max(20.0, timeout),
+            )
+            if text:
+                routes.invalidate()
+                return text, key, meta
+            self._mark_failed(key, f"{route['id']}: {meta.get('error', 'no answer')}")
+            errors.append(f"{route['id']}: {meta.get('error', 'no answer')}")
+        return None, "", {"errors": errors}
+
     def complete(
         self,
         system: str,
@@ -235,8 +300,10 @@ class Brain:
             self.last_provider = "offline"
             return None, "offline"
 
+        route_mode = preferred in {"route", "free"}
         use_gemini = preferred in {"auto", "gemini"} and bool(settings.gemini_key)
-        use_local = preferred in {"auto", "local", "gemini"}
+        use_local = preferred in {"auto", "local", "gemini", "route", "free"}
+        use_routes = preferred in {"auto", "route", "free"}
 
         if use_gemini and not self._recently_failed("gemini", 20):
             text, _ = self._gemini(system, user, json_mode=json_mode, timeout=timeout)
@@ -246,6 +313,16 @@ class Brain:
             if preferred == "gemini" and not use_local:
                 self.last_provider = "offline"
                 return None, "offline"
+
+        if route_mode and use_routes and not self._recently_failed("routes", 20):
+            text, provider, meta = self._route(
+                system, user, json_mode=json_mode, timeout=timeout, task=task
+            )
+            if text:
+                self.last_provider = provider
+                self.last_route = meta
+                return text, provider
+            self._mark_failed("routes", "; ".join(meta.get("errors", []))[:200] or "no free route answered")
 
         if use_local and not self._recently_failed("local", 8):
             text, provider = self._qwen(
@@ -258,6 +335,16 @@ class Brain:
             if text:
                 self.last_provider = provider
                 return text, provider
+
+        if use_routes and not route_mode and not self._recently_failed("routes", 20):
+            text, provider, meta = self._route(
+                system, user, json_mode=json_mode, timeout=timeout, task=task
+            )
+            if text:
+                self.last_provider = provider
+                self.last_route = meta
+                return text, provider
+            self._mark_failed("routes", "; ".join(meta.get("errors", []))[:200] or "no free route answered")
 
         self.last_provider = "offline"
         return None, "offline"

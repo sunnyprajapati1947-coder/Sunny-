@@ -1,5 +1,5 @@
 /* ==========================================================================
-   J.A.R.V.I.S. · MARK X — HUD controller
+   J.A.R.V.I.S. · MARK XI — HUD controller
    Zero dependencies. Talks only to the local /api surface.
    ========================================================================== */
 (() => {
@@ -675,8 +675,15 @@
     if (payload.reply) addMessage("assistant", payload.reply, meta, payload.cards || []);
     if (payload.speech) speak(payload.speech);
     if (payload.meta && payload.meta.provider) {
-      $("providerTag").textContent = `${payload.meta.provider} core`;
-      $("footerBrain").textContent = String(payload.meta.provider).toUpperCase();
+      const raw = String(payload.meta.provider);
+      const label = raw.startsWith("route:")
+        ? `${raw.slice(6)} free route`
+        : `${raw} core`;
+      $("providerTag").textContent = label;
+      $("footerBrain").textContent = raw.startsWith("route:") ? "FREE ROUTE" : raw.toUpperCase();
+      if (payload.meta.routed_via) {
+        $("providerTag").title = `served by ${payload.meta.routed_via}`;
+      }
     }
     if (payload.action) runAction(payload.action);
     if (payload.approval) openApproval(payload.approval);
@@ -948,7 +955,18 @@
       `suggest ${recommendedLabel} · ` +
       `${memory.count || 0} memories · ${plans.active || 0} plans · ` +
       `${agent.ready ? "agent armed" : "agent waiting"}` +
+      ((routeLane.ready) ? ` · ${routeLane.models} free models` : "") +
       ((status.desktop && status.desktop.armed) ? " · desktop ARMED" : "");
+    const routeLane = (status.brain && status.brain.routes) || {};
+    const routeChip = $("footerRoute");
+    if (routeChip) {
+      routeChip.textContent = routeLane.ready
+        ? `${routeLane.online}/${routeLane.count}`
+        : (routeLane.count ? "OFF" : "—");
+      routeChip.title = routeLane.ready
+        ? `${routeLane.models} free models via ${(routeLane.routes || []).filter((r) => r.online).map((r) => r.label).join(", ")}`
+        : "No free route answering — say “free route setup”";
+    }
     const phone = status.phone || {};
     const phoneChip = $("footerPhone");
     if (phoneChip) {
@@ -1367,6 +1385,55 @@
     };
   })();
 
+  /* ----------------------------------------------------------------- routes */
+  function routeLane() {
+    return ((state.status && state.status.brain && state.status.brain.routes) || {});
+  }
+
+  function renderRoutes() {
+    const box = $("routeList");
+    if (!box) return;
+    const lane = routeLane();
+    const items = lane.routes || [];
+    if (!items.length) {
+      box.innerHTML = '<p class="sub">No routes configured. Say “free route setup”.</p>';
+      return;
+    }
+    box.innerHTML = items.map((route) => {
+      const meta = route.online
+        ? `${route.models} models · ${Math.round(route.latency_ms || 0)} ms · ${esc(route.model || "auto")}`
+        : esc(route.error || "offline");
+      return `<div class="route-row ${route.online ? "online" : ""}">
+        <i class="dot"></i><b>${esc(route.label || route.id)}</b>
+        <span class="meta">${meta}</span>
+      </div>`;
+    }).join("");
+    const note = $("routeNote");
+    if (note) {
+      note.innerHTML = lane.ready
+        ? `${lane.online}/${lane.count} route online · <b>${lane.models}</b> free models reachable. Brain mode: <code>${esc((state.settings && state.settings.brain_mode) || "auto")}</code>.`
+        : 'No free route answering. Say <code>free route setup</code> for the FreeLLMAPI and OmniRoute install commands.';
+    }
+  }
+
+  async function testRoute() {
+    const lane = routeLane();
+    const online = (lane.routes || []).filter((route) => route.online);
+    if (!online.length) {
+      toast("No route online", "Say “free route setup” for the install commands.", "gold", 7000);
+      return;
+    }
+    $("settingsModal").hidden = true;
+    $("input").value = `route test ${online[0].id}`;
+    $("composer").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+  }
+
+  function useFreeModels() {
+    $("settingsModal").hidden = true;
+    $("input").value = "use free models";
+    $("composer").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+  }
+
   /* --------------------------------------------------------------- settings */
   function openSettings() {
     loadVoices();
@@ -1388,6 +1455,7 @@
     const desktop = (state.status && state.status.desktop) || {};
     $("setDesktop").checked = Boolean(desktop.armed);
     $("setDesktop").disabled = desktop.display === false;
+    renderRoutes();
     const phone = (state.status && state.status.phone) || {};
     const phoneNote = $("phoneNote");
     if (phoneNote) {
@@ -1652,6 +1720,10 @@
 
     $("bootEnter").addEventListener("click", enterSystem);
     $("settingsBtn").addEventListener("click", openSettings);
+    const routeTestBtn = $("routeTestBtn");
+    if (routeTestBtn) routeTestBtn.addEventListener("click", testRoute);
+    const routeUseBtn = $("routeUseBtn");
+    if (routeUseBtn) routeUseBtn.addEventListener("click", useFreeModels);
     $("saveSettings").addEventListener("click", saveSettings);
     $("approveBtn").addEventListener("click", () => decide(true));
     $("denyBtn").addEventListener("click", () => decide(false));

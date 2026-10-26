@@ -1,4 +1,4 @@
-# J.A.R.V.I.S. — MARK X
+# J.A.R.V.I.S. — MARK XI
 
 **Just A Rather Very Intelligent System** — a local-first voice assistant with a
 cinematic HUD, real system control, long-term memory and a security envelope
@@ -18,13 +18,16 @@ python3 jarvis.py --brain-setup   # exact Ollama / llama.cpp commands
 python3 jarvis.py --agent "goal"  # multi-step agent, plan saved to disk
 ```
 
-**v1.4.0** gives Jarvis a **real hand on the phone**: place calls, send SMS, post
-notifications, buzz, torch, volume, clipboard, speak, camera, contacts, location
-and the notification shade — all through Termux:API, with honest fallbacks on a
-PC. It sits on top of v1.3.0's **desktop control** (type, hotkeys, mouse, window
-focus, screen OCR), **real sending** (SMTP email, `.ics` calendar events, WhatsApp
-auto-send), the **installable PWA** and the approval-gated **coding agent** —
-**115 tools**, still stdlib-only by default.
+**v1.5.0** plugs Jarvis into **free model routes**: point it at a local
+FreeLLMAPI or OmniRoute gateway and the whole free-model catalogue becomes a
+brain lane — one key, no bill. **v1.4.0** gave Jarvis a **real hand on the
+phone**: place calls, send SMS, post notifications, buzz, torch, volume,
+clipboard, speak, camera, contacts, location and the notification shade — all
+through Termux:API, with honest fallbacks on a PC. It sits on top of v1.3.0's
+**desktop control** (type, hotkeys, mouse, window focus, screen OCR), **real
+sending** (SMTP email, `.ics` calendar events, WhatsApp auto-send), the
+**installable PWA** and the approval-gated **coding agent** — **123 tools**,
+still stdlib-only by default.
 
 The assistant is **stdlib-only by default**. Optional packages
 (`requirements-jarvis.txt`) upgrade telemetry, terminal speech and vision.
@@ -749,7 +752,98 @@ metacharacters that must stay literal.
 
 ---
 
-## 14. Credits
+---
+
+## 14. Free model routes (v1.5.0)
+
+Two open-source gateways turn a pile of free API keys into one OpenAI-compatible
+endpoint:
+
+| Gateway | Default endpoint | Install | Key |
+| --- | --- | --- | --- |
+| [FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi) | `http://127.0.0.1:3001/v1` | `curl -fsSL https://freellmapi.co/install.sh \| bash` (or the Docker image) | `freellmapi-…` from the dashboard |
+| [OmniRoute](https://github.com/ChrisCompton/omniroute) | `http://127.0.0.1:20128/v1` | `npm install -g omniroute && omniroute` | any string |
+
+Jarvis treats them as **routes**, not as a hard-coded client: an OpenAI-compatible
+`/v1/chat/completions` endpoint plus a model. Both presets use model `auto`, so
+the gateway picks whichever free provider is healthy right now.
+
+### 14.1 Brain modes
+
+```
+gemini | local | route | free | auto | offline
+```
+
+| Mode | Order tried |
+| --- | --- |
+| `auto` (default) | Gemini → local Qwen → free routes |
+| `route` / `free` | free routes → local Qwen |
+| `gemini`, `local` | that lane only |
+| `offline` | no language model |
+
+A route that errors is backed off for 30 s so the next turn skips it instantly.
+The route lane is a first-class brain: with a gateway online, `auto` mode answers
+questions even when Gemini has no key and Ollama is not running.
+
+### 14.2 Saying it
+
+| Phrase | Tool |
+| --- | --- |
+| "free route", "routes", "route status", "omniroute status" | `route_status` |
+| "free route setup", "connect free models", "free models lagao" | `route_setup` |
+| "which models are connected", "kaun se models", "list models" | `models_connected` |
+| "models on freellmapi" | `route_models` |
+| "route test omniroute", "test freellmapi" | `route_test` |
+| "use free models", "switch to free route" | `route_use route` |
+| "use auto brain", "use local qwen", "use gemini", "go offline" | `route_use <mode>` |
+| "add route mybox at http://192.168.1.20:3001/v1 model llama3" | `route_add` |
+| "connect endpoint http://127.0.0.1:8080/v1 as llama" | `route_add` |
+| "remove route mybox" | `route_remove` |
+
+`route setup` prints the exact install command for each gateway; when nothing is
+online Jarvis says which one refused and what to run, instead of pretending.
+
+### 14.3 Honest attribution
+
+Every route answer carries the gateway's routing header. The reply envelope
+publishes it:
+
+```json
+{"meta": {"provider": "route:freellmapi", "route": "freellmapi",
+          "model": "auto", "routed_via": "groq/llama-3.3-70b-free"}}
+```
+
+The HUD footer shows the live route chip and the route panel lists every gateway
+with latency, model count and a TEST ROUTE button.
+
+### 14.4 Config
+
+```bash
+JARVIS_BRAIN_MODE=route
+JARVIS_FREELLMAPI_KEY=freellmapi-xxxxxxxx
+JARVIS_FREELLMAPI_URL=http://127.0.0.1:3001/v1
+JARVIS_OMNIROUTE_KEY=any-string
+JARVIS_OMNIROUTE_URL=http://127.0.0.1:20128/v1
+```
+
+Custom routes live in `data/jarvis/routes.json` (mode `600`); the key may also
+come from `JARVIS_ROUTE_<ID>_KEY`. `docs/FREE_ROUTES.md` is the step-by-step
+guide.
+
+### 14.5 Verification
+
+```bash
+python3 -m unittest tests.test_free_routes -v   # 33 tests
+```
+
+A stdlib `ThreadingHTTPServer` plays the gateway: probes, model lists, `auto`
+routing, `X-Routed-Via` parsing, 4xx/5xx, timeouts, key masking, per-route
+cooldown, brain-mode order, the route provider id and honest fallbacks when
+every route is down.
+
+---
+
+## 15. Credits
 
 Feature scope inspired by two public tutorial playlists by *Anubhav Chaturvedi /
 NetHyTech*: **Jarvis 2.0** (43 episodes) and **Build Your Own Jarvis 1.0**

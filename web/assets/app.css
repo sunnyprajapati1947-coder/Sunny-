@@ -883,3 +883,34 @@ body[data-state="thinking"] .statusbar .dot { background: var(--accent); box-sha
 @media (max-width: 720px) {
   .install-btn { display: none !important; }
 }
+
+/* free AI routes */
+.route-list {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 8px;
+  font-size: 0.82rem;
+}
+.route-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 9px;
+  border: 1px solid rgba(94, 234, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(8, 18, 30, 0.55);
+}
+.route-row .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff6b6b;
+  box-shadow: 0 0 6px rgba(255, 107, 107, 0.6);
+  flex: none;
+}
+.route-row.online .dot {
+  background: #5eeaff;
+  box-shadow: 0 0 8px rgba(94, 234, 255, 0.8);
+}
+.route-row b { letter-spacing: 0.04em; }
+.route-row .meta { margin-left: auto; color: var(--dim, #7f93a8); font-size: 0.76rem; }

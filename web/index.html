@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="/assets/icon-192.png" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="/assets/app.css" />
-<title>J.A.R.V.I.S. · MARK X</title>
+<title>J.A.R.V.I.S. · MARK XI</title>
 </head>
 <body data-state="idle">
 
@@ -29,7 +29,7 @@
     </div>
     <p class="boot-kicker">STARK INDUSTRIES · LOCAL DIVISION</p>
     <h1 class="boot-title">J.A.R.V.I.S.</h1>
-    <p class="boot-sub">Just A Rather Very Intelligent System · MARK X</p>
+    <p class="boot-sub">Just A Rather Very Intelligent System · MARK XI</p>
 
     <ol id="bootLog" class="boot-log" aria-live="polite"></ol>
 
@@ -237,9 +237,10 @@
     <span class="status-item">BRAIN <b id="footerBrain">OFFLINE</b></span>
     <span class="status-item">TOOLS <b id="footerTools">—</b></span>
     <span class="status-item">PHONE <b id="footerPhone">—</b></span>
+    <span class="status-item">ROUTE <b id="footerRoute">—</b></span>
     <span class="status-item">UPTIME <b id="footerUptime">00:00:00</b></span>
     <span class="status-spacer"></span>
-    <span class="status-item dim">J.A.R.V.I.S. <b id="footerVersion">v1.0.0</b> · MARK X</span>
+    <span class="status-item dim">J.A.R.V.I.S. <b id="footerVersion">v1.0.0</b> · MARK XI</span>
   </footer>
 </div>
 
@@ -319,7 +320,8 @@
       <label class="field">
         <span>Brain routing</span>
         <select id="setBrainMode">
-          <option value="auto">Auto · local first, cloud fallback</option>
+          <option value="auto">Auto · Gemini, then local Qwen, then free routes</option>
+          <option value="route">Free routes first (FreeLLMAPI / OmniRoute)</option>
           <option value="local">Local Qwen only</option>
           <option value="gemini">Gemini only</option>
           <option value="offline">Offline core only</option>
@@ -345,6 +347,17 @@
     <p class="modal-note" id="desktopNote">Desktop control lets Jarvis type, press keys and click. Arm it only when you want hands-on automation; “desktop panic” disarms instantly.</p>
 
     <p class="modal-note" id="phoneNote">Phone hand: run Jarvis in Termux on Android to call, text, buzz and use the torch from chat.</p>
+
+    <div class="field wide">
+      <span>Free AI routes</span>
+      <div id="routeList" class="route-list"><p class="sub">Checking FreeLLMAPI and OmniRoute…</p></div>
+      <div class="voice-row">
+        <button id="routeTestBtn" class="mini-btn" type="button" title="Ping the first online route">TEST ROUTE</button>
+        <button id="routeUseBtn" class="mini-btn" type="button" title="Prefer free models over the local lane">USE FREE MODELS</button>
+      </div>
+    </div>
+
+    <p class="modal-note" id="routeNote">FreeLLMAPI and OmniRoute are self-hosted gateways that pool free model tiers behind one OpenAI-compatible endpoint. Say “free route setup” for the install commands.</p>
 
     <p class="modal-note" id="brainNote">Set <code>JARVIS_GEMINI_KEY</code> in <code>config/jarvis.env</code> to enable cloud reasoning and vision.</p>
 

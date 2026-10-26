@@ -210,7 +210,11 @@ class JarvisCore:
             settings = self._settings
             if not settings.llm_enabled or not settings.llm_tools:
                 return False
-            return bool(self.brain.gemini_available() or self.brain.qwen_available())
+            return bool(
+                self.brain.gemini_available()
+                or self.brain.qwen_available()
+                or self.brain.routes_available()
+            )
         except Exception:
             return False
 
@@ -634,6 +638,12 @@ class JarvisCore:
                     cards = list(cards) + [{"type": "next", "text": next_line}]
                 speech = tune(str(speech), max_words=60)
                 text = shaped
+        route_meta: dict = {}
+        if provider.startswith("route:"):
+            try:
+                route_meta = dict(getattr(self.brain, "last_route", {}) or {})
+            except Exception:
+                route_meta = {}
         envelope = {
             "ok": True,
             "reply": text,
@@ -646,6 +656,9 @@ class JarvisCore:
                 "intent": intent,
                 "tool": tool_name,
                 "provider": provider,
+                "routed_via": route_meta.get("routed_via", "") if route_meta else "",
+                "route": route_meta.get("route", "") if route_meta else "",
+                "model": route_meta.get("model", "") if route_meta else "",
                 "ms": int((time.perf_counter() - started) * 1000),
                 "source": source,
             },
