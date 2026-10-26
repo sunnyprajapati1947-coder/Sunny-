@@ -8,7 +8,7 @@
 <link rel="manifest" href="/manifest.webmanifest" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="/assets/app.css" />
-<title>J.A.R.V.I.S. · MARK VII</title>
+<title>J.A.R.V.I.S. · MARK VIIII</title>
 </head>
 <body data-state="idle">
 
@@ -24,7 +24,7 @@
     </div>
     <p class="boot-kicker">STARK INDUSTRIES · LOCAL DIVISION</p>
     <h1 class="boot-title">J.A.R.V.I.S.</h1>
-    <p class="boot-sub">Just A Rather Very Intelligent System · MARK VII</p>
+    <p class="boot-sub">Just A Rather Very Intelligent System · MARK VIII</p>
 
     <ol id="bootLog" class="boot-log" aria-live="polite"></ol>
 
@@ -187,6 +187,24 @@
         </ul>
       </article>
 
+      <article class="panel brain-panel">
+        <header class="panel-head">
+          <h2>NEURAL CORE</h2>
+          <span class="mini" id="brainModeTag">PROBING</span>
+        </header>
+        <div class="brain-lanes" id="brainLanes">
+          <div class="lane"><span>fast</span><b>—</b></div>
+          <div class="lane"><span>deep</span><b>—</b></div>
+          <div class="lane"><span>coder</span><b>—</b></div>
+        </div>
+        <p class="brain-meta" id="brainMeta">probing local Qwen lanes…</p>
+        <div class="brain-foot">
+          <button class="mini-btn" id="brainSetupBtn" type="button">SETUP</button>
+          <button class="mini-btn" id="brainTestBtn" type="button">TEST</button>
+          <button class="mini-btn" id="brainFocusBtn" type="button">FOCUS</button>
+        </div>
+      </article>
+
       <article class="panel log-panel">
         <header class="panel-head">
           <h2>EVENT LOG</h2>
@@ -214,7 +232,7 @@
     <span class="status-item">TOOLS <b id="footerTools">—</b></span>
     <span class="status-item">UPTIME <b id="footerUptime">00:00:00</b></span>
     <span class="status-spacer"></span>
-    <span class="status-item dim">J.A.R.V.I.S. <b id="footerVersion">v1.0.0</b> · MARK VII</span>
+    <span class="status-item dim">J.A.R.V.I.S. <b id="footerVersion">v1.0.0</b> · MARK VIIII</span>
   </footer>
 </div>
 
@@ -291,13 +309,28 @@
         <span>Speech rate · <output id="rateOut">0.98</output></span>
         <input id="setRate" type="range" min="0.6" max="1.4" step="0.02" />
       </label>
+      <label class="field">
+        <span>Brain routing</span>
+        <select id="setBrainMode">
+          <option value="auto">Auto · local first, cloud fallback</option>
+          <option value="local">Local Qwen only</option>
+          <option value="gemini">Gemini only</option>
+          <option value="offline">Offline core only</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Agent steps · <output id="stepsOut">5</output></span>
+        <input id="setAgentSteps" type="range" min="1" max="12" step="1" />
+      </label>
     </div>
 
     <div class="switch-grid">
       <label class="switch"><input id="setSpeak" type="checkbox" /><span>Spoken replies</span></label>
       <label class="switch"><input id="setSound" type="checkbox" /><span>Interface sounds</span></label>
       <label class="switch"><input id="setWake" type="checkbox" /><span>Wake word listening</span></label>
-      <label class="switch"><input id="setLlm" type="checkbox" /><span>Cloud reasoning (Gemini/Qwen)</span></label>
+      <label class="switch"><input id="setLlm" type="checkbox" /><span>Neural reasoning (Gemini/Qwen)</span></label>
+      <label class="switch"><input id="setAgent" type="checkbox" /><span>Agent loop (multi-step)</span></label>
+      <label class="switch"><input id="setAdhd" type="checkbox" /><span>Focus mode (ADHD-friendly)</span></label>
     </div>
 
     <p class="modal-note" id="brainNote">Set <code>JARVIS_GEMINI_KEY</code> in <code>config/jarvis.env</code> to enable cloud reasoning and vision.</p>

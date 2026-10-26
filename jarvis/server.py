@@ -179,6 +179,24 @@ class JarvisHandler(BaseHTTPRequestHandler):
                 }
             )
             return
+        if route == "/api/plans":
+            from jarvis.plans import get_plans
+
+            plans = get_plans().list()
+            self._json({"ok": True, "plans": plans, "count": len(plans)})
+            return
+        if route == "/api/memory":
+            from jarvis.memory import get_memory
+
+            store = get_memory()
+            self._json(
+                {
+                    "ok": True,
+                    "stats": store.stats(),
+                    "recent": store.all(limit=12),
+                }
+            )
+            return
         if route == "/api/suggestions":
             self._json({"ok": True, "suggestions": self.core.suggestions()})
             return
@@ -271,6 +289,8 @@ class JarvisHandler(BaseHTTPRequestHandler):
 
         if route == "/api/settings":
             settings, warnings = update_settings(payload)
+            if "adhd_mode" in payload:
+                self.core.set_adhd(bool(payload.get("adhd_mode")))
             self._json({"ok": True, "settings": settings.public(), "warnings": warnings})
             return
 
@@ -361,7 +381,7 @@ def banner(host: str, port: int) -> str:
     return (
         "\n"
         "  ╔══════════════════════════════════════════════════════════╗\n"
-        "  ║   J . A . R . V . I . S .   ·   MARK VII                  ║\n"
+        "  ║   J . A . R . V . I . S .   ·   MARK VIII                 ║\n"
         "  ║   Just A Rather Very Intelligent System                  ║\n"
         "  ╠══════════════════════════════════════════════════════════╣\n"
         f"  ║   LOCAL    http://{shown}:{port}".ljust(60)

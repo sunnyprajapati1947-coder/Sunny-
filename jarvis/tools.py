@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from jarvis.skills import (
+    assistant,
     communication,
     creator,
     files,
@@ -455,3 +456,106 @@ def schema_for_llm() -> list[dict]:
             }
         )
     return payload
+
+
+# ------------------------------------------------------- brain, agent, memory
+register(
+    "brain_status",
+    "Report the local Qwen lanes, runtime, recommended model and provider routing.",
+    assistant.brain_status,
+    _obj(),
+    category="brain",
+)
+register(
+    "brain_setup",
+    "Show exact Ollama / llama.cpp commands to install the recommended local Qwen model.",
+    assistant.brain_setup,
+    _obj(),
+    category="brain",
+)
+register(
+    "brain_test",
+    "Ping the fastest live local lane and measure latency.",
+    assistant.brain_test,
+    _obj(),
+    category="brain",
+)
+register(
+    "brain_chat",
+    "Ask the local Qwen model directly, bypassing the cloud provider.",
+    assistant.brain_chat,
+    _obj(
+        {
+            "message": {**TEXT, "description": "Question for the local model"},
+            "task": {"type": "string", "enum": ["general", "deep", "code"]},
+        },
+        ["message"],
+    ),
+    category="brain",
+)
+register(
+    "agent_run",
+    "Run the bounded multi-step agent on a goal; writes task_plan/findings/progress to disk.",
+    assistant.agent_run,
+    _obj(
+        {
+            "goal": {**TEXT, "description": "What should the agent accomplish?"},
+            "max_steps": {"type": "integer", "minimum": 1, "maximum": 12},
+        },
+        ["goal"],
+    ),
+    category="agent",
+)
+register("agent_status", "Agent readiness, step budget and recent plans.", assistant.agent_status, _obj(), category="agent")
+register(
+    "plan_create",
+    "Create a persistent plan with numbered steps on disk.",
+    assistant.plan_create,
+    _obj({"goal": TEXT, "steps": {**TEXT, "description": "Semicolon or newline separated steps"}}, ["goal"]),
+    category="agent",
+)
+register("plan_show", "List plans or show one plan's checklist.", assistant.plan_show, _obj({"ref": TEXT}), category="agent")
+register(
+    "plan_update",
+    "Tick a plan step, close a plan, or attach a finding.",
+    assistant.plan_update,
+    _obj(
+        {
+            "ref": {**TEXT, "description": "Plan id, goal keyword or index"},
+            "step": {**TEXT, "description": "Step number or text to complete"},
+            "status": {"type": "string", "enum": ["complete", "active", "blocked"]},
+            "finding": {**TEXT, "description": "Evidence to record"},
+        },
+        ["ref"],
+    ),
+    category="agent",
+)
+register(
+    "memory_search",
+    "Search the long-term memory journal; empty query shows statistics.",
+    assistant.memory_search,
+    _obj({"query": TEXT}),
+    category="memory",
+)
+register(
+    "memory_save",
+    "Store an observation in the long-term memory journal (credentials refused).",
+    assistant.memory_save,
+    _obj({"text": TEXT, "kind": {**TEXT, "description": "note, preference, decision, episode, fact"}}, ["text"]),
+    category="memory",
+)
+register(
+    "focus_mode",
+    "Turn ADHD-friendly output on or off: short, numbered, one next action.",
+    assistant.focus_mode,
+    _obj({"action": {"type": "string", "enum": ["on", "off", "status"]}}),
+    category="productivity",
+)
+
+register(
+    "repo_map",
+    "Summarise a repository: languages, key files, pruned tree.",
+    assistant.repo_map,
+    _obj({"path": {**TEXT, "description": "Directory path (default: current directory)"}}),
+    category="files",
+)

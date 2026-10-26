@@ -15,6 +15,7 @@ from pathlib import Path
 
 from jarvis import net, tools
 from jarvis.config import get_settings
+from jarvis.local_brain import get_local_brain
 from jarvis.util import now, spoken_date, spoken_time, strip_markdown, truncate
 
 GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -57,47 +58,50 @@ class Brain:
         return bool(settings.llm_enabled and settings.gemini_key)
 
     def qwen_available(self) -> bool:
-        """Probe the local lanes briefly, cached so status polls stay cheap."""
+        """True when at least one local Qwen lane answers."""
         settings = self._settings()
         if not settings.llm_enabled:
             return False
-        global _QWEN_CACHE
-        with _QWEN_LOCK:
-            if time.time() - _QWEN_CACHE["ts"] < 20.0:
-                return bool(_QWEN_CACHE["value"])
-            available = False
-            for url in (settings.fast_qwen_url, settings.qwen_url):
-                base = str(url).rsplit("/chat/completions", 1)[0]
-                if not base:
-                    continue
-                try:
-                    net.get_json(base.rstrip("/") + "/models", timeout=0.8)
-                    available = True
-                    break
-                except Exception:
-                    continue
-            _QWEN_CACHE = {"ts": time.time(), "value": available}
-            return available
+        return bool(self.local.status().get("online"))
+
+    @property
+    def local(self):
+        return get_local_brain()
+
+    def brain_mode(self) -> str:
+        return str(getattr(self._settings(), "brain_mode", "auto") or "auto").lower()
 
     def vision_available(self) -> bool:
         return self.gemini_available()
 
     def status(self) -> dict:
         settings = self._settings()
+        local = self.local.status()
+        preferred = self.brain_mode()
         mode = "offline"
         if settings.llm_enabled:
-            if settings.gemini_key:
+            if preferred == "gemini" and settings.gemini_key:
                 mode = "gemini"
-            elif self.qwen_available():
+            elif preferred == "local" and local.get("online"):
+                mode = "local"
+            elif preferred == "offline":
+                mode = "offline"
+            elif settings.gemini_key:
+                mode = "gemini"
+            elif local.get("online"):
                 mode = "local"
         return {
             "enabled": settings.llm_enabled,
             "mode": mode,
+            "preferred": preferred,
             "gemini": bool(settings.gemini_key),
             "gemini_model": settings.gemini_model,
             "qwen_url": settings.qwen_url,
             "qwen_model": settings.qwen_model,
             "fast_qwen_url": settings.fast_qwen_url,
+            "coder_qwen_model": getattr(settings, "coder_qwen_model", ""),
+            "local": local,
+            "lanes": local.get("lanes", []),
             "last_provider": self.last_provider,
             "vision": self.vision_available(),
             "last_error": self.last_error,
@@ -186,45 +190,31 @@ class Brain:
         user: str,
         *,
         json_mode: bool = False,
-        timeout: float = 16.0,
+        timeout: float = 30.0,
+        task: str = "general",
     ) -> tuple[str | None, str]:
         settings = self._settings()
         if not settings.llm_enabled:
             return None, ""
-        endpoints = [
-            (settings.qwen_url, settings.qwen_model),
-            (settings.fast_qwen_url, settings.fast_qwen_model),
-        ]
-        last_error = ""
-        for url, model in endpoints:
-            if not url:
-                continue
-            payload = {
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                "temperature": 0.4,
-                "max_tokens": 600,
-                "stream": False,
-            }
-            if json_mode:
-                payload["response_format"] = {"type": "json_object"}
-            try:
-                data = net.post_json(url, payload, timeout=timeout)
-            except net.NetError as exc:
-                last_error = f"{url}: {exc}"
-                continue
-            choices = (data or {}).get("choices") or []
-            if choices:
-                message = choices[0].get("message") or {}
-                text = str(message.get("content") or "").strip()
-                if text:
-                    return text, "local"
-            last_error = "empty completion"
-        if last_error:
-            self._mark_failed("local", last_error)
+        local = self.local
+        if not local.available():
+            return None, ""
+        prompt = user
+        if json_mode:
+            prompt += "\n\nReturn one JSON object and nothing else."
+        text, provider = local.chat(
+            [
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+            task=task,
+            temperature=0.35 if json_mode else 0.45,
+            max_tokens=900 if task in {"plan", "deep", "code"} else 600,
+            timeout=max(20.0, timeout),
+        )
+        if text:
+            return text, provider or "local"
+        self._mark_failed("local", getattr(local, "last_error", "local lane unavailable"))
         return None, ""
 
     def complete(
@@ -233,29 +223,47 @@ class Brain:
         user: str,
         *,
         json_mode: bool = False,
-        timeout: float = 14.0,
+        timeout: float = 20.0,
+        task: str = "general",
     ) -> tuple[str | None, str]:
         settings = self._settings()
         if not settings.llm_enabled:
             return None, "offline"
+        preferred = self.brain_mode()
 
-        if settings.gemini_key and not self._recently_failed("gemini", 20):
-            text, provider = self._gemini(system, user, json_mode=json_mode, timeout=timeout)
+        if preferred == "offline":
+            self.last_provider = "offline"
+            return None, "offline"
+
+        use_gemini = preferred in {"auto", "gemini"} and bool(settings.gemini_key)
+        use_local = preferred in {"auto", "local", "gemini"}
+
+        if use_gemini and not self._recently_failed("gemini", 20):
+            text, _ = self._gemini(system, user, json_mode=json_mode, timeout=timeout)
             if text:
                 self.last_provider = "gemini"
                 return text, "gemini"
+            if preferred == "gemini" and not use_local:
+                self.last_provider = "offline"
+                return None, "offline"
 
-        if not self._recently_failed("local", 20):
-            text, provider = self._qwen(system, user, json_mode=json_mode, timeout=timeout)
+        if use_local and not self._recently_failed("local", 8):
+            text, provider = self._qwen(
+                system,
+                user,
+                json_mode=json_mode,
+                timeout=timeout,
+                task=task,
+            )
             if text:
-                self.last_provider = "local"
-                return text, "local"
+                self.last_provider = provider
+                return text, provider
 
         self.last_provider = "offline"
         return None, "offline"
 
     # ---------------------------------------------------------------- planner
-    def system_prompt(self, memory: list[dict] | None = None) -> str:
+    def system_prompt(self, memory: list[dict] | None = None, context: str = "") -> str:
         settings = self._settings()
         current = now()
         base = PERSONA.format(
@@ -267,10 +275,17 @@ class Brain:
         )
         facts = memory or []
         if facts:
-            joined = "; ".join(f"{item.get('key')}: {item.get('value')}" for item in facts[-12:])
+            joined = "; ".join(f"{item.get('key')}: {item.get('value')}" for item in facts[-16:])
             base += f" Durable facts you remember: {joined}."
+        if context:
+            base += "\n\nRelevant local context (cite paths when you use it):\n" + truncate(context, 4000)
+        if getattr(settings, "adhd_mode", False):
+            base += (
+                " The owner asked for ADHD-friendly output: lead with the next action, "
+                "number steps, keep replies under 90 words, end with one concrete next step."
+            )
         if settings.llm_tools:
-            base += PLANNER_RULES.format(tools=json.dumps(tools.schema_for_llm(), ensure_ascii=False))
+            base += PLANNER_RULES.replace("{tools}", json.dumps(tools.schema_for_llm(), ensure_ascii=False))
         return base
 
     def _history_block(self, history: list[dict] | None) -> str:
@@ -287,14 +302,22 @@ class Brain:
         text: str,
         history: list[dict] | None = None,
         memory: list[dict] | None = None,
-        timeout: float = 12.0,
+        timeout: float = 30.0,
+        context: str = "",
+        task: str = "plan",
     ) -> dict | None:
         settings = self._settings()
         if not settings.llm_enabled:
             return None
-        system = self.system_prompt(memory)
+        system = self.system_prompt(memory, context=context)
         user = self._history_block(history) + f"User: {text}"
-        raw, provider = self.complete(system, user, json_mode=settings.llm_tools, timeout=timeout)
+        raw, provider = self.complete(
+            system,
+            user,
+            json_mode=settings.llm_tools,
+            timeout=timeout,
+            task=task,
+        )
         if not raw:
             return None
         parsed = parse_plan(raw)
@@ -304,25 +327,36 @@ class Brain:
     # ----------------------------------------------------------------- vision
     def vision(self, image: str, question: str = "") -> dict:
         settings = self._settings()
-        if not settings.gemini_key:
-            return {"ok": False, "error": "Vision requires a Gemini API key (GEMINI_API_KEY)."}
         parsed = self._decode_image(image)
         if not parsed:
             return {"ok": False, "error": "That image could not be decoded."}
         mime, b64 = parsed
+        prompt = question or "Describe this image concisely."
         system = (
             f"You are J.A.R.V.I.S., {settings.owner}'s assistant. Describe images accurately, "
             "concisely and helpfully. Address the user as Sir. Do not invent details."
         )
-        text, provider = self._gemini(
-            system,
-            question or "Describe this image concisely.",
-            image={"mimeType": mime, "data": b64},
-            timeout=20.0,
-        )
-        if not text:
-            return {"ok": False, "error": self.last_error or "Vision uplink unavailable."}
-        return {"ok": True, "text": text.strip(), "provider": provider}
+        if settings.gemini_key:
+            text, provider = self._gemini(
+                system,
+                prompt,
+                image={"mimeType": mime, "data": b64},
+                timeout=20.0,
+            )
+            if text:
+                return {"ok": True, "text": text.strip(), "provider": provider}
+
+        # Local fallback: Qwen-VL served by Ollama / llama.cpp on the deep lane.
+        text, provider = self.local.vision(image, prompt)
+        if text:
+            return {"ok": True, "text": text.strip(), "provider": provider}
+        return {
+            "ok": False,
+            "error": (
+                "Vision needs either GEMINI_API_KEY or a local Qwen-VL model "
+                "(`ollama pull qwen2.5vl:7b` on the deep lane)."
+            ),
+        }
 
     def vision_file(self, path: Path, question: str = "") -> dict:
         try:
@@ -390,9 +424,6 @@ def parse_plan(raw: str) -> dict:
     cleaned = strip_markdown(text)
     return {"kind": "reply", "text": cleaned or text}
 
-
-_QWEN_CACHE = {"ts": 0.0, "value": False}
-_QWEN_LOCK = threading.Lock()
 
 _BRAIN: Brain | None = None
 _BRAIN_LOCK = threading.RLock()

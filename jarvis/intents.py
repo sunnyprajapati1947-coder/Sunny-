@@ -313,15 +313,36 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
     if note_match:
         return _tool("note_add", text=note_match.group(1).strip())
 
+    # ------------------------------------------------------------ plan steps
+    plan_step = re.match(
+        r"^(?:step|task)\s+(\d+)\s+(?:of|in)\s+(?:the\s+)?plan\s+(.+?)\s+(?:is\s+)?"
+        r"(?:done|complete|completed|finished|ho gaya|kar do|karo)$",
+        text,
+        re.I,
+    )
+    if plan_step:
+        return _tool("plan_update", ref=plan_step.group(2).strip(" ?.!"), step=plan_step.group(1))
+    plan_step = re.match(
+        r"^(?:complete|tick|finish|mark)\s+(?:step\s+)(\d+)\s+(?:of|in)\s+(?:the\s+)?plan\s+(.+)$",
+        text,
+        re.I,
+    )
+    if plan_step:
+        return _tool("plan_update", ref=plan_step.group(2).strip(" ?.!"), step=plan_step.group(1))
+
     # ---------------------------------------------------------------- tasks
     if re.search(r"\b(?:my (?:todo|to-do|task|to do)s?|show (?:todo|tasks)|list (?:todo|tasks)|todo list|task list|kaam kya|pending tasks)\b", low):
         return _tool("todos_list")
     if re.fullmatch(r"(?:clear|delete|erase)(?: all)? (?:tasks|todos|to-dos|to dos)", low):
         return _tool("clear_todos")
     done_match = re.match(r"^(?:mark\s+)?(?:task\s+)?(.+?)\s+(?:as\s+)?(?:done|complete|completed|finished|ho gaya)$", text, re.I)
-    if done_match and not re.match(r"^(?:done|complete|finish)$", done_match.group(1).strip(), re.I):
+    if (
+        done_match
+        and "plan" not in low
+        and not re.match(r"^(?:done|complete|finish)$", done_match.group(1).strip(), re.I)
+    ):
         return _tool("todo_done", ref=done_match.group(1).strip())
-    done_match = re.match(r"^(?:complete|finish|done)\s+(?:task\s+)?(\d+)$", text, re.I)
+    done_match = re.match(r"^(?:complete|finish|done)\s+(?:task\s+)(\d+)$", text, re.I)
     if done_match:
         return _tool("todo_done", ref=done_match.group(1))
     todo_match = re.match(
@@ -566,6 +587,132 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
                 from_unit=match_obj.group(2),
                 to_unit=match_obj.group(3),
             )
+
+    # ------------------------------------------------------------- focus mode
+    focus = re.search(
+        r"\b(?:adhd|focus)\s*mode\b|\b(?:short answers|no tangents|focus mode)\b",
+        low,
+    )
+    if focus:
+        if re.search(r"\b(?:off|stop|disable|band|normal)\b", low):
+            return _tool("focus_mode", action="off")
+        if re.search(r"\b(?:on|start|enable|chalu)\b", low):
+            return _tool("focus_mode", action="on")
+        return _tool("focus_mode", action="status")
+    if re.fullmatch(r"(?:normal mode|stop adhd mode)", low):
+        return _tool("focus_mode", action="off")
+
+    # ------------------------------------------------------ local brain / agent
+    if re.search(
+        r"\b(?:brain|qwen|local model|local brain)\s+(?:status|info|health|report|kaun sa|kaunsa)\b"
+        r"|\b(?:which|what) (?:brain|model) (?:are you|do you) (?:using|have)\b"
+        r"|^brain\s*$|^local brain\s*$",
+        low,
+    ):
+        return _tool("brain_status")
+    if re.search(
+        r"\b(?:install|setup|set up|configure|enable|start|activate|lagao|lagana|daalo)\b.*\b(?:local brain|brain|qwen|ollama)\b"
+        r"|\b(?:local brain|brain|qwen)\b.*\b(?:install|setup|set up|configure|install karo|setup karo|banao|lagao)\b"
+        r"|^brain setup\s*$|^install qwen\s*$",
+        low,
+    ):
+        return _tool("brain_setup")
+    if re.search(
+        r"\b(?:test|check|ping|verify|diagnose)\b.*\b(?:local brain|brain|local model|qwen|ollama)\b"
+        r"|\b(?:brain|local model|qwen)\b.*\b(?:test|check|ping)\b|^brain test\s*$",
+        low,
+    ):
+        return _tool("brain_test")
+    ask_local = re.match(
+        r"^(?:ask|query|pucho|poocho)\s+(?:the\s+)?(?:local(?:\s+(?:brain|model|qwen))?|qwen|ollama)\s*[:,]?\s*(.+)$",
+        text,
+        re.I,
+    )
+    if ask_local:
+        return _tool("brain_chat", message=ask_local.group(1).strip(" ?.!"))
+    local_task = re.match(r"^(?:qwen|local model|local brain)\s*[:,]\s*(.+)$", text, re.I)
+    if local_task:
+        return _tool("brain_chat", message=local_task.group(1).strip(" ?.!"))
+
+    if re.search(r"\b(?:agent status|agent ready|is the agent|agent ka status)\b", low):
+        return _tool("agent_status")
+    agent_goal = re.match(
+        r"^(?:agent|auto agent|jarvis agent)\s*[:,]?\s*(?:do|run|handle|execute|karo|kar do)\s+(.+)$"
+        r"|^(?:run|start|launch)\s+(?:the\s+)?(?:agent|auto agent)\s+(?:on|for|to|with)\s+(.+)$"
+        r"|^(?:multi[- ]step|autonomous)\s+(?:task|run|mode)\s*[:,]?\s*(.+)$",
+        text,
+        re.I,
+    )
+    if agent_goal:
+        goal = next(group for group in agent_goal.groups() if group)
+        return _tool("agent_run", goal=goal.strip(" ?.!"))
+    agent_goal_hi = re.match(r"^(?:agent\s+se|agent ko bol(?:o)?)\s+(.+?)\s+(?:kar(?:o|wao|wa do)|karo)\s*$", text, re.I)
+    if agent_goal_hi:
+        return _tool("agent_run", goal=agent_goal_hi.group(1).strip(" ?.!"))
+
+    # ---------------------------------------------------------------- plans
+    if re.search(r"\b(?:show|list|my|all|dikhao|batao)\b.*\bplans?\b|\bplans? (?:list|status|dikhao)\b|^plans?$", low):
+        return _tool("plan_show")
+    plan_match = re.match(
+        r"^(?:make|create|build|start|new|set up)\s+(?:a\s+|an\s+|the\s+)?plan\s+(?:to|for|on|about)?\s*(.+)$"
+        r"|^plan\s+(?:for|to|banao\s+)(.+)$"
+        r"|^plan\s*:\s*(.+)$",
+        text,
+        re.I,
+    )
+    if plan_match:
+        goal = next(group for group in plan_match.groups() if group)
+        return _tool("plan_create", goal=goal.strip(" ?.!"))
+    close_plan = re.match(
+        r"^(?:close|complete|finish|done with|khatam)\s+(?:the\s+)?plan\s+(.+)$", text, re.I
+    )
+    if close_plan:
+        return _tool("plan_update", ref=close_plan.group(1).strip(" ?.!"), status="complete")
+    tick_step = re.match(
+        r"^(?:complete|tick|finish|done|mark)\s+(?:step\s+)?(\d+|.+?)\s+(?:of|in|from)\s+(?:the\s+)?plan\s+(.+)$",
+        text,
+        re.I,
+    )
+    if tick_step:
+        return _tool("plan_update", ref=tick_step.group(2).strip(" ?.!"), step=tick_step.group(1))
+    step_of = re.match(
+        r"^(?:step|task)\s+(\d+)\s+(?:of|in)\s+(?:the\s+)?plan\s+(.+?)\s+(?:done|complete|finished|kar do|karo)$",
+        text,
+        re.I,
+    )
+    if step_of:
+        return _tool("plan_update", ref=step_of.group(2).strip(" ?.!"), step=step_of.group(1))
+
+    # --------------------------------------------------------------- memory
+    mem_search = re.match(
+        r"^(?:search\s+(?:your\s+)?memory(?:\s+for)?|memory\s+search|what do you remember about"
+        r"|what'?s in memory about|recall(?: from memory)?|yaad hai(?: tumhe)?)\s*[:,]?\s*(.*)$",
+        text,
+        re.I,
+    )
+    if mem_search:
+        return _tool("memory_search", query=mem_search.group(1).strip(" ?.!"))
+    mem_stats = re.search(r"\b(?:memory|journal)\s+(?:stats|statistics|size|how many|report)\b", low)
+    if mem_stats:
+        return _tool("memory_search")
+    mem_save = re.match(
+        r"^(?:save to memory|note this|log this|memory me (?:likho|save karo)|yaad rakho)\s*[:,]?\s*(.+)$",
+        text,
+        re.I,
+    )
+    if mem_save:
+        return _tool("memory_save", text=mem_save.group(1).strip(" ?.!"))
+
+    # ----------------------------------------------------------- repository
+    repo_match = re.match(
+        r"^(?:map|scan|analyse|analyze|summari[sz]e|explain|inspect)\s+(?:the\s+)?(?:repo|repository|codebase|project|folder)\s*(?:at|in)?\s*(.*)$",
+        text,
+        re.I,
+    )
+    if repo_match:
+        return _tool("repo_map", path=repo_match.group(1).strip(" ?.\"'") or ".")
+    if re.fullmatch(r"(?:repo|repository|codebase)\s+(?:map|scan|summary)", low):
+        return _tool("repo_map", path=".")
 
     # ---------------------------------------------------------- web search
     translate_match = re.match(

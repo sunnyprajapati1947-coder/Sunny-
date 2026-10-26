@@ -21,6 +21,7 @@ from jarvis.scheduler import Scheduler
 from jarvis.security import AGATE, AUDIT, check_user_text
 from jarvis.skills import vision as vision_skill
 from jarvis.store import Store, get_store, set_store
+from jarvis.adhd import next_action_line, tune
 from jarvis.util import reply, strip_markdown, truncate
 
 FULL_NAME = "Just A Rather Very Intelligent System"
@@ -52,6 +53,17 @@ class JarvisCore:
         self._awaiting: dict[str, dict] = {}
         self._lock = threading.RLock()
         self._commands = 0
+        self._agent = None
+        set_core(self)
+
+    @property
+    def agent(self):
+        """Lazy so a plain CLI import never builds the loop."""
+        if self._agent is None:
+            from jarvis.agent import Agent
+
+            self._agent = Agent(self)
+        return self._agent
 
     # ------------------------------------------------------------- lifecycle
     def start(self) -> None:
@@ -60,6 +72,17 @@ class JarvisCore:
 
     def stop(self) -> None:
         self.scheduler.stop()
+
+    # ----------------------------------------------------------- preferences
+    def adhd_enabled(self) -> bool:
+        pref = self.store.get_pref("adhd_mode")
+        if pref is None:
+            return bool(getattr(self._settings, "adhd_mode", False))
+        return bool(pref)
+
+    def set_adhd(self, enabled: bool) -> bool:
+        self.store.set_pref("adhd_mode", bool(enabled))
+        return self.adhd_enabled()
 
     # ----------------------------------------------------------------- input
     def handle(self, text: str, source: str = "text") -> dict:
@@ -110,6 +133,7 @@ class JarvisCore:
         intent = match_intent(cleaned)
         payload, intent_name, provider, tool_name = self._resolve(cleaned, intent)
         self._remember_awaiting(source, payload)
+        self._capture_memory(cleaned, payload, intent_name)
         return self._envelope(
             payload,
             intent=intent_name,
@@ -118,6 +142,38 @@ class JarvisCore:
             started=started,
             source=source,
         )
+
+    def _capture_memory(self, text: str, payload: dict, intent_name: str) -> None:
+        """Persist durable signals, then compress the session every so often.
+
+        Only explicit, self-contained statements are captured automatically —
+        the journal should never fill up with chatter or credentials.
+        """
+        try:
+            from jarvis.memory import get_memory
+
+            memory = get_memory()
+            clean = str(text or "").strip()
+            durable = re.match(
+                r"^(?:remember|note|from now on|always|never|i prefer|my favourite|my favorite"
+                r"|mera favourite|mujhe pasand|yaad rakhna)\b[:,]?\s*(.+)$",
+                clean,
+                re.I,
+            )
+            if durable and len(durable.group(1)) >= 4:
+                memory.add(durable.group(1), kind="preference", source="chat", importance=0.8)
+            elif intent_name in {"conversation", "chat"} and len(clean.split()) >= 8 and payload.get("data"):
+                memory.add(clean, kind="episode", source="chat", importance=0.35)
+            self.store.set_pref("memory_turns", int(self.store.get_pref("memory_turns", 0) or 0) + 1)
+            turns = int(self.store.get_pref("memory_turns", 0) or 0)
+            if turns and turns % 20 == 0:
+                history = self.store.history(30)
+                memory.compress_turns(
+                    [{"role": item.get("role"), "text": item.get("text"), "tool": (item.get("meta") or {}).get("tool")} for item in history],
+                    source="auto",
+                )
+        except Exception:
+            pass
 
     def _resolve(self, text: str, intent: Intent | None) -> tuple[dict, str, str, str | None]:
         if intent is not None:
@@ -158,13 +214,27 @@ class JarvisCore:
         except Exception:
             return False
 
-    def _plan(self, text: str, timeout: float = 12.0) -> tuple[dict, str, str, str | None] | None:
+    def memory_context(self, text: str, limit: int = 4) -> str:
+        """Relevant durable observations, cheaply retrieved."""
+        try:
+            from jarvis.memory import get_memory
+
+            hits = get_memory().search(text, limit=limit)
+        except Exception:
+            return ""
+        if not hits:
+            return ""
+        lines = [f"- ({hit.get('ts', '')[:10]}, {hit.get('kind')}) {hit.get('text')}" for hit in hits]
+        return "\n".join(lines)
+
+    def _plan(self, text: str, timeout: float = 30.0) -> tuple[dict, str, str, str | None] | None:
         try:
             plan = self.brain.plan(
                 text,
                 history=self.store.history(8),
                 memory=self.store.facts(12),
                 timeout=timeout,
+                context=self.memory_context(text),
             )
         except Exception:
             return None
@@ -357,6 +427,44 @@ class JarvisCore:
         )
 
     # ----------------------------------------------------------------- state
+    def _agent_status(self) -> dict:
+        try:
+            return self.agent.status()
+        except Exception as exc:
+            return {"enabled": False, "ready": False, "error": type(exc).__name__}
+
+    @staticmethod
+    def _memory_status() -> dict:
+        try:
+            from jarvis.memory import get_memory
+
+            stats = get_memory().stats()
+            return {"count": stats["count"], "kinds": stats["kinds"]}
+        except Exception:
+            return {"count": 0, "kinds": {}}
+
+    @staticmethod
+    def _plan_status() -> dict:
+        try:
+            from jarvis.plans import get_plans
+
+            plans = get_plans().list()
+        except Exception:
+            return {"count": 0, "active": 0, "recent": []}
+        return {
+            "count": len(plans),
+            "active": len([plan for plan in plans if plan.get("status") != "complete"]),
+            "recent": [
+                {
+                    "id": plan["id"],
+                    "goal": plan["goal"],
+                    "status": plan.get("status"),
+                    "progress_pct": plan.get("progress_pct", 0),
+                }
+                for plan in plans[:3]
+            ],
+        }
+
     def status(self) -> dict:
         settings = self._settings
         try:
@@ -380,6 +488,10 @@ class JarvisCore:
             "language": settings.language,
             "metrics": metrics,
             "brain": brain_status,
+            "agent": self._agent_status(),
+            "memory": self._memory_status(),
+            "plans": self._plan_status(),
+            "focus": {"adhd_mode": self.adhd_enabled()},
             "tools": len(tools.TOOLS),
             "tool_categories": categories,
             "scheduler": self.scheduler.pending(),
@@ -487,6 +599,14 @@ class JarvisCore:
         speech = payload.get("speech")
         speech = text if speech is None else str(speech)
         cards = payload.get("cards") or []
+        if self.adhd_enabled() and provider not in {"intent", "offline", "security", "deterministic"}:
+            shaped = tune(text)
+            if shaped != text:
+                next_line = next_action_line(text)
+                if next_line and not any(card.get("type") == "next" for card in cards):
+                    cards = list(cards) + [{"type": "next", "text": next_line}]
+                speech = tune(str(speech), max_words=60)
+                text = shaped
         envelope = {
             "ok": True,
             "reply": text,
@@ -522,3 +642,22 @@ class JarvisCore:
         from jarvis.config import get_settings
 
         return get_settings()
+
+
+_CORE: "JarvisCore | None" = None
+_CORE_LOCK = threading.RLock()
+
+
+def set_core(core: "JarvisCore") -> "JarvisCore":
+    global _CORE
+    with _CORE_LOCK:
+        _CORE = core
+    return core
+
+
+def get_core() -> "JarvisCore":
+    global _CORE
+    with _CORE_LOCK:
+        if _CORE is None:
+            _CORE = JarvisCore()
+        return _CORE

@@ -830,3 +830,42 @@ body[data-state="thinking"] .statusbar .dot { background: var(--accent); box-sha
   }
   .scanlines { display: none; }
 }
+
+/* ------------------------------------------------------------- neural core */
+.brain-panel { overflow: hidden; }
+.brain-lanes { display: grid; gap: 6px; padding: 10px 12px 4px; }
+.brain-lanes .lane {
+  display: grid; grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+  color: var(--muted-2); text-transform: uppercase;
+}
+.brain-lanes .lane b { font-weight: 500; color: var(--muted); letter-spacing: 0.02em; text-align: right; }
+.brain-lanes .lane .dot-lane {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(231, 76, 60, 0.55); box-shadow: 0 0 6px rgba(231, 76, 60, 0.4);
+  display: inline-block; margin-right: 6px;
+}
+.brain-lanes .lane.on .dot-lane { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.brain-lanes .lane.on { color: var(--cyan-soft); }
+.brain-meta {
+  padding: 2px 12px 8px; margin: 0;
+  font-family: var(--mono); font-size: 10px; line-height: 1.5;
+  color: var(--muted-2); border-bottom: 1px dashed var(--line);
+}
+.brain-foot { display: flex; gap: 6px; padding: 9px 12px 11px; }
+.brain-foot .mini-btn { flex: 1; justify-content: center; }
+.terminal-card .cmd-line {
+  display: block; padding: 3px 0;
+  font-family: var(--mono); font-size: 10.5px; line-height: 1.45;
+  color: var(--cyan-soft); white-space: pre-wrap; word-break: break-word;
+}
+.terminal-card .cmd-line.dim { color: var(--muted-2); }
+.next-card { border-left: 2px solid var(--gold); }
+.next-card .next-line {
+  font-family: var(--mono); font-size: 11px; line-height: 1.5;
+  color: var(--gold); letter-spacing: 0.02em;
+}
+@media (max-width: 1180px) {
+  .brain-panel { min-width: 220px; }
+}

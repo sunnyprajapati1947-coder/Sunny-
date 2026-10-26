@@ -91,9 +91,15 @@ class Settings:
     gemini_model: str = "gemini-2.5-flash"
     gemini_fallback_models: tuple[str, ...] = ("gemini-2.0-flash",)
     qwen_url: str = "http://127.0.0.1:8080/v1/chat/completions"
-    qwen_model: str = "Qwen3.5-4B-Q4_K_M"
+    qwen_model: str = "qwen2.5:7b-instruct"
     fast_qwen_url: str = "http://127.0.0.1:8081/v1/chat/completions"
-    fast_qwen_model: str = "NovaLocal"
+    fast_qwen_model: str = "qwen3:4b"
+    coder_qwen_url: str = "http://127.0.0.1:8080/v1/chat/completions"
+    coder_qwen_model: str = "qwen2.5-coder:7b"
+    brain_mode: str = "auto"  # auto | gemini | local | offline
+    agent_enabled: bool = True
+    agent_steps: int = 5
+    adhd_mode: bool = False
 
     # Networking
     speedtest_url: str = "https://speed.cloudflare.com/__down?bytes=5000000"
@@ -147,11 +153,19 @@ def _env_settings() -> Settings:
         qwen_url=os.getenv("JARVIS_QWEN_URL")
         or os.getenv("NOVA_QWEN_URL", "http://127.0.0.1:8080/v1/chat/completions"),
         qwen_model=os.getenv("JARVIS_QWEN_MODEL")
-        or os.getenv("NOVA_QWEN_MODEL", "Qwen3.5-4B-Q4_K_M"),
+        or os.getenv("NOVA_QWEN_MODEL", "qwen2.5:7b-instruct"),
         fast_qwen_url=os.getenv("JARVIS_FAST_QWEN_URL")
         or os.getenv("NOVA_FAST_QWEN_URL", "http://127.0.0.1:8081/v1/chat/completions"),
         fast_qwen_model=os.getenv("JARVIS_FAST_QWEN_MODEL")
-        or os.getenv("NOVA_FAST_QWEN_MODEL", "NovaLocal"),
+        or os.getenv("NOVA_FAST_QWEN_MODEL", "qwen3:4b"),
+        coder_qwen_url=os.getenv("JARVIS_CODER_QWEN_URL")
+        or os.getenv("JARVIS_QWEN_URL")
+        or "http://127.0.0.1:8080/v1/chat/completions",
+        coder_qwen_model=os.getenv("JARVIS_CODER_QWEN_MODEL", "qwen2.5-coder:7b"),
+        brain_mode=(os.getenv("JARVIS_BRAIN_MODE", "auto").strip().lower() or "auto"),
+        agent_enabled=env_bool("JARVIS_AGENT_ENABLED", True),
+        agent_steps=env_int("JARVIS_AGENT_STEPS", 5),
+        adhd_mode=env_bool("JARVIS_ADHD_MODE", False),
         speedtest_url=os.getenv(
             "JARVIS_SPEEDTEST_URL", "https://speed.cloudflare.com/__down?bytes=5000000"
         ),
@@ -181,6 +195,16 @@ USER_TUNABLE = {
     "notes_dir",
     "llm_enabled",
     "llm_tools",
+    "brain_mode",
+    "agent_enabled",
+    "agent_steps",
+    "adhd_mode",
+    "qwen_model",
+    "fast_qwen_model",
+    "coder_qwen_model",
+    "qwen_url",
+    "fast_qwen_url",
+    "coder_qwen_url",
 }
 
 
@@ -190,10 +214,12 @@ def _apply_overrides(settings: Settings, overrides: dict) -> Settings:
             continue
         value = overrides[key]
         try:
-            if key in {"wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools"}:
+            if key in {"wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode"}:
                 value = bool(value)
             elif key in {"voice_rate", "voice_pitch"}:
                 value = float(value)
+            elif key == "agent_steps":
+                value = int(value)
             else:
                 value = str(value)
             setattr(settings, key, value)
@@ -216,6 +242,12 @@ def validate_patch(patch: dict) -> tuple[dict, list[str]]:
         "voice_name": 80,
         "music_dir": 300,
         "notes_dir": 300,
+        "qwen_model": 80,
+        "fast_qwen_model": 80,
+        "coder_qwen_model": 80,
+        "qwen_url": 300,
+        "fast_qwen_url": 300,
+        "coder_qwen_url": 300,
     }
     for key, limit in text_limits.items():
         if key in patch:
@@ -241,9 +273,22 @@ def validate_patch(patch: dict) -> tuple[dict, list[str]]:
             low, high = (0.6, 1.4) if key == "voice_rate" else (0.5, 1.5)
             clean[key] = max(low, min(high, value))
 
-    for key in ("wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools"):
+    for key in ("wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode"):
         if key in patch:
             clean[key] = bool(patch[key])
+
+    if "agent_steps" in patch:
+        try:
+            clean["agent_steps"] = max(1, min(12, int(patch["agent_steps"])))
+        except (TypeError, ValueError):
+            warnings.append("agent_steps must be a number")
+
+    if "brain_mode" in patch:
+        mode = str(patch["brain_mode"] or "auto").strip().lower()
+        if mode not in {"auto", "gemini", "local", "offline"}:
+            mode = "auto"
+            warnings.append("Unknown brain mode; using auto")
+        clean["brain_mode"] = mode
 
     return clean, warnings
 

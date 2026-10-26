@@ -313,6 +313,22 @@
         return cardShell("FILE", `<p class="body"><strong>${esc(card.name || "")}</strong></p><p class="sub">${esc(card.path || "")}${card.size ? " · " + esc(card.size) : ""}</p>`);
       case "text":
         return cardShell(card.title || "NOTE", `<p class="body">${fmtText(card.body || "")}</p>`);
+      case "next":
+        return `<div class="card next-card">
+            <div class="card-title"><span>NEXT ACTION</span></div>
+            <p class="next-line">${esc(card.text || "")}</p>
+          </div>`;
+      case "terminal": {
+        const rows = (card.rows || []).map((line) => {
+          const text = String(line || "");
+          const dim = !text.trim() || text.trim().startsWith("#") || text.includes("alternative");
+          return `<code class="cmd-line${dim ? " dim" : ""}">${esc(text)}</code>`;
+        }).join("");
+        return `<div class="card terminal-card">
+            <div class="card-title"><span>${esc(card.title || "TERMINAL")}</span></div>
+            ${rows}
+          </div>`;
+      }
       default:
         return "";
     }
@@ -782,6 +798,57 @@
     if (status.settings) applySettings(status.settings);
 
     renderModules(status.tool_categories || {});
+    renderBrain(status);
+  }
+
+  /* ------------------------------------------------------------- neural core */
+  function laneModel(lane) {
+    const model = String(lane.model || "qwen");
+    const short = model.replace(/[-_](?=q|instruct|gguf)/gi, " ").replace(/\.gguf$/i, "");
+    return short.length > 22 ? short.slice(0, 21) + "…" : short;
+  }
+
+  function renderBrain(status) {
+    const host = $("brainLanes");
+    if (!host) return;
+    const brain = status.brain || {};
+    const local = brain.local || {};
+    const lanes = brain.lanes || local.lanes || [];
+    const preferred = brain.preferred || "auto";
+    const mode = brain.mode || "offline";
+    $("brainModeTag").textContent = String(mode).toUpperCase();
+    $("brainModeTag").classList.toggle("live", mode !== "offline");
+
+    if (!lanes.length) {
+      host.innerHTML = '<div class="lane"><span>none</span><b>no lanes</b></div>';
+    } else {
+      host.innerHTML = lanes.map((lane) => `
+        <div class="lane${lane.online ? " on" : ""}">
+          <span><i class="dot-lane"></i>${esc(lane.name || "lane")}</span>
+          <b>${lane.online ? esc(laneModel(lane)) : "offline"}</b>
+          <b>${lane.online && lane.latency_ms != null ? `${esc(lane.latency_ms)}ms` : ""}</b>
+        </div>`).join("");
+    }
+
+    const recommended = (local.recommended || {}).deep || "";
+    const catalog = (local.recommended || {}).catalog || {};
+    const recommendedLabel = (catalog[recommended] || {}).label || recommended || "not scanned";
+    const agent = status.agent || {};
+    const memory = status.memory || {};
+    const plans = status.plans || {};
+    $("brainMeta").textContent =
+      `${preferred} · ${local.online ? "local ready" : "local offline"} · ` +
+      `${local.ram_gb || (local.runtime || {}).ram_gb || "?"} GB RAM · ` +
+      `suggest ${recommendedLabel} · ` +
+      `${memory.count || 0} memories · ${plans.active || 0} plans · ` +
+      `${agent.ready ? "agent armed" : "agent waiting"}`;
+    const focusBtn = $("brainFocusBtn");
+    if (focusBtn) {
+      const on = Boolean((status.focus || {}).adhd_mode);
+      focusBtn.setAttribute("aria-pressed", on ? "true" : "false");
+      focusBtn.textContent = on ? "FOCUS ON" : "FOCUS";
+    }
+    $("footerBrain").textContent = String(mode).toUpperCase();
   }
 
   function applySettings(settings) {
@@ -1194,13 +1261,24 @@
     $("setMusicDir").value = settings.music_dir || "";
     $("setRate").value = settings.voice_rate || 0.98;
     $("rateOut").textContent = Number(settings.voice_rate || 0.98).toFixed(2);
+    $("setBrainMode").value = settings.brain_mode || "auto";
+    $("setAgentSteps").value = Number(settings.agent_steps || 5);
+    $("stepsOut").textContent = String(Number(settings.agent_steps || 5));
+    $("setAgent").checked = settings.agent_enabled !== false;
+    $("setAdhd").checked = Boolean((state.status && state.status.focus && state.status.focus.adhd_mode) || settings.adhd_mode);
     $("setSpeak").checked = settings.speak !== false;
     $("setSound").checked = settings.sound !== false;
     $("setWake").checked = Boolean(settings.wake_word_enabled);
     $("setLlm").checked = settings.llm_enabled !== false;
-    $("brainNote").innerHTML = settings.has_gemini
-      ? "Gemini key detected. Cloud reasoning and vision are available. Model: <code>" + esc(settings.gemini_model || "gemini") + "</code>."
-      : "No cloud key found. Set <code>JARVIS_GEMINI_KEY</code> in <code>config/jarvis.env</code> to enable Gemini reasoning and vision. Everything else runs fully offline.";
+    const local = (state.status && state.status.brain && state.status.brain.local) || {};
+    const lanes = (state.status && state.status.brain && state.status.brain.lanes) || [];
+    const online = lanes.filter((lane) => lane.online).length;
+    const cloud = settings.has_gemini
+      ? "Gemini key detected · model <code>" + esc(settings.gemini_model || "gemini") + "</code>."
+      : "No cloud key · set <code>JARVIS_GEMINI_KEY</code> for cloud reasoning and vision.";
+    $("brainNote").innerHTML = cloud + " " + (online
+      ? `${online} local Qwen lane${online === 1 ? "" : "s"} answering · ${esc(local.runtime && local.runtime.ram_gb ? local.runtime.ram_gb + " GB RAM" : "")}.`
+      : `No local lane answering · RAM ${esc((local.runtime && local.runtime.ram_gb) || local.ram_gb || "?")} GB · run <code>ollama serve</code> or the SETUP commands.`);
     $("settingsModal").hidden = false;
     setTimeout(() => $("setOwner").focus({ preventScroll: true }), 60);
   }
@@ -1218,6 +1296,10 @@
       sound: $("setSound").checked,
       wake_word_enabled: $("setWake").checked,
       llm_enabled: $("setLlm").checked,
+      brain_mode: $("setBrainMode").value,
+      agent_enabled: $("setAgent").checked,
+      agent_steps: Number($("setAgentSteps").value),
+      adhd_mode: $("setAdhd").checked,
     };
     try {
       const payload = await api("/api/settings", { method: "POST", body: JSON.stringify(patch) });
@@ -1398,6 +1480,15 @@
     $("setRate").addEventListener("input", (event) => {
       $("rateOut").textContent = Number(event.target.value).toFixed(2);
       if (state.settings) state.settings.voice_rate = Number(event.target.value);
+    });
+    $("setAgentSteps").addEventListener("input", (event) => {
+      $("stepsOut").textContent = String(event.target.value);
+    });
+    $("brainSetupBtn").addEventListener("click", () => send("brain setup"));
+    $("brainTestBtn").addEventListener("click", () => send("test local brain"));
+    $("brainFocusBtn").addEventListener("click", () => {
+      const on = Boolean(state.status && state.status.focus && state.status.focus.adhd_mode);
+      send(on ? "normal mode" : "adhd mode on");
     });
 
     $$("[data-close]").forEach((node) => node.addEventListener("click", closeModals));

@@ -1,4 +1,4 @@
-# J.A.R.V.I.S. — MARK VII
+# J.A.R.V.I.S. — MARK VIII
 
 **Just A Rather Very Intelligent System** — a local-first voice assistant with a
 cinematic HUD, real system control, long-term memory and a security envelope
@@ -13,7 +13,14 @@ python3 jarvis.py            # HUD on http://localhost:7777
 python3 jarvis.py --cli      # terminal console
 python3 jarvis.py --cli --voice --wake    # hands-free terminal mode
 python3 jarvis.py --check    # self-diagnostic
+python3 jarvis.py --brain    # local Qwen lanes, runtime, recommendation
+python3 jarvis.py --brain-setup   # exact Ollama / llama.cpp commands
+python3 jarvis.py --agent "goal"  # multi-step agent, plan saved to disk
 ```
+
+**v1.2.0** adds a local-first Qwen brain, a bounded agent loop with file-based
+plans, a compressed memory journal and an ADHD-friendly focus mode — **84 tools**,
+still stdlib-only.
 
 The assistant is **stdlib-only by default**. Optional packages
 (`requirements-jarvis.txt`) upgrade telemetry, terminal speech and vision.
@@ -96,6 +103,22 @@ requires the wake word before a command is accepted.
 network, Gemini link, display, audio mixer, Termux bridge, STT/TTS, brain mode,
 local Qwen lanes).
 
+One-shot commands, handy over SSH or in scripts:
+
+```
+python3 jarvis.py --brain          # which lanes are alive, what to install
+python3 jarvis.py --brain-setup    # copy-paste Ollama / llama.cpp commands
+python3 jarvis.py --test-brain     # ping the fastest lane, report latency
+python3 jarvis.py --agent "tidy my downloads folder"
+python3 jarvis.py --plans          # persistent plans and their progress
+python3 jarvis.py --memory qwen    # search the memory journal
+```
+
+Inside the HUD/CLI you can also type: `brain status`, `brain setup`,
+`test local brain`, `ask local <question>`, `agent do <goal>`, `make a plan to …`,
+`show plans`, `complete step 2 of plan …`, `search memory for …`,
+`adhd mode on|off`, `map the repo`.
+
 ---
 
 ## 4. HTTP API
@@ -110,6 +133,8 @@ local Qwen lanes).
 | GET | `/api/suggestions` | contextual command chips |
 | GET | `/api/tools` | registered tools grouped by category |
 | GET | `/api/settings` | public settings (never the API key) |
+| GET | `/api/plans` | persistent plans with steps and progress |
+| GET | `/api/memory` | memory journal statistics and recent observations |
 | POST | `/api/command` | `{text, source}` → assistant envelope |
 | POST | `/api/approve` \| `/api/deny` | `{token}` for the approval gate |
 | POST | `/api/vision` | `{image: dataURL, question}` |
@@ -141,7 +166,7 @@ expire after 180 seconds.
 
 ## 5. Security envelope
 
-* **One tool registry** — `jarvis/tools.py` declares 71 tools with argument
+* **One tool registry** — `jarvis/tools.py` declares 84 tools with argument
   schemas, categories and `high_impact` flags. Intents and the LLM planner both
   execute through `JarvisCore.call()`, so validation, approval and audit always
   apply.
@@ -184,6 +209,14 @@ environment variables, which always win.
 | `GEMINI_API_KEY` or `JARVIS_GEMINI_KEY` | — | Gemini reasoning + vision |
 | `JARVIS_QWEN_URL` | `http://127.0.0.1:8080/v1/chat/completions` | local Qwen lane |
 | `JARVIS_FAST_QWEN_URL` | `http://127.0.0.1:8081/v1/chat/completions` | fast local lane |
+| `JARVIS_CODER_QWEN_URL` | deep lane | coding lane (Qwen2.5-Coder) |
+| `JARVIS_QWEN_MODEL` | `qwen2.5:7b-instruct` | deep lane model name |
+| `JARVIS_FAST_QWEN_MODEL` | `qwen3:4b` | fast lane model name |
+| `JARVIS_CODER_QWEN_MODEL` | `qwen2.5-coder:7b` | coder lane model name |
+| `JARVIS_BRAIN_MODE` | `auto` | `auto` \| `local` \| `gemini` \| `offline` |
+| `JARVIS_AGENT_ENABLED` | `true` | allow the multi-step agent loop |
+| `JARVIS_AGENT_STEPS` | `5` | step budget, clamped to 1–12 |
+| `JARVIS_ADHD_MODE` | `false` | focus-mode output by default |
 | `JARVIS_DATA_DIR` | `data/jarvis` | state, notes, files |
 
 Without any model key the assistant is fully functional offline: intents, tools,
@@ -202,17 +235,24 @@ jarvis/
   config.py               settings, env loading, validation
   security.py             approval gate, audit, path confinement, danger screen
   intents.py              deterministic NLU (English + Hinglish)
-  tools.py                central registry (71 tools)
-  brain.py                Gemini / Qwen planner, vision, cooldowns
+  tools.py                central registry (84 tools)
+  brain.py                provider chain: Gemini / local Qwen planner, vision
+  local_brain.py          lane discovery, Qwen catalog, RAM recommendations
+  agent.py                bounded plan→act→observe loop, repo map
+  plans.py                task_plan.md / findings.md / progress.md on disk
+  memory.py               observation journal + BM25 retrieval + compression
+  adhd.py                 focus-mode output shaping
   core.py                 orchestrator: handle → intent/LLM → tool → envelope
   scheduler.py            reminders, timers, alarms, battery/disk watchdogs
   server.py               stdlib HTTP server + static HUD
   cli.py                  terminal console, voice, diagnostics
   skills/                 system, files, web, weather, media, productivity,
-                          communication, vision
+                          communication, vision, assistant (brain/agent/memory)
 web/                      HUD (index.html, assets/app.css, assets/app.js)
 config/jarvis.env.example settings template
-data/jarvis/state.json    notes, tasks, reminders, timers, contacts, memory
+data/jarvis/state.json    notes, tasks, reminders, timers, contacts, memory, prefs
+data/jarvis/memory.jsonl  append-only observation journal (memory v2)
+data/jarvis/plans/        task_plan.md, findings.md, progress.md per goal
 logs/jarvis_audit.jsonl   audit trail (git-ignored)
 logs/jarvis.log           server log
 ```
@@ -267,6 +307,7 @@ For a local model, run any OpenAI-compatible server on `:8080` / `:8081`
 
 ```
 python3 jarvis.py --check                  # 14-point self diagnostic
+python3 -m unittest tests.test_local_brain # 21 brain/agent/memory tests
 python3 -m unittest discover -s tests      # Nova + repo test suite
 ```
 
@@ -295,7 +336,7 @@ adds these capabilities to the same core:
 | Wish & welcome, “daddy's home” (8, 29) | “I'm home” → `wake_greeting` with pending work |
 | Online/offline checks (14, 39) | `network_info`, live `LINK` pill, brain lane probe |
 | Random advice (15) | `random_advice` — Advice Slip API with an offline line bank |
-| All-possible automation (12, 16) | 71-tool registry: apps, volume, brightness, files, media |
+| All-possible automation (12, 16) | 84-tool registry: apps, volume, brightness, files, media, brain, agent |
 | Big data import (18) | `import_data` — JSON/CSV/TXT into long-term memory, 500 rows, secrets skipped |
 | Battery monitoring (20) | telemetry gauges + scheduler power alerts |
 | Wikipedia, Google, YouTube search (21–23) | `wikipedia`, `web_search`, `play_music` YouTube fallback |
@@ -323,7 +364,137 @@ reported, never stored.
 
 ---
 
-## 12. Credits
+## 12. Local brain, agent loop and memory (v1.2.0)
+
+This release mines the best patterns from 22 public agent/AI repositories and
+folds them into the existing modules — no project was vendored wholesale.
+
+### 12.1 The local Qwen brain
+
+`jarvis/local_brain.py` discovers **OpenAI-compatible** local servers and routes
+by task:
+
+| Lane | Default endpoint | Purpose | Suggested model |
+| --- | --- | --- | --- |
+| `fast` | `127.0.0.1:8081` | routing, short answers | `qwen3:4b` |
+| `deep` | `127.0.0.1:8080` | planning, reasoning | `qwen2.5:7b-instruct` |
+| `coder` | deep lane | code, repo work | `qwen2.5-coder:7b` |
+| `ollama` | `127.0.0.1:11434` | auto-detected fallback | whatever you pulled |
+
+* **Discovery** — each lane is probed with `GET /v1/models` (~1.1 s, cached 12 s);
+  if the server reports a different model, the live model wins. Nothing is ever
+  downloaded by Jarvis.
+* **Catalog** — 11 Qwen builds (Qwen3 1.7B/4B/8B, Qwen2.5 7B/14B/32B,
+  Coder 7B/14B, Qwen3 30B-A3B MoE, VL 7B) with RAM, context and role metadata.
+* **Recommendation** — `≥28 GB RAM → 32B`, `≥18 → 14B`, `≥11 → 8B`, `≥6 → 4B`,
+  otherwise 1.7B. Shown in the HUD and by `brain status`.
+* **Routing** — `JARVIS_BRAIN_MODE`:
+  * `auto` — Gemini first when a key exists, then local Qwen, then offline core
+    (the local lane is retried after an 8 s failure cooldown);
+  * `local` — Qwen only; ideal on a laptop with no cloud key;
+  * `gemini` — cloud only;
+  * `offline` — deterministic intents only.
+* **Local vision** — `brain.vision` now tries Gemini first (when keyed) and then a
+  local Qwen-VL model on the deep lane, so the HUD camera button still describes
+  images with no cloud access (`ollama pull qwen2.5vl:7b`).
+* **Honest failure** — with no lane running the assistant still answers; the HUD
+  shows which lanes are down and `brain setup` prints the exact commands:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull qwen3:4b
+ollama serve            # Jarvis auto-detects :11434
+# or, without Ollama:
+llama-server -m Qwen3-4B-Instruct-Q4_K_M.gguf -c 32768 --port 8080
+```
+
+### 12.2 The agent loop
+
+`jarvis/agent.py` runs a bounded **plan → act → observe** loop (1–12 steps,
+default 5). Each step asks the chosen lane for exactly one JSON action, executes
+a registered tool, and appends the observed result to a scratchpad. It stops on
+a final reply, an unknown tool, the step cap, or an approval gate it cannot
+cross. The plan itself lives on disk (`data/jarvis/plans/<slug>/`):
+
+```
+task_plan.md   goal, status, numbered checklist
+findings.md    evidence gathered
+progress.md    timestamped log of each step and its result
+```
+
+`plan_show`, `plan_update` and `agent resume` read those files, so progress
+survives a restart, a context wipe or a crash. `repo_map` adds a cheap
+repository summary (languages, key files, pruned tree, ignored directories) so
+the model reasons about real structure instead of guessing.
+
+### 12.3 Memory v2
+
+`jarvis/memory.py` keeps an append-only `memory.jsonl` of observations
+(`preference`, `decision`, `fact`, `note`, `episode`). Retrieval is BM25-style
+with recency and importance boosts; every 20 turns the session is compressed
+into a single episode observation. Credentials are refused at write time.
+`memory_save`, `memory_search` (empty query → statistics) and
+`python3 jarvis.py --memory <query>` expose it.
+
+### 12.4 Focus mode (ADHD-friendly)
+
+Inspired by *i-have-adhd*: `focus_mode on` (or `adhd mode on`) makes model prose
+lead with the action, bullet the steps, cap replies at ~90 words and finish with
+one concrete next move (also rendered as a gold `NEXT ACTION` card). Deterministic
+tool output is left untouched. The system prompt carries the same instruction so
+the local model complies without post-processing tricks.
+
+### 12.5 HUD
+
+The right rail gains a **NEURAL CORE** panel: lane dots with live latency, the
+recommended model for your RAM, memory/plan counters, and `SETUP` / `TEST` /
+`FOCUS` buttons that issue real commands. Settings gains brain routing, agent
+step budget, agent and focus-mode switches.
+
+### 12.6 Verification
+
+```bash
+python3 -m unittest tests.test_local_brain -v      # 21 tests
+python3 jarvis.py --check                          # includes brain mode + lanes
+```
+
+The lane contract is tested against a fake OpenAI-compatible server, so the
+HTTP path is exercised even on a machine with no model installed.
+
+### 12.7 Credits for the v1.2.0 patterns
+
+| Source | Pattern adopted (reimplemented) |
+| --- | --- |
+| [open-jarvis/OpenJarvis](https://github.com/open-jarvis/OpenJarvis) | local-first lanes, starter model guidance, doctor-style status |
+| [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) | role-specialised model routing (analyst/coder lanes) |
+| [morluto/rea](https://github.com/morluto/rea) | planning before acting, explicit tool loops |
+| [NandhaKishorM/laya](https://github.com/NandhaKishorM/laya) | layered agent/assistant separation |
+| [anthropics/claude-code](https://github.com/anthropics/claude-code) | tool schemas, approval gates, concise system prompts |
+| [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) | memory compression into observations |
+| [tt-a1i/archify](https://github.com/tt-a1i/archify) | plan/architecture visualisation ideas for the HUD |
+| [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | structured skill manifests |
+| [paperclipai/paperclip](https://github.com/paperclipai/paperclip) | task artefacts that outlive a chat |
+| [Egonex-AI/Understand-Anything](https://github.com/Egonex-AI/Understand-Anything) | repository maps as model context |
+| [code-yeongyu/oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent) | open agent loop conventions |
+| [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) | focus-mode output shaping |
+| [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills) | reusable SEO/content skill shape (feeds `seo_pack`) |
+| [wshobson/agents](https://github.com/wshobson/agents) | small single-purpose agents, bounded steps |
+| [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) | skill catalog structure |
+| [nanocoai/nanoclaw](https://github.com/nanocoai/nanoclaw) | lightweight sandboxing instincts for tool runs |
+| [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | modular skill files |
+| [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) | `task_plan.md` / `findings.md` / `progress.md` |
+| [teng-lin/notebooklm-py](https://github.com/teng-lin/notebooklm-py) | offline-first Python client taste |
+| [travisvn/awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills) | skill discoverability |
+| [yusufkaraaslan/Skill_Seekers](https://github.com/yusufkaraaslan/Skill_Seekers) | skill discovery/selection heuristics |
+| [Jakeschincariol/youtube-agent-skill](https://github.com/Jakeschincariol/youtube-agent-skill) | YouTube creator workflow (feeds `seo_pack`) |
+
+All of the above remain third-party projects under their own licences; only
+ideas and patterns were adapted, and every line here is original code written
+for this repository.
+
+---
+
+## 13. Credits
 
 Feature scope inspired by two public tutorial playlists by *Anubhav Chaturvedi /
 NetHyTech*: **Jarvis 2.0** (43 episodes) and **Build Your Own Jarvis 1.0**

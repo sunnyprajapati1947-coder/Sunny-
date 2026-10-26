@@ -51,6 +51,7 @@ def _default_state() -> dict:
         "alarms": [],
         "memory": {},
         "contacts": {},
+        "prefs": {},
         "history": [],
         "meta": {
             "created": iso(now()),
@@ -99,6 +100,22 @@ class Store:
     def snapshot(self) -> dict:
         with self._lock:
             return json.loads(json.dumps(self._data))
+
+    # -------------------------------------------------------------- prefs
+    def get_pref(self, key: str, default=None):
+        with self._lock:
+            return (self._data.get("prefs") or {}).get(key, default)
+
+    def set_pref(self, key: str, value) -> dict:
+        def apply(data: dict) -> dict:
+            prefs = data.setdefault("prefs", {})
+            if value is None:
+                prefs.pop(key, None)
+            else:
+                prefs[key] = value
+            return dict(prefs)
+
+        return self._mutate(apply)
 
     # --------------------------------------------------------------- notes
     def add_note(self, text: str) -> dict:
