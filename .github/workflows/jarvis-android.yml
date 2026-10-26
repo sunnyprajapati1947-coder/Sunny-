@@ -149,7 +149,7 @@ jobs:
           3. Open **Settings → Local brain** and tap **Download** once (~490 MB over Wi-Fi).
              After that, chat works in airplane mode.
 
-          **New in 1.0.0 — local only**
+          **New in 1.1.0 — local only**
           - **One brain, and it is on the phone.** Qwen3.5 (text build) runs through Transformers.js + ONNX Runtime Web
             bundled inside the app. WebGPU when the phone has it, otherwise CPU/WASM.
           - **No cloud AI at all.** The API-key path is gone; an older setting that pointed at a cloud provider is
@@ -167,6 +167,13 @@ jobs:
           - **Microphone fixed.** RECORD_AUDIO is declared, requested at runtime, and voice input prefers the
             on-device recogniser.
           - **No more toast storms.** Identical messages collapse into one bubble.
+          - **Memory budget + guard (new).** Android memory is measured at runtime (ActivityManager), JARVIS keeps to a
+            configurable 1–10 GB budget, refuses a brain load that cannot fit, and unloads the engine instead of dying
+            when the phone runs out of memory.
+          - **Code studio (new).** Projects and files live in the app's SQLite database; the editor saves on this phone
+            and runs the project in a sandboxed iframe. No terminal.
+          - **Dashboard (new).** Live device readings, memory budget, permissions with Allow buttons, knowledge base,
+            action log, engine diagnostics and privacy switches.
 
           **Still true**
           - Tasks tab: plan → run → retry → resume after the app is closed.
