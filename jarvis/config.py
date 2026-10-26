@@ -101,6 +101,14 @@ class Settings:
     agent_steps: int = 5
     adhd_mode: bool = False
 
+    # Outbound email (SMTP)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+    smtp_tls: bool = True
+
     # Networking
     speedtest_url: str = "https://speed.cloudflare.com/__down?bytes=5000000"
     news_feed: str = "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"
@@ -117,8 +125,10 @@ class Settings:
     def public(self) -> dict:
         data = asdict(self)
         data.pop("gemini_key", None)
+        data.pop("smtp_password", None)
         data.pop("extra", None)
         data["has_gemini"] = bool(self.gemini_key)
+        data["has_smtp"] = bool(self.smtp_host and self.smtp_user and self.smtp_password)
         if self.llm_enabled:
             data["brain_label"] = "GEMINI LINK" if self.gemini_key else "LOCAL UPLINK"
         else:
@@ -166,6 +176,12 @@ def _env_settings() -> Settings:
         agent_enabled=env_bool("JARVIS_AGENT_ENABLED", True),
         agent_steps=env_int("JARVIS_AGENT_STEPS", 5),
         adhd_mode=env_bool("JARVIS_ADHD_MODE", False),
+        smtp_host=os.getenv("JARVIS_SMTP_HOST", ""),
+        smtp_port=env_int("JARVIS_SMTP_PORT", 587),
+        smtp_user=os.getenv("JARVIS_SMTP_USER", ""),
+        smtp_password=os.getenv("JARVIS_SMTP_PASSWORD", ""),
+        smtp_from=os.getenv("JARVIS_SMTP_FROM", ""),
+        smtp_tls=env_bool("JARVIS_SMTP_TLS", True),
         speedtest_url=os.getenv(
             "JARVIS_SPEEDTEST_URL", "https://speed.cloudflare.com/__down?bytes=5000000"
         ),
@@ -199,6 +215,11 @@ USER_TUNABLE = {
     "agent_enabled",
     "agent_steps",
     "adhd_mode",
+    "smtp_host",
+    "smtp_port",
+    "smtp_user",
+    "smtp_from",
+    "smtp_tls",
     "qwen_model",
     "fast_qwen_model",
     "coder_qwen_model",
@@ -214,7 +235,7 @@ def _apply_overrides(settings: Settings, overrides: dict) -> Settings:
             continue
         value = overrides[key]
         try:
-            if key in {"wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode"}:
+            if key in {"wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode", "smtp_tls"}:
                 value = bool(value)
             elif key in {"voice_rate", "voice_pitch"}:
                 value = float(value)
@@ -242,6 +263,9 @@ def validate_patch(patch: dict) -> tuple[dict, list[str]]:
         "voice_name": 80,
         "music_dir": 300,
         "notes_dir": 300,
+        "smtp_host": 120,
+        "smtp_user": 120,
+        "smtp_from": 120,
         "qwen_model": 80,
         "fast_qwen_model": 80,
         "coder_qwen_model": 80,
@@ -273,7 +297,7 @@ def validate_patch(patch: dict) -> tuple[dict, list[str]]:
             low, high = (0.6, 1.4) if key == "voice_rate" else (0.5, 1.5)
             clean[key] = max(low, min(high, value))
 
-    for key in ("wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode"):
+    for key in ("wake_word_enabled", "speak", "sound", "llm_enabled", "llm_tools", "agent_enabled", "adhd_mode", "smtp_tls"):
         if key in patch:
             clean[key] = bool(patch[key])
 
@@ -282,6 +306,12 @@ def validate_patch(patch: dict) -> tuple[dict, list[str]]:
             clean["agent_steps"] = max(1, min(12, int(patch["agent_steps"])))
         except (TypeError, ValueError):
             warnings.append("agent_steps must be a number")
+
+    if "smtp_port" in patch:
+        try:
+            clean["smtp_port"] = max(1, min(65535, int(patch["smtp_port"])))
+        except (TypeError, ValueError):
+            warnings.append("smtp_port must be a number")
 
     if "brain_mode" in patch:
         mode = str(patch["brain_mode"] or "auto").strip().lower()

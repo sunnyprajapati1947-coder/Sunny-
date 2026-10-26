@@ -493,3 +493,201 @@ def delete_preflight(path: str = "") -> dict | None:
     if resolved.is_dir():
         return reply("I only delete individual files, Sir. Folders are too risky.")
     return None
+
+
+# ------------------------------------------------------------ coding agent
+BACKUP_DIR = DATA_DIR / "backups"
+MAX_EDIT = 400_000
+
+
+def _backup(path: Path) -> Path | None:
+    """Keep a timestamped copy before a patch so an edit is always reversible."""
+    try:
+        BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        target = BACKUP_DIR / f"{path.name}-{stamp}.bak"
+        shutil.copy2(path, target)
+        return target
+    except OSError:
+        return None
+
+
+def edit_file(path: str = "", find: str = "", replace: str = "", occurrence: int = 0) -> dict:
+    """Replace an exact snippet in an existing file (requires approval).
+
+    This is the agent's patch primitive: no regex, no guessing. If the snippet
+    is missing or ambiguous the edit is refused and nothing is written.
+    """
+    try:
+        resolved = _resolve_existing(path)
+    except ValueError as exc:
+        return reply(f"I cannot edit that, Sir — {exc}.")
+    if not resolved.is_file():
+        return reply("That is not a file I can edit, Sir.")
+    if resolved.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".zip", ".mp4", ".mp3"}:
+        return reply("That is a binary file, Sir. I only patch text.")
+    needle = str(find or "")
+    if not needle:
+        return reply("I need the exact text to replace, Sir.")
+    try:
+        original = resolved.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return reply("I could not read that file as text, Sir.")
+    if len(original) > MAX_EDIT:
+        return reply("That file is too large for a careful patch, Sir.")
+    hits = original.count(needle)
+    if hits == 0:
+        return reply(
+            f"That exact text is not in {resolved.name}, Sir. Nothing was changed.",
+            data={"path": str(resolved), "matches": 0},
+        )
+    if hits > 1 and occurrence <= 0:
+        return reply(
+            f"That snippet appears {hits} times in {resolved.name}, Sir. "
+            "Tell me which occurrence (1-based) or give me a longer snippet.",
+            data={"path": str(resolved), "matches": hits},
+        )
+    index = max(1, min(occurrence, hits))
+    replacement = str(replace or "")
+    if index == 1:
+        updated = original.replace(needle, replacement, 1)
+    else:
+        parts = original.split(needle)
+        updated = needle.join(parts[:index]) + replacement + needle.join(parts[index:])
+    if updated == original:
+        return reply("That replacement is identical, Sir. Nothing to do.")
+    backup = _backup(resolved)
+    try:
+        resolved.write_text(updated, encoding="utf-8")
+    except OSError as exc:
+        return reply(f"I could not write the patch, Sir ({type(exc).__name__}).")
+    old_lines = needle.count("\n") + 1
+    new_lines = str(replace or "").count("\n") + 1
+    added = max(0, new_lines - old_lines)
+    removed = max(0, old_lines - new_lines)
+    return reply(
+        f"Patched {resolved.name}, Sir — {old_lines} line{'s' if old_lines != 1 else ''} replaced, "
+        f"+{added}/-{removed}."
+        + (f" Backup: {_display(backup)}." if backup else ""),
+        speech="Patch applied, Sir.",
+        cards=[
+            {
+                "type": "file",
+                "name": resolved.name,
+                "path": _display(resolved),
+                "size": human_size(len(updated.encode("utf-8"))),
+            }
+        ],
+        data={
+            "path": str(resolved),
+            "matches": hits,
+            "backup": str(backup) if backup else "",
+            "added": added,
+            "removed": removed,
+        },
+    )
+
+
+def edit_preflight(path: str = "", find: str = "", replace: str = "", occurrence: int = 0) -> dict | None:
+    try:
+        resolved = _resolve_existing(path)
+    except ValueError as exc:
+        return reply(f"I cannot edit that, Sir — {exc}.")
+    needle = str(find or "")
+    if not needle:
+        return reply("I need the exact text to replace, Sir.")
+    try:
+        hits = resolved.read_text(encoding="utf-8").count(needle)
+    except (OSError, UnicodeDecodeError):
+        return reply("I could not read that file as text, Sir.")
+    if hits == 0:
+        return reply(f"That exact text is not in {resolved.name}, Sir. Nothing was changed.")
+    if hits > 1 and int(occurrence or 0) <= 0:
+        return reply(
+            f"That snippet appears {hits} times in {resolved.name}, Sir — tell me which occurrence.",
+        )
+    return None
+
+
+SUITE_HINTS = ("tests", "test", "spec", "__tests__")
+
+
+def _detect_runner(root: Path) -> tuple[str, list[str]] | None:
+    """Pick a known runner and an explicit start folder (never user text)."""
+    names = {item.name for item in root.iterdir()} if root.is_dir() else set()
+    start = next((hint for hint in SUITE_HINTS if (root / hint).is_dir()), ".")
+    uses_pytest = (root / "pytest.ini").is_file() or (root / "tox.ini").is_file()
+    if (root / "pyproject.toml").is_file():
+        config = (root / "pyproject.toml").read_text(encoding="utf-8", errors="ignore")
+        uses_pytest = uses_pytest or "pytest" in config
+    uses_pytest = uses_pytest or (root / start / "conftest.py").is_file()
+    has_python_tests = start != "." or any(name.startswith("test_") for name in names)
+    if uses_pytest and has_python_tests:
+        return ("pytest", ["python3", "-m", "pytest", "-q", "--maxfail", "5", start])
+    if has_python_tests:
+        return ("unittest", ["python3", "-m", "unittest", "discover", "-s", start, "-v"])
+    if (root / "package.json").is_file():
+        return ("npm", ["npm", "test", "--silent"])
+    return None
+
+
+def run_tests(path: str = "", timeout: int = 120) -> dict:
+    """Run the project's own test suite (requires approval).
+
+    Only known runners are invoked — never arbitrary shell text.
+    """
+    import subprocess
+
+    try:
+        root = resolve_for_user(path or ".")
+    except ValueError as exc:
+        return reply(f"I cannot run tests there, Sir — {exc}.")
+    if not root.is_dir():
+        return reply("That path is not a folder, Sir.")
+    try:
+        safe_path(root, base=HOME, must_exist=True)
+    except ValueError:
+        return reply("I only run tests inside your home folder, Sir.")
+    detected = _detect_runner(root)
+    if not detected:
+        return reply("I could not find a test suite there, Sir (pytest, unittest or npm test).")
+    label, command = detected
+    limit = max(10, min(int(timeout or 120), 300))
+    started = time.monotonic()
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=str(root),
+            capture_output=True,
+            text=True,
+            timeout=limit,
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+    except FileNotFoundError:
+        return reply(f"The {label} runner is not installed, Sir.")
+    except subprocess.TimeoutExpired:
+        return reply(f"The suite did not finish within {limit}s, Sir. I stopped it.")
+    elapsed = time.monotonic() - started
+    output = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+    tail = truncate(output, 2400)
+    if re.search(r"\bRan 0 tests\b", output):
+        return reply(f"The {label} suite ran zero tests, Sir. Nothing was verified.")
+    passed = proc.returncode == 0
+    summary = next(
+        (line.strip() for line in reversed(output.splitlines()) if re.search(r"(passed|failed|OK|Ran \d+ test)", line)),
+        "",
+    )
+    return reply(
+        f"{label} finished in {elapsed:.1f}s, Sir — "
+        + (f"all green. {summary}" if passed else f"something failed. {summary or 'see the log'}"),
+        speech=("Tests passed, Sir." if passed else "Tests failed, Sir."),
+        cards=[{"type": "list", "title": f"TEST LOG · {label}", "items": [{"label": line} for line in tail.splitlines()[-14:]]}],
+        data={
+            "ok": passed,
+            "runner": label,
+            "code": proc.returncode,
+            "seconds": round(elapsed, 2),
+            "command": " ".join(command),
+            "output": tail,
+        },
+    )

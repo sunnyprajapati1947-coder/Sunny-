@@ -22,8 +22,8 @@ from jarvis.util import human_uptime, iso, now, parse_iso
 LOG = logging.getLogger("jarvis.server")
 
 MAX_BODY = 12 * 1024 * 1024
-STATIC_EXTENSIONS = {".html", ".css", ".js", ".svg", ".png", ".jpg", ".jpeg", ".webp", ".ico", ".json", ".woff2"}
-DATA_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".txt", ".md", ".json", ".pdf"}
+STATIC_EXTENSIONS = {".html", ".css", ".js", ".svg", ".png", ".jpg", ".jpeg", ".webp", ".ico", ".json", ".woff2", ".webmanifest"}
+DATA_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".txt", ".md", ".json", ".pdf", ".ics"}
 MIME = {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
@@ -40,6 +40,8 @@ MIME = {
     ".md": "text/markdown; charset=utf-8",
     ".pdf": "application/pdf",
     ".gif": "image/gif",
+    ".ics": "text/calendar; charset=utf-8",
+    ".webmanifest": "application/manifest+json; charset=utf-8",
 }
 
 
@@ -179,6 +181,12 @@ class JarvisHandler(BaseHTTPRequestHandler):
                 }
             )
             return
+        if route == "/api/desktop":
+            from jarvis.skills import desktop
+
+            status = self.core.status().get("desktop", {})
+            self._json({"ok": True, "desktop": status, "armed": status.get("armed", False)})
+            return
         if route == "/api/plans":
             from jarvis.plans import get_plans
 
@@ -224,17 +232,10 @@ class JarvisHandler(BaseHTTPRequestHandler):
             self._serve_static(route.lstrip("/"))
             return
         if route == "/manifest.webmanifest":
-            self._json(
-                {
-                    "name": "J.A.R.V.I.S.",
-                    "short_name": "JARVIS",
-                    "start_url": "/",
-                    "display": "standalone",
-                    "background_color": "#04070d",
-                    "theme_color": "#5eeaff",
-                    "icons": [{"src": "/assets/favicon.svg", "sizes": "any", "type": "image/svg+xml"}],
-                }
-            )
+            self._serve_static("manifest.webmanifest")
+            return
+        if route == "/sw.js":
+            self._serve_static("sw.js")
             return
 
         if route.startswith("/api/"):
@@ -285,6 +286,15 @@ class JarvisHandler(BaseHTTPRequestHandler):
                 return
             question = str(payload.get("question") or "")[:500]
             self._json(self.core.vision(image, question))
+            return
+
+        if route == "/api/desktop":
+            from jarvis.skills import desktop
+
+            if "armed" in payload:
+                desktop.desktop_arm("on" if payload.get("armed") else "off")
+            status = self.core.status().get("desktop", {})
+            self._json({"ok": True, "desktop": status, "armed": status.get("armed", False)})
             return
 
         if route == "/api/settings":
@@ -381,7 +391,7 @@ def banner(host: str, port: int) -> str:
     return (
         "\n"
         "  ╔══════════════════════════════════════════════════════════╗\n"
-        "  ║   J . A . R . V . I . S .   ·   MARK VIII                 ║\n"
+        "  ║   J . A . R . V . I . S .   ·   MARK IX                   ║\n"
         "  ║   Just A Rather Very Intelligent System                  ║\n"
         "  ╠══════════════════════════════════════════════════════════╣\n"
         f"  ║   LOCAL    http://{shown}:{port}".ljust(60)

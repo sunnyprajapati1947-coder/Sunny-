@@ -6,9 +6,14 @@
 <meta name="theme-color" content="#04070d" />
 <meta name="description" content="J.A.R.V.I.S. — Just A Rather Very Intelligent System. A local-first voice assistant with telemetry, memory and a secure tool layer." />
 <link rel="manifest" href="/manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="JARVIS" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="apple-touch-icon" href="/assets/icon-192.png" />
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="/assets/app.css" />
-<title>J.A.R.V.I.S. · MARK VIIII</title>
+<title>J.A.R.V.I.S. · MARK IX</title>
 </head>
 <body data-state="idle">
 
@@ -24,7 +29,7 @@
     </div>
     <p class="boot-kicker">STARK INDUSTRIES · LOCAL DIVISION</p>
     <h1 class="boot-title">J.A.R.V.I.S.</h1>
-    <p class="boot-sub">Just A Rather Very Intelligent System · MARK VIII</p>
+    <p class="boot-sub">Just A Rather Very Intelligent System · MARK IX</p>
 
     <ol id="bootLog" class="boot-log" aria-live="polite"></ol>
 
@@ -60,6 +65,7 @@
         <time id="clock">--:--:--</time>
         <span id="date">—</span>
       </div>
+      <button id="installBtn" class="mini-btn install-btn" type="button" hidden title="Install Jarvis as an app">INSTALL APP</button>
       <button id="settingsBtn" class="icon-btn" type="button" aria-label="Open settings" title="Settings">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.54 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.54h.08A1.7 1.7 0 0 0 10.1 3V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.46 9v.08A1.7 1.7 0 0 0 21 10.1h.09a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.03Z"/></svg>
       </button>
@@ -232,7 +238,7 @@
     <span class="status-item">TOOLS <b id="footerTools">—</b></span>
     <span class="status-item">UPTIME <b id="footerUptime">00:00:00</b></span>
     <span class="status-spacer"></span>
-    <span class="status-item dim">J.A.R.V.I.S. <b id="footerVersion">v1.0.0</b> · MARK VIIII</span>
+    <span class="status-item dim">J.A.R.V.I.S. <b id="footerVersion">v1.0.0</b> · MARK IX</span>
   </footer>
 </div>
 
@@ -331,7 +337,10 @@
       <label class="switch"><input id="setLlm" type="checkbox" /><span>Neural reasoning (Gemini/Qwen)</span></label>
       <label class="switch"><input id="setAgent" type="checkbox" /><span>Agent loop (multi-step)</span></label>
       <label class="switch"><input id="setAdhd" type="checkbox" /><span>Focus mode (ADHD-friendly)</span></label>
+      <label class="switch"><input id="setDesktop" type="checkbox" /><span>Desktop control (type &amp; click)</span></label>
     </div>
+
+    <p class="modal-note" id="desktopNote">Desktop control lets Jarvis type, press keys and click. Arm it only when you want hands-on automation; “desktop panic” disarms instantly.</p>
 
     <p class="modal-note" id="brainNote">Set <code>JARVIS_GEMINI_KEY</code> in <code>config/jarvis.env</code> to enable cloud reasoning and vision.</p>
 

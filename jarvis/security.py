@@ -63,6 +63,7 @@ ALLOWED_BINARIES = {
     "gnome-screenshot",
     "grim",
     "import",
+    "tesseract",
     "screencapture",
     # clipboard
     "xclip",

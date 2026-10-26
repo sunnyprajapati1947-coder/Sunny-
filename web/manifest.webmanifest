@@ -1,0 +1,62 @@
+{
+  "name": "J.A.R.V.I.S. — Just A Rather Very Intelligent System",
+  "short_name": "JARVIS",
+  "description": "Local-first voice assistant with desktop control, Qwen brain, plans, memory and a cinematic HUD.",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "orientation": "any",
+  "background_color": "#04070d",
+  "theme_color": "#04070d",
+  "categories": ["productivity", "utilities"],
+  "lang": "en-IN",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Status report",
+      "short_name": "Status",
+      "url": "/?cmd=status%20report",
+      "description": "Run a full system diagnostic"
+    },
+    {
+      "name": "What's on my screen",
+      "short_name": "Screen",
+      "url": "/?cmd=what%27s%20on%20my%20screen",
+      "description": "Read the current screen"
+    },
+    {
+      "name": "Brain status",
+      "short_name": "Brain",
+      "url": "/?cmd=brain%20status",
+      "description": "Show local Qwen lanes"
+    }
+  ]
+}

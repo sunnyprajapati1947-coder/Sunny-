@@ -427,6 +427,22 @@ class JarvisCore:
         )
 
     # ----------------------------------------------------------------- state
+    @staticmethod
+    def _desktop_status() -> dict:
+        try:
+            import shutil
+
+            from jarvis.skills import desktop
+
+            return {
+                "armed": desktop.armed(),
+                "display": desktop._display_ok(),
+                "platform": desktop.SYSTEM,
+                "ocr": bool(shutil.which("tesseract")),
+            }
+        except Exception:
+            return {"armed": False, "display": False, "platform": "", "ocr": False}
+
     def _agent_status(self) -> dict:
         try:
             return self.agent.status()
@@ -492,6 +508,7 @@ class JarvisCore:
             "memory": self._memory_status(),
             "plans": self._plan_status(),
             "focus": {"adhd_mode": self.adhd_enabled()},
+            "desktop": self._desktop_status(),
             "tools": len(tools.TOOLS),
             "tool_categories": categories,
             "scheduler": self.scheduler.pending(),

@@ -869,3 +869,17 @@ body[data-state="thinking"] .statusbar .dot { background: var(--accent); box-sha
 @media (max-width: 1180px) {
   .brain-panel { min-width: 220px; }
 }
+
+/* ------------------------------------------------------------ install app */
+.install-btn {
+  padding: 5px 10px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  border-color: rgba(255, 199, 102, 0.35);
+  background: rgba(255, 199, 102, 0.06);
+}
+.install-btn:hover { color: var(--gold-soft); border-color: var(--gold); }
+@media (max-width: 720px) {
+  .install-btn { display: none !important; }
+}

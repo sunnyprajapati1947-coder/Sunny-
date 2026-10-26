@@ -77,7 +77,11 @@ def _strip(raw: str) -> str:
         if stripped == text:
             break
         text = stripped
-    return text.strip(" ,.!-")
+    text = text.strip(" ,.!")
+    # keep a trailing "-" when it is part of a path such as "Sunny-"
+    if "/" not in text and "~" not in text:
+        text = text.strip("-")
+    return text
 
 
 def _city_from(text: str, settings_city: str) -> str:
@@ -415,8 +419,44 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
         return _tool("alarm_set", time=body, label="Alarm")
 
     # ------------------------------------------------------------ messaging
+    auto_wa = re.match(
+        r"^(?:auto(?:matically)?\s+send\s+whatsapp|send\s+whatsapp\s+automatically|whatsapp\s+auto(?:\s*send)?)\s+(?:to\s+)?(.+?)(?:\s*(?:saying|:|that|message)\s*(.+))?$",
+        text,
+        re.I,
+    )
+    if auto_wa:
+        return _tool(
+            "whatsapp_autosend",
+            contact=auto_wa.group(1).strip(" ,:."),
+            message=(auto_wa.group(2) or "").strip(),
+        )
+    direct_email = re.match(
+        r"^(?:send\s+)?(?:an?\s+)?(?:email|mail)\s+directly\s+to\s+(\S+@\S+)"
+        r"(?:\s+(?:about|with subject|subject)\s+(.+?))?(?:\s+(?:saying|body)\s+(.+))?$",
+        text,
+        re.I,
+    )
+    if direct_email:
+        return _tool(
+            "email_send",
+            to=direct_email.group(1),
+            subject=(direct_email.group(2) or "").strip(),
+            body=(direct_email.group(3) or "").strip(),
+        )
+    calendar_match = re.match(
+        r"^(?:schedule|calendar(?:\s+(?:event|entry|it))?|add\s+(?:an?\s+)?(?:calendar\s+)?event)\s+(.+)$",
+        text,
+        re.I,
+    )
+    if calendar_match:
+        body = calendar_match.group(1).strip()
+        if parse_when(body, reference=now())[0] is not None:
+            return _tool("calendar_event", title="", when=body)
+        return _tool("calendar_event", title=body, when="")
+
+    # ------------------------------------------------------------ messaging
     whatsapp_match = re.match(
-        r"^(?:send\s+)?(?:a\s+)?whatsapp(?:\s+message)?\s+(?:to\s+)?(.+?)(?:\s+(?:saying|that|message)\s+(.+))?$",
+        r"^(?:send\s+)?(?:a\s+)?whatsapp(?:\s+message)?\s+(?:to\s+)?(.+?)(?:\s*(?:saying|that|message|:)\s*(.+))?$",
         text,
         re.I,
     )
@@ -497,6 +537,34 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
     delete_file = re.match(r"^(?:delete|remove|erase)\s+(?:the\s+)?file\s+(.+)$", text, re.I)
     if delete_file:
         return _tool("delete_file", path=delete_file.group(1).strip())
+    patch = re.match(
+        r"^(?:in\s+(?:the\s+)?file\s+(?P<before>.+?),?\s*)?"
+        r"(?:edit|patch|change|replace)\s+(?:the\s+)?(?P<find>.+?)\s+(?:with|to|by)\s+(?P<replace>.+?)"
+        r"(?:\s+in\s+(?:the\s+)?file\s+(?P<after>.+))?$",
+        text,
+        re.I,
+    )
+    if patch:
+        target = (patch.group("before") or patch.group("after") or "").strip().strip("\"'")
+        snippet = patch.group("find").strip().strip("\"'")
+        replacement = patch.group("replace").strip()
+        if target and snippet:
+            return _tool("edit_file", path=target, find=snippet, replace=replacement)
+    edit_file = re.match(r"^edit\s+(?:the\s+)?file\s+(\S+?)\s*:\s*(.+)\s*(?:=>|->)\s*(.+)$", text, re.I)
+    if edit_file:
+        return _tool(
+            "edit_file",
+            path=edit_file.group(1).strip(),
+            find=edit_file.group(2).strip().strip("\"'"),
+            replace=edit_file.group(3).strip(),
+        )
+    tests = re.match(
+        r"^(?:run|execute)\s+(?:the\s+)?(?:tests?|test suite|unit tests)(?:\s+(?:in|for|inside)\s+(.+))?$",
+        text,
+        re.I,
+    )
+    if tests:
+        return _tool("run_tests", path=(tests.group(1) or "").strip() or ".")
 
     # ------------------------------------------------------------ media
     if re.search(r"\b(?:what'?s playing|what is playing|now playing|which song is (?:playing|this))\b", low):
@@ -562,7 +630,7 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
     if re.search(r"\b(?:screenshot|screen shot|screen capture|capture (?:the )?screen)\b", low):
         return _tool("screenshot")
     if re.search(r"\b(?:what'?s on my screen|what is on my screen|look at my screen|describe my screen|read my screen|screen dekho|analyse my screen)\b", low):
-        return _tool("vision_look_at_screen", question="")
+        return _tool("desktop_read_screen", question="")
     if re.search(r"\b(?:clipboard|what did i copy)\b", low):
         if re.search(r"\b(?:copy|set|write)\b", low):
             content = re.search(r"(?:copy|set clipboard to|write)\s+(.+)", text, re.I)
@@ -587,6 +655,80 @@ def match(raw: str, reference: datetime | None = None) -> Intent | None:
                 from_unit=match_obj.group(2),
                 to_unit=match_obj.group(3),
             )
+
+    # --------------------------------------------------------- desktop control
+    if re.search(
+        r"\b(?:desktop panic|panic button|disarm desktop|desktop off|lock (?:the )?input|stop desktop control)\b",
+        low,
+    ):
+        return _tool("desktop_arm", action="off")
+    if re.search(
+        r"\b(?:arm|enable|start|allow)\b.*\b(?:desktop|keyboard|mouse|input control)\b"
+        r"|\b(?:desktop|input) control\b.*\b(?:on|arm|enable)\b",
+        low,
+    ):
+        return _tool("desktop_arm", action="on")
+    if re.search(
+        r"\b(?:desktop|input) (?:control )?(?:status|state)\b"
+        r"|\b(?:control|drive|take over)\s+(?:my|the)\s+(?:pc|computer|laptop|desktop)\b"
+        r"|\b(?:are you|is) (?:armed|allowed) (?:for|to) (?:type|control)\b",
+        low,
+    ):
+        return _tool("desktop_status")
+    type_match = re.match(r"^(?:type this|type out|type|likho)\s*[:,]?\s*(.+)$", text, re.I)
+    if type_match:
+        typed = re.sub(r"^this\s*[:,]\s*", "", type_match.group(1).strip(), flags=re.I)
+        return _tool("desktop_type", text=typed.strip(" ?.!"))
+    press_match = re.match(
+        r"^(?:press|hit|send)\s+(?:the\s+)?(?:keys?\s+)?(ctrl|control|alt|shift|cmd|win|super|enter|return|tab|esc|escape|space|backspace|delete|up|down|left|right|home|end|f\d{1,2})(?:\s*\+\s*|[\s-]+)([a-z0-9]+)\s*(?:keys?)?$",
+        text,
+        re.I,
+    )
+    if press_match:
+        return _tool("desktop_keys", keys=f"{press_match.group(1)}+{press_match.group(2)}")
+    simple_key = re.fullmatch(r"(?:press|hit)\s+(enter|return|tab|escape|esc|space|backspace|delete|up|down|left|right)", text, re.I)
+    if simple_key:
+        return _tool("desktop_keys", keys=simple_key.group(1))
+    click_match = re.match(
+        r"^(?:(double|right|left|middle)\s+)?click(?:\s+(?:at|on))?\s*(?:x\s*)?(\d+)\s*[,;\s]\s*(?:y\s*)?(\d+)?$",
+        text,
+        re.I,
+    )
+    if click_match:
+        kind = (click_match.group(1) or "left").lower()
+        clicks = 2 if kind == "double" else 1
+        button = kind if kind in {"left", "middle", "right"} else "left"
+        return _tool(
+            "desktop_click",
+            x=int(click_match.group(2)),
+            y=int(click_match.group(3)) if click_match.group(3) else -1,
+            button=button,
+            clicks=clicks,
+        )
+    if re.fullmatch(r"(?:click|left click|mouse click)", low):
+        return _tool("desktop_click")
+    move_match = re.match(r"^(?:move|take)\s+(?:the\s+)?(?:mouse|pointer|cursor)\s+(?:to\s+)?(\d+)\s*[,;\s]\s*(\d+)$", text, re.I)
+    if move_match:
+        return _tool("desktop_move", x=int(move_match.group(1)), y=int(move_match.group(2)))
+    if re.search(
+        r"\b(?:what'?s on (?:my|the) screen|read (?:my|the) screen|screen (?:padho|read karo|dekho)"
+        r"|show me (?:my|the) screen|analyse (?:my|the) screen|analyze (?:my|the) screen)\b",
+        low,
+    ):
+        question = ""
+        q_match = re.search(r"\b(?:and tell me|tell me|batao)\s+(.+)$", text, re.I)
+        if q_match:
+            question = q_match.group(1).strip(" ?.!")
+        return _tool("desktop_read_screen", question=question)
+    if re.search(r"\b(?:list|show|which|what)\b.*\bwindows?\b|\bwindows? list\b|\bopen windows\b", low):
+        return _tool("desktop_windows")
+    focus_match = re.match(
+        r"^(?:focus|activate|switch to|bring (?:up|forward))\s+(?:the\s+)?(.+?)(?:\s+window)?$",
+        text,
+        re.I,
+    )
+    if focus_match:
+        return _tool("desktop_focus", title=focus_match.group(1).strip(" ?.!"))
 
     # ------------------------------------------------------------- focus mode
     focus = re.search(

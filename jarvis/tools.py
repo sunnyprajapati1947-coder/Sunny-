@@ -11,6 +11,7 @@ from typing import Any, Callable
 from jarvis.skills import (
     assistant,
     communication,
+    desktop,
     creator,
     files,
     language,
@@ -360,6 +361,23 @@ register(
     high_impact=True,
     preflight=files.delete_preflight,
 )
+register(
+    "edit_file",
+    "Replace one exact snippet in a file, with a backup (requires approval).",
+    files.edit_file,
+    _obj({"path": TEXT, "find": TEXT, "replace": TEXT, "occurrence": {"type": "integer"}}, ["path", "find"]),
+    category="files",
+    high_impact=True,
+    preflight=files.edit_preflight,
+)
+register(
+    "run_tests",
+    "Run the project's own pytest/unittest/npm suite (requires approval).",
+    files.run_tests,
+    _obj({"path": TEXT, "timeout": {"type": "integer"}}),
+    category="files",
+    high_impact=True,
+)
 register("read_file", "Read the text contents of a file.", files.read_file, _obj({"path": TEXT}, ["path"]), category="files")
 register(
     "import_data",
@@ -545,6 +563,53 @@ register(
     category="memory",
 )
 register(
+    "email_send",
+    "Send a real email through the configured SMTP account (requires approval).",
+    communication.email_send,
+    _obj(
+        {
+            "to": {**TEXT, "description": "Recipient address or contact name"},
+            "subject": TEXT,
+            "body": {**TEXT, "description": "Plain-text body"},
+        },
+        ["to"],
+    ),
+    category="communication",
+    high_impact=True,
+    preflight=communication.email_send_preflight,
+)
+register(
+    "calendar_event",
+    "Create a real .ics calendar event and a reminder from natural language.",
+    communication.calendar_event,
+    _obj(
+        {
+            "title": {**TEXT, "description": "Event title (optional if given inside when)"},
+            "when": {**TEXT, "description": "Free text like 'tomorrow at 5 pm'"},
+            "duration_minutes": {"type": "integer", "minimum": 5, "maximum": 1440},
+            "location": TEXT,
+            "remind": {"type": "boolean"},
+        }
+    ),
+    category="productivity",
+    preflight=communication.calendar_event_preflight,
+)
+register(
+    "whatsapp_autosend",
+    "Open WhatsApp Desktop with a chat prefilled and press Enter (needs desktop armed + approval).",
+    communication.whatsapp_autosend,
+    _obj(
+        {
+            "contact": {**TEXT, "description": "Contact name or phone number"},
+            "message": TEXT,
+        },
+        ["contact", "message"],
+    ),
+    category="communication",
+    high_impact=True,
+    preflight=communication.whatsapp_autosend_preflight,
+)
+register(
     "focus_mode",
     "Turn ADHD-friendly output on or off: short, numbered, one next action.",
     assistant.focus_mode,
@@ -558,4 +623,77 @@ register(
     assistant.repo_map,
     _obj({"path": {**TEXT, "description": "Directory path (default: current directory)"}}),
     category="files",
+)
+
+
+# --------------------------------------------------------- desktop control
+register(
+    "desktop_status",
+    "Report platform, display, arming state and available desktop tools.",
+    desktop.desktop_status,
+    _obj(),
+    category="desktop",
+)
+register(
+    "desktop_arm",
+    "Arm or disarm real keyboard/mouse control. Say 'desktop panic' to lock input.",
+    desktop.desktop_arm,
+    _obj({"action": {"type": "string", "enum": ["on", "off", "status"]}}),
+    category="desktop",
+)
+register(
+    "desktop_type",
+    "Type text into the active window (clipboard-assisted for long text).",
+    desktop.desktop_type,
+    _obj({"text": {**TEXT, "description": "Text to type"}, "enter": {"type": "boolean"}}, ["text"]),
+    category="desktop",
+)
+register(
+    "desktop_keys",
+    "Press a key combination such as ctrl+s, alt+tab or enter.",
+    desktop.desktop_keys,
+    _obj({"keys": {**TEXT, "description": "Combination like ctrl+shift+t"}}, ["keys"]),
+    category="desktop",
+)
+register(
+    "desktop_click",
+    "Click the mouse, optionally at screen coordinates.",
+    desktop.desktop_click,
+    _obj(
+        {
+            "x": {"type": "integer", "minimum": 0, "maximum": 20000},
+            "y": {"type": "integer", "minimum": 0, "maximum": 20000},
+            "button": {"type": "string", "enum": ["left", "middle", "right"]},
+            "clicks": {"type": "integer", "minimum": 1, "maximum": 3},
+        }
+    ),
+    category="desktop",
+)
+register(
+    "desktop_move",
+    "Move the mouse pointer to screen coordinates.",
+    desktop.desktop_move,
+    _obj({"x": {"type": "integer", "minimum": 0}, "y": {"type": "integer", "minimum": 0}}, ["x", "y"]),
+    category="desktop",
+)
+register(
+    "desktop_windows",
+    "List visible window titles.",
+    desktop.desktop_windows,
+    _obj(),
+    category="desktop",
+)
+register(
+    "desktop_focus",
+    "Focus a window by title or app name.",
+    desktop.desktop_focus,
+    _obj({"title": {**TEXT, "description": "Window title or app name"}}, ["title"]),
+    category="desktop",
+)
+register(
+    "desktop_read_screen",
+    "Screenshot the screen and read it with OCR, falling back to local Qwen-VL.",
+    desktop.desktop_read_screen,
+    _obj({"question": {**TEXT, "description": "Optional question for vision"}}),
+    category="desktop",
 )

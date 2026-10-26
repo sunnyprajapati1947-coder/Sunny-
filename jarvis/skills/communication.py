@@ -2,11 +2,21 @@
 from __future__ import annotations
 
 import re
+import smtplib
+import subprocess
+import time
+import uuid
+from datetime import timedelta, timezone
+from email.message import EmailMessage
+from pathlib import Path
 from urllib.parse import quote
+import os
+import platform
 
-from jarvis.config import get_settings
+from jarvis.config import DATA_DIR, get_settings
 from jarvis.store import get_store
-from jarvis.util import reply, truncate
+from jarvis.timeparse import parse_when
+from jarvis.util import now, reply, truncate
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
@@ -197,6 +207,210 @@ def call_contact(contact: str = "") -> dict:
     )
 
 
+# ------------------------------------------------------------ real sending
+def email_send(to: str = "", subject: str = "", body: str = "") -> dict:
+    """Send a real email through the configured SMTP account."""
+    address, label = _resolve_target(to, "email")
+    if not address:
+        return reply(f"I do not have an email address for “{to}”, Sir.", data={"unknown_contact": True})
+    text = str(body or "").strip()
+    if not text:
+        return reply(f"What should the email to {label} say, Sir?", data={"needs_body": True})
+    settings = get_settings()
+    if not (settings.smtp_host and settings.smtp_user and settings.smtp_password):
+        return reply(
+            "SMTP is not configured, Sir. Add JARVIS_SMTP_HOST, JARVIS_SMTP_USER and "
+            "JARVIS_SMTP_PASSWORD (Gmail needs an app password), then I can send mail directly.",
+            speech="Email sending needs SMTP credentials, Sir.",
+            cards=[{"type": "list", "title": "SMTP SETUP", "rows": [
+                "JARVIS_SMTP_HOST=smtp.gmail.com",
+                "JARVIS_SMTP_PORT=587",
+                "JARVIS_SMTP_USER=you@gmail.com",
+                "JARVIS_SMTP_PASSWORD=<app password>",
+                "JARVIS_SMTP_FROM=you@gmail.com  # optional",
+            ]}],
+            data={"needs_smtp": True},
+        )
+    subject = str(subject or "").strip() or f"Message from {settings.owner}"
+
+    message = EmailMessage()
+    message["From"] = settings.smtp_from or settings.smtp_user
+    message["To"] = address
+    message["Subject"] = subject
+    message.set_content(text)
+
+    try:
+        if int(settings.smtp_port) == 465:
+            client = smtplib.SMTP_SSL(settings.smtp_host, int(settings.smtp_port), timeout=25)
+        else:
+            client = smtplib.SMTP(settings.smtp_host, int(settings.smtp_port), timeout=25)
+            client.ehlo()
+            if settings.smtp_tls:
+                client.starttls()
+                client.ehlo()
+        client.login(settings.smtp_user, settings.smtp_password)
+        client.send_message(message)
+        client.quit()
+    except smtplib.SMTPAuthenticationError:
+        return reply(
+            "The mail server rejected those credentials, Sir. Gmail requires an app password, not your login password.",
+            data={"error": "auth"},
+        )
+    except (smtplib.SMTPException, OSError) as exc:
+        return reply(f"The mail server would not take it, Sir — {type(exc).__name__}: {exc}.")
+    return reply(
+        f"Email sent to {label} ({address}), Sir.",
+        speech=f"Email sent to {label}, Sir.",
+        cards=[{"type": "message", "title": "EMAIL SENT", "subtitle": address, "body": subject + "\n\n" + truncate(text, 300)}],
+        data={"to": address, "subject": subject, "sent": True},
+    )
+
+
+def _ics_escape(value: str) -> str:
+    return (
+        str(value or "")
+        .replace("\\", "\\\\")
+        .replace(";", "\\;")
+        .replace(",", "\\,")
+        .replace("\n", "\\n")
+    )
+
+
+def _clean_event_title(value: str) -> str:
+    """Strip leftover date words from a title derived from “dentist tomorrow”."""
+    text = str(value or "").strip(" ,.-")
+    patterns = (
+        r"\s+(?:on\s+)?(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\b.*$",
+        r"\s+(?:tomorrow|today|tonight|day\s+after\s+tomorrow|parso|kal)\b.*$",
+        r"\s+(?:at|by|around|before|after)\s+\d.*$",
+        r"\s+(?:in|after)\s+\d+\s*(?:minute|hour|day|week)s?.*$",
+        r"\s+(?:next\s+(?:week|month|year))\b.*$",
+    )
+    for pattern in patterns:
+        text = re.sub(pattern, "", text, flags=re.I).strip()
+    return text
+
+
+def calendar_event(title: str = "", when: str = "", duration_minutes: int = 30, location: str = "", remind: bool = True) -> dict:
+    """Create a real .ics calendar file and optionally a reminder.
+
+    ``when`` may contain the title too — “dentist tomorrow at 5 pm” splits into
+    the event title “dentist” and the parsed time.
+    """
+    raw = str(when or title or "").strip()
+    if not raw:
+        return reply("What should I schedule, Sir?")
+    moment, leftover = parse_when(raw, reference=now())
+    if moment is None:
+        return reply(
+            "When is it, Sir? Try “tomorrow at 5 pm”, “in 2 hours” or “on 30 October at 10:00”.",
+            data={"needs_time": True, "needs_title": not str(title).strip()},
+        )
+    clean_title = str(title or "").strip()
+    if not clean_title:
+        clean_title = _clean_event_title(str(leftover or ""))
+    if not clean_title:
+        return reply("What should the event be called, Sir?", data={"needs_title": True})
+    clean_title = clean_title or "Jarvis event"
+    minutes = max(5, min(1440, int(duration_minutes or 30)))
+    start = moment if moment.tzinfo else moment.astimezone()
+    end = start + timedelta(minutes=minutes)
+    stamp = now().astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    fmt = lambda value: value.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    uid = f"jarvis-{uuid.uuid4().hex[:16]}@local"
+
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//J.A.R.V.I.S.//MARK VIII//EN",
+        "CALSCALE:GREGORIAN",
+        "BEGIN:VEVENT",
+        f"UID:{uid}",
+        f"DTSTAMP:{stamp}",
+        f"DTSTART:{fmt(start)}",
+        f"DTEND:{fmt(end)}",
+        f"SUMMARY:{_ics_escape(clean_title)}",
+        f"DESCRIPTION:{_ics_escape('Scheduled by J.A.R.V.I.S.')}",
+    ]
+    if location:
+        lines.append(f"LOCATION:{_ics_escape(location)}")
+    lines += ["END:VEVENT", "END:VCALENDAR", ""]
+    folder = DATA_DIR / "files"
+    folder.mkdir(parents=True, exist_ok=True)
+    safe = re.sub(r"[^a-z0-9]+", "-", clean_title.lower()).strip("-")[:32] or "event"
+    name = f"{safe}-{start.strftime('%Y%m%d-%H%M')}.ics"
+    path = folder / name
+    path.write_text("\r\n".join(lines), encoding="utf-8")
+
+    reminder = None
+    if remind:
+        try:
+            reminder = get_store().add_reminder(f"{clean_title} (in 10 minutes)", start - timedelta(minutes=10))
+        except Exception:
+            reminder = None
+
+    when_text = start.strftime("%a %d %b, %I:%M %p").replace(" 0", " ")
+    return reply(
+        f"Added “{clean_title}” to your calendar for {when_text}, Sir.",
+        speech=f"Calendar event ready for {when_text}, Sir.",
+        cards=[
+            {
+                "type": "link",
+                "title": f"CALENDAR · {clean_title}",
+                "subtitle": f"{when_text} · {minutes} min" + (" · download .ics" if True else ""),
+                "url": f"/api/file?path=files/{quote(name)}",
+            },
+            {"type": "list", "title": "EVENT", "rows": [
+                f"title: {clean_title}",
+                f"start: {when_text}",
+                f"duration: {minutes} minutes",
+                f"file: {path}",
+                "reminder: 10 minutes before" if reminder else "reminder: none",
+            ]},
+        ],
+        data={"title": clean_title, "start": start.isoformat(), "minutes": minutes, "path": str(path), "uid": uid},
+    )
+
+
+def whatsapp_autosend(contact: str = "", message: str = "") -> dict:
+    """Open WhatsApp Desktop with the chat prefilled, then press Enter."""
+    number, label = _resolve_target(contact, "phone")
+    if not number:
+        return reply(f"I do not have a number for “{contact}”, Sir.", data={"unknown_contact": True})
+    text = str(message or "").strip()
+    if not text:
+        return reply(f"What should I say to {label}, Sir?", data={"needs_message": True})
+    try:
+        from jarvis.skills import desktop
+
+        if not desktop.armed():
+            return reply(
+                "Arm desktop control first, Sir — auto-send types into WhatsApp Desktop.",
+                data={"armed": False},
+            )
+        if not desktop._display_ok():
+            return reply("There is no desktop session, Sir, so I cannot drive WhatsApp Desktop.")
+        uri = f"whatsapp://send?phone={number}&text={quote(text)}"
+        system = platform.system().lower()
+        if system == "windows":
+            os.startfile(uri)  # type: ignore[attr-defined]
+        elif system == "darwin":
+            subprocess.run(["open", uri], check=False, timeout=10)
+        else:
+            opener = "xdg-open"
+            subprocess.run([opener, uri], check=False, timeout=10)
+        time.sleep(3.0)
+        desktop._press_enter()
+    except Exception as exc:
+        return reply(f"I could not drive WhatsApp Desktop, Sir — {type(exc).__name__}: {exc}.")
+    return reply(
+        f"Opened {label}'s WhatsApp chat and pressed Enter, Sir. Please glance at the chat to confirm it sent.",
+        speech=f"WhatsApp message to {label} sent, Sir.",
+        cards=[{"type": "message", "title": f"WHATSAPP · {label}", "subtitle": f"+{number}", "body": text}],
+        data={"number": number, "label": label, "auto": True},
+    )
+
+
 # --------------------------------------------------------------- preflight
 def whatsapp_preflight(contact: str = "", message: str = "") -> dict | None:
     number, label = _resolve_target(contact, "phone")
@@ -235,4 +449,37 @@ def call_preflight(contact: str = "") -> dict | None:
             speech=f"No number for {contact}, Sir.",
             data={"unknown_contact": True},
         )
+    return None
+
+
+def email_send_preflight(to: str = "", subject: str = "", body: str = "") -> dict | None:
+    address, label = _resolve_target(to, "email")
+    if not address:
+        return reply(f"I do not have an email address for “{to}”, Sir.", data={"unknown_contact": True})
+    if not str(body or "").strip():
+        return reply(f"What should the email to {label} say, Sir?", data={"needs_body": True})
+    return None
+
+
+def calendar_event_preflight(title: str = "", when: str = "", duration_minutes: int = 30, location: str = "", remind: bool = True) -> dict | None:
+    raw = str(when or title or "").strip()
+    if not raw:
+        return reply("What should I schedule, Sir?")
+    moment, leftover = parse_when(raw, reference=now())
+    if moment is None:
+        return reply(
+            "When is it, Sir? Try “tomorrow at 5 pm”, “in 2 hours” or “on 30 October at 10:00”.",
+            data={"needs_time": True},
+        )
+    if not str(title or "").strip() and not str(leftover or "").strip():
+        return reply("What should the event be called, Sir?", data={"needs_title": True})
+    return None
+
+
+def whatsapp_autosend_preflight(contact: str = "", message: str = "") -> dict | None:
+    number, label = _resolve_target(contact, "phone")
+    if not number:
+        return reply(f"I do not have a number for “{contact}”, Sir.", data={"unknown_contact": True})
+    if not str(message or "").strip():
+        return reply(f"What should I say to {label}, Sir?", data={"needs_message": True})
     return None

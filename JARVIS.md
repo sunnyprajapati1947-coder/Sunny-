@@ -1,4 +1,4 @@
-# J.A.R.V.I.S. — MARK VIII
+# J.A.R.V.I.S. — MARK IX
 
 **Just A Rather Very Intelligent System** — a local-first voice assistant with a
 cinematic HUD, real system control, long-term memory and a security envelope
@@ -18,9 +18,11 @@ python3 jarvis.py --brain-setup   # exact Ollama / llama.cpp commands
 python3 jarvis.py --agent "goal"  # multi-step agent, plan saved to disk
 ```
 
-**v1.2.0** adds a local-first Qwen brain, a bounded agent loop with file-based
-plans, a compressed memory journal and an ADHD-friendly focus mode — **84 tools**,
-still stdlib-only.
+**v1.3.0** adds real **desktop control** (typing, hotkeys, mouse, window focus,
+screen OCR), **real sending** (SMTP email, `.ics` calendar events, WhatsApp
+auto-send) and an **installable phone app** (PWA + Termux launcher) on top of the
+local Qwen brain, agent loop, memory v2 and focus mode — **98 tools**, still
+stdlib-only by default.
 
 The assistant is **stdlib-only by default**. Optional packages
 (`requirements-jarvis.txt`) upgrade telemetry, terminal speech and vision.
@@ -133,11 +135,13 @@ Inside the HUD/CLI you can also type: `brain status`, `brain setup`,
 | GET | `/api/suggestions` | contextual command chips |
 | GET | `/api/tools` | registered tools grouped by category |
 | GET | `/api/settings` | public settings (never the API key) |
+| GET | `/api/desktop` | desktop control status (armed, display, OCR) |
 | GET | `/api/plans` | persistent plans with steps and progress |
 | GET | `/api/memory` | memory journal statistics and recent observations |
 | POST | `/api/command` | `{text, source}` → assistant envelope |
 | POST | `/api/approve` \| `/api/deny` | `{token}` for the approval gate |
 | POST | `/api/vision` | `{image: dataURL, question}` |
+| POST | `/api/desktop` | `{armed: true/false}` — arm or panic-lock input |
 | POST | `/api/settings` | partial settings patch |
 | POST | `/api/clear` | clear conversation history |
 | GET | `/api/file?path=` | serve an image/text file from the data folder |
@@ -166,7 +170,7 @@ expire after 180 seconds.
 
 ## 5. Security envelope
 
-* **One tool registry** — `jarvis/tools.py` declares 84 tools with argument
+* **One tool registry** — `jarvis/tools.py` declares 98 tools with argument
   schemas, categories and `high_impact` flags. Intents and the LLM planner both
   execute through `JarvisCore.call()`, so validation, approval and audit always
   apply.
@@ -217,6 +221,11 @@ environment variables, which always win.
 | `JARVIS_AGENT_ENABLED` | `true` | allow the multi-step agent loop |
 | `JARVIS_AGENT_STEPS` | `5` | step budget, clamped to 1–12 |
 | `JARVIS_ADHD_MODE` | `false` | focus-mode output by default |
+| `JARVIS_SMTP_HOST` | — | mail server (e.g. `smtp.gmail.com`) |
+| `JARVIS_SMTP_PORT` | `587` | 587 STARTTLS, 465 SSL |
+| `JARVIS_SMTP_USER` / `JARVIS_SMTP_PASSWORD` | — | SMTP login (Gmail app password) |
+| `JARVIS_SMTP_FROM` | user | From address |
+| `JARVIS_SMTP_TLS` | `true` | STARTTLS on port 587 |
 | `JARVIS_DATA_DIR` | `data/jarvis` | state, notes, files |
 
 Without any model key the assistant is fully functional offline: intents, tools,
@@ -235,7 +244,7 @@ jarvis/
   config.py               settings, env loading, validation
   security.py             approval gate, audit, path confinement, danger screen
   intents.py              deterministic NLU (English + Hinglish)
-  tools.py                central registry (84 tools)
+  tools.py                central registry (98 tools)
   brain.py                provider chain: Gemini / local Qwen planner, vision
   local_brain.py          lane discovery, Qwen catalog, RAM recommendations
   agent.py                bounded plan→act→observe loop, repo map
@@ -246,13 +255,16 @@ jarvis/
   scheduler.py            reminders, timers, alarms, battery/disk watchdogs
   server.py               stdlib HTTP server + static HUD
   cli.py                  terminal console, voice, diagnostics
-  skills/                 system, files, web, weather, media, productivity,
-                          communication, vision, assistant (brain/agent/memory)
-web/                      HUD (index.html, assets/app.css, assets/app.js)
+  skills/                 system, desktop, files, web, weather, media,
+                          productivity, communication (SMTP/WhatsApp/calendar),
+                          vision, assistant (brain/agent/memory)
+web/                      HUD (index.html, assets/, manifest.webmanifest, sw.js)
+automation/termux_jarvis.sh  Android install / start / stop launcher
 config/jarvis.env.example settings template
 data/jarvis/state.json    notes, tasks, reminders, timers, contacts, memory, prefs
 data/jarvis/memory.jsonl  append-only observation journal (memory v2)
 data/jarvis/plans/        task_plan.md, findings.md, progress.md per goal
+data/jarvis/files/*.ics   calendar events you can import anywhere
 logs/jarvis_audit.jsonl   audit trail (git-ignored)
 logs/jarvis.log           server log
 ```
@@ -307,7 +319,8 @@ For a local model, run any OpenAI-compatible server on `:8080` / `:8081`
 
 ```
 python3 jarvis.py --check                  # 14-point self diagnostic
-python3 -m unittest tests.test_local_brain # 21 brain/agent/memory tests
+python3 -m unittest tests.test_local_brain  # 21 brain/agent/memory tests
+python3 -m unittest tests.test_desktop_comms # 18 desktop/comms/PWA tests
 python3 -m unittest discover -s tests      # Nova + repo test suite
 ```
 
@@ -336,7 +349,7 @@ adds these capabilities to the same core:
 | Wish & welcome, “daddy's home” (8, 29) | “I'm home” → `wake_greeting` with pending work |
 | Online/offline checks (14, 39) | `network_info`, live `LINK` pill, brain lane probe |
 | Random advice (15) | `random_advice` — Advice Slip API with an offline line bank |
-| All-possible automation (12, 16) | 84-tool registry: apps, volume, brightness, files, media, brain, agent |
+| All-possible automation (12, 16) | 98-tool registry: apps, volume, brightness, files, media, brain, agent |
 | Big data import (18) | `import_data` — JSON/CSV/TXT into long-term memory, 500 rows, secrets skipped |
 | Battery monitoring (20) | telemetry gauges + scheduler power alerts |
 | Wikipedia, Google, YouTube search (21–23) | `wikipedia`, `web_search`, `play_music` YouTube fallback |
@@ -458,6 +471,7 @@ step budget, agent and focus-mode switches.
 
 ```bash
 python3 -m unittest tests.test_local_brain -v      # 21 tests
+python3 -m unittest tests.test_desktop_comms -v    # 18 tests
 python3 jarvis.py --check                          # includes brain mode + lanes
 ```
 
@@ -497,7 +511,134 @@ for this repository.
 
 ---
 
-## 13. Credits
+## 13. Desktop control, real sending and the phone app (v1.3.0)
+
+### 13.1 Desktop control
+
+Jarvis can now actually drive the machine instead of only launching apps.
+
+| Command | What happens |
+| --- | --- |
+| `arm desktop control` | unlocks keyboard/mouse actions (stored as a preference) |
+| `type <text>` | types into the active window; long text goes through the clipboard |
+| `press ctrl+s` | sends hotkeys (`alt+tab`, `cmd+shift+4`, …) |
+| `click at 400 300` / `double click at …` | moves the pointer and clicks |
+| `list windows` | prints visible window titles |
+| `focus chrome` | brings a window to the front |
+| `what's on my screen` | screenshots, reads it with Tesseract OCR, falls back to local Qwen-VL |
+| `desktop panic` | locks input immediately |
+
+**Platform backends**
+
+| OS | Input | Windows | OCR |
+| --- | --- | --- | --- |
+| Linux X11 | `xdotool` | `wmctrl` | `tesseract` + scrot/gnome-screenshot |
+| Windows | PowerShell + `user32` (`SendKeys`, `SetCursorPos`, `mouse_event`) | PowerShell `AppActivate` | PowerShell screen capture + Tesseract |
+| macOS | AppleScript (+ `cliclick` for mouse) | AppleScript | `screencapture` + Tesseract |
+
+Install the optional helpers:
+
+```bash
+# Linux
+sudo apt install xdotool wmctrl tesseract-ocr scrot
+# macOS
+brew install tesseract cliclick
+# Windows
+winget install UB-Mannheim.TesseractOCR
+```
+
+**Safety.** Nothing types or clicks until you arm it, every call is audited, shell
+metacharacters are rejected, `ctrl+delete` style destructive combos are blocked,
+and `desktop panic` locks the layer without restarting Jarvis. Reading the screen
+is passive and needs no arming; it is still logged.
+
+### 13.2 Real sending
+
+| Feature | How it works |
+| --- | --- |
+| Email | `send email directly to you@example.com about … saying …` → SMTP with STARTTLS/SSL, approval required |
+| Calendar | `schedule dentist tomorrow at 5 pm` → real `.ics` file + a reminder 10 minutes before; the HUD card downloads it into any calendar |
+| WhatsApp | normal mode opens `wa.me` with the text prefilled; `auto send whatsapp to ravi: …` drives WhatsApp Desktop (armed + approval), then presses Enter |
+
+SMTP is configured in `config/jarvis.env` (never in the HUD, never logged):
+
+```
+JARVIS_SMTP_HOST=smtp.gmail.com
+JARVIS_SMTP_PORT=587
+JARVIS_SMTP_USER=you@gmail.com
+JARVIS_SMTP_PASSWORD=your-app-password
+JARVIS_SMTP_FROM=you@gmail.com
+```
+
+Gmail needs an **app password** (2-Step Verification → App passwords); normal
+passwords are rejected. Without SMTP the assistant says so and offers the setup
+card instead of pretending to send.
+
+### 13.3 The phone app
+
+The HUD is now an installable **PWA**:
+
+* `/manifest.webmanifest` — name, icons (192/512 PNG, maskable), standalone
+  display, theme colours and three shortcuts (Status, Screen, Brain).
+* `/sw.js` — caches the shell for offline open; `/api/*` is always live and
+  never cached.
+* An **INSTALL APP** button appears in the header when the browser offers
+  installation; on Android use “Add to Home screen”, on iOS Share → Add to Home
+  Screen.
+* `/?cmd=status%20report` runs a command on open — that is how the shortcuts work.
+
+For a phone that runs Jarvis itself (Android):
+
+```bash
+bash automation/termux_jarvis.sh install   # Termux + Termux:API
+bash automation/termux_jarvis.sh start     # wake-lock, start, open the HUD
+bash automation/termux_jarvis.sh stop
+```
+
+**Honest limits.** A browser cannot listen for the wake word while the phone is
+locked; keep the tab (or installed PWA) open for voice, or use the CLI on a PC.
+Qwen 1.7B runs in Termux via llama.cpp but slowly; 4B+ belongs on the PC. iOS
+does not allow a local Python server — there the PWA is a remote control for the
+PC.
+
+### 13.4 The coding agent (patch and test loop)
+
+The agent loop from v1.2.0 now has a real patch primitive and a way to prove its
+own work:
+
+| Command | What happens |
+| --- | --- |
+| `replace <old> with <new> in file notes.txt` | exact-snippet patch, one match, backup written first |
+| `in file app.py replace foo with bar` | same patch, file named first |
+| `edit file app.py: foo => bar` | shorthand form |
+| `run the tests` / `run tests in ~/project` | detects pytest / unittest / npm and runs it |
+
+Both tools are **high-impact**: the HUD opens the approval sheet, shows what will
+change, and only then writes. `edit_file` never guesses — a missing snippet, an
+ambiguous snippet (two matches without an occurrence number) or a binary file is
+refused and the file is untouched. Every successful patch copies the old file to
+`data/jarvis/backups/<name>-<timestamp>.bak` and reports `+added/-removed` lines.
+`run_tests` only executes known runners (`python3 -m pytest`, `python3 -m
+unittest discover`, `npm test`) inside the home folder, caps the run at 300 s and
+returns the last lines of the log as a card. A suite that runs **zero** tests is
+called out instead of being reported as green.
+
+### 13.5 Verification
+
+```bash
+python3 -m unittest tests.test_desktop_comms -v   # 18 tests
+python3 -m unittest tests.test_coding_agent -v    # 11 tests
+python3 -m unittest tests.test_local_brain -v     # 21 tests
+python3 jarvis.py --check                         # 14-point diagnostic
+```
+
+The desktop layer is tested on a headless machine by checking arming, gating,
+key normalisation, destructive-combo blocking and honest fallbacks. Input
+backends are exercised on a real desktop session.
+
+---
+
+## 14. Credits
 
 Feature scope inspired by two public tutorial playlists by *Anubhav Chaturvedi /
 NetHyTech*: **Jarvis 2.0** (43 episodes) and **Build Your Own Jarvis 1.0**

@@ -2,7 +2,7 @@
 
 Google AI model routing registry for SunnyAI.
 
-## J.A.R.V.I.S. · MARK VIII
+## J.A.R.V.I.S. · MARK IX
 
 A complete local-first voice assistant now ships in this repository: cinematic
 HUD, voice input and spoken replies, system telemetry, files, notes, tasks,
@@ -10,9 +10,12 @@ reminders, timers, alarms, weather, news, media, WhatsApp/email drafts, vision
 and long-term memory — with an approval gate and audit trail around every
 high-impact action.
 
-v1.2.0 adds a **local Qwen brain** (Ollama / llama.cpp / LM Studio / vLLM auto-detected,
-11-model catalog, RAM-aware recommendation), a **bounded agent loop** with plans
-saved to disk, **compressed memory**, **focus mode**, and 84 tools.
+v1.3.0 adds **real desktop control** (type, hotkeys, mouse, window focus, screen OCR),
+**real sending** (SMTP email, .ics calendar events, WhatsApp auto-send), an
+**installable phone app** (PWA + Termux launcher) and a **coding agent** that
+patches files with a backup and runs the project's own tests — on top of the local
+Qwen brain, agent loop, compressed memory and focus mode. **98 tools**, still
+stdlib-only.
 
 ```bash
 python3 jarvis.py            # HUD on http://localhost:7777

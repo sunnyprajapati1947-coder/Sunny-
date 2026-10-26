@@ -1,5 +1,5 @@
 /* ==========================================================================
-   J.A.R.V.I.S. · MARK VII — HUD controller
+   J.A.R.V.I.S. · MARK IX — HUD controller
    Zero dependencies. Talks only to the local /api surface.
    ========================================================================== */
 (() => {
@@ -19,6 +19,7 @@
   };
 
   const state = {
+    installPrompt: null,
     booted: false,
     busy: false,
     listening: false,
@@ -212,10 +213,16 @@
     if (!card || !card.type) return "";
     switch (card.type) {
       case "link": {
-        const url = /^https?:/i.test(card.url || "") ? card.url : "";
+        const raw = String(card.url || "");
+        const external = /^https?:/i.test(raw);
+        const local = raw.startsWith("/") && !raw.startsWith("//");
+        const url = external || local ? raw : "";
         const label = esc(card.title || "Open link");
+        const attrs = external
+          ? 'target="_blank" rel="noopener noreferrer"'
+          : `download="${esc(raw.split("/").pop() || "file")}"`;
         return cardShell("LINK", url
-          ? `<a class="card-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer"><span>${label}</span>
+          ? `<a class="card-link" href="${esc(url)}" ${attrs}><span>${label}</span>
              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
              ${card.subtitle ? `<p class="sub">${esc(card.subtitle)}</p>` : ""}`
           : `<p class="body">${label}</p>`);
@@ -841,7 +848,8 @@
       `${local.ram_gb || (local.runtime || {}).ram_gb || "?"} GB RAM · ` +
       `suggest ${recommendedLabel} · ` +
       `${memory.count || 0} memories · ${plans.active || 0} plans · ` +
-      `${agent.ready ? "agent armed" : "agent waiting"}`;
+      `${agent.ready ? "agent armed" : "agent waiting"}` +
+      ((status.desktop && status.desktop.armed) ? " · desktop ARMED" : "");
     const focusBtn = $("brainFocusBtn");
     if (focusBtn) {
       const on = Boolean((status.focus || {}).adhd_mode);
@@ -1266,6 +1274,12 @@
     $("stepsOut").textContent = String(Number(settings.agent_steps || 5));
     $("setAgent").checked = settings.agent_enabled !== false;
     $("setAdhd").checked = Boolean((state.status && state.status.focus && state.status.focus.adhd_mode) || settings.adhd_mode);
+    const desktop = (state.status && state.status.desktop) || {};
+    $("setDesktop").checked = Boolean(desktop.armed);
+    $("setDesktop").disabled = desktop.display === false;
+    $("desktopNote").textContent = desktop.display === false
+      ? "This session has no desktop surface (headless), so keyboard and mouse control is unavailable."
+      : "Desktop control lets Jarvis type, press keys and click. Arm it only when you want hands-on automation; “desktop panic” disarms instantly.";
     $("setSpeak").checked = settings.speak !== false;
     $("setSound").checked = settings.sound !== false;
     $("setWake").checked = Boolean(settings.wake_word_enabled);
@@ -1303,6 +1317,12 @@
     };
     try {
       const payload = await api("/api/settings", { method: "POST", body: JSON.stringify(patch) });
+      try {
+        await api("/api/desktop", {
+          method: "POST",
+          body: JSON.stringify({ armed: $("setDesktop").checked }),
+        });
+      } catch { /* desktop endpoint is optional */ }
       applySettings(payload.settings || patch);
       $("settingsModal").hidden = true;
       (payload.warnings || []).forEach((warning) => toast("Configuration note", warning, "gold"));
@@ -1420,6 +1440,16 @@
 
     const input = $("input");
     setTimeout(() => input.focus({ preventScroll: true }), 400);
+
+    // PWA shortcuts / share links: /?cmd=status%20report
+    const params = new URLSearchParams(window.location.search);
+    const shortcut = params.get("cmd");
+    if (shortcut) {
+      setTimeout(() => send(shortcut, "app"), 700);
+      params.delete("cmd");
+      const clean = window.location.pathname + (params.toString() ? `?${params}` : "");
+      window.history.replaceState({}, "", clean);
+    }
   }
 
   /* ----------------------------------------------------------------- events */
@@ -1463,6 +1493,32 @@
         await api("/api/settings", { method: "POST", body: JSON.stringify({ speak: next }) });
       } catch { /* local toggle is enough */ }
     });
+
+    const installBtn = $("installBtn");
+    if (installBtn) {
+      installBtn.addEventListener("click", async () => {
+        if (!state.installPrompt) return;
+        state.installPrompt.prompt();
+        try {
+          const choice = await state.installPrompt.userChoice;
+          logLine(`install ${choice.outcome}`, "sys");
+        } catch { /* ignore */ }
+        state.installPrompt = null;
+        installBtn.hidden = true;
+      });
+    }
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      state.installPrompt = event;
+      if (installBtn && !window.matchMedia("(display-mode: standalone)").matches) installBtn.hidden = false;
+    });
+    window.addEventListener("appinstalled", () => {
+      if (installBtn) installBtn.hidden = true;
+      toast("Jarvis installed", "Open it from your home screen — fullscreen, no browser chrome.", "info");
+    });
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
 
     $("bootEnter").addEventListener("click", enterSystem);
     $("settingsBtn").addEventListener("click", openSettings);
