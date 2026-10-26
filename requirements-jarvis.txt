@@ -1,0 +1,19 @@
+# J.A.R.V.I.S. runs on the Python standard library alone.
+# These are OPTIONAL upgrades — install only what you need.
+
+# Better CPU / battery / disk telemetry on Windows and macOS
+psutil
+
+# Terminal voice output (the HUD uses the browser's speech synthesis instead)
+pyttsx3
+
+# Terminal voice input
+SpeechRecognition
+pyaudio
+
+# Extra file/vision utilities used opportunistically if present
+Pillow
+pyperclip
+
+# Packaging the launcher into a single executable (video Day 43)
+# pyinstaller

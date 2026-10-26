@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#04070d" />
+<meta name="description" content="J.A.R.V.I.S. — Just A Rather Very Intelligent System. A local-first voice assistant with telemetry, memory and a secure tool layer." />
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/app.css" />
+<title>J.A.R.V.I.S. · MARK VII</title>
+</head>
+<body data-state="idle">
+
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- ───────────────────────────────── boot ───────────────────────────────── -->
+<section id="boot" class="boot" aria-label="Boot sequence">
+  <div class="boot-core">
+    <div class="boot-reactor" aria-hidden="true">
+      <span></span><span></span><span></span>
+      <b></b>
+    </div>
+    <p class="boot-kicker">STARK INDUSTRIES · LOCAL DIVISION</p>
+    <h1 class="boot-title">J.A.R.V.I.S.</h1>
+    <p class="boot-sub">Just A Rather Very Intelligent System · MARK VII</p>
+
+    <ol id="bootLog" class="boot-log" aria-live="polite"></ol>
+
+    <div class="boot-progress" role="progressbar" aria-label="Boot progress"><i id="bootBar"></i></div>
+
+    <button id="bootEnter" class="boot-enter" type="button" disabled>
+      <span>INITIALISE CORE</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+    </button>
+    <p class="boot-foot">Local-first · approval-gated actions · zero cloud required</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────────── shell ──────────────────────────────── -->
+<div id="app" class="app" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span></div>
+      <div class="brand-text">
+        <h1>J.A.R.V.I.S.</h1>
+        <p><span id="ownerTag">SIR</span> · <span id="cityTag">PATNA</span></p>
+      </div>
+    </div>
+
+    <div class="topbar-pills">
+      <span class="pill" id="netPill"><i></i>LINK</span>
+      <span class="pill" id="brainPill"><i></i><span id="brainValue">OFFLINE</span></span>
+      <span class="pill" id="approvalPill" hidden><i></i>APPROVAL</span>
+    </div>
+
+    <div class="topbar-right">
+      <div class="clock">
+        <time id="clock">--:--:--</time>
+        <span id="date">—</span>
+      </div>
+      <button id="settingsBtn" class="icon-btn" type="button" aria-label="Open settings" title="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.54 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.54h.08A1.7 1.7 0 0 0 10.1 3V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.46 9v.08A1.7 1.7 0 0 0 21 10.1h.09a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.03Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="deck">
+    <!-- ───────────────────────────── left rail ───────────────────────────── -->
+    <section class="rail rail-left" aria-label="Reactor and telemetry">
+      <article class="panel reactor-panel">
+        <header class="panel-head">
+          <h2>ARC REACTOR</h2>
+          <span class="state-label" id="stateLabel">STANDBY</span>
+        </header>
+        <div class="reactor-stage">
+          <canvas id="reactor" width="420" height="420" aria-hidden="true"></canvas>
+          <div class="reactor-center">
+            <b id="reactorState">STANDBY</b>
+            <small id="reactorSub">awaiting input</small>
+          </div>
+          <svg class="reactor-brackets" viewBox="0 0 420 420" aria-hidden="true">
+            <path d="M40 96V56a16 16 0 0 1 16-16h40" />
+            <path d="M380 96V56a16 16 0 0 0-16-16h-40" />
+            <path d="M40 324v40a16 16 0 0 0 16 16h40" />
+            <path d="M380 324v40a16 16 0 0 1-16 16h-40" />
+          </svg>
+        </div>
+        <div class="wave" id="wave" aria-hidden="true"></div>
+        <p class="panel-hint" id="voiceHint">Voice channel · standby</p>
+      </article>
+
+      <article class="panel telemetry-panel">
+        <header class="panel-head">
+          <h2>TELEMETRY</h2>
+          <span class="mini" id="uptimeLabel">—</span>
+        </header>
+        <div class="gauges">
+          <div class="gauge" data-gauge="cpu">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="gauge-track" cx="60" cy="60" r="46" />
+              <circle class="gauge-value" id="gCpu" cx="60" cy="60" r="46" />
+            </svg>
+            <div class="gauge-label"><b>CPU</b><span id="cpuValue">0%</span></div>
+          </div>
+          <div class="gauge" data-gauge="mem">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="gauge-track" cx="60" cy="60" r="46" />
+              <circle class="gauge-value" id="gMem" cx="60" cy="60" r="46" />
+            </svg>
+            <div class="gauge-label"><b>MEM</b><span id="memValue">0%</span></div>
+          </div>
+          <div class="gauge" data-gauge="disk">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="gauge-track" cx="60" cy="60" r="46" />
+              <circle class="gauge-value" id="gDisk" cx="60" cy="60" r="46" />
+            </svg>
+            <div class="gauge-label"><b>DSK</b><span id="diskValue">0%</span></div>
+          </div>
+        </div>
+        <dl class="facts">
+          <div><dt>HOST</dt><dd id="hostName">—</dd></div>
+          <div><dt>IP</dt><dd id="ipAddr">—</dd></div>
+          <div><dt>LATENCY</dt><dd id="latency">—</dd></div>
+          <div><dt>POWER</dt><dd id="powerState">—</dd></div>
+          <div><dt>MODULES</dt><dd id="toolCount">—</dd></div>
+          <div><dt>CONSOLE</dt><dd id="sessionLabel">—</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <!-- ──────────────────────────── centre console ───────────────────────── -->
+    <section class="console" aria-label="Conversation">
+      <article class="panel chat-panel">
+        <header class="panel-head">
+          <h2>CONVERSATION</h2>
+          <div class="panel-tools">
+            <span class="mini" id="providerTag">offline core</span>
+            <button id="speakBtn" class="mini-btn" type="button" title="Mute or unmute speech" aria-pressed="true">VOICE</button>
+            <button id="clearBtn" class="mini-btn" type="button" title="Clear the conversation log">CLEAR</button>
+          </div>
+        </header>
+
+        <div id="messages" class="messages" aria-live="polite" aria-relevant="additions"></div>
+
+        <div id="typing" class="typing" hidden>
+          <span></span><span></span><span></span><em>processing</em>
+        </div>
+
+        <form id="composer" class="composer" autocomplete="off">
+          <button id="micBtn" class="mic" type="button" aria-label="Toggle voice input" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg>
+          </button>
+          <label class="sr-only" for="input">Command</label>
+          <textarea id="input" rows="1" placeholder="Type a command — or say “Jarvis, brief me”…" spellcheck="false"></textarea>
+          <button id="visionBtn" class="icon-btn small" type="button" aria-label="Analyse an image" title="Jarvis has eyes — analyse an image">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <input id="visionInput" type="file" accept="image/*" hidden />
+          <button id="sendBtn" class="send" type="submit">
+            <span>SEND</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-7 8 7 8-16-8Z"/></svg>
+          </button>
+        </form>
+        <p class="composer-hint">
+          <kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · <kbd>Ctrl</kbd>+<kbd>K</kbd> focus ·
+          <span id="hintWake">wake word off</span>
+        </p>
+      </article>
+
+      <div class="quick-strip">
+        <span class="quick-label">QUICK</span>
+        <div id="chips" class="chips"></div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────── right rail ──────────────────────────── -->
+    <section class="rail rail-right" aria-label="Mission control">
+      <article class="panel agenda-panel">
+        <header class="panel-head">
+          <h2>MISSION CONTROL</h2>
+          <span class="mini" id="agendaCount">0</span>
+        </header>
+        <ul id="agenda" class="agenda">
+          <li class="empty">No active reminders or timers.</li>
+        </ul>
+      </article>
+
+      <article class="panel log-panel">
+        <header class="panel-head">
+          <h2>EVENT LOG</h2>
+          <span class="mini live" id="eventTag">LIVE</span>
+        </header>
+        <ul id="miniLog" class="mini-log">
+          <li class="empty">System quiet.</li>
+        </ul>
+      </article>
+
+      <article class="panel modules-panel">
+        <header class="panel-head">
+          <h2>MODULE BAY</h2>
+          <span class="mini" id="moduleCount">—</span>
+        </header>
+        <div id="toolCats" class="tool-cats"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span class="status-item"><i class="dot"></i><b id="footerState">READY</b></span>
+    <span class="status-item">SRC <b id="footerSource">TEXT</b></span>
+    <span class="status-item">BRAIN <b id="footerBrain">OFFLINE</b></span>
+    <span class="status-item">TOOLS <b id="footerTools">—</b></span>
+    <span class="status-item">UPTIME <b id="footerUptime">00:00:00</b></span>
+    <span class="status-spacer"></span>
+    <span class="status-item dim">J.A.R.V.I.S. <b id="footerVersion">v1.0.0</b> · MARK VII</span>
+  </footer>
+</div>
+
+<div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+
+<!-- ─────────────────────────── approval modal ───────────────────────────── -->
+<div id="approvalModal" class="modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card danger" role="dialog" aria-modal="true" aria-labelledby="approvalTitle">
+    <header class="modal-head">
+      <h2 id="approvalTitle"><span class="tri">⚠</span> AUTHORIZATION REQUIRED</h2>
+      <span class="modal-timer" id="approvalTimer">180s</span>
+    </header>
+    <p class="modal-lead" id="approvalSummary">—</p>
+    <dl class="modal-kv">
+      <div><dt>ACTION</dt><dd id="approvalTool">—</dd></div>
+      <div><dt>TOKEN</dt><dd id="approvalToken">—</dd></div>
+      <div><dt>POLICY</dt><dd>Single use · logged to audit trail</dd></div>
+    </dl>
+    <p class="modal-note">High-impact actions always wait for you. Nothing executes without this authorization.</p>
+    <footer class="modal-actions">
+      <button id="denyBtn" class="btn ghost" type="button">Deny</button>
+      <button id="approveBtn" class="btn danger" type="button">Authorize</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ─────────────────────────── settings modal ───────────────────────────── -->
+<div id="settingsModal" class="modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <header class="modal-head">
+      <h2 id="settingsTitle">CONFIGURATION</h2>
+      <button class="icon-btn small" type="button" data-close aria-label="Close settings">✕</button>
+    </header>
+
+    <div class="settings-grid">
+      <label class="field">
+        <span>Address me as</span>
+        <input id="setOwner" maxlength="40" placeholder="Sir" />
+      </label>
+      <label class="field">
+        <span>Home city</span>
+        <input id="setCity" maxlength="60" placeholder="Patna" />
+      </label>
+      <label class="field">
+        <span>Recognition language</span>
+        <select id="setLanguage">
+          <option value="en-IN">English · India</option>
+          <option value="en-GB">English · UK</option>
+          <option value="en-US">English · US</option>
+          <option value="hi-IN">हिन्दी · India</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Wake word</span>
+        <input id="setWakeWord" maxlength="24" placeholder="jarvis" />
+      </label>
+      <label class="field wide">
+        <span>Music folder</span>
+        <input id="setMusicDir" maxlength="300" placeholder="~/Music" />
+      </label>
+      <label class="field wide">
+        <span>Speech rate · <output id="rateOut">0.98</output></span>
+        <input id="setRate" type="range" min="0.6" max="1.4" step="0.02" />
+      </label>
+    </div>
+
+    <div class="switch-grid">
+      <label class="switch"><input id="setSpeak" type="checkbox" /><span>Spoken replies</span></label>
+      <label class="switch"><input id="setSound" type="checkbox" /><span>Interface sounds</span></label>
+      <label class="switch"><input id="setWake" type="checkbox" /><span>Wake word listening</span></label>
+      <label class="switch"><input id="setLlm" type="checkbox" /><span>Cloud reasoning (Gemini/Qwen)</span></label>
+    </div>
+
+    <p class="modal-note" id="brainNote">Set <code>JARVIS_GEMINI_KEY</code> in <code>config/jarvis.env</code> to enable cloud reasoning and vision.</p>
+
+    <footer class="modal-actions">
+      <button class="btn ghost" type="button" data-close>Cancel</button>
+      <button id="saveSettings" class="btn primary" type="button">Save configuration</button>
+    </footer>
+  </div>
+</div>
+
+<noscript>
+  <p style="padding:2rem;color:#e8fbff;font-family:monospace">
+    J.A.R.V.I.S. needs JavaScript for the HUD. The API still works: POST /api/command.
+  </p>
+</noscript>
+
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

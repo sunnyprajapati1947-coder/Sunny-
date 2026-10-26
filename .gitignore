@@ -3,3 +3,10 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# J.A.R.V.I.S. local runtime data, logs and machine-specific config
+data/jarvis/
+logs/
+config/jarvis.env
+__pycache__/
+*.pyc
