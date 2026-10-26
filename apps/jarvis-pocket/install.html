@@ -65,7 +65,7 @@
     </a>
     <div class="meta">
       <span id="version">latest release</span>
-      <span>·</span><span id="size">~10 MB</span>
+      <span>·</span><span id="size">16.2 MB</span>
       <span>·</span><span>Android 8+</span>
     </div>
     <p class="note" style="margin-top:14px">If an older JARVIS is installed (0.1.0 / 0.3.0 / 0.3.2), uninstall it <b>once</b> and then install this build — 
@@ -80,6 +80,7 @@
       <li><b>Open the app</b><p>The Setup wizard opens on first launch: notifications, updates, permissions — a few taps.</p></li>
       <li><b>Install the brain once</b><p>Settings → Local brain → <b>Download</b> (~490 MB, Wi-Fi). After that, chat works in airplane mode. No key, no account.</p></li>
       <li><b>Allow what you want</b><p>Microphone, calendar and notifications are requested by the feature that needs them. Anything Android cannot verify is shown as <i>unverified</i>, never as success.</p></li>
+      <li><b>Check the dashboard</b><p><b>Settings → Dashboard</b> shows live RAM/storage/battery, the memory budget, permissions, your indexed documents and every action JARVIS ran.</p></li>
     </ol>
   </div>
 
@@ -96,6 +97,9 @@
       <li>Task queue + retry</li>
       <li>Prompt → video</li>
       <li>Gallery auto-save</li>
+      <li>Code studio (sandboxed)</li>
+      <li>Memory guard (10 GB)</li>
+      <li>Dashboard + diagnostics</li>
       <li>In-app update</li>
       <li>No API keys</li>
     </ul>
@@ -136,7 +140,7 @@
     var fallback = 'https://github.com/sunnyprajapati1947-coder/Sunny-/releases';
 
     function bytes(size) {
-      if (!size) return '~10 MB';
+      if (!size) return '16.2 MB';
       return (size / (1024 * 1024)).toFixed(2) + ' MB';
     }
 
