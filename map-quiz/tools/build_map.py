@@ -355,6 +355,45 @@ def place_labels(shapes) -> None:
         placed.append([x - width / 2, y - height / 2, x + width / 2, y + height / 2])
 
 
+
+# ---------------------------------------------------------------- neighbours
+
+NEIGHBOUR_TOLERANCE = 2.5  # svg units, roughly 15 km at this scale
+
+
+def compute_neighbours(shapes) -> None:
+    """Two states are neighbours when their outlines come within ~15 km.
+
+    Border vertices are shared or nearly duplicated, so a spatial hash over all
+    vertices is enough and keeps this linear instead of 630 polygon tests.
+    """
+    cell = NEIGHBOUR_TOLERANCE
+    grid = {}
+    for shape in shapes:
+        for ring in shape["rings"]:
+            for x, y in ring:
+                grid.setdefault((int(x // cell), int(y // cell)), []).append((x, y, shape["id"]))
+
+    neighbours = {shape["id"]: set() for shape in shapes}
+    tol_sq = NEIGHBOUR_TOLERANCE * NEIGHBOUR_TOLERANCE
+    for (cx, cy), points in grid.items():
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                other = grid.get((cx + dx, cy + dy))
+                if not other:
+                    continue
+                for x1, y1, id1 in points:
+                    for x2, y2, id2 in other:
+                        if id1 == id2:
+                            continue
+                        if (x1 - x2) ** 2 + (y1 - y2) ** 2 <= tol_sq:
+                            neighbours[id1].add(id2)
+                            neighbours[id2].add(id1)
+
+    for shape in shapes:
+        shape["neighbours"] = sorted(neighbours[shape["id"]])
+
+
 def fmt(v: float) -> str:
     s = f"{v:.2f}".rstrip("0").rstrip(".")
     return s if s else "0"
@@ -430,6 +469,7 @@ def main() -> None:
         )
 
     place_labels(shapes)
+    compute_neighbours(shapes)
     for shape in shapes:
         shape.pop("rings", None)
 

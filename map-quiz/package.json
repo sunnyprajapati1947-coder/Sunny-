@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "India map quiz PWA \u2014 learn states, capitals and shapes by tapping the map.",
+  "description": "India map quiz PWA \u2014 states, shapes, capitals, neighbours; timed and survival modes, daily challenge, achievements.",
   "scripts": {
     "start": "python3 -m http.server 8080 --bind 0.0.0.0",
-    "test": "node tests/smoke.mjs",
+    "test": "node tests/smoke.mjs && node tests/bundle.mjs",
     "icons": "python3 tools/build_icons.py",
     "map": "python3 tools/build_map.py",
     "check": "node tests/static.mjs",
-    "verify": "node tests/static.mjs && node tests/smoke.mjs"
+    "verify": "node tests/static.mjs && node tests/smoke.mjs && python3 tools/bundle.py && node tests/static.mjs && node tests/bundle.mjs",
+    "bundle": "python3 tools/bundle.py"
   },
   "devDependencies": {
     "jsdom": "^24.1.3"

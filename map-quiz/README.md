@@ -1,38 +1,50 @@
 # Bharat Map Quiz 🗺️
 
-Ek India map quiz app — Play Store wale "India Map Quiz" jaisa, lekin browser me chalta hai aur
-phone ki home screen par app ki tarah install ho jata hai (PWA).
+An India map quiz you can install like an app. Tap the map, learn the shapes, then prove it in
+timed rounds, survival mode and a fresh daily challenge. Everything is in English, works offline,
+and stores progress on the device — no accounts, no ads, no tracking.
 
-Tap the map, learn the shapes, remember the capitals. Fully offline after the first load, no account,
-no ads and no tracking — progress lives in `localStorage` on the device.
+**Download:** [`download/bharat-map-quiz.html`](download/bharat-map-quiz.html) (one file, double-click
+to play) · [`download/bharat-map-quiz.zip`](download/bharat-map-quiz.zip) (installable web app)
 
 ---
 
-## Kya kar sakte hain (features)
+## Game modes
 
-| Mode | What it does |
+| Mode | What happens |
 | --- | --- |
-| **Yaad karo (Learn)** | Full India map with state names. Tap any state → sheet with capital, quick fact, 🔊 "Suno" (speech) and a shortcut to quiz that state. Also a searchable list of all 36 states/UTs. |
-| **Rajya dhoondo (Find)** | A state name is given, you tap it on the map. 10 questions per round. |
-| **Pehchano (Identify)** | A shape is highlighted on the map; pick its name from 4 options. |
-| **Rajdhani (Capitals)** | Pick the correct capital of the highlighted state. |
-| **Speed run** | Every state in the selected region, against a clock. Your best time is saved. |
-| **Weak-state practice** | The round result screen and the home card push the states you keep missing. |
+| **Daily Challenge** | 10 mixed questions, seeded by the date so everyone gets the same set. One attempt per day, with a day streak counter. |
+| **Find the state** | A state name is given — tap the right shape on the map. 10 questions. |
+| **Identify the shape** | One state is highlighted; pick its name from 4 options. |
+| **Capitals** | Matches states with their capitals, in both directions (state → capital and capital → state). |
+| **Neighbours** | "Which state shares a border with X?" — built from real border data. |
+| **Timed blitz** | 12 questions, 10 seconds each, with a draining timer bar. |
+| **Survival** | Endless questions, 3 lives, 12 seconds per question. Score as high as you can. |
+| **Speed run** | Every state in the selected region, against the clock. Best time saved. |
+| **Weak spots** | Automatically drills the states you keep missing. |
 
-Other things:
+## Everything else
 
-- **3 languages** — Hinglish (default), हिंदी, English. Tap the language chip in the header.
-- **Memory model per state** — mastery 0–100%, streaks and XP. Mastered (≥80%) states turn green on every map.
-- **Tiny state handling** — Goa, Delhi, Chandigarh, Puducherry, Lakshadweep, Daman-Diu and the Andaman
-  islands get marker dots with a 60 px tap target, so they are actually tappable on a phone.
-- **Region filter** — All India, North, West, Central, East, North-East, South & Islands.
-- **Offline + installable** — service worker caches the whole app; add it to the home screen and it runs
-  with no network.
-- **Sound + haptics** — short WebAudio tones (mutable) and vibration where supported. Speech uses the
-  device's own `speechSynthesis`, so no audio files are shipped.
-- **Keyboard support** — `1–4` to pick an option, `Enter` for next (handy on a laptop).
+- **Learn map** — tap any state for its capital and a fact, switch map labels between
+  **States / Capitals / Off**, pinch-zoom or use the +/− buttons, and search the full list of 36
+  states and UTs.
+- **Progress that remembers what you know** — per-state mastery (0–100%), streaks, XP, levels with
+  titles, best sprint time, daily streak. Mastered states turn green on every map.
+- **Achievements** — 18 badges, from "First steps" to "Full map" and "Survivor", unlocked with a toast
+  and listed on the Progress tab.
+- **Round review** — every result screen lists each question with ✓/✗ plus the correct answer, and a
+  share button (Web Share, falling back to clipboard).
+- **Optional Hindi names** — the UI stays English; Settings can switch state and capital names to
+  हिंदी if you want bilingual practice.
+- **Sound + haptics + speech** — short WebAudio tones (mutable), vibration where supported, and a 🔊
+  button that reads the question and facts aloud with the device voice.
+- **Installable and offline** — manifest + service worker; "Add to Home screen" gives a full-screen
+  app that works with no network.
+- **Keyboard friendly** — `1`–`4` to answer, `Enter` for next, `Esc` to leave a round.
+- **Tiny states handled** — Goa, Delhi, Chandigarh, Puducherry, Lakshadweep, Daman-Diu and the southern
+  islands get marker dots with a much larger tap target.
 
-## Chalane ka tarika (run it)
+## Run it
 
 ```bash
 cd map-quiz
@@ -40,94 +52,93 @@ python3 -m http.server 8080 --bind 0.0.0.0   # or: npm start
 # open http://localhost:8080
 ```
 
-A static server is required — opening `index.html` from the file system will not work because the app
-uses ES modules and a service worker.
+A static server is required for the full PWA (ES modules + service worker). For the single-file
+build you can just open `download/bharat-map-quiz.html` directly.
 
 ### Tests
 
 ```bash
-npm install          # only for the test tooling (jsdom)
-npm run check        # static checks: element ids, asset paths, module graph, map/data parity
-npm test             # boots the real app in jsdom and plays every mode end to end
-npm run verify       # both
+npm install              # test tooling only (jsdom)
+npm run check            # static checks
+npm test                 # plays every mode headlessly + verifies the download build
+npm run verify           # static + play-through + rebuild downloads + re-check
 ```
 
-### What the tests actually check
-
-- `npm run check` — every `$("id")` in `app.js` exists in the markup, every asset referenced by
-  `index.html`/`sw.js` exists on disk, all module imports resolve, and the 36 map shapes match the
-  36 content entries one-to-one (so no state can silently lose its name or fact).
-- `npm test` — boots the real app in jsdom and plays it: opens learn, taps Goa, checks the sheet, plays a
-  full 10-question locate round with wrong answers, an identify round with correct answers (verifies
-  auto-advance), a capitals round, sprint mode (timer, hint, skip), switches all three languages and
-  then asserts what landed in `localStorage`.
+`npm test` boots the real app in jsdom and plays it end to end: learn sheet, label cycling, search,
+a full wrong-answer locate round, a correct identify round with auto-advance, capitals, neighbours
+(checks that exactly one offered option really borders the target), timed blitz (timer drains),
+survival (lives drain, run ends), the daily challenge (mixed types, stored once per day, blocked on a
+second attempt), achievements, settings toggles and what ends up in `localStorage`. `tests/bundle.mjs`
+then does the same for the single-file download: no imports left, no runtime errors, a round plays.
 
 ## Project structure
 
 ```
 map-quiz/
-├─ index.html                # app shell: home / learn / quiz / result screens + sheets
-├─ manifest.webmanifest      # PWA manifest (installable, standalone, portrait)
+├─ index.html                # app shell: home / learn / quiz / result / progress + sheets
+├─ manifest.webmanifest      # PWA manifest (standalone, portrait)
 ├─ sw.js                     # offline cache (bump CACHE when shipping)
+├─ download/                 # GENERATED: single-file build + installable zip
 ├─ src/
-│  ├─ app.js                 # screen router, quiz loop, progress wiring
+│  ├─ app.js                 # screens, quiz loop, achievements, settings, share
 │  ├─ data.js                # 36 states/UTs: names (en/hi), capitals, facts, regions
-│  ├─ i18n.js                # Hinglish / Hindi / English strings + sentence builders
-│  ├─ map.js                 # SVG renderer, marker dots, zoom/pan
+│  ├─ geo.js                 # access to generated geometry, neighbour lookups
+│  ├─ i18n.js                # English UI copy + sentence builders
+│  ├─ quiz.js                # question/round generation, seeded daily, scoring helpers
+│  ├─ store.js               # localStorage profile, mastery, levels, daily, achievements
+│  ├─ achievements.js        # 18 badge definitions + pure evaluation
+│  ├─ map.js                 # SVG renderer, markers, zoom/pan
 │  ├─ map-data.js            # GENERATED compact geometry (do not edit)
-│  ├─ quiz.js                # question generation + scoring rules (pure functions)
-│  ├─ store.js               # localStorage profile, mastery, streaks, weak-state ranking
-│  ├─ styles.css             # dark theme, mobile-first layout, map states
+│  ├─ styles.css             # dark theme, mobile-first layout
 │  └─ audio.js               # WebAudio tones + speech synthesis
 ├─ tools/
-│  ├─ build_map.py           # GeoJSON → src/map-data.js (simplify, project, label points)
+│  ├─ build_map.py           # GeoJSON → map-data.js (simplify, project, labels, neighbours)
 │  ├─ build_icons.py         # tricolour India silhouette → PNG icons
-│  └─ preview_png.py         # quick raster preview of the map without a browser
+│  ├─ bundle.py              # download/ single-file build + zip
+│  └─ preview_png.py         # raster preview of the map for quick checks
 ├─ assets/icons/             # 192/512/maskable/favicon PNGs
-└─ tests/                    # static checks + jsdom smoke test
+└─ tests/                    # static checks, jsdom play-through, bundle verification
 ```
 
 ## Map data pipeline
 
-`src/map-data.js` is generated — regenerate it instead of editing it:
+`src/map-data.js` is generated — regenerate instead of editing:
 
 ```bash
-python3 tools/build_map.py   # needs tools/india_states_raw.geojson
-python3 tools/build_icons.py # needs Pillow
+python3 tools/build_map.py    # needs tools/india_states_raw.geojson
+python3 tools/build_icons.py  # needs Pillow
+python3 tools/bundle.py       # after any source change, refresh download/
 ```
 
 - Source: [`datta07/INDIAN-SHAPEFILES`](https://github.com/datta07/INDIAN-SHAPEFILES)
-  (`INDIA/INDIA_STATES.geojson`), **MIT licensed**, derived from Indian government (Census/LGD) boundaries.
-- Shapes are projected to Web Mercator, scaled to a 1000-unit-wide viewBox, simplified with
-  Douglas–Peucker (0.45 px tolerance) and merged where needed (Dadra & Nagar Haveli + Daman & Diu are
-  drawn as one UT, as they have been a single UT since 2020).
-- Label anchors use a "pole of inaccessibility" search, then a collision pass: biggest shapes claim their
-  spot first, and a label may only move if it still lands inside its own state and clear of every label
-  already placed. Tiny shapes (Delhi, Goa, Chandigarh, Puducherry, Lakshadweep, Daman-Diu, the southern
-  islands) get no text at all — they get marker dots and a bigger tap target instead.
-- Each shape stores the font size its label was measured at, so the renderer and the layout always agree.
-- Result: 36 shapes, ~180 KB, no runtime GeoJSON parser and no network calls.
+  (`INDIA/INDIA_STATES.geojson`), **MIT licensed**, derived from Indian government (Census/LGD)
+  boundaries. Shapes are projected to Web Mercator, scaled to a 1000-unit viewBox and simplified
+  (Douglas–Peucker, 0.45 px). Dadra & Nagar Haveli and Daman & Diu are drawn as one UT, as they have
+  been a single UT since 2020.
+- **Label layout** is computed at build time: biggest states claim a spot first, labels may only move
+  if they stay inside their own shape and clear of labels already placed. Shapes too small for text get
+  marker dots instead. Each shape stores the font size its label was measured at.
+- **Neighbours** are derived from the geometry: two states count as neighbours when their outlines come
+  within ~15 km, which reproduces the real border graph (checked by hand, e.g. Sikkim → West Bengal,
+  Puducherry → Tamil Nadu / Kerala / Andhra Pradesh).
 
-Boundaries are indicative and intended for learning, not for any legal or administrative use.
+Boundaries are indicative and intended for learning, not for legal or administrative use.
 
-## Play Store par kaise le jaayein
+## Publishing to the Play Store
 
-Three low-effort routes, because the app is already a normal installable web app:
+The app is already a complete installable web app, so there are three low-effort routes:
 
-1. **Trusted Web Activity (TWA)** — host the folder on HTTPS (Vercel/Netlify/GitHub Pages are fine) and run
+1. **Trusted Web Activity (TWA)** — host the folder over HTTPS (Vercel, Netlify, GitHub Pages) and run
    [`bubblewrap init --manifest https://your-url/manifest.webmanifest`](https://github.com/GoogleChromeLabs/bubblewrap).
-   You get an `.aab` that opens full screen with no browser UI.
 2. **Capacitor** — `npm i @capacitor/core @capacitor/cli && npx cap add android`, copy this folder into
-   `www/`, then build in Android Studio. Best if you later want native features (push, in-app purchases).
-3. **Cordova/WebView wrapper** — same idea, older tooling.
+   `www/`, then build in Android Studio.
+3. **Cordova/WebView wrapper** — older tooling, same idea.
 
-Before publishing: replace `assets/icons/*` if you want custom branding, and keep the privacy policy
-simple — this app collects nothing and sends nothing.
+Nothing leaves the device, so the privacy policy can be one line.
 
-## Roadmap (nice next steps)
+## Roadmap
 
-- Spaced-repetition scheduling (currently a simple weighted pick)
-- Neighbour-states mode ("which state touches this one?")
-- Rivers, mountain ranges and union-territory capitals as extra layers
-- Hindi audio recorded by a human instead of device TTS
-- Cloud sync (optional Supabase table) if multi-device progress is wanted
+- Spaced-repetition scheduling instead of the current weighted pick
+- Rivers and mountain ranges as extra map layers
+- Capital-city pin positions for a "find the city" mode
+- Optional cloud sync (Supabase) for multi-device progress

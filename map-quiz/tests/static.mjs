@@ -49,6 +49,21 @@ for (const match of sw.matchAll(/"\.\/([^"]*)"/g)) {
 }
 ok("every precached asset exists");
 
+console.log("bundle safety");
+let aliases = 0;
+for (const file of ["src/app.js", "src/quiz.js", "src/map.js", "src/achievements.js", "src/geo.js"]) {
+  const code = read(file);
+  for (const match of code.matchAll(/import\s*\{([^}]*)\}/g)) {
+    for (const part of match[1].split(",")) {
+      if (/\s+as\s+/.test(part)) {
+        aliases += 1;
+        fail(`${file} uses an aliased import ("${part.trim()}") — the single-file bundle cannot resolve it`);
+      }
+    }
+  }
+}
+if (!aliases) ok("no aliased imports (flattened bundle stays valid)");
+
 console.log("module graph");
 for (const file of ["src/app.js", "src/data.js", "src/i18n.js", "src/map.js", "src/quiz.js", "src/store.js", "src/audio.js"]) {
   const code = read(file);

@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="hi">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"
     />
-    <title>Bharat Map Quiz — Naksha dekh ke yaad karo</title>
+    <title>Bharat Map Quiz — Learn India on the map</title>
     <meta
       name="description"
-      content="Bharat ka naksha quiz: rajya, rajdhani aur shape yaad karo. Offline chalta hai, install karke app ki tarah khelo."
+      content="India map quiz: find states, identify shapes, match capitals and neighbours. Timed blitz, survival mode, daily challenge, achievements. Works offline and installs like an app."
     />
     <meta name="theme-color" content="#0b1220" />
     <meta name="color-scheme" content="dark" />
@@ -27,9 +27,7 @@
     <div class="app-shell">
       <header class="topbar">
         <button class="icon-btn back-btn" id="backBtn" aria-label="Back" hidden>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" />
-          </svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
         </button>
         <div class="brand">
           <span class="brand-mark" aria-hidden="true">
@@ -40,15 +38,17 @@
           </span>
           <div class="brand-text">
             <h1 id="brandTitle">Bharat Map Quiz</h1>
-            <p id="brandSub">Naksha dekh ke yaad karo</p>
+            <p id="brandSub">Learn India on the map</p>
           </div>
         </div>
         <div class="top-actions">
-          <button class="chip-btn" id="langBtn" aria-label="Language">हिं</button>
-          <button class="icon-btn" id="soundBtn" aria-label="Sound">
-            <svg viewBox="0 0 24 24" aria-hidden="true" class="ico-sound-on">
-              <path d="M4 9v6h4l5 4V5L8 9H4Z" />
-              <path d="M17 8.5a5 5 0 0 1 0 7M19.5 6a8.5 8.5 0 0 1 0 12" />
+          <button class="chip-btn" id="levelBtn" aria-label="Level">Lv 1</button>
+          <button class="icon-btn" id="settingsBtn" aria-label="Settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3.2" />
+              <path
+                d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"
+              />
             </svg>
           </button>
         </div>
@@ -60,8 +60,8 @@
           <div class="scroll-area">
             <div class="hero">
               <div class="hero-copy">
-                <p class="eyebrow" id="homeGreeting">Namaste!</p>
-                <h2 id="homeHeadline">India ka naksha yaad karo</h2>
+                <p class="eyebrow" id="homeGreeting">Hello!</p>
+                <h2 id="homeHeadline">Learn the map of India</h2>
               </div>
               <div class="ring-wrap" aria-hidden="true">
                 <svg viewBox="0 0 100 100" class="ring">
@@ -75,18 +75,41 @@
               </div>
             </div>
 
+            <div class="level-card" id="levelCard">
+              <div class="level-top">
+                <span class="level-badge" id="levelBadge">Lv 1</span>
+                <strong id="levelTitle">New Explorer</strong>
+                <span class="level-xp" id="levelXp">0 XP</span>
+              </div>
+              <div class="level-bar"><span id="levelBar"></span></div>
+              <p class="level-next" id="levelNext"></p>
+            </div>
+
+            <button class="daily-card" id="dailyCard">
+              <div class="daily-copy">
+                <span class="daily-kicker" id="dailyKicker">📅 Daily Challenge</span>
+                <strong id="dailyTitle">10 mixed questions</strong>
+                <span class="daily-sub" id="dailySub">Same for everyone today</span>
+              </div>
+              <span class="daily-cta" id="dailyCta">Play</span>
+            </button>
+
             <button class="hero-map" id="heroMapBtn" aria-label="Open the map">
               <div class="hero-map-canvas" id="heroMap"></div>
-              <span class="hero-map-cta" id="heroMapCta">Naksha kholo →</span>
+              <span class="hero-map-cta" id="heroMapCta">Open the map →</span>
             </button>
 
             <div class="section-head">
-              <h3 id="poolTitle">Kshetra</h3>
+              <h3 id="poolTitle">Region</h3>
               <span class="muted" id="poolCount"></span>
             </div>
             <div class="chips" id="regionChips" role="tablist"></div>
 
+            <div class="section-head"><h3 id="playTitle">Play</h3></div>
             <div class="mode-grid" id="modeGrid"></div>
+
+            <div class="section-head"><h3 id="challengeTitle">Challenge yourself</h3></div>
+            <div class="mode-grid" id="extraGrid"></div>
 
             <div class="stats-row" id="statsRow"></div>
 
@@ -94,15 +117,15 @@
 
             <div class="install-card" id="installCard" hidden>
               <div class="install-copy">
-                <strong id="installTitle">App ki tarah install karo</strong>
+                <strong id="installTitle">Install on this device</strong>
                 <p id="installHint"></p>
               </div>
               <button class="btn btn-ghost" id="installBtn">Install</button>
             </div>
 
             <p class="footer-note">
-              <span id="footerBuilt">Map data: Census shapefile · 36 states &amp; UTs</span>
-              <button class="btn btn-quiet reset-btn" id="resetBtn">Progress mitao</button>
+              <span id="footerBuilt">28 states + 8 UTs</span>
+              <button class="btn btn-quiet reset-btn" id="downloadBtn">⬇ Download the app</button>
             </p>
           </div>
         </section>
@@ -110,12 +133,12 @@
         <!-- ================= LEARN ================= -->
         <section class="screen" id="screen-learn" data-screen="learn" hidden>
           <div class="learn-bar">
-            <div class="learn-hint" id="learnHint">Naksha kholo, koi bhi rajya tap karo</div>
+            <div class="learn-hint" id="learnHint">Tap any state for its capital and a fact</div>
             <div class="map-tools">
               <button class="icon-btn small" id="listBtn" aria-label="All states">☰</button>
               <button class="icon-btn small" id="zoomOut" aria-label="Zoom out">−</button>
               <button class="icon-btn small" id="zoomIn" aria-label="Zoom in">+</button>
-              <button class="chip-btn" id="labelToggle" aria-pressed="true">Naam</button>
+              <button class="chip-btn" id="labelToggle" aria-pressed="true">States</button>
             </div>
           </div>
           <div class="map-wrap" id="learnMapWrap">
@@ -132,15 +155,15 @@
               <span class="progress-label" id="qCounter">1/10</span>
             </div>
             <div class="hud">
-              <span class="hud-pill" id="hudStreak">
-                <span class="flame">🔥</span><b>0</b>
-              </span>
+              <span class="hud-pill" id="hudStreak"><span class="flame">🔥</span><b>0</b></span>
+              <span class="hud-pill" id="hudLives" hidden>❤️❤️❤️</span>
               <span class="hud-pill" id="hudTimer" hidden>⏱ <b>0:00</b></span>
               <span class="hud-pill" id="hudScore">★ <b>0</b></span>
             </div>
           </div>
 
           <div class="prompt" id="prompt"></div>
+          <div class="q-timer" id="qTimer" hidden><span id="qTimerBar"></span></div>
 
           <div class="map-wrap quiz-map" id="quizMapWrap">
             <div class="map-inner" id="quizMap"></div>
@@ -151,14 +174,14 @@
           <div class="feedback" id="feedback" hidden>
             <div class="feedback-head">
               <span class="feedback-title" id="feedbackTitle"></span>
-              <button class="btn btn-primary" id="nextBtn">Aage</button>
+              <button class="btn btn-primary" id="nextBtn">Next</button>
             </div>
             <p class="feedback-fact" id="feedbackFact"></p>
           </div>
 
           <div class="quiz-actions" id="quizActions">
             <button class="btn btn-ghost" id="hintBtn">Hint</button>
-            <button class="btn btn-ghost" id="skipBtn">Chhodo</button>
+            <button class="btn btn-ghost" id="skipBtn">Skip</button>
           </div>
         </section>
 
@@ -168,19 +191,69 @@
             <div class="result-hero">
               <div class="confetti" id="confetti" aria-hidden="true"></div>
               <div class="result-stars" id="resultStars"></div>
-              <h2 id="resultTitle">Round poora!</h2>
-              <p class="muted" id="resultSub">Dekho kitna yaad raha</p>
+              <h2 id="resultTitle">Round complete!</h2>
+              <p class="muted" id="resultSub"></p>
             </div>
             <div class="result-stats" id="resultStats"></div>
-            <div class="missed" id="missedList"></div>
+            <div id="unlockedBox" hidden>
+              <h4 class="block-title" id="unlockedTitle">Achievements</h4>
+              <div class="chip-row" id="unlockedList"></div>
+            </div>
+            <div class="review" id="reviewBox"></div>
             <div class="result-actions">
-              <button class="btn btn-primary" id="againBtn">Dobara khelo</button>
-              <button class="btn btn-ghost" id="practiceBtn">Kamzor rajya practice karo</button>
+              <button class="btn btn-primary" id="againBtn">Play again</button>
+              <button class="btn btn-ghost" id="practiceBtn">Practise weak states</button>
+              <button class="btn btn-ghost" id="shareBtn">Share result</button>
               <button class="btn btn-quiet" id="homeBtn">Home</button>
             </div>
           </div>
         </section>
+
+        <!-- ================= STATS ================= -->
+        <section class="screen" id="screen-stats" data-screen="stats" hidden>
+          <div class="scroll-area">
+            <div class="level-card" id="statsLevel">
+              <div class="level-top">
+                <span class="level-badge" id="statsLevelBadge">Lv 1</span>
+                <strong id="statsLevelTitle">New Explorer</strong>
+                <span class="level-xp" id="statsLevelXp">0 XP</span>
+              </div>
+              <div class="level-bar"><span id="statsLevelBar"></span></div>
+              <p class="level-next" id="statsLevelNext"></p>
+            </div>
+
+            <div class="result-stats stats-grid" id="statsGrid"></div>
+
+            <div class="section-head">
+              <h3 id="achievementsTitle">Achievements</h3>
+              <span class="muted" id="achievementsCount"></span>
+            </div>
+            <div class="badge-grid" id="badgeGrid"></div>
+
+            <div class="section-head">
+              <h3 id="regionTitle">Mastery by region</h3>
+            </div>
+            <div class="bar-list" id="regionBars"></div>
+
+            <div class="section-head">
+              <h3 id="stateTitle">State by state</h3>
+              <span class="muted" id="stateCount"></span>
+            </div>
+            <div class="list-rows inline" id="stateRows"></div>
+
+            <div class="result-actions">
+              <button class="btn btn-ghost" id="statsPractice">Practise weak states</button>
+              <button class="btn btn-quiet" id="statsReset">Reset all progress</button>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <nav class="tabbar" id="tabbar">
+        <button class="tab active" data-tab="home"><span>🏠</span>Home</button>
+        <button class="tab" data-tab="learn"><span>🗺️</span>Map</button>
+        <button class="tab" data-tab="stats"><span>📊</span>Progress</button>
+      </nav>
     </div>
 
     <!-- learn detail sheet -->
@@ -195,16 +268,16 @@
           <button class="icon-btn" id="sheetClose" aria-label="Close">✕</button>
         </div>
         <div class="sheet-block">
-          <span class="sheet-label" id="sheetCapitalLabel">Rajdhani</span>
+          <span class="sheet-label" id="sheetCapitalLabel">Capital</span>
           <p class="sheet-value" id="sheetCapital">—</p>
         </div>
         <div class="sheet-block">
-          <span class="sheet-label" id="sheetFactLabel">Yaad rakhne ki baat</span>
+          <span class="sheet-label" id="sheetFactLabel">Remember this</span>
           <p class="sheet-value" id="sheetFact">—</p>
         </div>
         <div class="sheet-actions">
-          <button class="btn btn-ghost" id="sheetListen">🔊 Suno</button>
-          <button class="btn btn-primary" id="sheetQuiz">Isse quiz karo</button>
+          <button class="btn btn-ghost" id="sheetListen">🔊 Listen</button>
+          <button class="btn btn-primary" id="sheetQuiz">Quiz this state</button>
         </div>
       </div>
     </div>
@@ -215,7 +288,7 @@
         <div class="sheet-handle" aria-hidden="true"></div>
         <div class="sheet-head">
           <div>
-            <h3 id="listTitle">Sabhi rajya</h3>
+            <h3 id="listTitle">All states &amp; UTs</h3>
             <p class="sheet-meta" id="listMeta"></p>
           </div>
           <button class="icon-btn" id="listClose" aria-label="Close">✕</button>
@@ -225,10 +298,76 @@
           id="listSearch"
           type="search"
           autocomplete="off"
-          placeholder="Rajya ya rajdhani khojo…"
+          placeholder="Search a state or capital…"
           aria-label="Search states"
         />
         <div class="list-rows" id="listRows"></div>
+      </div>
+    </div>
+
+    <!-- settings -->
+    <div class="sheet-backdrop" id="settingsBackdrop" hidden>
+      <div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h3 id="settingsTitle">Settings</h3>
+            <p class="sheet-meta" id="settingsMeta">Bharat Map Quiz</p>
+          </div>
+          <button class="icon-btn" id="settingsClose" aria-label="Close">✕</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong id="soundLabel">Sound effects</strong>
+            <span id="soundValue">On</span>
+          </div>
+          <button class="switch" id="soundToggle" role="switch" aria-checked="true"><i></i></button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong id="namesLabel">State names</strong>
+            <span id="namesValue">English</span>
+          </div>
+          <div class="seg" id="namesSeg">
+            <button data-names="en" class="active">English</button>
+            <button data-names="hi">हिंदी</button>
+          </div>
+        </div>
+
+        <div class="sheet-block">
+          <span class="sheet-label" id="downloadLabel">Download the app</span>
+          <p class="sheet-value small" id="downloadSub">
+            Offline single-file build + the installable web app package.
+          </p>
+          <div class="sheet-actions wrap">
+            <a class="btn btn-ghost" id="downloadHtml" href="download/bharat-map-quiz.html" download
+              >⬇ Single file (.html)</a
+            >
+            <a class="btn btn-ghost" id="downloadZip" href="download/bharat-map-quiz.zip" download
+              >⬇ App package (.zip)</a
+            >
+          </div>
+        </div>
+
+        <div class="sheet-block">
+          <span class="sheet-label" id="installLabel">Install on this device</span>
+          <p class="sheet-value small" id="installText"></p>
+          <div class="sheet-actions">
+            <button class="btn btn-primary" id="installSheetBtn">Install</button>
+          </div>
+        </div>
+
+        <div class="sheet-block">
+          <span class="sheet-label" id="aboutLabel">About</span>
+          <p class="sheet-value small" id="aboutText"></p>
+          <p class="credit" id="credits"></p>
+        </div>
+
+        <div class="sheet-actions">
+          <button class="btn btn-quiet" id="resetBtn">Reset all progress</button>
+        </div>
       </div>
     </div>
 

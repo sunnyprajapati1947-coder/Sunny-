@@ -16,5 +16,7 @@ Model availability can depend on the Google account, API project, quota, region,
 
 ## Projects
 
-- [`map-quiz/`](map-quiz/README.md) — **Bharat Map Quiz**, an offline-first India map quiz PWA
-  (Hinglish / Hindi / English). Open with `cd map-quiz && python3 -m http.server 8080`.
+- [`map-quiz/`](map-quiz/README.md) — **Bharat Map Quiz**, an offline-first India map quiz app
+  (English UI, optional Hindi names): learn the map, timed blitz, survival, neighbours, daily
+  challenge, achievements. Play it via `cd map-quiz && python3 -m http.server 8080`, or download the
+  ready-to-run build from [`map-quiz/download/`](map-quiz/download/).

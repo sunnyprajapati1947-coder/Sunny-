@@ -1,6 +1,6 @@
 /* Offline-first service worker. Bump CACHE when shipping new assets. */
 
-const CACHE = "bharat-map-quiz-v1";
+const CACHE = "bharat-map-quiz-v2";
 
 const ASSETS = [
   "./",
@@ -9,6 +9,8 @@ const ASSETS = [
   "./src/styles.css",
   "./src/app.js",
   "./src/data.js",
+  "./src/geo.js",
+  "./src/achievements.js",
   "./src/i18n.js",
   "./src/map.js",
   "./src/map-data.js",
@@ -18,6 +20,7 @@ const ASSETS = [
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/favicon-64.png",
+  "./assets/icons/icon-180.png",
 ];
 
 self.addEventListener("install", (event) => {

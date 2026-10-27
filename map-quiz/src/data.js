@@ -1,4 +1,4 @@
-/* India Map Quiz — content database.
+/* India Map Quiz — content database (English copy, Hindi names optional).
  *
  * Every entry is one state / union territory that appears on the map.
  * `capital` is the answer used in the capitals round; `capitalNote` holds
@@ -7,14 +7,16 @@
  */
 
 export const REGIONS = [
-  { id: "all", emoji: "🇮🇳" },
-  { id: "north", emoji: "🏔️" },
-  { id: "west", emoji: "🏜️" },
-  { id: "central", emoji: "🌳" },
-  { id: "east", emoji: "🌾" },
-  { id: "northeast", emoji: "🍃" },
-  { id: "south", emoji: "🌊" },
+  { id: "all", emoji: "🇮🇳", label: "All India" },
+  { id: "north", emoji: "🏔️", label: "North" },
+  { id: "west", emoji: "🏜️", label: "West" },
+  { id: "central", emoji: "🌳", label: "Central" },
+  { id: "east", emoji: "🌾", label: "East" },
+  { id: "northeast", emoji: "🍃", label: "North-East" },
+  { id: "south", emoji: "🌊", label: "South & Islands" },
 ];
+
+export const REGION_LABEL = Object.fromEntries(REGIONS.map((r) => [r.id, r.label]));
 
 export const STATES = [
   {
@@ -419,24 +421,6 @@ export const STATES = [
 
 export const UNITS = Object.fromEntries(STATES.map((s) => [s.id, s]));
 
-export const REGION_LABEL = {
-  all: { en: "All India", hi: "पूरा भारत", hing: "Poora India" },
-  north: { en: "North", hi: "उत्तर", hing: "North" },
-  west: { en: "West", hi: "पश्चिम", hing: "West" },
-  central: { en: "Central", hi: "मध्य", hing: "Central" },
-  east: { en: "East", hi: "पूर्व", hing: "East" },
-  northeast: { en: "North-East", hi: "पूर्वोत्तर", hing: "North-East" },
-  south: { en: "South & Islands", hi: "दक्षिण व द्वीप", hing: "South & Islands" },
-};
-
-export function unitName(unit, lang) {
-  return unit.name[lang === "hi" ? "hi" : "en"];
-}
-
-export function capitalName(unit, lang) {
-  return unit.capital[lang === "hi" ? "hi" : "en"];
-}
-
 /** Short labels used *on the map* (long names would overflow small shapes). */
 const MAP_LABELS = {
   "andaman-nicobar": { en: "Andaman & Nicobar", hi: "अंडमान-निकोबार" },
@@ -463,8 +447,25 @@ const MAP_LABELS = {
   "sikkim": { en: "Sikkim", hi: "सिक्किम" },
 };
 
-export function mapLabel(unit, lang) {
+export function mapLabel(unit, stateNames = "en") {
   const short = MAP_LABELS[unit.id];
-  if (lang === "hi") return short?.hi || unit.name.hi;
+  if (stateNames === "hi") return short?.hi || unit.name.hi;
   return short?.en || unit.name.en;
+}
+
+/** State name, honouring the optional Hindi names setting. */
+export function unitName(unit, stateNames = "en") {
+  return unit.name[stateNames === "hi" ? "hi" : "en"];
+}
+
+export function capitalName(unit, stateNames = "en") {
+  return unit.capital[stateNames === "hi" ? "hi" : "en"];
+}
+
+export function unitFact(unit, stateNames = "en") {
+  return unit.fact[stateNames === "hi" ? "hi" : "en"];
+}
+
+export function regionName(region) {
+  return REGION_LABEL[region] || REGION_LABEL.all;
 }
