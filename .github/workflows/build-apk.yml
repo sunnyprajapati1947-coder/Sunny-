@@ -1,10 +1,8 @@
 name: Build Android APK
 
-# Builds a ready-to-install debug APK of the map quiz and attaches it to a
-# GitHub Release, so it can be downloaded straight onto a phone.
-#
-# Trigger manually from the Actions tab, or automatically when the web app
-# sources change on the working branch.
+# Builds an installable APK of Bharat Map Quiz (Capacitor WebView wrapper around
+# the offline single-file build) and attaches it to a GitHub Release, so the APK
+# can be downloaded straight onto a phone.
 
 on:
   push:
@@ -17,6 +15,7 @@ on:
       - "map-quiz/tools/bundle.py"
       - "map-quiz/tools/prepare-android.mjs"
       - "map-quiz/tools/patch-android.mjs"
+      - "map-quiz/package.json"
       - ".github/workflows/build-apk.yml"
   workflow_dispatch:
 
@@ -24,90 +23,174 @@ permissions:
   contents: write
 
 concurrency:
-  group: apk-${{ github.ref }}
+  group: bharat-map-quiz-apk
   cancel-in-progress: true
 
 jobs:
-  build-apk:
-    runs-on: ubuntu-latest
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: map-quiz
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: 17
 
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Android SDK packages
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('map-quiz/package.json') }}
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
 
       - name: Build the offline web bundle
         run: python3 tools/bundle.py
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Add Capacitor Android project
+      - name: Add the Capacitor Android project
         run: |
           set -e
           npm run android:prepare
           npx cap add android
           npx cap sync android
 
-      - name: App identity, icon and version
+      - name: Restore signing key
+        id: signing-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: map-quiz/.signing
+          key: bharat-map-quiz-signing-v1
+
+      - name: Create the signing key if it is missing
+        run: |
+          set -euo pipefail
+          mkdir -p .signing
+          if [ ! -s .signing/release.jks ]; then
+            pass=$(openssl rand -hex 16)
+            printf '%s' "$pass" > .signing/password
+            keytool -genkeypair \
+              -keystore .signing/release.jks \
+              -alias bharat \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$pass" -keypass "$pass" \
+              -dname "CN=Bharat Map Quiz, OU=Mobile, O=Bharat Map Quiz, L=Dhanbad, ST=Jharkhand, C=IN"
+            echo "created a new signing key"
+          else
+            echo "reusing the cached signing key"
+          fi
+          pass=$(cat .signing/password)
+          echo "::add-mask::$pass"
+          {
+            echo "BHARAT_KEYSTORE=$PWD/.signing/release.jks"
+            echo "BHARAT_STORE_PASSWORD=$pass"
+            echo "BHARAT_KEY_ALIAS=bharat"
+            echo "BHARAT_KEY_PASSWORD=$pass"
+          } >> "$GITHUB_ENV"
+
+      - name: Save signing key
+        if: steps.signing-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: map-quiz/.signing
+          key: bharat-map-quiz-signing-v1
+
+      - name: Patch the Android project (icons, name, version, signing)
         run: node tools/patch-android.mjs
 
-      - name: Build debug APK
+      - name: Assemble the APK
         run: |
-          set -e
+          set -uo pipefail
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: Collect the APK
-        run: |
+          set +e
+          ./gradlew :app:assembleRelease --no-daemon 2>&1 | tee /tmp/build.log
+          status=${PIPESTATUS[0]}
           set -e
+          if [ "$status" -eq 0 ]; then
+            echo "APK_KIND=release" >> "$GITHUB_ENV"
+          else
+            echo "::warning::release build failed — building a debug APK instead"
+            grep -nE "error:|FAILURE|What went wrong|Caused by|> " /tmp/build.log | head -40 || true
+            ./gradlew :app:assembleDebug --no-daemon 2>&1 | tail -40
+            echo "APK_KIND=debug" >> "$GITHUB_ENV"
+          fi
+
+      - name: Verify and package
+        run: |
+          set -euo pipefail
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/Bharat-Map-Quiz-v1.0.apk"
-          ls -lh dist
-          echo "---" >> "$GITHUB_STEP_SUMMARY"
-          echo "### APK ready" >> "$GITHUB_STEP_SUMMARY"
-          echo "Download it below, copy to your phone and install (allow \"install unknown apps\")." >> "$GITHUB_STEP_SUMMARY"
+          apk=android/app/build/outputs/apk/release/app-release.apk
+          if [ ! -f "$apk" ]; then
+            apk=android/app/build/outputs/apk/debug/app-debug.apk
+          fi
+          test -f "$apk"
+          tools="$ANDROID_HOME/build-tools/34.0.0"
+          "$tools/apksigner" verify --verbose --print-certs "$apk" | tee dist/SIGNATURE.txt
+          "$tools/aapt" dump badging "$apk" > dist/BADGING.txt
+          grep -m3 -E "^package:|^application-label:|^sdkVersion:|^targetSdkVersion:" dist/BADGING.txt
+          name="Bharat-Map-Quiz-v1.0.apk"
+          cp "$apk" "dist/$name"
+          (cd dist && sha256sum "$name" > SHA256SUMS.txt && ls -lh)
+          echo "apk_size=$(stat -c%s "dist/$name")" >> "$GITHUB_ENV"
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Bharat-Map-Quiz-apk
-          path: map-quiz/dist/Bharat-Map-Quiz-v1.0.apk
-          if-no-files-found: error
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="map-quiz-apk-v1.0"
+          cat > /tmp/notes.md <<'NOTES'
+          **Installable Android APK** of Bharat Map Quiz — the same app as the web build, packaged
+          as an offline WebView app.
 
-      - name: Publish downloadable release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: map-quiz-apk-v1.0
-          name: Bharat Map Quiz v1.0 (Android APK)
-          body: |
-            Installable Android APK of **Bharat Map Quiz** — the same app as the web build,
-            packaged as an offline WebView app.
+          - 7 quiz modes: find the state, identify the shape, capitals, neighbours, timed blitz,
+            survival and speed run — plus a daily challenge
+          - Learn map with capital + fact cards, levels/XP, 18 achievements, English UI
+            (state names optionally in हिंदी)
+          - Works completely offline; no ads, no accounts, no tracking
 
-            - 7 quiz modes: find the state, identify the shape, capitals, neighbours,
-              timed blitz, survival and speed run, plus a daily challenge
-            - Learn map, levels/XP, 18 achievements, English UI (optional Hindi names)
-            - Works fully offline, no permissions beyond network-free local assets
+          **How to install**
 
-            **Install:** download the APK to your phone, open it and allow
-            "install unknown apps" for your browser/file manager when prompted.
-            Debug-signed build, so Play Protect may ask for confirmation.
-          files: map-quiz/dist/Bharat-Map-Quiz-v1.0.apk
-          fail_on_unmatched_files: true
+          1. Download `Bharat-Map-Quiz-v1.0.apk` below (do it on the phone).
+          2. Open the file. Android asks to allow installs from your browser/Files app —
+             tap **Settings → Allow**, then **Install**.
+          3. If Play Protect shows a warning (it does for self-signed apps), tap
+             **More details → Install anyway**.
+
+          Signed with a generated release key, so updates install in place. Uninstall once if you
+          ever switch to a build signed with a different key.
+          NOTES
+          printf '\n**APK size:** %.1f MB · **Build:** %s\n' \
+            "$(echo "$apk_size / 1048576" | bc -l)" "${APK_KIND:-release}" >> /tmp/notes.md
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" --clobber dist/*
+          else
+            gh release create "$tag" \
+              --title "Bharat Map Quiz v1.0 (Android APK)" \
+              --notes-file /tmp/notes.md \
+              dist/*
+          fi
+          url=$(gh release view "$tag" --json assets -q '.assets[] | select(.name | endswith(".apk")) | .url')
+          {
+            echo "### ✅ APK published"
+            echo ""
+            echo "Download: <a href=\"https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/Bharat-Map-Quiz-v1.0.apk\">Bharat-Map-Quiz-v1.0.apk</a>"
+            echo ""
+            echo "Variant: **${APK_KIND:-release}**"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "asset: $url"

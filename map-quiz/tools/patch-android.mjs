@@ -75,7 +75,33 @@ if (existsSync(colorsPath)) {
   log("dark background colour added");
 }
 
-/* 4. no white flash: window background from our colour */
+/* 4. release signing (only when the CI provides a keystore) */
+if (process.env.BHARAT_KEYSTORE) {
+  let gradle = readFileSync(gradlePath, "utf8");
+  if (!gradle.includes("signingConfigs")) {
+    gradle = gradle.replace(
+      /(\n\s*compileSdk [^\n]*\n)/,
+      `$1
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("BHARAT_KEYSTORE"))
+            storePassword System.getenv("BHARAT_STORE_PASSWORD")
+            keyAlias System.getenv("BHARAT_KEY_ALIAS")
+            keyPassword System.getenv("BHARAT_KEY_PASSWORD")
+        }
+    }
+`
+    );
+  }
+  gradle = gradle.replace(/release \{\n(\s*)minifyEnabled false/, "release {\n$1signingConfig signingConfigs.release\n$1minifyEnabled false");
+  writeFileSync(gradlePath, gradle);
+  log("release signing config injected");
+  console.log(gradle.slice(gradle.indexOf("android {"), gradle.indexOf("repositories {")));
+} else {
+  log("no keystore in env — building an unsigned/debug variant");
+}
+
+/* 5. no white flash: window background from our colour */
 const stylesPath = join(res, "values/styles.xml");
 if (existsSync(stylesPath)) {
   let styles = readFileSync(stylesPath, "utf8");
