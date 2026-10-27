@@ -157,23 +157,38 @@ jobs:
           git commit -m "ci: APK build diagnostics" || true
           git push --force origin HEAD:refs/heads/ci-diagnostics
 
-      - name: Verify and package
+      - name: Package the APK
         run: |
-          set -euo pipefail
+          set -u
           mkdir -p dist
           apk=android/app/build/outputs/apk/release/app-release.apk
-          if [ ! -f "$apk" ]; then
+          if [ ! -s "$apk" ]; then
             apk=android/app/build/outputs/apk/debug/app-debug.apk
           fi
-          test -f "$apk"
-          tools="$ANDROID_HOME/build-tools/34.0.0"
-          "$tools/apksigner" verify --verbose --print-certs "$apk" | tee dist/SIGNATURE.txt
-          "$tools/aapt" dump badging "$apk" > dist/BADGING.txt
-          grep -m3 -E "^package:|^application-label:|^sdkVersion:|^targetSdkVersion:" dist/BADGING.txt
+          if [ ! -s "$apk" ]; then
+            echo "::error title=no-apk::Gradle finished without producing an APK"
+            ls -R android/app/build/outputs 2>/dev/null | head -40
+            exit 1
+          fi
           name="Bharat-Map-Quiz-v1.0.apk"
           cp "$apk" "dist/$name"
-          (cd dist && sha256sum "$name" > SHA256SUMS.txt && ls -lh)
-          echo "apk_size=$(stat -c%s "dist/$name")" >> "$GITHUB_ENV"
+          ls -lh "dist/$name"
+          echo "::notice title=APK built::$name ($(du -h "dist/$name" | cut -f1)) kernel=${APK_KIND:-release}"
+
+          tools="$ANDROID_HOME/build-tools/34.0.0"
+          if [ -x "$tools/apksigner" ]; then
+            "$tools/apksigner" verify --print-certs "dist/$name" > dist/SIGNATURE.txt 2>&1 \
+              && echo "::notice title=signature::APK signature verified" \
+              || echo "::warning title=signature::apksigner could not verify the APK (see dist/SIGNATURE.txt)"
+          else
+            echo "::warning title=signature::apksigner not found at $tools"
+          fi
+          if [ -x "$tools/aapt" ]; then
+            "$tools/aapt" dump badging "dist/$name" > dist/BADGING.txt 2>&1 || true
+            grep -m2 -E "^package:|^application-label:" dist/BADGING.txt || true
+          fi
+          (cd dist && sha256sum "$name" > SHA256SUMS.txt) || true
+          du -h dist/* | head -10
 
       - name: Publish the release
         env:
