@@ -13,3 +13,8 @@ The registry separates text/coding, image, video, audio, embedding, research, co
 ## Important
 
 Model availability can depend on the Google account, API project, quota, region, preview status, and current Google API lifecycle. A model being listed in the registry does not guarantee access.
+
+## Projects
+
+- [`map-quiz/`](map-quiz/README.md) — **Bharat Map Quiz**, an offline-first India map quiz PWA
+  (Hinglish / Hindi / English). Open with `cd map-quiz && python3 -m http.server 8080`.
