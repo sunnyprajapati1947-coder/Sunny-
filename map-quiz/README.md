@@ -4,8 +4,23 @@ An India map quiz you can install like an app. Tap the map, learn the shapes, th
 timed rounds, survival mode and a fresh daily challenge. Everything is in English, works offline,
 and stores progress on the device — no accounts, no ads, no tracking.
 
-**Download:** [`download/bharat-map-quiz.html`](download/bharat-map-quiz.html) (one file, double-click
-to play) · [`download/bharat-map-quiz.zip`](download/bharat-map-quiz.zip) (installable web app)
+## 📱 Android APK (phone par install karo)
+
+**[Download the APK](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.0)**
+→ `Bharat-Map-Quiz-v1.0.apk` (≈3.9 MB, signed release build, works fully offline)
+
+1. Phone par link kholo aur APK download karo.
+2. File kholo → Android "install unknown apps" allow karne ko kahega → **Settings → Allow** → **Install**.
+3. Play Protect warning aaye (self-signed apps ke liye normal hai) → **More details → Install anyway**.
+
+App icon launcher me **Bharat Map Quiz** naam se milega. APK `map-quiz-apk-v1.0` release me har build ke
+saath refresh hota hai, aur build process `.github/workflows/build-apk.yml` me hai.
+
+**Web build (same app):** [`download/bharat-map-quiz.html`](download/bharat-map-quiz.html) (one file,
+double-click to play) · [`download/bharat-map-quiz.zip`](download/bharat-map-quiz.zip) (installable PWA)
+
+---
+
 
 ---
 
@@ -123,6 +138,26 @@ python3 tools/bundle.py       # after any source change, refresh download/
   Puducherry → Tamil Nadu / Kerala / Andhra Pradesh).
 
 Boundaries are indicative and intended for learning, not for legal or administrative use.
+
+## How the APK is built
+
+`tools/prepare-android.mjs` turns the offline single-file build into a Capacitor web directory, the
+workflow adds the Android project, `tools/patch-android.mjs` themes it (launcher icons, app name,
+version, dark window background, release signing via `android/keystore.properties`) and validates every
+Android resource reference before Gradle runs. Gradle then assembles and signs a release APK, and the
+workflow publishes it as a GitHub Release asset. Everything runs on GitHub-hosted runners — no local
+Android SDK needed:
+
+```bash
+npm install
+python3 tools/bundle.py          # build download/bharat-map-quiz.html
+npm run android:add              # capacitor project + patching
+cd android && ./gradlew assembleRelease   # needs JDK 17 + Android SDK 34
+```
+
+The Android app is a WebView shell around the single-file build, so it behaves exactly like the web
+version: back button closes sheets/rounds before exiting, everything is offline, and nothing leaves the
+phone.
 
 ## Publishing to the Play Store
 

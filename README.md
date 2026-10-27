@@ -18,5 +18,7 @@ Model availability can depend on the Google account, API project, quota, region,
 
 - [`map-quiz/`](map-quiz/README.md) — **Bharat Map Quiz**, an offline-first India map quiz app
   (English UI, optional Hindi names): learn the map, timed blitz, survival, neighbours, daily
-  challenge, achievements. Play it via `cd map-quiz && python3 -m http.server 8080`, or download the
-  ready-to-run build from [`map-quiz/download/`](map-quiz/download/).
+  challenge, achievements. **Android APK:**
+  [download Bharat-Map-Quiz-v1.0.apk](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.0)
+  · web build: `cd map-quiz && python3 -m http.server 8080` or the files in
+  [`map-quiz/download/`](map-quiz/download/).

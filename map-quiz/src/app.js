@@ -1421,8 +1421,28 @@ if (typeof window !== "undefined") {
   };
 }
 
+/** Android hardware back inside the native app: close sheets, leave a round,
+ * go home, and only then exit. */
+function wireNativeBackButton() {
+  const nativeApp = typeof window !== "undefined" ? window.Capacitor?.Plugins?.App : null;
+  if (!nativeApp?.addListener) return;
+  nativeApp.addListener("backButton", () => {
+    if (!$("settingsBackdrop").hidden) return closeSettings();
+    if (!$("listBackdrop").hidden) return closeList();
+    if (!$("sheetBackdrop").hidden) return closeSheet();
+    if (ui.screen === "quiz") return leaveQuiz();
+    if (ui.screen !== "home") {
+      setScreen("home");
+      renderHome();
+      return;
+    }
+    return nativeApp.exitApp?.();
+  });
+}
+
 function boot() {
   wire();
+  wireNativeBackButton();
   setScreen("home");
   renderHome();
 

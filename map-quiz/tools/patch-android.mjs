@@ -31,12 +31,17 @@ for (const density of readdirSync(res)) {
   }
 }
 // adaptive icon foreground: keep the India silhouette centred in the safe zone
+// the adaptive foreground is cropped hard by the launcher mask, so it uses the
+// maskable artwork (more internal padding) instead of the plain icon
+const foregroundArt = existsSync(join(root, "assets/icons/maskable-512.png"))
+  ? join(root, "assets/icons/maskable-512.png")
+  : icon;
 const foregrounds = [
   join(res, "drawable/ic_launcher_foreground.png"),
   join(res, "drawable-v24/ic_launcher_foreground.png"),
   join(res, "mipmap-xxxhdpi/ic_launcher_foreground.png"),
 ];
-for (const path of foregrounds) if (existsSync(path)) copyFileSync(icon, path);
+for (const path of foregrounds) if (existsSync(path)) copyFileSync(foregroundArt, path);
 log(`replaced ${iconCount} launcher icon files`);
 
 /* 2. app name */
