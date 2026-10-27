@@ -130,28 +130,32 @@ jobs:
             echo "APK_KIND=debug" >> "$GITHUB_ENV"
           fi
 
-      - name: Upload build log (diagnostics)
+      - name: Publish build log (diagnostics)
         if: failure()
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -uo pipefail
-          tag="map-quiz-build-log"
           {
             echo "== build.log =="
-            cat /tmp/build.log 2>/dev/null | tail -400
+            tail -500 /tmp/build.log 2>/dev/null
             echo "== environment =="
             echo "ANDROID_HOME=$ANDROID_HOME"
             ls "$ANDROID_HOME/platforms" 2>/dev/null
             ls "$ANDROID_HOME/build-tools" 2>/dev/null
             java -version 2>&1
-            echo "== gradle projects =="
-            ls android app 2>/dev/null | head -20
+            echo "== gradle =="
+            tail -20 android/gradle/wrapper/gradle-wrapper.properties 2>/dev/null
+            grep -n "classpath" android/build.gradle 2>/dev/null
+            echo "== gha =="
+            echo "kind=${APK_KIND:-unknown}"
           } > /tmp/diagnostics.txt 2>&1
-          gzip -c /tmp/diagnostics.txt > /tmp/diagnostics.txt.gz
-          gh release view "$tag" >/dev/null 2>&1 || \
-            gh release create "$tag" --title "Build log (temporary)" --notes "CI diagnostics for the APK build" >/dev/null
-          gh release upload "$tag" /tmp/diagnostics.txt.gz --clobber
+          cp /tmp/diagnostics.txt ci-diagnostics.txt
+          git config user.name "ci-diagnostics"
+          git config user.email "ci@local"
+          git add -f ci-diagnostics.txt
+          git commit -m "ci: APK build diagnostics" || true
+          git push --force origin HEAD:refs/heads/ci-diagnostics
 
       - name: Verify and package
         run: |
