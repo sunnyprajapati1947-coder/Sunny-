@@ -76,7 +76,7 @@ jobs:
           path: map-quiz/.signing
           key: bharat-map-quiz-signing-v1
 
-      - name: Create the signing key if it is missing
+      - name: Install the signing key into the Android project
         run: |
           set -euo pipefail
           mkdir -p .signing
@@ -95,12 +95,13 @@ jobs:
           fi
           pass=$(cat .signing/password)
           echo "::add-mask::$pass"
-          {
-            echo "BHARAT_KEYSTORE=$PWD/.signing/release.jks"
-            echo "BHARAT_STORE_PASSWORD=$pass"
-            echo "BHARAT_KEY_ALIAS=bharat"
-            echo "BHARAT_KEY_PASSWORD=$pass"
-          } >> "$GITHUB_ENV"
+          cp .signing/release.jks android/release.jks
+          printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=bharat\nkeyPassword=%s\n' \
+            "$pass" "$pass" > android/keystore.properties
+          echo "SIGNING_PASSWORD=$pass" >> "$GITHUB_ENV"
+          test -s android/release.jks
+          test -s android/keystore.properties
+          echo "::notice title=signing::keystore installed into the android project"
 
       - name: Save signing key
         if: steps.signing-cache.outputs.cache-hit != 'true'
@@ -173,38 +174,43 @@ jobs:
             echo "::error title=gradle::$line"
           done
 
-      - name: Package the APK
+      - name: Package (and sign if Gradle did not)
         run: |
-          set -u
+          set -uo pipefail
           mkdir -p dist
-          apk=android/app/build/outputs/apk/release/app-release.apk
-          if [ ! -s "$apk" ]; then
-            apk=android/app/build/outputs/apk/debug/app-debug.apk
-          fi
-          if [ ! -s "$apk" ]; then
-            echo "::error title=no-apk::Gradle finished without producing an APK"
-            ls -R android/app/build/outputs 2>/dev/null | head -40
+          tools="$ANDROID_HOME/build-tools/34.0.0"
+          name="Bharat-Map-Quiz-v1.0.apk"
+
+          signed=android/app/build/outputs/apk/release/app-release.apk
+          unsigned=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          debug=android/app/build/outputs/apk/debug/app-debug.apk
+
+          if [ -s "$signed" ]; then
+            cp "$signed" "dist/$name"
+            echo "using the Gradle-signed release APK"
+          elif [ -s "$unsigned" ]; then
+            echo "::notice title=signing::signing the unsigned release APK with apksigner"
+            "$tools/zipalign" -p -f 4 "$unsigned" /tmp/aligned.apk
+            "$tools/apksigner" sign --ks android/release.jks --ks-key-alias bharat \
+              --ks-pass "pass:$SIGNING_PASSWORD" --key-pass "pass:$SIGNING_PASSWORD" \
+              --out "dist/$name" /tmp/aligned.apk
+          elif [ -s "$debug" ]; then
+            cp "$debug" "dist/$name"
+            echo "::warning title=build::falling back to the debug APK"
+          else
+            echo "::error title=no-apk::Gradle produced no APK at all"
+            find android -name "*.apk" | head -10
             exit 1
           fi
-          name="Bharat-Map-Quiz-v1.0.apk"
-          cp "$apk" "dist/$name"
-          ls -lh "dist/$name"
-          echo "::notice title=APK built::$name ($(du -h "dist/$name" | cut -f1)) kernel=${APK_KIND:-release}"
 
-          tools="$ANDROID_HOME/build-tools/34.0.0"
-          if [ -x "$tools/apksigner" ]; then
-            "$tools/apksigner" verify --print-certs "dist/$name" > dist/SIGNATURE.txt 2>&1 \
-              && echo "::notice title=signature::APK signature verified" \
-              || echo "::warning title=signature::apksigner could not verify the APK (see dist/SIGNATURE.txt)"
-          else
-            echo "::warning title=signature::apksigner not found at $tools"
-          fi
-          if [ -x "$tools/aapt" ]; then
-            "$tools/aapt" dump badging "dist/$name" > dist/BADGING.txt 2>&1 || true
-            grep -m2 -E "^package:|^application-label:" dist/BADGING.txt || true
-          fi
+          ls -lh "dist/$name"
+          "$tools/apksigner" verify --print-certs "dist/$name" > dist/SIGNATURE.txt 2>&1 \
+            && echo "::notice title=signature::APK signature verified" \
+            || echo "::warning title=signature::signature could not be verified"
+          "$tools/aapt" dump badging "dist/$name" > dist/BADGING.txt 2>&1 || true
+          grep -m2 -E "^package:|^application-label:" dist/BADGING.txt || true
           (cd dist && sha256sum "$name" > SHA256SUMS.txt) || true
-          du -h dist/* | head -10
+          ls -lh dist
 
       - name: Publish the release
         env:

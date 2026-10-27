@@ -62,6 +62,67 @@ if (existsSync(gradlePath)) {
   log("version 1.0 (code 1) set");
 }
 
+/* 4. release signing — driven by android/keystore.properties (written by CI),
+ * so the build never depends on environment variables being present while
+ * Gradle configures the project. */
+if (existsSync(gradlePath)) {
+  const gradleFile = readFileSync(gradlePath, "utf8");
+  if (!gradleFile.includes("keystoreProperties")) {
+    let gradle = gradleFile;
+    gradle = gradle.replace(
+      /apply plugin: 'com\.android\.application'/,
+      `apply plugin: 'com.android.application'
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}`
+    );
+    gradle = gradle.replace(
+      /(\n\s*compileSdk [^\n]*\n)/,
+      `$1
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+`
+    );
+    gradle = gradle.replace(
+      /release \{\n(\s*)minifyEnabled false/,
+      "release {\n$1signingConfig signingConfigs.release\n$1minifyEnabled false"
+    );
+    writeFileSync(gradlePath, gradle);
+    log("release signing wired to android/keystore.properties");
+  }
+
+  const props = join(android, "keystore.properties");
+  if (!existsSync(props) && process.env.BHARAT_STORE_PASSWORD) {
+    writeFileSync(
+      props,
+      [
+        "storeFile=release.jks",
+        `storePassword=${process.env.BHARAT_STORE_PASSWORD}`,
+        "keyAlias=bharat",
+        `keyPassword=${process.env.BHARAT_KEY_PASSWORD || process.env.BHARAT_STORE_PASSWORD}`,
+        "",
+      ].join("\n")
+    );
+    log("keystore.properties written from the environment");
+  }
+  log(
+    existsSync(props)
+      ? `signing ready (keystore present: ${existsSync(join(android, "release.jks"))})`
+      : "no keystore.properties — the APK would be unsigned"
+  );
+}
+
 /* 5. themes: replace the template styles with a dark, reference-free theme.
  * The Capacitor template ships styles.xml entries pointing at @color/colorPrimary
  * etc. with no colors.xml in the app, and adding our own @color reference on top
