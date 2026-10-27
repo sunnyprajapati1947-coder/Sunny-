@@ -1,0 +1,113 @@
+name: Build Android APK
+
+# Builds a ready-to-install debug APK of the map quiz and attaches it to a
+# GitHub Release, so it can be downloaded straight onto a phone.
+#
+# Trigger manually from the Actions tab, or automatically when the web app
+# sources change on the working branch.
+
+on:
+  push:
+    branches:
+      - arena/e68a5889-sunny
+    paths:
+      - "map-quiz/src/**"
+      - "map-quiz/index.html"
+      - "map-quiz/assets/**"
+      - "map-quiz/tools/bundle.py"
+      - "map-quiz/tools/prepare-android.mjs"
+      - "map-quiz/tools/patch-android.mjs"
+      - ".github/workflows/build-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: map-quiz
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build the offline web bundle
+        run: python3 tools/bundle.py
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Capacitor Android project
+        run: |
+          set -e
+          npm run android:prepare
+          npx cap add android
+          npx cap sync android
+
+      - name: App identity, icon and version
+        run: node tools/patch-android.mjs
+
+      - name: Build debug APK
+        run: |
+          set -e
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Collect the APK
+        run: |
+          set -e
+          mkdir -p dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/Bharat-Map-Quiz-v1.0.apk"
+          ls -lh dist
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "### APK ready" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download it below, copy to your phone and install (allow \"install unknown apps\")." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bharat-Map-Quiz-apk
+          path: map-quiz/dist/Bharat-Map-Quiz-v1.0.apk
+          if-no-files-found: error
+
+      - name: Publish downloadable release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: map-quiz-apk-v1.0
+          name: Bharat Map Quiz v1.0 (Android APK)
+          body: |
+            Installable Android APK of **Bharat Map Quiz** — the same app as the web build,
+            packaged as an offline WebView app.
+
+            - 7 quiz modes: find the state, identify the shape, capitals, neighbours,
+              timed blitz, survival and speed run, plus a daily challenge
+            - Learn map, levels/XP, 18 achievements, English UI (optional Hindi names)
+            - Works fully offline, no permissions beyond network-free local assets
+
+            **Install:** download the APK to your phone, open it and allow
+            "install unknown apps" for your browser/file manager when prompted.
+            Debug-signed build, so Play Protect may ask for confirmation.
+          files: map-quiz/dist/Bharat-Map-Quiz-v1.0.apk
+          fail_on_unmatched_files: true

@@ -2,3 +2,6 @@ node_modules/
 package-lock.json
 tools/preview.png
 .DS_Store
+www/
+android/
+capacitor.config.json
