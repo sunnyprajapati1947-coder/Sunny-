@@ -62,57 +62,98 @@ if (existsSync(gradlePath)) {
   log("version 1.0 (code 1) set");
 }
 
-const colorsPath = join(res, "values/colors.xml");
-if (existsSync(colorsPath)) {
-  let colors = readFileSync(colorsPath, "utf8");
-  if (!colors.includes("app_background")) {
-    colors = colors.replace(
-      "</resources>",
-      '    <color name="app_background">#0b1220</color>\n</resources>'
-    );
-    writeFileSync(colorsPath, colors);
-  }
-  log("dark background colour added");
-}
-
-/* 4. release signing (only when the CI provides a keystore) */
-if (process.env.BHARAT_KEYSTORE) {
-  let gradle = readFileSync(gradlePath, "utf8");
-  if (!gradle.includes("signingConfigs")) {
-    gradle = gradle.replace(
-      /(\n\s*compileSdk [^\n]*\n)/,
-      `$1
-    signingConfigs {
-        release {
-            storeFile file(System.getenv("BHARAT_KEYSTORE"))
-            storePassword System.getenv("BHARAT_STORE_PASSWORD")
-            keyAlias System.getenv("BHARAT_KEY_ALIAS")
-            keyPassword System.getenv("BHARAT_KEY_PASSWORD")
-        }
-    }
-`
-    );
-  }
-  gradle = gradle.replace(/release \{\n(\s*)minifyEnabled false/, "release {\n$1signingConfig signingConfigs.release\n$1minifyEnabled false");
-  writeFileSync(gradlePath, gradle);
-  log("release signing config injected");
-  console.log(gradle.slice(gradle.indexOf("android {"), gradle.indexOf("repositories {")));
-} else {
-  log("no keystore in env — building an unsigned/debug variant");
-}
-
-/* 5. no white flash: window background from our colour */
+/* 5. themes: replace the template styles with a dark, reference-free theme.
+ * The Capacitor template ships styles.xml entries pointing at @color/colorPrimary
+ * etc. with no colors.xml in the app, and adding our own @color reference on top
+ * broke the aapt2 link step. A literal, complete styles.xml removes that class of
+ * failure entirely. */
 const stylesPath = join(res, "values/styles.xml");
-if (existsSync(stylesPath)) {
-  let styles = readFileSync(stylesPath, "utf8");
-  if (!styles.includes("android:windowBackground")) {
-    styles = styles.replace(
-      /<style name="AppTheme\.NoActionBar"[^>]*>/,
-      (match) => `${match}\n        <item name="android:windowBackground">@color/app_background</item>`
-    );
-    writeFileSync(stylesPath, styles);
-  }
-  log("window background styled");
+const STYLES = `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bharat Map Quiz: dark shell, no action bar, no white flash at launch. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">#0b1220</item>
+        <item name="android:statusBarColor">#0b1220</item>
+        <item name="android:navigationBarColor">#0b1220</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">#0b1220</item>
+        <item name="android:statusBarColor">#0b1220</item>
+        <item name="android:navigationBarColor">#0b1220</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+    </style>
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+    </style>
+</resources>
+`;
+writeFileSync(stylesPath, STYLES);
+log("dark theme written");
+
+// keep splash drawables pointing at something that exists
+const splash = ["drawable/splash.png", "drawable/splash.xml", "drawable-port-mdpi/splash.png"];
+if (!splash.some((rel) => existsSync(join(res, rel)))) {
+  log("warning: no splash drawable in the template — splash background kept as-is");
 }
+
+/* 6. static resource validation: fail here with a readable message instead of
+ * deep inside gradle. Catches unresolved @color/@drawable/@style references. */
+function definedResources() {
+  const defined = new Set();
+  for (const dir of readdirSync(res)) {
+    const dirPath = join(res, dir);
+    if (!statSync(dirPath).isDirectory()) continue;
+    const type = dir.split("-")[0];
+    for (const file of readdirSync(dirPath)) {
+      const base = file.replace(/\.(xml|png|webp|jpg|jpeg|9\.png)$/, "");
+      if (base !== file) defined.add(`${type}/${base}`);
+      if (file.endsWith(".xml")) {
+        const xml = readFileSync(join(dirPath, file), "utf8");
+        for (const match of xml.matchAll(/<(color|style|string|dimen|integer|bool)\s[^>]*name="([^"]+)"/g)) {
+          defined.add(`${match[1]}/${match[2]}`);
+        }
+        for (const match of xml.matchAll(/<item\s+type="(\w+)"\s+name="([^"]+)"/g)) {
+          defined.add(`${match[1]}/${match[2]}`);
+        }
+      }
+    }
+  }
+  return defined;
+}
+
+const defined = definedResources();
+const missing = new Set();
+function allResXml() {
+  const files = [];
+  for (const dir of readdirSync(res)) {
+    const dirPath = join(res, dir);
+    if (!statSync(dirPath).isDirectory()) continue;
+    for (const file of readdirSync(dirPath)) {
+      if (file.endsWith(".xml")) files.push(join(dirPath, file));
+    }
+  }
+  return files;
+}
+
+const scanFiles = [join(android, "app/src/main/AndroidManifest.xml"), ...allResXml()];
+for (const file of scanFiles) {
+  const text = readFileSync(file, "utf8");
+  for (const match of text.matchAll(/@(color|drawable|style|mipmap|string|dimen)\/([\w.]+)/g)) {
+    const key = `${match[1] === "mipmap" ? "mipmap" : match[1]}/${match[2]}`;
+    if (!defined.has(key) && !missing.has(key)) missing.add(key);
+  }
+}
+if (missing.size) {
+  console.error("[patch-android] unresolved android resources:", [...missing].join(", "));
+  process.exit(1);
+}
+log(`android resources validated (${defined.size} defined, 0 unresolved)`);
 
 log("android project patched");
