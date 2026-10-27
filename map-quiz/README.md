@@ -9,7 +9,10 @@ and stores progress on the device — no accounts, no ads, no tracking.
 **[Download the APK](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.0)**
 → `Bharat-Map-Quiz-v1.0.apk` (≈3.9 MB, signed release build, works fully offline)
 
-1. Phone par link kholo aur APK download karo.
+1. Phone par link kholo — ya is QR ko phone ke camera se scan karo:
+
+   <img src="download/qr-apk.png" alt="QR code for the APK download" width="200">
+
 2. File kholo → Android "install unknown apps" allow karne ko kahega → **Settings → Allow** → **Install**.
 3. Play Protect warning aaye (self-signed apps ke liye normal hai) → **More details → Install anyway**.
 
