@@ -130,6 +130,29 @@ jobs:
             echo "APK_KIND=debug" >> "$GITHUB_ENV"
           fi
 
+      - name: Upload build log (diagnostics)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          tag="map-quiz-build-log"
+          {
+            echo "== build.log =="
+            cat /tmp/build.log 2>/dev/null | tail -400
+            echo "== environment =="
+            echo "ANDROID_HOME=$ANDROID_HOME"
+            ls "$ANDROID_HOME/platforms" 2>/dev/null
+            ls "$ANDROID_HOME/build-tools" 2>/dev/null
+            java -version 2>&1
+            echo "== gradle projects =="
+            ls android app 2>/dev/null | head -20
+          } > /tmp/diagnostics.txt 2>&1
+          gzip -c /tmp/diagnostics.txt > /tmp/diagnostics.txt.gz
+          gh release view "$tag" >/dev/null 2>&1 || \
+            gh release create "$tag" --title "Build log (temporary)" --notes "CI diagnostics for the APK build" >/dev/null
+          gh release upload "$tag" /tmp/diagnostics.txt.gz --clobber
+
       - name: Verify and package
         run: |
           set -euo pipefail
