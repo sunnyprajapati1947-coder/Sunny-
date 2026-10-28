@@ -2222,6 +2222,48 @@ p {
   color: #ffcf87;
 }
 
+/* ------------------------------------------------------- download card */
+
+.download-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(76, 195, 255, 0.14), rgba(45, 212, 167, 0.09));
+  border: 1px solid rgba(76, 195, 255, 0.32);
+}
+
+.download-card[hidden] {
+  display: none;
+}
+
+.download-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.download-copy strong {
+  font-size: 13.5px;
+  color: #e6f4ff;
+}
+
+.download-copy span {
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #a9c3dd;
+}
+
+.download-card .btn {
+  flex: none;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
 </style>
   </head>
   <body>
@@ -2330,6 +2372,14 @@ p {
             <div class="stats-row" id="statsRow"></div>
 
             <div class="weak-card" id="weakCard"></div>
+
+            <div class="download-card" id="downloadCard">
+              <div class="download-copy">
+                <strong id="downloadCardTitle">Get the app</strong>
+                <span id="downloadCardSub"></span>
+              </div>
+              <a class="btn btn-primary small-btn" id="downloadCardBtn" href="#" rel="noopener">Download</a>
+            </div>
 
             <div class="install-card" id="installCard" hidden>
               <div class="install-copy">
@@ -2571,13 +2621,17 @@ p {
             Offline single-file build + the installable web app package.
           </p>
           <div class="sheet-actions wrap">
+            <a class="btn btn-primary" id="downloadApk" href="#" rel="noopener"
+              >📱 Android app (.apk)</a
+            >
             <a class="btn btn-ghost" id="downloadHtml" href="download/bharat-map-quiz.html" download
               >⬇ Single file (.html)</a
             >
             <a class="btn btn-ghost" id="downloadZip" href="download/bharat-map-quiz.zip" download
-              >⬇ App package (.zip)</a
+              >⬇ Laptop / PC package (.zip)</a
             >
           </div>
+          <p class="sheet-value small" id="downloadNote"></p>
         </div>
 
         <div class="sheet-block">
@@ -4042,10 +4096,18 @@ const STRINGS = {
   stateNames: "State names",
   english: "English",
   hindi: "हिंदी",
+  getApp: "Get the app",
+  apkForPhone: "Android app (.apk) — installs once, works offline",
+  pcForLaptop: "Laptop/PC: one .html file, opens in your browser — no install",
+  downloadApk: "Android APK",
+  downloadPc: "Download for PC",
+  apkNote: "APK is for Android phones. On a laptop, use the single-file .html (double-click it) or the .zip package.",
+  apkNoteSingle: "APK is for Android phones. This page already runs offline in your browser on a laptop — just keep the file.",
+  apkInstalled: "You are using the installed Android app — nothing else to download.",
   download: "Download the app",
   downloadSub: "Offline single-file build + installable package",
-  downloadFile: "Download single file (.html)",
-  downloadZip: "Download app package (.zip)",
+  downloadFile: "Single file (.html)",
+  downloadZip: "Laptop/PC package (.zip)",
   install: "Install on this device",
   installHint: "Use your browser menu → “Add to Home screen”. Works offline afterwards.",
   installNow: "Install",
@@ -4640,6 +4702,21 @@ function attachZoom(wrap, inner, { min = 1, max = 4, onChange } = {}) {
 
 const $ = (id) => document.getElementById(id);
 const MAP_TOTAL = STATES.length;
+
+/* Download targets. Bump APP_VERSION together with map-quiz/package.json. */
+const APP_VERSION = "1.2";
+const REPO_URL = "https://github.com/sunnyprajapati1947-coder/Sunny-";
+const APK_URL = `${REPO_URL}/releases/download/map-quiz-apk-v${APP_VERSION}/Bharat-Map-Quiz-v${APP_VERSION}.apk`;
+const RELEASE_URL = `${REPO_URL}/releases/tag/map-quiz-apk-v${APP_VERSION}`;
+
+/** True inside the Capacitor Android shell. */
+function isNativeApp() {
+  return Boolean(window.Capacitor?.isNativePlatform?.() || window.Capacitor?.Plugins?.App?.exitApp);
+}
+
+function isAndroidPhone() {
+  return /Android/i.test(navigator.userAgent || "");
+}
 const TIMED_MODES = new Set(["timed", "challenge"]);
 
 let profile = loadProfile();
@@ -4763,6 +4840,7 @@ function renderHome() {
   }
   $("poolCount").textContent = `${poolFor(ui.region).length} states`;
 
+  renderDownloadCard();
   renderDifficultyChips();
   renderModeCards();
   renderStatsRow();
@@ -4775,6 +4853,38 @@ function renderHome() {
   installCard.hidden = standalone || !ui.installPrompt;
   $("installHint").textContent = t("installHint");
   $("footerBuilt").textContent = t("credits");
+}
+
+/** One-tap route to the right build for the device in hand. */
+function renderDownloadCard() {
+  const card = $("downloadCard");
+  if (isNativeApp()) {
+    card.hidden = true;
+    return;
+  }
+  card.hidden = false;
+  const button = $("downloadCardBtn");
+  $("downloadCardTitle").textContent = t("getApp");
+
+  if (isAndroidPhone()) {
+    $("downloadCardSub").textContent = t("apkForPhone");
+    button.textContent = `📱 ${t("downloadApk")}`;
+    button.href = APK_URL;
+    button.setAttribute("download", "");
+    return;
+  }
+  // laptop / desktop: the single-file build simply opens in the browser
+  if (window.__SINGLE_FILE__) {
+    $("downloadCardSub").textContent = t("apkForPhone");
+    button.textContent = `📱 ${t("downloadApk")}`;
+    button.href = APK_URL;
+    button.setAttribute("download", "");
+    return;
+  }
+  $("downloadCardSub").textContent = t("pcForLaptop");
+  button.textContent = `💻 ${t("downloadPc")}`;
+  button.href = "download/bharat-map-quiz.html";
+  button.setAttribute("download", "");
 }
 
 function renderHeroMap() {
@@ -5944,6 +6054,14 @@ function openSettings() {
   $("downloadZip").textContent = `⬇ ${t("downloadZip")}`;
   $("downloadHtml").hidden = singleFile;
   $("downloadZip").hidden = singleFile;
+  $("downloadApk").textContent = `📱 ${t("downloadApk")}`;
+  $("downloadApk").href = APK_URL;
+  $("downloadApk").hidden = isNativeApp();
+  $("downloadNote").textContent = isNativeApp()
+    ? t("apkInstalled")
+    : singleFile
+      ? t("apkNoteSingle")
+      : t("apkNote");
   $("installLabel").textContent = t("install");
   $("installText").textContent = t("installHint");
   $("installSheetBtn").textContent = t("installNow");

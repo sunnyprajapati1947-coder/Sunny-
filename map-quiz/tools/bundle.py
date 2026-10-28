@@ -32,48 +32,98 @@ MODULE_ORDER = [
     "src/app.js",
 ]
 
+# files copied into the zip next to the single-file index.html
 BUNDLE_FILES = [
-    "index.html",
     "manifest.webmanifest",
-    "sw.js",
-    "src/styles.css",
-    "src/data.js",
-    "src/geo.js",
-    "src/i18n.js",
-    "src/store.js",
-    "src/quiz.js",
-    "src/map.js",
-    "src/map-data.js",
-    "src/audio.js",
-    "src/achievements.js",
-    "src/app.js",
     "assets/icons/icon-192.png",
     "assets/icons/icon-512.png",
     "assets/icons/icon-180.png",
     "assets/icons/favicon-64.png",
     "assets/icons/maskable-512.png",
-    "download/bharat-map-quiz.html",
 ]
 
-README = """Bharat Map Quiz — installable web app
-====================================
+README = """Bharat Map Quiz — the whole game in one file
+============================================
 
-This folder is a complete offline web app. Two ways to run it:
+HOW TO PLAY ON A LAPTOP / PC
+  1. Unzip this folder.
+  2. Double-click  index.html  (Windows, macOS, Linux — any browser).
+     That is it: the complete quiz lives inside that one file. No server,
+     no installation, no internet needed.
+  3. If the browser asks what to do with the file, right-click index.html and
+     choose "Open with" -> Chrome / Edge / Firefox.
 
-1. Quick look
-   Double-click index.html. Some browsers (Chrome on desktop) restrict storage and the
-   service worker on file:// URLs, so progress may not be saved between reloads.
+ON AN ANDROID PHONE
+  Use the APK instead (Bharat-Map-Quiz.apk from the same download page).
+  An APK is an Android app — it cannot run on a laptop or PC.
+  On an iPhone, open this index.html in Safari and use Share -> Add to Home Screen.
 
-2. Proper install (recommended)
-   Serve the folder over HTTP and open it on your phone:
-       python3 -m http.server 8080
-   Then use the browser menu -> "Add to Home screen". It then runs full screen,
-   offline, and keeps your progress.
+PLAYING OFFLINE
+  index.html needs no network at all. Progress is saved in the browser storage
+  of whichever device you play on.
 
-Hosting: upload this folder to GitHub Pages, Netlify, Vercel or any static host.
-For a Play Store build wrap it with bubblewrap (TWA) or Capacitor.
+HOSTING (optional)
+  Upload this folder to any static host (GitHub Pages, Netlify, Vercel) and the
+  page also installs as an app via "Add to Home screen" — manifest.webmanifest
+  and sw.js are included for that.
 
 Map data: datta07/INDIAN-SHAPEFILES (MIT licence), derived from Census/LGD boundaries.
+"""
+
+# service worker for the zip: only the single-file page and the icons exist there
+ZIP_SW = """/* Offline-first service worker for the standalone web build. */
+
+const CACHE = "bharat-map-quiz-standalone-v1";
+
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./assets/icons/icon-180.png",
+  "./assets/icons/favicon-64.png",
+  "./assets/icons/maskable-512.png",
+];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+      .catch(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET" || !request.url.startsWith(self.location.origin)) return;
+
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request)
+        .then((response) => {
+          if (response.ok && response.type === "basic") {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match("./index.html"));
+    })
+  );
+});
 """
 
 
@@ -137,11 +187,29 @@ def build_html() -> str:
     return html
 
 
-def build_zip(path: str) -> None:
+def build_zip(path: str, html: str) -> None:
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        # the single-file build becomes index.html so that double-clicking works
+        # on a laptop — ES modules are blocked over file:// URLs
+        archive.writestr("bharat-map-quiz/index.html", html)
+        archive.writestr("bharat-map-quiz/sw.js", ZIP_SW)
         for rel in BUNDLE_FILES:
             archive.write(os.path.join(ROOT, rel), f"bharat-map-quiz/{rel}")
         archive.writestr("bharat-map-quiz/README.txt", README)
+
+
+def check_zip(path: str, html: str) -> None:
+    """The zip must work when a laptop user simply double-clicks index.html."""
+    with zipfile.ZipFile(path) as archive:
+        names = set(archive.namelist())
+        for required in ("bharat-map-quiz/index.html", "bharat-map-quiz/README.txt", "bharat-map-quiz/sw.js"):
+            if required not in names:
+                raise SystemExit(f"zip is missing {required}")
+        packed = archive.read("bharat-map-quiz/index.html").decode("utf-8")
+        if packed != html:
+            raise SystemExit("zip index.html does not match the single-file build")
+        if 'type="module"' in packed:
+            raise SystemExit("zip index.html still needs a server (ES modules over file://)")
 
 
 def main() -> None:
@@ -152,7 +220,8 @@ def main() -> None:
     html = build_html()
     with open(html_path, "w", encoding="utf-8") as handle:
         handle.write(html)
-    build_zip(zip_path)
+    build_zip(zip_path, html)
+    check_zip(zip_path, html)
 
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     with open(os.path.join(OUT_DIR, "VERSION.txt"), "w", encoding="utf-8") as handle:

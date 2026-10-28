@@ -52,6 +52,21 @@ import {
 
 const $ = (id) => document.getElementById(id);
 const MAP_TOTAL = STATES.length;
+
+/* Download targets. Bump APP_VERSION together with map-quiz/package.json. */
+const APP_VERSION = "1.2";
+const REPO_URL = "https://github.com/sunnyprajapati1947-coder/Sunny-";
+const APK_URL = `${REPO_URL}/releases/download/map-quiz-apk-v${APP_VERSION}/Bharat-Map-Quiz-v${APP_VERSION}.apk`;
+const RELEASE_URL = `${REPO_URL}/releases/tag/map-quiz-apk-v${APP_VERSION}`;
+
+/** True inside the Capacitor Android shell. */
+function isNativeApp() {
+  return Boolean(window.Capacitor?.isNativePlatform?.() || window.Capacitor?.Plugins?.App?.exitApp);
+}
+
+function isAndroidPhone() {
+  return /Android/i.test(navigator.userAgent || "");
+}
 const TIMED_MODES = new Set(["timed", "challenge"]);
 
 let profile = loadProfile();
@@ -175,6 +190,7 @@ function renderHome() {
   }
   $("poolCount").textContent = `${poolFor(ui.region).length} states`;
 
+  renderDownloadCard();
   renderDifficultyChips();
   renderModeCards();
   renderStatsRow();
@@ -187,6 +203,38 @@ function renderHome() {
   installCard.hidden = standalone || !ui.installPrompt;
   $("installHint").textContent = t("installHint");
   $("footerBuilt").textContent = t("credits");
+}
+
+/** One-tap route to the right build for the device in hand. */
+function renderDownloadCard() {
+  const card = $("downloadCard");
+  if (isNativeApp()) {
+    card.hidden = true;
+    return;
+  }
+  card.hidden = false;
+  const button = $("downloadCardBtn");
+  $("downloadCardTitle").textContent = t("getApp");
+
+  if (isAndroidPhone()) {
+    $("downloadCardSub").textContent = t("apkForPhone");
+    button.textContent = `📱 ${t("downloadApk")}`;
+    button.href = APK_URL;
+    button.setAttribute("download", "");
+    return;
+  }
+  // laptop / desktop: the single-file build simply opens in the browser
+  if (window.__SINGLE_FILE__) {
+    $("downloadCardSub").textContent = t("apkForPhone");
+    button.textContent = `📱 ${t("downloadApk")}`;
+    button.href = APK_URL;
+    button.setAttribute("download", "");
+    return;
+  }
+  $("downloadCardSub").textContent = t("pcForLaptop");
+  button.textContent = `💻 ${t("downloadPc")}`;
+  button.href = "download/bharat-map-quiz.html";
+  button.setAttribute("download", "");
 }
 
 function renderHeroMap() {
@@ -1356,6 +1404,14 @@ function openSettings() {
   $("downloadZip").textContent = `⬇ ${t("downloadZip")}`;
   $("downloadHtml").hidden = singleFile;
   $("downloadZip").hidden = singleFile;
+  $("downloadApk").textContent = `📱 ${t("downloadApk")}`;
+  $("downloadApk").href = APK_URL;
+  $("downloadApk").hidden = isNativeApp();
+  $("downloadNote").textContent = isNativeApp()
+    ? t("apkInstalled")
+    : singleFile
+      ? t("apkNoteSingle")
+      : t("apkNote");
   $("installLabel").textContent = t("install");
   $("installText").textContent = t("installHint");
   $("installSheetBtn").textContent = t("installNow");

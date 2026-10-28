@@ -32,6 +32,12 @@ check("no external script src", !/<script[^>]+src=/.test(html));
 check("map data inlined", html.includes("window.INDIA_MAP="));
 check("downloads stay small enough for a phone", statSync(htmlPath).size < 900 * 1024, statSync(htmlPath).size);
 
+const zipBytes = readFileSync(zipPath).toString("latin1");
+check("zip contains a double-clickable index.html", zipBytes.includes("bharat-map-quiz/index.html"));
+check("zip contains the laptop instructions", zipBytes.includes("bharat-map-quiz/README.txt"));
+check("zip keeps the standalone service worker", zipBytes.includes("bharat-map-quiz/sw.js"));
+check("zip stays small", statSync(zipPath).size < 900 * 1024, statSync(zipPath).size);
+
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on("jsdomError", (error) => errors.push(error.message));

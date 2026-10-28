@@ -1,16 +1,24 @@
 {
   "name": "Bharat Map Quiz — India naksha quiz",
   "short_name": "Bharat Map",
-  "description": "India ka naksha dekh ke rajya, rajdhani aur shape yaad karo. Map quiz with Hinglish, Hindi and English, progress tracking and offline play.",
+  "description": "Learn India on the map: states, shapes, capitals, neighbours. Easy, Normal and Advanced levels, map tour, offline play, no ads.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
   "background_color": "#0b1220",
   "theme_color": "#0b1220",
-  "lang": "hi",
-  "categories": ["education", "games", "trivia"],
+  "lang": "en",
+  "categories": [
+    "education",
+    "games",
+    "trivia"
+  ],
   "icons": [
     {
       "src": "assets/icons/icon-192.png",

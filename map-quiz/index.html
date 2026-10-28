@@ -130,6 +130,14 @@
 
             <div class="weak-card" id="weakCard"></div>
 
+            <div class="download-card" id="downloadCard">
+              <div class="download-copy">
+                <strong id="downloadCardTitle">Get the app</strong>
+                <span id="downloadCardSub"></span>
+              </div>
+              <a class="btn btn-primary small-btn" id="downloadCardBtn" href="#" rel="noopener">Download</a>
+            </div>
+
             <div class="install-card" id="installCard" hidden>
               <div class="install-copy">
                 <strong id="installTitle">Install on this device</strong>
@@ -370,13 +378,17 @@
             Offline single-file build + the installable web app package.
           </p>
           <div class="sheet-actions wrap">
+            <a class="btn btn-primary" id="downloadApk" href="#" rel="noopener"
+              >📱 Android app (.apk)</a
+            >
             <a class="btn btn-ghost" id="downloadHtml" href="download/bharat-map-quiz.html" download
               >⬇ Single file (.html)</a
             >
             <a class="btn btn-ghost" id="downloadZip" href="download/bharat-map-quiz.zip" download
-              >⬇ App package (.zip)</a
+              >⬇ Laptop / PC package (.zip)</a
             >
           </div>
+          <p class="sheet-value small" id="downloadNote"></p>
         </div>
 
         <div class="sheet-block">

@@ -4,30 +4,49 @@ An India map quiz you can install like an app. Tap the map, learn the shapes, th
 timed rounds, survival mode and a fresh daily challenge. Everything is in English, works offline,
 and stores progress on the device — no accounts, no ads, no tracking.
 
-## 📱 Android APK (phone par install karo)
+## ⬇️ Download (phone aur laptop, dono ke liye)
 
-**[Download the APK](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.1)**
-→ `Bharat-Map-Quiz-v1.1.apk` (≈4 MB, signed release build, works fully offline)
+**Ek hi page par sab files:**
+**[github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.2](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.2)**
 
-> **v1.1 — kid-friendly update.** Three difficulty levels (Easy is the default: names printed on the
-> map, 3 choices, one free retry), a round can never ask the same state twice, the picker pushes
-> towards states you have not met yet so every corner of the map comes up, a **Map tour** that walks
-> all 36 states in one round, a "How to play" tutorial and plain-language prompts.
+| Device | File | Kya karna hai |
+| --- | --- | --- |
+| 📱 **Android phone** | `Bharat-Map-Quiz-v1.2.apk` (≈4 MB) | Download → file kholo → **Allow → Install** |
+| 💻 **Laptop / PC** | `Bharat-Map-Quiz-v1.2-web.html` | Download → **double-click** → browser me game chalu (koi install nahi) |
+| 💻 Laptop, folder chahiye | `Bharat-Map-Quiz-v1.2-web.zip` | Unzip → `index.html` double-click |
+| 🌐 Kisi bhi device par abhi khelna | is repo me `map-quiz/index.html` | Serve karke browser me kholo |
 
-1. Phone par link kholo — ya is QR ko phone ke camera se scan karo:
+**Seedha APK link:** [`Bharat-Map-Quiz-v1.2.apk`](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/map-quiz-apk-v1.2/Bharat-Map-Quiz-v1.2.apk)
+· **Seedha laptop file:** [`Bharat-Map-Quiz-v1.2-web.html`](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/map-quiz-apk-v1.2/Bharat-Map-Quiz-v1.2-web.html)
+
+> **GitHub se download nahi ho raha?** Do mirror links hain (CI har build par update karta hai):
+> · [jsDelivr CDN (India me sabse reliable)](https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@apk-latest/Bharat-Map-Quiz-v1.2.apk)
+> · [raw.githubusercontent.com](https://raw.githubusercontent.com/sunnyprajapati1947-coder/Sunny-/apk-latest/Bharat-Map-Quiz-v1.2.apk)
+> · laptop ke liye: [jsDelivr web.html](https://cdn.jsdelivr.net/gh/sunnyprajapati1947-coder/Sunny-@apk-latest/Bharat-Map-Quiz-v1.2-web.html)
+
+### 📱 Phone par install (APK)
+
+1. Phone par APK link kholo — ya ye QR camera se scan karo:
 
    <img src="download/qr-apk.png" alt="QR code for the APK download" width="200">
 
 2. File kholo → Android "install unknown apps" allow karne ko kahega → **Settings → Allow** → **Install**.
 3. Play Protect warning aaye (self-signed apps ke liye normal hai) → **More details → Install anyway**.
 
-App icon launcher me **Bharat Map Quiz** naam se milega. APK `map-quiz-apk-v1.1` release me har build ke
-saath refresh hota hai, aur build process `.github/workflows/build-apk.yml` me hai.
+App launcher me **Bharat Map Quiz** naam se milega. APK `map-quiz-apk-v1.2` release me har build ke
+saath refresh hota hai, aur poora build process `.github/workflows/build-apk.yml` me hai.
 
-**Web build (same app):** [`download/bharat-map-quiz.html`](download/bharat-map-quiz.html) (one file,
-double-click to play) · [`download/bharat-map-quiz.zip`](download/bharat-map-quiz.zip) (installable PWA)
+### 💻 Laptop / PC par khelna
+
+- **APK laptop par nahi chalta** — wo sirf Android app hai (Android phone/tablet par hi install hota hai).
+- Laptop par `Bharat-Map-Quiz-v1.2-web.html` download karo aur double-click karo. Bas — poora game us
+  ek file ke andar hai: koi internet, server ya installation nahi. Progress us browser me save hoti hai.
+- `bharat-map-quiz.zip` me bhi `index.html` wahi single-file build hai, isliye unzip karke double-click
+  karne se seedha chal jata hai (pehle wale zip me ES modules the jo `file://` par block hote hain — wo
+  bug fix ho gaya).
 
 ---
+
 
 
 ---

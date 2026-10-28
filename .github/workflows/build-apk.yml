@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      APP_VERSION: "1.1"
+      APP_VERSION: "1.2"
     defaults:
       run:
         working-directory: map-quiz
@@ -184,6 +184,9 @@ jobs:
             || echo "::warning title=signature::signature could not be verified"
           "$tools/aapt" dump badging "dist/$name" > dist/BADGING.txt 2>&1 || true
           grep -m2 -E "^package:|^application-label:" dist/BADGING.txt || true
+          # the browser build travels in the same release: laptops cannot run an APK
+          cp download/bharat-map-quiz.html "dist/Bharat-Map-Quiz-v${APP_VERSION}-web.html"
+          cp download/bharat-map-quiz.zip "dist/Bharat-Map-Quiz-v${APP_VERSION}-web.zip"
           (cd dist && sha256sum "$name" > SHA256SUMS.txt) || true
           ls -lh dist
 
@@ -194,32 +197,34 @@ jobs:
           set -euo pipefail
           tag="map-quiz-apk-v${APP_VERSION}"
           cat > /tmp/notes.md <<'NOTES'
-          **Installable Android APK** of Bharat Map Quiz — the same app as the web build, packaged
-          as an offline WebView app.
+          Bharat Map Quiz — offline India map quiz. Pick the file for your device.
 
-          **v1.1 — kid-friendly update**
-
-          - **Three difficulty levels**: Easy (names printed on the map, 3 choices, one free retry),
-            Normal and Advanced (4 choices, faster timers)
-          - **No repeated questions**: a round never asks the same state twice, and the picker
-            favours states you have not met yet, so every corner of the map comes up
-          - **Map tour**: all 36 states in one guided round, north to south
-          - "How to play" tutorial, question-type chips, plain-language prompts and instant
-            explanations with the capital name
-          - Learn map with capital + fact cards, levels/XP, 20 achievements, English UI
-            (state names optionally in हिंदी)
-          - Works completely offline; no ads, no accounts, no tracking
-
-          **How to install**
-
-          1. Download the `.apk` file below (do it on the phone).
-          2. Open the file. Android asks to allow installs from your browser/Files app —
+          ### 📱 Android phone → the `.apk`
+          1. Download `Bharat-Map-Quiz-*.apk` below (do it on the phone).
+          2. Open the file → Android asks to allow installs from your browser/Files app →
              tap **Settings → Allow**, then **Install**.
-          3. If Play Protect shows a warning (it does for self-signed apps), tap
+          3. If Play Protect warns you (normal for self-signed apps) →
              **More details → Install anyway**.
 
-          Signed with a generated release key, so updates install in place. Uninstall once if you
-          ever switch to a build signed with a different key.
+          An APK only runs on Android. It cannot be opened on a laptop.
+
+          ### 💻 Laptop / PC → the web file
+          Download `Bharat-Map-Quiz-*-web.html` and **double-click it** — the whole game runs in
+          Chrome/Edge/Firefox with no installation and no internet. Prefer a folder? Grab the
+          `*-web.zip`, unzip it and open `index.html` (it is the same single file).
+
+          ### What's inside v1.2
+          - **Easy / Normal / Advanced levels** — Easy prints the state names on the map, gives
+            3 choices, one free retry and extra time
+          - **No repeated questions** — a round never asks the same state twice, and states you
+            have not met yet are asked first, so the whole map comes up
+          - **Map tour** — all 36 states and UTs in one guided round, north to south
+          - "How to play" tutorial, question-type chips, instant explanations with the capital
+          - 7 modes, daily challenge, 20 achievements, XP levels, English UI
+            (state names optionally in हिंदी)
+          - Works fully offline; no ads, no accounts, no tracking
+
+          Signed with a generated release key, so newer builds install in place.
           NOTES
           printf '\n**APK size:** %.1f MB · **Build:** %s\n' \
             "$(echo "$apk_size / 1048576" | bc -l)" "${APK_KIND:-release}" >> /tmp/notes.md
@@ -240,3 +245,23 @@ jobs:
             echo "Variant: **${APK_KIND:-release}**"
           } >> "$GITHUB_STEP_SUMMARY"
           echo "asset: $url"
+
+      - name: Mirror the downloads on the apk-latest branch
+        if: success()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          git config --global user.name "apk-bot"
+          git config --global user.email "actions@users.noreply.github.com"
+          rm -rf /tmp/mirror && mkdir -p /tmp/mirror && cd /tmp/mirror
+          git init -q
+          cp "$GITHUB_WORKSPACE/map-quiz/dist/"* .
+          git add -A
+          git commit -qm "Bharat Map Quiz v${APP_VERSION} downloads"
+          if git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:apk-latest; then
+            echo "::notice title=mirror::apk-latest updated (jsDelivr + raw links work)"
+          else
+            echo "::warning title=mirror::could not update the mirror branch"
+          fi
