@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lyrics timing tool</title>
+<style>
+  :root { --ochre:#E8AA38; --clay:#D97757; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#1b1820; color:#eee; font:14px/1.5 system-ui, sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:20px 16px 60px; }
+  h1 { font-size:24px; color:var(--ochre); margin:0 0 4px; }
+  p.sub { color:#9b93ab; margin:0 0 18px; }
+  .panel { background:#241f2c; border:1px solid #39314a; border-radius:10px; padding:14px; margin-bottom:14px; }
+  textarea { width:100%; min-height:150px; background:#17141d; color:#eee; border:1px solid #3a3346; border-radius:8px; padding:10px; font:13px/1.6 ui-monospace, monospace; resize:vertical; }
+  button { background:#2d2738; color:#eee; border:1px solid #443b55; border-radius:7px; padding:8px 13px; font:14px system-ui; cursor:pointer; }
+  button:hover { background:#3a3148; border-color:var(--clay); }
+  button.big { background:var(--clay); border-color:var(--clay); color:#fff; font-weight:600; padding:12px 22px; font-size:16px; }
+  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  audio { width:100%; margin-top:8px; }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  td, th { padding:5px 8px; border-bottom:1px solid #322b40; text-align:left; font-size:13px; }
+  tr.cur { background:#3a2f1c; }
+  tr.done td:first-child { color:#7ec98a; }
+  .k { background:#17141d; border:1px solid #3a3346; border-radius:5px; padding:1px 7px; font:12px ui-monospace,monospace; color:var(--ochre); }
+  .muted { color:#8a8398; }
+  #out { min-height:120px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lyrics timing tool</h1>
+  <p class="sub">Gaana chalao aur har line shuru hote hi <span class="k">Space</span> dabao. Times apne aap ban jayenge.</p>
+
+  <div class="panel">
+    <div class="row">
+      <input type="file" id="file" accept="audio/*">
+      <span class="muted">ya default: assets/song.mp3</span>
+      <button id="reload">load assets/song.mp3</button>
+    </div>
+    <audio id="aud" controls src="assets/song.mp3"></audio>
+  </div>
+
+  <div class="panel">
+    <b>1 · Lyrics paste karo</b> <span class="muted">(ek line per row)</span>
+    <textarea id="lyr">Subah ki pehli kiran
+Meri aankhon me utari
+Raaton ke andhere me
+Ek taara bula raha</textarea>
+    <div class="row" style="margin-top:10px">
+      <button id="load">Lines load karo</button>
+      <span class="muted" id="count"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <b>2 · Tap karo</b>
+    <p class="muted" style="margin:6px 0 10px">
+      <span class="k">Space</span> line start · <span class="k">Enter</span> line end (optional) ·
+      <span class="k">Backspace</span> undo · <span class="k">B</span> tap BPM ·
+      <span class="k">←</span>/<span class="k">→</span> 2s back/forward · <span class="k">P</span> play/pause
+    </p>
+    <div class="row">
+      <button class="big" id="tap">TAP (Space)</button>
+      <button id="undo">Undo</button>
+      <button id="reset">Reset times</button>
+      <span id="bpm" class="muted">BPM: —</span>
+      <span id="now" class="muted">0.00 s</span>
+    </div>
+    <table id="tbl"><tbody></tbody></table>
+  </div>
+
+  <div class="panel">
+    <b>3 · Copy karke src/song.js me paste karo</b>
+    <textarea id="out" readonly></textarea>
+    <div class="row" style="margin-top:10px">
+      <button id="copy">Copy lyrics array</button>
+      <button id="copyAll">Copy pura song.js block</button>
+      <span class="muted" id="copied"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const aud = document.getElementById('aud');
+let lines = [], idx = 0, taps = [];
+
+document.getElementById('file').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  aud.src = URL.createObjectURL(f);
+};
+document.getElementById('reload').onclick = () => { aud.src = 'assets/song.mp3'; };
+
+function loadLines() {
+  const raw = document.getElementById('lyr').value.split('\n').map(s => s.trim()).filter(Boolean);
+  lines = raw.map(text => ({ text, a: null, b: null }));
+  idx = 0; render();
+}
+document.getElementById('load').onclick = loadLines;
+
+function render() {
+  const tb = document.querySelector('#tbl tbody');
+  tb.innerHTML = lines.map((l, i) =>
+    `<tr class="${i === idx ? 'cur' : ''} ${l.a != null ? 'done' : ''}">
+       <td style="width:52px">${i + 1}</td>
+       <td style="width:90px">${l.a != null ? l.a.toFixed(2) : '—'}</td>
+       <td style="width:90px">${l.b != null ? l.b.toFixed(2) : '—'}</td>
+       <td>${l.text}</td>
+     </tr>`).join('');
+  document.getElementById('count').textContent = lines.length + ' lines';
+  buildOut();
+}
+function buildOut() {
+  const rows = lines.filter(l => l.a != null);
+  const arr = rows.map((l, i) => {
+    const next = rows[i + 1];
+    const end = l.b != null ? l.b : (next ? Math.max(l.a + .4, next.a - .08) : l.a + 4);
+    return `    [${l.a.toFixed(2)}, ${end.toFixed(2)}, ${JSON.stringify(l.text)}]`;
+  });
+  document.getElementById('out').value = 'lyrics: [\n' + arr.join(',\n') + '\n  ]';
+}
+function tap() {
+  if (!lines.length) loadLines();
+  if (idx >= lines.length) return;
+  lines[idx].a = aud.currentTime;
+  if (idx > 0 && lines[idx - 1].b == null) lines[idx - 1].b = Math.max(lines[idx - 1].a + .3, aud.currentTime - .08);
+  idx++; render();
+}
+function markEnd() { if (idx > 0) { lines[idx - 1].b = aud.currentTime; render(); } }
+function undo() { if (idx > 0) { idx--; lines[idx].a = null; lines[idx].b = null; if (idx > 0) lines[idx - 1].b = null; render(); } }
+
+document.getElementById('tap').onclick = tap;
+document.getElementById('undo').onclick = undo;
+document.getElementById('reset').onclick = () => { lines.forEach(l => { l.a = null; l.b = null; }); idx = 0; render(); };
+
+// tap BPM
+let bt = [];
+function tapBpm() {
+  const now = performance.now() / 1000;
+  bt.push(now); bt = bt.filter(x => now - x < 5);
+  if (bt.length > 1) {
+    const d = (bt[bt.length - 1] - bt[0]) / (bt.length - 1);
+    document.getElementById('bpm').textContent = `BPM: ${(60 / d).toFixed(1)}  (${bt.length} taps)`;
+  }
+}
+
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); tap(); }
+  else if (e.code === 'Enter') { e.preventDefault(); markEnd(); }
+  else if (e.code === 'Backspace') { e.preventDefault(); undo(); }
+  else if (e.key === 'b' || e.key === 'B') tapBpm();
+  else if (e.key === 'p' || e.key === 'P') { aud.paused ? aud.play() : aud.pause(); }
+  else if (e.code === 'ArrowLeft') { aud.currentTime = Math.max(0, aud.currentTime - 2); }
+  else if (e.code === 'ArrowRight') { aud.currentTime += 2; }
+});
+aud.addEventListener('timeupdate', () => { document.getElementById('now').textContent = aud.currentTime.toFixed(2) + ' s'; });
+
+const copyText = async txt => { try { await navigator.clipboard.writeText(txt); } catch (e) { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } document.getElementById('copied').textContent = 'copied ✓'; setTimeout(() => document.getElementById('copied').textContent = '', 1800); };
+document.getElementById('copy').onclick = () => copyText(document.getElementById('out').value);
+document.getElementById('copyAll').onclick = () => copyText(
+  `  bpm: ${(document.getElementById('bpm').textContent.match(/[\d.]+/) || [90])[0]},\n` +
+  `  duration: ${Math.ceil(aud.duration || 60)},\n` +
+  document.getElementById('out').value);
+
+loadLines();
+</script>
+</body>
+</html>

@@ -3,3 +3,8 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# lyricvideo kit: deps, rendered output aur audio files repo me nahi jaate
+lyricvideo/node_modules/
+lyricvideo/out/
+lyricvideo/assets/*.mp3

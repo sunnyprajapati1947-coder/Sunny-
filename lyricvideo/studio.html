@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Lyric video studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Shantell+Sans:wght@800&family=Kalam:wght@400;700&display=block">
+<style>
+  html, body { margin: 0; background: #1b1820; color: #eee; font: 13px system-ui, sans-serif; }
+  main { padding: 12px; display: grid; gap: 10px; }
+  #out { width: min(100%, 1280px); aspect-ratio: 16 / 9; height: auto; background: #F3EBDC; border-radius: 6px; }
+  .p5Canvas { display: none !important; }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 1280px; }
+  #scrub { flex: 1; min-width: 320px; }
+  #tt { font-variant-numeric: tabular-nums; min-width: 180px; color: #bbb; }
+  button, select { background: #2d2738; color: #eee; border: 1px solid #443b55; border-radius: 6px; padding: 6px 11px; font: 13px system-ui; cursor: pointer; }
+  button:hover { background: #3a3148; border-color: #D97757; }
+  button:disabled { opacity: .45; cursor: default; }
+  label { color: #aaa; display: inline-flex; gap: 5px; align-items: center; }
+  #msg { color: #E8AA38; min-height: 18px; }
+  a { color: #E8AA38; }
+</style>
+<script src="node_modules/p5/lib/p5.min.js"></script>
+<script src="node_modules/p5.brush/dist/p5.brush.js"></script>
+</head>
+<body>
+<main>
+  <canvas id="out" width="1920" height="1080"></canvas>
+  <div class="bar">
+    <input id="scrub" type="range" min="0" max="60" step="0.0417" value="0">
+    <span id="tt">loading…</span>
+  </div>
+  <div class="bar">
+    <select id="jump"></select>
+    <label><input id="draft" type="checkbox" checked> draft (fast)</label>
+    <button id="b4">Bake 4 s preview</button>
+    <button id="b8">Bake 8 s</button>
+    <button id="play" disabled>▶ Play baked</button>
+    <button id="stop" disabled>■ Stop</button>
+    <a href="timing.html">lyrics timing tool →</a>
+  </div>
+  <div id="msg"></div>
+</main>
+
+<script src="src/song.js"></script>
+<script src="src/core.js"></script>
+<script src="src/singer.js"></script>
+<script src="src/scenes.js"></script>
+<script src="src/timeline.js"></script>
+<script>
+// ---------- dev UI (not used by the renderer: render.mjs loads this page with ?render) ----------
+function devUI() {
+  const s = document.getElementById('scrub'), lab = document.getElementById('tt'), msg = document.getElementById('msg');
+  const jump = document.getElementById('jump'), draft = document.getElementById('draft');
+  const bPlay = document.getElementById('play'), bStop = document.getElementById('stop');
+  s.max = SONG.duration;
+  window.setDraft(draft.checked);
+
+  jump.innerHTML = '<option value="">jump to a line…</option>' +
+    SONG.lyrics.map((l, i) => `<option value="${l[0]}">${(i + 1)}. ${l[0].toFixed(1)}s — ${l[2].slice(0, 40)}</option>`).join('');
+
+  let busy = false, want = null;
+  const go = async () => {
+    if (busy) return; busy = true;
+    while (want != null) {
+      const t = want; want = null; const t0 = performance.now();
+      await window.paintAt(t);
+      lab.textContent = `${t.toFixed(2)}s · ${Math.round(performance.now() - t0)} ms/frame`;
+    }
+    busy = false;
+  };
+  const seek = t => { t = Math.max(0, Math.min(SONG.duration, t)); s.value = t; want = t; go(); };
+
+  s.addEventListener('input', () => { want = +s.value; go(); });
+  jump.addEventListener('change', () => { if (jump.value !== '') seek(+jump.value); });
+  draft.addEventListener('change', () => { window.setDraft(draft.checked); seek(+s.value); });
+  addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.key === 'ArrowRight') seek(+s.value + (e.shiftKey ? 1 : .25));
+    if (e.key === 'ArrowLeft') seek(+s.value - (e.shiftKey ? 1 : .25));
+  });
+
+  // ---------- bake a short preview, then play it back with the song ----------
+  const audio = new Audio(SONG.audio);
+  let hasAudio = false;
+  audio.addEventListener('canplay', () => { hasAudio = true; });
+  audio.addEventListener('error', () => { hasAudio = false; });
+
+  let baked = null, raf = 0;
+  const fps = 12;
+  async function bake(secs) {
+    const t0 = +s.value, n = Math.round(secs * fps), frames = [];
+    document.querySelectorAll('button').forEach(b => b.disabled = true);
+    const started = performance.now();
+    for (let i = 0; i < n; i++) {
+      await window.paintAt(t0 + i / fps);
+      frames.push(await createImageBitmap(document.getElementById('out')));
+      msg.textContent = `baking ${i + 1}/${n} frames… (${Math.round((performance.now() - started) / (i + 1))} ms/frame)`;
+      await new Promise(r => setTimeout(r, 0));
+    }
+    baked = { t0, frames };
+    msg.textContent = `baked ${n} frames from ${t0.toFixed(2)}s — press ▶ Play`;
+    document.querySelectorAll('button').forEach(b => b.disabled = false);
+    bPlay.disabled = false; bStop.disabled = false;
+  }
+  function play() {
+    if (!baked) return;
+    const ctx = document.getElementById('out').getContext('2d');
+    if (hasAudio) { audio.currentTime = baked.t0; audio.play().catch(() => {}); }
+    const start = performance.now();
+    const tick = () => {
+      const el = (performance.now() - start) / 1000;
+      const i = Math.floor(el * fps);
+      if (i >= baked.frames.length) { stop(); return; }
+      ctx.drawImage(baked.frames[i], 0, 0);
+      msg.textContent = `playing ${(baked.t0 + el).toFixed(2)}s`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  }
+  function stop() { cancelAnimationFrame(raf); audio.pause(); msg.textContent = 'stopped'; }
+
+  document.getElementById('b4').onclick = () => bake(4);
+  document.getElementById('b8').onclick = () => bake(8);
+  bPlay.onclick = play;
+  bStop.onclick = stop;
+
+  seek(+(new URLSearchParams(location.search).get('t') || 0));
+}
+</script>
+</body>
+</html>

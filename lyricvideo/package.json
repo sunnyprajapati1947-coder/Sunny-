@@ -1,0 +1,18 @@
+{
+  "name": "lyricvideo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Watercolour lyric-video engine: apna gaana + lyrics daalo, MP4 nikaalo.",
+  "scripts": {
+    "studio": "python3 -m http.server 8080 --bind 0.0.0.0",
+    "sheet": "node render.mjs --sheet=2,8,14,20,26,32",
+    "frames": "node render.mjs --frames=0: --workers=4",
+    "encode": "node render.mjs --encode --out=out/video.mp4"
+  },
+  "dependencies": {
+    "p5": "^2.3.3",
+    "p5.brush": "^2.2.3",
+    "puppeteer-core": "^25.11.0"
+  }
+}

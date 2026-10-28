@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lyric Video Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Kalam:wght@700&display=swap">
+<style>
+  body { margin:0; background:#1b1820; color:#eee; font:15px/1.6 system-ui, sans-serif; }
+  .wrap { max-width:860px; margin:0 auto; padding:34px 18px 70px; }
+  h1 { font:46px "Permanent Marker","Kalam",cursive; color:#E8AA38; margin:0 0 2px; }
+  p.sub { color:#9b93ab; margin:0 0 26px; }
+  .step { display:flex; gap:14px; background:#241f2c; border:1px solid #39314a; border-radius:12px; padding:16px 18px; margin-bottom:12px; }
+  .n { flex:0 0 34px; height:34px; border-radius:50%; background:#D97757; color:#fff; display:grid; place-items:center; font-weight:700; }
+  .step b { color:#fff; }
+  a { color:#E8AA38; }
+  code { background:#17141d; padding:2px 7px; border-radius:5px; font:13px ui-monospace,monospace; color:#e9d9c2; }
+  .btns { display:flex; gap:10px; flex-wrap:wrap; margin:22px 0 10px; }
+  .btn { background:#D97757; color:#fff; text-decoration:none; padding:12px 20px; border-radius:9px; font-weight:600; }
+  .btn.alt { background:#2d2738; border:1px solid #443b55; color:#eee; }
+  .muted { color:#8a8398; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lyric Video Kit</h1>
+  <p class="sub">Apna gaana + lyrics daalo → watercolour animated lyric video (1920×1080). Hindi aur English dono chalte hain.</p>
+
+  <div class="btns">
+    <a class="btn" href="studio.html">🎬 Studio kholo</a>
+    <a class="btn alt" href="timing.html">⏱️ Lyrics timing tool</a>
+  </div>
+
+  <div class="step"><div class="n">1</div><div><b>Gaana daalo</b><br>Apni mp3 file ko <code>lyricvideo/assets/song.mp3</code> naam se rakh do.</div></div>
+  <div class="step"><div class="n">2</div><div><b>Lyrics time karo</b><br><a href="timing.html">timing tool</a> kholo → lyrics paste karo → gaana chalao → har line pe <code>Space</code> dabao → "Copy" → <code>src/song.js</code> me paste.</div></div>
+  <div class="step"><div class="n">3</div><div><b>Dekho</b><br><a href="studio.html">studio</a> me slider se scrub karo, ya "Bake 4s preview" se chhota animation chala ke dekho.</div></div>
+  <div class="step"><div class="n">4</div><div><b>MP4 banao</b><br><code>node render.mjs --frames=0: --workers=4</code> phir <code>node render.mjs --encode</code> <span class="muted">(Chrome + ffmpeg chahiye)</span></div></div>
+
+  <p class="muted">Scenes available: sunburst · night · city · rain · typo · waves · confetti · spotlight —
+  har line ke liye <code>src/song.js</code> me 4th value me scene ka naam de sakte ho.</p>
+</div>
+</body>
+</html>
