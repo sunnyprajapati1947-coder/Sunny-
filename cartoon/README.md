@@ -11,12 +11,23 @@ generated.
 
 ## ⬇ Download the film (permanent link)
 
-The finished MP4 lives as a **GitHub Release asset** (kept out of git history
-so the repo stays light):
+The finished MP4 is committed to this repository and pinned to the tag
+`cartoon-v1`, so these links never expire:
+
+**Direct download (open it, or right-click → Save video as…):**
 
 ```
-https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/cartoon-v1/chinku-aur-jaadui-gaajar.mp4
+https://github.com/sunnyprajapati1947-coder/Sunny-/raw/cartoon-v1/cartoon/chinku-aur-jaadui-gaajar.mp4
 ```
+
+Same file via the raw CDN:
+
+```
+https://raw.githubusercontent.com/sunnyprajapati1947-coder/Sunny-/cartoon-v1/cartoon/chinku-aur-jaadui-gaajar.mp4
+```
+
+Release page: <https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/cartoon-v1>
+Browse the source at this tag: <https://github.com/sunnyprajapati1947-coder/Sunny-/tree/cartoon-v1/cartoon>
 
 | Spec | Value |
 |---|---|
