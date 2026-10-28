@@ -224,6 +224,12 @@ jobs:
             (state names optionally in हिंदी)
           - Works fully offline; no ads, no accounts, no tracking
 
+          ### If the download does not start
+          GitHub's download CDN is blocked on some mobile networks. The same files are mirrored on
+          the `apk-latest` branch (updated by CI) and served by jsDelivr:
+          - APK: https://cdn.jsdelivr.net/gh/${{ github.repository }}@apk-latest/Bharat-Map-Quiz-v${APP_VERSION}.apk
+          - Laptop file: https://cdn.jsdelivr.net/gh/${{ github.repository }}@apk-latest/Bharat-Map-Quiz-v${APP_VERSION}-web.html
+
           Signed with a generated release key, so newer builds install in place.
           NOTES
           printf '\n**APK size:** %.1f MB · **Build:** %s\n' \
