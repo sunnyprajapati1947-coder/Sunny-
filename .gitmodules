@@ -1,0 +1,27 @@
+[submodule "github/OmniVoice"]
+	path = github/OmniVoice
+	url = https://github.com/k2-fsa/OmniVoice.git
+[submodule "github/Duix-Avatar"]
+	path = github/Duix-Avatar
+	url = https://github.com/duixcom/Duix-Avatar.git
+[submodule "github/OpenMontage"]
+	path = github/OpenMontage
+	url = https://github.com/calesthio/OpenMontage.git
+[submodule "github/local-ai-agent"]
+	path = github/local-ai-agent
+	url = https://github.com/MwesigwaLewis/local-ai-agent.git
+[submodule "github/mimir"]
+	path = github/mimir
+	url = https://github.com/csornyei/mimir.git
+[submodule "github/local-AI-Agent"]
+	path = github/local-AI-Agent
+	url = https://github.com/AbuZar-Ansarii/local-AI-Agent.git
+[submodule "github/termux-assistant"]
+	path = github/termux-assistant
+	url = https://github.com/explysm/termux-assistant.git
+[submodule "github/llama-agent"]
+	path = github/llama-agent
+	url = https://github.com/gary149/llama-agent.git
+[submodule "github/nova-ai-assistant"]
+	path = github/nova-ai-assistant
+	url = https://github.com/vishal-q/nova-ai-assistant.git

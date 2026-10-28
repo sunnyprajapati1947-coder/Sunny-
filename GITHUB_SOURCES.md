@@ -18,6 +18,15 @@
 6. vishal-q/nova-ai-assistant
    Voice, wake-word, Hindi/Hinglish assistant concepts.
 
+7. k2-fsa/OmniVoice
+   Multilingual zero-shot TTS (600+ languages), voice cloning and voice design.
+
+8. duixcom/Duix-Avatar
+   Offline AI avatar / digital-human video generation toolkit (Electron + Docker).
+
+9. calesthio/OpenMontage
+   Agentic video production system (pipelines, Remotion composer, providers).
+
 Important:
 These repositories are SOURCE MATERIAL.
 Nova will not blindly copy unsafe or incompatible code.

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-ROOT = Path.home() / "Nova"
+ROOT = Path(__file__).resolve().parents[1]
 SOURCES = {
     "hakim": ROOT / "github" / "local-ai-agent",
     "mimir": ROOT / "github" / "mimir",
@@ -8,6 +8,9 @@ SOURCES = {
     "termux_assistant": ROOT / "github" / "termux-assistant",
     "llama_agent": ROOT / "github" / "llama-agent",
     "nova_voice": ROOT / "github" / "nova-ai-assistant",
+    "omnivoice": ROOT / "github" / "OmniVoice",
+    "duix_avatar": ROOT / "github" / "Duix-Avatar",
+    "openmontage": ROOT / "github" / "OpenMontage",
 }
 
 def check():
