@@ -1,6 +1,6 @@
 # GitHub Sources — Install Notes
 
-Added 2026-10-28. The three sources below are checked out as git submodules under
+Added 2026-10-28. The four sources below are checked out as git submodules under
 `github/` and their dependencies are installed for local development.
 
 ## 1. OmniVoice (`github/OmniVoice`) — INSTALLED
@@ -30,6 +30,25 @@ Added 2026-10-28. The three sources below are checked out as git submodules unde
   Add it to PATH: `export PATH="$HOME/.local/bin:$PATH"`.
 - `make preflight` and `make hyperframes-doctor` both pass (doctor reports optional
   extras missing: FFprobe, Chrome headless, whisper-cpp, Docker).
+
+## 4. FreeVideo (`github/FreeVideo`) — INSTALLED (Python 3.11 workaround)
+
+- Editable install in `github/FreeVideo/.venv`: `freevideo-engine 2026.9.16.41444`
+  plus the `runtime` extras (triton 3.7.1, transformers 5.15.0, accelerate 1.14.0,
+  peft, huggingface_hub 1.30.0, modelscope-hub, ...). `pip check` is clean.
+- CLI verified: `github/FreeVideo/.venv/bin/freevideo --help`
+  (subcommands: plan, doctor, generate, bench, calibrate, ...).
+- Upstream requires Python `>=3.12,<3.13`. This sandbox only has 3.11 and
+  FreeVideo's bootstrap downloads uv/CPython from the GitHub release CDN
+  (blocked here), and building CPython 3.12 needs dev headers that are absent.
+  The whole `freevideo_engine` package compiles cleanly under 3.11
+  (`python3 -m compileall` passed), so it was installed with
+  `PIP_IGNORE_REQUIRES_PYTHON=1 ... pip install -e . --no-deps`.
+- Only pin deviation: `numpy 2.4.6` instead of `2.5.2` (no cp311 wheel).
+  Everything else matches the pinned runtime versions.
+- Full setup (`./setup.sh`: ComfyUI + model weights + GPU) is not possible in
+  this sandbox — no GPU, and model/ComfyUI downloads are blocked. Torch is not
+  in this venv by design; the engine loads it from ComfyUI's environment.
 
 ## General
 

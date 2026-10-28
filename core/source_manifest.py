@@ -11,6 +11,7 @@ SOURCES = {
     "omnivoice": ROOT / "github" / "OmniVoice",
     "duix_avatar": ROOT / "github" / "Duix-Avatar",
     "openmontage": ROOT / "github" / "OpenMontage",
+    "freevideo": ROOT / "github" / "FreeVideo",
 }
 
 def check():

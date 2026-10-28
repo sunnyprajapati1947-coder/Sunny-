@@ -27,6 +27,9 @@
 9. calesthio/OpenMontage
    Agentic video production system (pipelines, Remotion composer, providers).
 
+10. FlashML-org/FreeVideo
+    Local MiniMax H3 video generation engine (VDN inference, ComfyUI plugin).
+
 Important:
 These repositories are SOURCE MATERIAL.
 Nova will not blindly copy unsafe or incompatible code.
