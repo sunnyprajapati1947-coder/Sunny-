@@ -1,0 +1,5 @@
+node_modules/
+build/
+audio/music.wav
+audio/sfx.wav
+*.log

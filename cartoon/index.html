@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>चिंकू और जादुई गाजर — बच्चों की कार्टून फिल्म</title>
+<style>
+  :root{ --ink:#3a241c; --sun:#ffd93b; --sky:#8fd6ff; --grass:#5aa83c; --acc:#ff6b3d; }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{
+    font-family:'Noto Sans Devanagari','Mangal',system-ui,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(#8fd6ff 0%,#cdefff 42%,#fff3c9 55%,#7ec850 55%,#5aa83c 100%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
+  header{text-align:center;margin-bottom:22px}
+  h1{
+    font-size:clamp(30px,5vw,54px);font-weight:800;margin:0;
+    color:#e8452e;text-shadow:0 3px 0 #fff,0 6px 0 rgba(58,36,28,.18);
+    letter-spacing:.01em;
+  }
+  .tag{display:inline-block;background:var(--sun);border:3px solid var(--ink);border-radius:999px;
+       padding:6px 18px;font-weight:700;margin-top:10px;box-shadow:0 4px 0 rgba(58,36,28,.25)}
+  .card{background:#fffdf4;border:4px solid var(--ink);border-radius:22px;overflow:hidden;
+        box-shadow:0 14px 0 rgba(58,36,28,.22)}
+  video{display:block;width:100%;height:auto;background:#000}
+  .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+       padding:16px 20px;background:#fff3c9;border-top:4px solid var(--ink)}
+  .dl{
+    display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+    background:var(--acc);color:#fff;font-weight:800;font-size:18px;
+    border:4px solid var(--ink);border-radius:16px;padding:12px 26px;
+    box-shadow:0 6px 0 var(--ink);transition:transform .08s,box-shadow .08s;
+  }
+  .dl:hover{transform:translateY(2px);box-shadow:0 4px 0 var(--ink)}
+  .meta{font-size:14px;color:#6b4a3a;font-weight:600}
+  .scenes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:26px 0}
+  .sc{background:#fffdf4;border:3px solid var(--ink);border-radius:14px;padding:10px 12px;
+      font-size:14px;font-weight:700;box-shadow:0 4px 0 rgba(58,36,28,.2)}
+  .sc i{display:block;font-style:normal;font-size:11px;color:#8a6a52;font-weight:600;margin-top:2px}
+  .sc b{color:var(--acc)}
+  .note{background:#fffdf4;border:3px dashed var(--ink);border-radius:16px;padding:16px 20px;
+        font-size:15px;line-height:1.7}
+  .note b{color:#b3402a}
+  footer{text-align:center;margin-top:26px;font-size:13px;color:#4a3428;font-weight:600}
+  a{color:#b3402a}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>चिंकू और जादुई गाजर</h1>
+    <span class="tag">बच्चों की प्यारी कहानी · 1 मिनट 21 सेकंड</span>
+  </header>
+
+  <div class="card">
+    <video id="v" controls playsinline preload="metadata"
+           poster="poster.png"
+           src="chinku-aur-jaadui-gaajar.mp4"></video>
+    <div class="bar">
+      <a class="dl" href="chinku-aur-jaadui-gaajar.mp4" download="chinku-aur-jaadui-gaajar.mp4">
+        ⬇ वीडियो डाउनलोड करें (MP4, 1080p)
+      </a>
+      <span class="meta">1920×1080 · 30 fps · H.264 + AAC · 22.9 MB</span>
+    </div>
+  </div>
+
+  <div class="scenes">
+    <div class="sc"><b>1</b> सुबह और टाइटल<i>चिंकू और जादुई गाजर</i></div>
+    <div class="sc"><b>2</b> चिंकू जागता है<i>बिल से बाहर, अंगड़ाई</i></div>
+    <div class="sc"><b>3</b> खोज<i>चमकती सुनहरी गाजर!</i></div>
+    <div class="sc"><b>4</b> कोशिश<i>हईशा! पर गाजर नहीं हिली</i></div>
+    <div class="sc"><b>5</b> दोस्तों को बुलाना<i>दोस्तों, आओ!</i></div>
+    <div class="sc"><b>6</b> मिलकर ज़ोर<i>एक… दो… तीन!</i></div>
+    <div class="sc"><b>7</b> धड़ाम!<i>गाजर निकल गई, POP!</i></div>
+    <div class="sc"><b>8</b> जादू<i>इंद्रधनुष और फूल</i></div>
+    <div class="sc"><b>9</b> बाँटना और अलविदा<i>मिलकर काम करने में ताक़त</i></div>
+  </div>
+
+  <div class="note">
+    <b>यह फिल्म कैसे बनी?</b> हर फ़्रेम (2430 फ़्रेम) कोड से Canvas2D पर हाथ से बनाया गया है —
+    कोई तैयार वीडियो या इमेज इस्तेमाल नहीं हुई। चिंकू खरगोश, भोलू हाथी, मीठू तोता और चीकू चूहा
+    सब procedural characters हैं। आवाज़ (हिंदी narration), संगीत और sound-effects भी कोड से
+    generate किए गए हैं। सीख: <b>मिलकर काम करने में ही असली ताक़त है।</b>
+  </div>
+
+  <div class="note" style="margin-top:18px">
+    <b>🔗 Link share / download karein</b>
+    <div style="display:grid;gap:8px;margin-top:10px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <code id="lk1" style="flex:1;min-width:220px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:8px 10px;font-size:12px;word-break:break-all"></code>
+        <button onclick="cp('lk1')" style="border:3px solid var(--ink);background:var(--sun);border-radius:10px;padding:8px 14px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 var(--ink)">Copy</button>
+        <span style="font-size:13px;font-weight:700">← देखने वाला पेज</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <code id="lk2" style="flex:1;min-width:220px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:8px 10px;font-size:12px;word-break:break-all"></code>
+        <button onclick="cp('lk2')" style="border:3px solid var(--ink);background:var(--sun);border-radius:10px;padding:8px 14px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 var(--ink)">Copy</button>
+        <span style="font-size:13px;font-weight:700">← सीधा MP4 (download)</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>बनाया गया <a href="https://github.com/yihui-dev/awesome-opus5-5-videos">awesome-opus5-5-videos</a> की प्रेरणा से · Arena.ai Agent Mode</footer>
+</div>
+<script>
+  const base = location.origin;
+  document.getElementById('lk1').textContent = base + '/';
+  document.getElementById('lk2').textContent = base + '/chinku-aur-jaadui-gaajar.mp4';
+  function cp(id){
+    const t = document.getElementById(id).textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject())
+      .then(()=>{ const b=event.target; const o=b.textContent; b.textContent='✓ copied'; setTimeout(()=>b.textContent=o,1200); })
+      .catch(()=>{ const r=document.createRange(); r.selectNodeContents(document.getElementById(id));
+        const s=getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); });
+  }
+</script>
+</body>
+</html>
