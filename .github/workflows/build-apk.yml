@@ -238,7 +238,7 @@ jobs:
             gh release upload "$tag" --clobber dist/*
           else
             gh release create "$tag" \
-              --title "Bharat Map Quiz v${APP_VERSION} (Android APK)" \
+              --title "Bharat Map Quiz v${APP_VERSION} — APK + laptop build" \
               --notes-file /tmp/notes.md \
               dist/*
           fi
