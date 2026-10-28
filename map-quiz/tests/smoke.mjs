@@ -82,13 +82,17 @@ async function goHome() {
   await sleep(20);
 }
 
+// the classic checks below describe Normal difficulty (4 options, no retry)
+window.__bharatQuiz.setDifficulty("normal");
+await sleep(15);
+
 /* ------------------------------------------------------------------ home */
 console.log("home");
 check("home screen visible", screen() === "home", screen());
 check("brand is English", $("brandTitle").textContent === "Bharat Map Quiz", $("brandTitle").textContent);
 check("starts at level 1", $("levelBtn").textContent === "Lv 1", $("levelBtn").textContent);
 check("core mode cards", window.document.querySelectorAll("#modeGrid .mode-card").length === 5);
-check("extra mode cards", window.document.querySelectorAll("#extraGrid .mode-card").length === 3);
+check("extra mode cards", window.document.querySelectorAll("#extraGrid .mode-card").length === 4);
 check("7 region chips", $("regionChips").children.length === 7);
 check("hero map has 36 shapes", $("heroMap").querySelectorAll("path.state").length === 36);
 check("mastery counter at 0", $("masteredCount").textContent === "0");
@@ -274,6 +278,59 @@ click($("settingsClose"));
 check("settings closed", $("settingsBackdrop").hidden);
 
 /* ---------------------------------------------------------- persistence */
+/* --------------------------------------------------------- easy / kid mode */
+console.log("easy mode for young players");
+await goHome();
+window.__bharatQuiz.setDifficulty("easy");
+await sleep(20);
+check("3 difficulty chips", $("difficultyChips").children.length === 3, $("difficultyChips").children.length);
+check(
+  "easy is selected by default for new players",
+  window.__bharatQuiz.getProfile().difficulty === "easy",
+  window.__bharatQuiz.getProfile().difficulty
+);
+
+click(modeCard("identify"));
+check("easy gives 3 options", $("options").children.length === 3, $("options").children.length);
+const easyTarget = $("quizMap").querySelector("path.is-target").dataset.id;
+const easyRight = unitName(UNITS[easyTarget], "en");
+const wrongButtons = [...$("options").children].filter(
+  (b) => b.querySelector(".label").textContent !== easyRight
+);
+click(wrongButtons[0]);
+check("first wrong tap offers a retry", $("feedback").classList.contains("retry"), $("feedbackTitle").textContent);
+check("question does not advance yet", $("qCounter").textContent.startsWith("1/"), $("qCounter").textContent);
+const secondWrong = [...$("options").children].find((b) => !b.disabled && b.querySelector(".label").textContent !== easyRight);
+click(secondWrong);
+check("second miss reveals the answer", !$("feedback").classList.contains("retry") && $("feedback").classList.contains("bad"));
+check("next button returns after retry", !$("nextBtn").hidden);
+await finishRound();
+
+await goHome();
+click(modeCard("locate"));
+check("easy prints names on the quiz map", $("quizMap").querySelectorAll("text.state-label").length >= 25, $("quizMap").querySelectorAll("text.state-label").length);
+check("easy uses short kid wording", /^Find /.test($("prompt").textContent.trim()), $("prompt").textContent);
+check("question kind chip filled", $("qKind").textContent.includes("Find"), $("qKind").textContent);
+await finishRound();
+
+await goHome();
+click(modeCard("tour"));
+check("map tour asks every state", $("qCounter").textContent.startsWith("1/36"), $("qCounter").textContent);
+await finishRound(220);
+check("map tour result title", /tour/i.test($("resultTitle").textContent), $("resultTitle").textContent);
+
+console.log("how to play");
+await goHome();
+click($("howBtn"));
+check("tutorial sheet opens", !$("howBackdrop").hidden);
+check("tutorial has three steps", $("howSteps").children.length === 3, $("howSteps").children.length);
+click($("howStart"));
+check("tutorial closes", $("howBackdrop").hidden);
+check("tutorial marked as seen", window.__bharatQuiz.getProfile().tutorialDone === true);
+
+window.__bharatQuiz.setDifficulty("normal");
+await sleep(15);
+
 console.log("persistence");
 click($("tabbar").querySelector('[data-tab="home"]'));
 const finalSave = saved();

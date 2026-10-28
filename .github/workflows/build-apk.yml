@@ -30,6 +30,8 @@ jobs:
   apk:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    env:
+      APP_VERSION: "1.1"
     defaults:
       run:
         working-directory: map-quiz
@@ -152,7 +154,7 @@ jobs:
           set -uo pipefail
           mkdir -p dist
           tools="$ANDROID_HOME/build-tools/34.0.0"
-          name="Bharat-Map-Quiz-v1.0.apk"
+          name="Bharat-Map-Quiz-v${APP_VERSION}.apk"
 
           signed=android/app/build/outputs/apk/release/app-release.apk
           unsigned=android/app/build/outputs/apk/release/app-release-unsigned.apk
@@ -190,20 +192,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="map-quiz-apk-v1.0"
+          tag="map-quiz-apk-v${APP_VERSION}"
           cat > /tmp/notes.md <<'NOTES'
           **Installable Android APK** of Bharat Map Quiz — the same app as the web build, packaged
           as an offline WebView app.
 
-          - 7 quiz modes: find the state, identify the shape, capitals, neighbours, timed blitz,
-            survival and speed run — plus a daily challenge
-          - Learn map with capital + fact cards, levels/XP, 18 achievements, English UI
+          **v1.1 — kid-friendly update**
+
+          - **Three difficulty levels**: Easy (names printed on the map, 3 choices, one free retry),
+            Normal and Advanced (4 choices, faster timers)
+          - **No repeated questions**: a round never asks the same state twice, and the picker
+            favours states you have not met yet, so every corner of the map comes up
+          - **Map tour**: all 36 states in one guided round, north to south
+          - "How to play" tutorial, question-type chips, plain-language prompts and instant
+            explanations with the capital name
+          - Learn map with capital + fact cards, levels/XP, 20 achievements, English UI
             (state names optionally in हिंदी)
           - Works completely offline; no ads, no accounts, no tracking
 
           **How to install**
 
-          1. Download `Bharat-Map-Quiz-v1.0.apk` below (do it on the phone).
+          1. Download the `.apk` file below (do it on the phone).
           2. Open the file. Android asks to allow installs from your browser/Files app —
              tap **Settings → Allow**, then **Install**.
           3. If Play Protect shows a warning (it does for self-signed apps), tap
@@ -218,7 +227,7 @@ jobs:
             gh release upload "$tag" --clobber dist/*
           else
             gh release create "$tag" \
-              --title "Bharat Map Quiz v1.0 (Android APK)" \
+              --title "Bharat Map Quiz v${APP_VERSION} (Android APK)" \
               --notes-file /tmp/notes.md \
               dist/*
           fi
@@ -226,7 +235,7 @@ jobs:
           {
             echo "### ✅ APK published"
             echo ""
-            echo "Download: <a href=\"https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/Bharat-Map-Quiz-v1.0.apk\">Bharat-Map-Quiz-v1.0.apk</a>"
+            echo "Download: <a href=\"https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/Bharat-Map-Quiz-v${APP_VERSION}.apk\">Bharat-Map-Quiz-v${APP_VERSION}.apk</a>"
             echo ""
             echo "Variant: **${APK_KIND:-release}**"
           } >> "$GITHUB_STEP_SUMMARY"

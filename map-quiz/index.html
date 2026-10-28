@@ -105,6 +105,21 @@
             </div>
             <div class="chips" id="regionChips" role="tablist"></div>
 
+            <div class="section-head">
+              <h3 id="difficultyTitle">How hard?</h3>
+              <span class="muted" id="difficultyNote">Easy is made for younger players.</span>
+            </div>
+            <div class="chips difficulty-chips" id="difficultyChips" role="tablist"></div>
+
+            <button class="how-card" id="howBtn">
+              <span class="how-icon" aria-hidden="true">❓</span>
+              <span class="how-copy">
+                <strong id="howCardTitle">How to play</strong>
+                <span id="howCardSub">Three taps and you are playing.</span>
+              </span>
+              <span class="how-arrow" aria-hidden="true">›</span>
+            </button>
+
             <div class="section-head"><h3 id="playTitle">Play</h3></div>
             <div class="mode-grid" id="modeGrid"></div>
 
@@ -162,6 +177,7 @@
             </div>
           </div>
 
+          <span class="q-kind" id="qKind">Find on map</span>
           <div class="prompt" id="prompt"></div>
           <div class="q-timer" id="qTimer" hidden><span id="qTimerBar"></span></div>
 
@@ -327,6 +343,18 @@
 
         <div class="setting-row">
           <div class="setting-copy">
+            <strong id="diffLabel">Difficulty</strong>
+            <span id="diffValue">Easy</span>
+          </div>
+          <div class="seg" id="diffSeg">
+            <button data-diff="easy" class="active">Easy</button>
+            <button data-diff="normal">Normal</button>
+            <button data-diff="hard">Advanced</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
             <strong id="namesLabel">State names</strong>
             <span id="namesValue">English</span>
           </div>
@@ -367,6 +395,38 @@
 
         <div class="sheet-actions">
           <button class="btn btn-quiet" id="resetBtn">Reset all progress</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- how to play -->
+    <div class="sheet-backdrop" id="howBackdrop" hidden>
+      <div class="sheet how-sheet" id="howSheet" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h3 id="howTitle">How to play</h3>
+            <p class="sheet-meta" id="howBody">Three taps and you are playing.</p>
+          </div>
+          <button class="icon-btn" id="howClose" aria-label="Close">✕</button>
+        </div>
+        <ol class="how-steps" id="howSteps">
+          <li>
+            <span class="how-step-icon" aria-hidden="true">🔤</span>
+            <span>A name appears — like “Where is Bihar?”</span>
+          </li>
+          <li>
+            <span class="how-step-icon" aria-hidden="true">👆</span>
+            <span>Tap that state’s shape on the map.</span>
+          </li>
+          <li>
+            <span class="how-step-icon" aria-hidden="true">✅</span>
+            <span>Green means right. Red shows the answer, so you learn it.</span>
+          </li>
+        </ol>
+        <p class="how-tip" id="howTip">Tip: on Easy the state names are printed on the map.</p>
+        <div class="sheet-actions">
+          <button class="btn btn-primary" id="howStart">Got it — let’s play</button>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 /* Question generation and round building. Pure functions — no DOM, no storage. */
 
-import { STATES, UNITS } from "./data.js";
+import { STATES, UNITS, REGIONS } from "./data.js";
 import { unitStat } from "./store.js";
 import { neighboursOf, borderUnits } from "./geo.js";
 
@@ -16,8 +16,52 @@ export const MODE_RULES = {
   challenge: { questions: Infinity, timer: 12, lives: 3 },
   daily: { questions: 10, timer: 0, lives: 0 },
   sprint: { questions: Infinity, timer: 0, lives: 0 },
+  tour: { questions: Infinity, timer: 0, lives: 0 }, // one question per state on the map
   weak: { questions: 10, timer: 0, lives: 0 },
 };
+
+/**
+ * Difficulty presets. `easy` is the kid-friendly one: fewer options, names
+ * printed on the map, a free retry and extra thinking time.
+ *   options    — answer buttons for capital / identify / neighbour questions
+ *   mapLabels  — draw state names on the quiz map
+ *   retry      — a wrong first tap does not end the question
+ *   distractors— "far" picks obviously different states, "near" picks neighbours
+ *   timerScale — multiplies every per-question timer
+ */
+export const DIFFICULTIES = {
+  easy: {
+    id: "easy",
+    label: "Easy",
+    options: 3,
+    mapLabels: true,
+    retry: true,
+    distractors: "far",
+    timerScale: 1.6,
+  },
+  normal: {
+    id: "normal",
+    label: "Normal",
+    options: 4,
+    mapLabels: false,
+    retry: false,
+    distractors: "near",
+    timerScale: 1,
+  },
+  hard: {
+    id: "hard",
+    label: "Advanced",
+    options: 4,
+    mapLabels: false,
+    retry: false,
+    distractors: "near",
+    timerScale: 0.75,
+  },
+};
+
+export function difficultyFor(id) {
+  return DIFFICULTIES[id] || DIFFICULTIES.easy;
+}
 
 export function shuffle(list, rng = Math.random) {
   const arr = [...list];
@@ -54,14 +98,19 @@ export function poolFor(region, typeFilter = "all") {
   });
 }
 
-/** Weighted random pick: weak / unseen units turn up more often. */
+/**
+ * Weighted random pick: unseen units first, then weak ones. States that have
+ * already been drilled many times step back, so a few rounds sweep the whole
+ * map instead of asking the same handful of states over and over.
+ */
 export function pickWeighted(pool, profile, rng = Math.random, exclude = []) {
   const candidates = pool.filter((unit) => !exclude.includes(unit.id));
   const list = candidates.length ? candidates : pool;
   const weights = list.map((unit) => {
     const stat = profile ? unitStat(profile, unit.id) : { mastery: 0, seen: 0 };
-    let weight = 1 + (100 - stat.mastery) / 20;
-    if (!stat.seen) weight += 1.5;
+    let weight = 2 + (100 - stat.mastery) / 25;
+    if (!stat.seen) weight *= 2.5;
+    else weight /= 1 + Math.min(6, stat.seen) * 0.4;
     return weight;
   });
   const total = weights.reduce((a, b) => a + b, 0);
@@ -83,12 +132,18 @@ function takeUnique(candidates, seen, targetLength, options) {
   }
 }
 
-function capitalOptions(target, pool, rng, count = 4) {
-  const seen = new Set([target.capital.en]);
-  const options = [target.capital];
+/** Order the distractor candidates the way the current difficulty wants them. */
+function distractorOrder(target, pool, rng, strategy) {
   const sameRegion = shuffle(pool.filter((u) => u.region === target.region && u.id !== target.id), rng);
   const others = shuffle(pool.filter((u) => u.region !== target.region && u.id !== target.id), rng);
-  for (const unit of [...sameRegion, ...others]) {
+  // easy: far-away states are easy to tell apart; normal/advanced: same region
+  return strategy === "far" ? [...others, ...sameRegion] : [...sameRegion, ...others];
+}
+
+function capitalOptions(target, pool, rng, count = 4, strategy = "near") {
+  const seen = new Set([target.capital.en]);
+  const options = [target.capital];
+  for (const unit of distractorOrder(target, pool, rng, strategy)) {
     if (options.length >= count) break;
     // several states can share a capital (Chandigarh) — never offer it twice
     if (seen.has(unit.capital.en)) continue;
@@ -98,16 +153,14 @@ function capitalOptions(target, pool, rng, count = 4) {
   return shuffle(options, rng);
 }
 
-function nameOptions(target, pool, rng, count = 4) {
+function nameOptions(target, pool, rng, count = 4, strategy = "near") {
   const seen = new Set([target.name.en]);
   const options = [target];
-  const sameRegion = shuffle(pool.filter((u) => u.region === target.region && u.id !== target.id), rng);
-  const others = shuffle(pool.filter((u) => u.region !== target.region && u.id !== target.id), rng);
-  takeUnique([...sameRegion, ...others], seen, count, options);
+  takeUnique(distractorOrder(target, pool, rng, strategy), seen, count, options);
   return shuffle(options, rng);
 }
 
-/** A neighbour plus three states that do not touch the target. */
+/** A neighbour plus the rest of the options, none of which may also touch the target. */
 function neighbourOptions(target, rng, count = 4) {
   const neighbourIds = neighboursOf(target.id);
   const neighbours = shuffle(neighbourIds.map((id) => UNITS[id]).filter(Boolean), rng);
@@ -144,10 +197,15 @@ const uniqueCapital = (unit) => CAPITAL_USES[unit.capital.en] === 1;
 
 /**
  * Build one question.
- * mode: locate | identify | capital | capitalReverse | neighbours
+ *
+ * mode:       locate | identify | capital | capitalReverse | neighbours
+ * exclude:    target ids already used in this round — they are skipped so a
+ *             round never asks about the same state twice
+ * difficulty: easy | normal | hard (see DIFFICULTIES)
  */
-export function makeQuestion(mode, pool, profile, rng = Math.random, recent = []) {
+export function makeQuestion(mode, pool, profile, rng = Math.random, exclude = [], difficulty = "normal") {
   if (!pool.length) throw new Error("empty pool");
+  const diff = difficultyFor(difficulty);
   const wider = pool.length >= 4 ? pool : DISTRACTOR_POOL;
 
   let candidates = pool;
@@ -161,27 +219,37 @@ export function makeQuestion(mode, pool, profile, rng = Math.random, recent = []
           ? STATES.filter(uniqueCapital)
           : pool;
   }
-  const target = pickWeighted(candidates, profile, rng, recent.slice(-6));
 
+  // only skip used targets while there are still fresh ones left
+  const fresh = candidates.filter((unit) => !exclude.includes(unit.id));
+  const target = pickWeighted(fresh.length ? fresh : candidates, profile, rng);
+
+  const count = diff.options;
   if (mode === "identify") {
     return {
       mode,
       targetId: target.id,
-      options: nameOptions(target, wider, rng).map((u) => ({ kind: "unit", id: u.id })),
+      options: nameOptions(target, wider, rng, count, diff.distractors).map((u) => ({
+        kind: "unit",
+        id: u.id,
+      })),
     };
   }
   if (mode === "capital") {
     return {
       mode,
       targetId: target.id,
-      options: capitalOptions(target, wider, rng).map((capital) => ({ kind: "capital", capital })),
+      options: capitalOptions(target, wider, rng, count, diff.distractors).map((capital) => ({
+        kind: "capital",
+        capital,
+      })),
     };
   }
   if (mode === "capitalReverse") {
     const distractors = shuffle(
       STATES.filter((u) => u.id !== target.id && uniqueCapital(u)),
       rng
-    ).slice(0, 3);
+    ).slice(0, count - 1);
     return {
       mode,
       targetId: target.id,
@@ -192,14 +260,31 @@ export function makeQuestion(mode, pool, profile, rng = Math.random, recent = []
     return {
       mode,
       targetId: target.id,
-      options: neighbourOptions(target, rng).map((u) => ({ kind: "unit", id: u.id })),
+      options: neighbourOptions(target, rng, count).map((u) => ({ kind: "unit", id: u.id })),
     };
   }
   return { mode: "locate", targetId: target.id };
 }
 
-/** Mixed sequence for the daily challenge: 3 locate, 2 identify, 3 capitals, 2 neighbours. */
-function dailyQuestionModes() {
+/**
+ * Mixed sequence for the daily challenge. Easy removes the two hardest kinds
+ * (state-from-capital and neighbours) so young players still get a fair set.
+ */
+function dailyQuestionModes(difficulty = "normal") {
+  if (difficulty === "easy") {
+    return [
+      "locate",
+      "identify",
+      "capital",
+      "locate",
+      "identify",
+      "capital",
+      "locate",
+      "identify",
+      "capital",
+      "locate",
+    ];
+  }
   return [
     "locate",
     "identify",
@@ -212,6 +297,23 @@ function dailyQuestionModes() {
     "capital",
     "neighbours",
   ];
+}
+
+/** Every state on the map exactly once, grouped by region (north → south). */
+export function tourSequence(pool, rng = Math.random) {
+  const order = REGIONS.filter((region) => region.id !== "all").map((region) => region.id);
+  const questions = [];
+  for (const region of order) {
+    const group = shuffle(pool.filter((unit) => unit.region === region), rng);
+    for (const unit of group) questions.push({ mode: "locate", targetId: unit.id });
+  }
+  // anything with an unexpected region still gets a turn
+  for (const unit of shuffle(pool, rng)) {
+    if (!questions.some((question) => question.targetId === unit.id)) {
+      questions.push({ mode: "locate", targetId: unit.id });
+    }
+  }
+  return questions;
 }
 
 export function optionKey(option) {
@@ -247,16 +349,21 @@ export function buildRound(mode, pool, profile, options = {}) {
   const rules = MODE_RULES[mode] || MODE_RULES.locate;
   const seed = options.seed || null;
   const rng = seed ? seededRng(seed) : Math.random;
+  const difficulty = options.difficulty || profile?.difficulty || "normal";
+  const diff = difficultyFor(difficulty);
+  // easy gives young players more time on the clocked modes
+  const timer = rules.timer ? Math.round(rules.timer * diff.timerScale) : 0;
 
   if (mode === "challenge") {
     return {
       mode,
-      questions: [makeQuestion("locate", pool, profile, rng)],
-      timer: rules.timer,
+      questions: [makeQuestion("locate", pool, profile, rng, [], difficulty)],
+      timer,
       lives: rules.lives,
       total: Infinity,
       endless: true,
       seed,
+      difficulty,
     };
   }
 
@@ -264,38 +371,57 @@ export function buildRound(mode, pool, profile, options = {}) {
     return {
       mode,
       questions: sprintSequence(pool, rng).map((id) => ({ mode: "locate", targetId: id })),
-      timer: rules.timer,
+      timer: 0,
       lives: 0,
       total: pool.length,
       seed,
+      difficulty,
+    };
+  }
+
+  if (mode === "tour") {
+    const questions = tourSequence(pool, rng);
+    return {
+      mode,
+      questions,
+      timer: 0,
+      lives: 0,
+      total: questions.length,
+      seed,
+      difficulty,
     };
   }
 
   if (mode === "daily") {
-    const modes = dailyQuestionModes();
-    const questions = modes.map((questionMode) =>
-      makeQuestion(questionMode, pool, profile, rng)
-    );
-    return { mode, questions, timer: rules.timer, lives: 0, total: questions.length, seed };
+    const questions = [];
+    for (const questionMode of dailyQuestionModes(difficulty)) {
+      const used = questions.map((question) => question.targetId);
+      questions.push(makeQuestion(questionMode, pool, profile, rng, used, difficulty));
+    }
+    return { mode, questions, timer, lives: 0, total: questions.length, seed, difficulty };
   }
 
-  const total = rules.questions;
+  const total = mode === "weak" ? Math.min(rules.questions, pool.length) : rules.questions;
   const questions = [];
+  const used = [];
   for (let i = 0; i < total; i++) {
-    const recent = questions.slice(-6).map((q) => q.targetId);
-    let question = makeQuestion(mode, pool, profile, rng, recent);
+    let question;
     if (i === 0 && options.focusId && UNITS[options.focusId]) {
-      question = makeQuestion(mode, [UNITS[options.focusId]], profile, rng);
+      question = makeQuestion(mode, [UNITS[options.focusId]], profile, rng, [], difficulty);
+    } else {
+      question = makeQuestion(mode, pool, profile, rng, used, difficulty);
     }
+    used.push(question.targetId);
     questions.push(question);
   }
-  return { mode, questions, timer: rules.timer, lives: 0, total, seed };
+  return { mode, questions, timer, lives: 0, total, seed, difficulty };
 }
 
-export function nextChallengeQuestion(mode, pool, profile, rng = Math.random) {
+/** Next question for the endless survival round. */
+export function nextChallengeQuestion(mode, pool, profile, rng = Math.random, exclude = [], difficulty = "normal") {
   const usable = ["locate", "locate", "identify", "capital", "neighbours"];
   const pick = usable[Math.floor(rng() * usable.length)];
-  return makeQuestion(pick, pool, profile, rng);
+  return makeQuestion(pick, pool, profile, rng, exclude, difficulty);
 }
 
 export function starsFor(score, total) {

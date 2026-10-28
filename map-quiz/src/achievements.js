@@ -1,7 +1,7 @@
 /* Achievement definitions and the (pure) evaluation that unlocks them. */
 
 import { STATES, UNITS } from "./data.js";
-import { unitStat, memorisedCount, dailyStatus, accuracy } from "./store.js";
+import { unitStat, memorisedCount, dailyStatus, accuracy, coverage } from "./store.js";
 
 export const ACHIEVEMENTS = [
   {
@@ -66,6 +66,20 @@ export const ACHIEVEMENTS = [
     title: "Border expert",
     detail: "Get 10 neighbour questions right",
     test: ({ profile }) => modeCorrect(profile, "neighbourCorrect") >= 10,
+  },
+  {
+    id: "map-tour",
+    icon: "🧭",
+    title: "Tour guide",
+    detail: "Finish a map tour with at least 30 correct",
+    test: ({ round }) => round?.mode === "tour" && round.score >= 30,
+  },
+  {
+    id: "map-explorer",
+    icon: "🔎",
+    title: "Every corner",
+    detail: "Have every state and UT come up in a question",
+    test: ({ profile }) => coverage(profile, STATES) >= STATES.length,
   },
   {
     id: "half-map",

@@ -42,19 +42,34 @@ const dom = new JSDOM(html, {
   virtualConsole,
 });
 const { window } = dom;
-await new Promise((r) => setTimeout(r, 250));
+await new Promise((r) => setTimeout(r, 700));
 const doc = window.document;
 const click = (node) => node && node.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 
 console.log("boot");
 check("no runtime errors", errors.length === 0, errors.slice(0, 2).join(" | "));
-check("mode cards rendered", doc.querySelectorAll(".mode-card").length === 8, doc.querySelectorAll(".mode-card").length);
+check("mode cards rendered", doc.querySelectorAll(".mode-card").length === 9, doc.querySelectorAll(".mode-card").length);
+check("difficulty chips rendered", doc.querySelectorAll("#difficultyChips .diff-chip").length === 3);
+// the first-run tutorial opens itself — dismiss it before playing
+if (doc.getElementById("howBackdrop").hidden === false) click(doc.getElementById("howStart"));
+check("tutorial can be dismissed", doc.getElementById("howBackdrop").hidden === true);
 check("hero map drawn", doc.querySelectorAll("#heroMap path.state").length === 36);
 check("brand rendered", doc.getElementById("brandTitle").textContent === "Bharat Map Quiz");
 
 console.log("play");
+check(
+  "easy is the default for a new player",
+  doc.querySelector('#difficultyChips .diff-chip[data-diff="easy"]').classList.contains("active")
+);
 click(doc.querySelector('.mode-card[data-mode="capital"]'));
 check("capital round starts", doc.getElementById("screen-quiz").hidden === false);
+check("easy round offers three options", doc.querySelectorAll("#options .option").length === 3);
+click(doc.getElementById("skipBtn"));
+click(doc.getElementById("nextBtn"));
+click(doc.getElementById("backBtn"));
+
+click(doc.querySelector('#difficultyChips .diff-chip[data-diff="normal"]'));
+click(doc.querySelector('.mode-card[data-mode="capital"]'));
 check("four options", doc.querySelectorAll("#options .option").length === 4);
 check("prompt is English", /What is the capital of|Which state has/.test(doc.getElementById("prompt").textContent));
 click(doc.querySelector("#options .option"));

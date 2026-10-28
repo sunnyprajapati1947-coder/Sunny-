@@ -2033,3 +2033,169 @@ p {
 .scroll-area {
   padding-bottom: 18px;
 }
+
+/* ---------------------------------------------------- difficulty & tutorial */
+
+.difficulty-chips {
+  gap: 9px;
+}
+
+.diff-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #b9c8de;
+  text-align: left;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.diff-chip:active {
+  transform: scale(0.97);
+}
+
+.diff-chip .diff-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e6eefc;
+}
+
+.diff-chip .diff-meta {
+  font-size: 10.5px;
+  line-height: 1.25;
+  color: #8fa3bf;
+}
+
+.diff-chip.active {
+  background: linear-gradient(180deg, rgba(45, 212, 167, 0.18), rgba(76, 195, 255, 0.1));
+  border-color: rgba(45, 212, 167, 0.55);
+  box-shadow: 0 8px 20px -14px rgba(45, 212, 167, 0.8), 0 0 0 1px rgba(45, 212, 167, 0.15) inset;
+}
+
+.diff-chip.active .diff-meta {
+  color: #b8e6d9;
+}
+
+.how-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.14), rgba(76, 195, 255, 0.08));
+  border: 1px solid rgba(167, 139, 250, 0.32);
+  text-align: left;
+  color: #e9e6ff;
+}
+
+.how-card .how-icon {
+  font-size: 18px;
+}
+
+.how-card .how-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.how-card .how-copy strong {
+  font-size: 13.5px;
+}
+
+.how-card .how-copy span {
+  font-size: 11.5px;
+  color: #b7aee0;
+}
+
+.how-card .how-arrow {
+  font-size: 20px;
+  color: #b7aee0;
+}
+
+.how-sheet {
+  max-height: 88vh;
+}
+
+.how-steps {
+  list-style: none;
+  margin: 4px 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  counter-reset: how;
+}
+
+.how-steps li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 13px;
+  line-height: 1.45;
+  color: #cfdcee;
+}
+
+.how-step-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: rgba(76, 195, 255, 0.14);
+  font-size: 16px;
+}
+
+.how-tip {
+  font-size: 12px;
+  color: #9fb4cf;
+  margin: 0 0 12px;
+}
+
+.q-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  margin: 2px 0 -2px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(76, 195, 255, 0.13);
+  border: 1px solid rgba(76, 195, 255, 0.28);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #bfe6ff;
+}
+
+.option.retry {
+  border-color: rgba(255, 159, 69, 0.45);
+  background: rgba(255, 159, 69, 0.1);
+}
+
+.feedback.retry {
+  border-color: rgba(255, 159, 69, 0.4);
+  background: linear-gradient(180deg, rgba(255, 159, 69, 0.14), rgba(255, 159, 69, 0.05));
+}
+
+.feedback.retry .feedback-title {
+  color: #ffcf87;
+}

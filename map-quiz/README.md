@@ -6,8 +6,13 @@ and stores progress on the device — no accounts, no ads, no tracking.
 
 ## 📱 Android APK (phone par install karo)
 
-**[Download the APK](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.0)**
-→ `Bharat-Map-Quiz-v1.0.apk` (≈3.9 MB, signed release build, works fully offline)
+**[Download the APK](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/map-quiz-apk-v1.1)**
+→ `Bharat-Map-Quiz-v1.1.apk` (≈4 MB, signed release build, works fully offline)
+
+> **v1.1 — kid-friendly update.** Three difficulty levels (Easy is the default: names printed on the
+> map, 3 choices, one free retry), a round can never ask the same state twice, the picker pushes
+> towards states you have not met yet so every corner of the map comes up, a **Map tour** that walks
+> all 36 states in one round, a "How to play" tutorial and plain-language prompts.
 
 1. Phone par link kholo — ya is QR ko phone ke camera se scan karo:
 
@@ -16,7 +21,7 @@ and stores progress on the device — no accounts, no ads, no tracking.
 2. File kholo → Android "install unknown apps" allow karne ko kahega → **Settings → Allow** → **Install**.
 3. Play Protect warning aaye (self-signed apps ke liye normal hai) → **More details → Install anyway**.
 
-App icon launcher me **Bharat Map Quiz** naam se milega. APK `map-quiz-apk-v1.0` release me har build ke
+App icon launcher me **Bharat Map Quiz** naam se milega. APK `map-quiz-apk-v1.1` release me har build ke
 saath refresh hota hai, aur build process `.github/workflows/build-apk.yml` me hai.
 
 **Web build (same app):** [`download/bharat-map-quiz.html`](download/bharat-map-quiz.html) (one file,
@@ -26,6 +31,16 @@ double-click to play) · [`download/bharat-map-quiz.zip`](download/bharat-map-qu
 
 
 ---
+
+## Difficulty levels
+
+| Level | Map names | Choices | Extra help | Timers |
+| --- | --- | --- | --- | --- |
+| **Easy** (default) | shown | 3 | one free retry per question, hints free of charge, simpler wordings | 1.6× longer |
+| **Normal** | hidden | 4 | hint button | standard |
+| **Advanced** | hidden | 4 | — | 0.75× (faster) |
+
+Switch levels from the chips on the home screen or from Settings — the choice is remembered.
 
 ## Game modes
 
@@ -40,6 +55,7 @@ double-click to play) · [`download/bharat-map-quiz.zip`](download/bharat-map-qu
 | **Survival** | Endless questions, 3 lives, 12 seconds per question. Score as high as you can. |
 | **Speed run** | Every state in the selected region, against the clock. Best time saved. |
 | **Weak spots** | Automatically drills the states you keep missing. |
+| **Map tour** | Every state and UT on the map exactly once, region by region — the round that makes sure no corner of India is skipped. |
 
 ## Everything else
 
@@ -48,7 +64,10 @@ double-click to play) · [`download/bharat-map-quiz.zip`](download/bharat-map-qu
   states and UTs.
 - **Progress that remembers what you know** — per-state mastery (0–100%), streaks, XP, levels with
   titles, best sprint time, daily streak. Mastered states turn green on every map.
-- **Achievements** — 18 badges, from "First steps" to "Full map" and "Survivor", unlocked with a toast
+- **No repeat rounds** — within a round every question is about a different state, and the picker
+  favours states you have seen less, so a handful of rounds sweeps the whole map (progress shows
+  "Map explored: n of 36").
+- **Achievements** — 20 badges, from "First steps" to "Full map" and "Survivor", unlocked with a toast
   and listed on the Progress tab.
 - **Round review** — every result screen lists each question with ✓/✗ plus the correct answer, and a
   share button (Web Share, falling back to clipboard).

@@ -57,14 +57,22 @@ if (existsSync(stringsPath)) {
   log("app name set");
 }
 
-/* 3. version + dark background colour resource */
+/* 3. version + dark background colour resource.
+ * package.json is the single source of truth: "1.1.0" becomes versionName 1.1
+ * and versionCode 2 (major * 100 + minor * 10 + patch). */
 const gradlePath = join(android, "app/build.gradle");
 if (existsSync(gradlePath)) {
+  const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  const [major = 1, minor = 0, patch = 0] = String(pkg.version || "1.0.0")
+    .split(".")
+    .map((part) => Number.parseInt(part, 10) || 0);
+  const versionName = `${major}.${minor}`;
+  const versionCode = major * 100 + minor * 10 + patch;
   let gradle = readFileSync(gradlePath, "utf8");
-  gradle = gradle.replace(/versionCode \d+/, "versionCode 1");
-  gradle = gradle.replace(/versionName "[^"]*"/, 'versionName "1.0"');
+  gradle = gradle.replace(/versionCode \d+/, `versionCode ${versionCode}`);
+  gradle = gradle.replace(/versionName "[^"]*"/, `versionName "${versionName}"`);
   writeFileSync(gradlePath, gradle);
-  log("version 1.0 (code 1) set");
+  log(`version ${versionName} (code ${versionCode}) set`);
 }
 
 /* 4. release signing — driven by android/keystore.properties (written by CI),

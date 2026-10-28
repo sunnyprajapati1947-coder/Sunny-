@@ -2056,6 +2056,172 @@ p {
   padding-bottom: 18px;
 }
 
+/* ---------------------------------------------------- difficulty & tutorial */
+
+.difficulty-chips {
+  gap: 9px;
+}
+
+.diff-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #b9c8de;
+  text-align: left;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.diff-chip:active {
+  transform: scale(0.97);
+}
+
+.diff-chip .diff-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e6eefc;
+}
+
+.diff-chip .diff-meta {
+  font-size: 10.5px;
+  line-height: 1.25;
+  color: #8fa3bf;
+}
+
+.diff-chip.active {
+  background: linear-gradient(180deg, rgba(45, 212, 167, 0.18), rgba(76, 195, 255, 0.1));
+  border-color: rgba(45, 212, 167, 0.55);
+  box-shadow: 0 8px 20px -14px rgba(45, 212, 167, 0.8), 0 0 0 1px rgba(45, 212, 167, 0.15) inset;
+}
+
+.diff-chip.active .diff-meta {
+  color: #b8e6d9;
+}
+
+.how-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.14), rgba(76, 195, 255, 0.08));
+  border: 1px solid rgba(167, 139, 250, 0.32);
+  text-align: left;
+  color: #e9e6ff;
+}
+
+.how-card .how-icon {
+  font-size: 18px;
+}
+
+.how-card .how-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.how-card .how-copy strong {
+  font-size: 13.5px;
+}
+
+.how-card .how-copy span {
+  font-size: 11.5px;
+  color: #b7aee0;
+}
+
+.how-card .how-arrow {
+  font-size: 20px;
+  color: #b7aee0;
+}
+
+.how-sheet {
+  max-height: 88vh;
+}
+
+.how-steps {
+  list-style: none;
+  margin: 4px 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  counter-reset: how;
+}
+
+.how-steps li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 13px;
+  line-height: 1.45;
+  color: #cfdcee;
+}
+
+.how-step-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: rgba(76, 195, 255, 0.14);
+  font-size: 16px;
+}
+
+.how-tip {
+  font-size: 12px;
+  color: #9fb4cf;
+  margin: 0 0 12px;
+}
+
+.q-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  margin: 2px 0 -2px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(76, 195, 255, 0.13);
+  border: 1px solid rgba(76, 195, 255, 0.28);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #bfe6ff;
+}
+
+.option.retry {
+  border-color: rgba(255, 159, 69, 0.45);
+  background: rgba(255, 159, 69, 0.1);
+}
+
+.feedback.retry {
+  border-color: rgba(255, 159, 69, 0.4);
+  background: linear-gradient(180deg, rgba(255, 159, 69, 0.14), rgba(255, 159, 69, 0.05));
+}
+
+.feedback.retry .feedback-title {
+  color: #ffcf87;
+}
+
 </style>
   </head>
   <body>
@@ -2140,6 +2306,21 @@ p {
             </div>
             <div class="chips" id="regionChips" role="tablist"></div>
 
+            <div class="section-head">
+              <h3 id="difficultyTitle">How hard?</h3>
+              <span class="muted" id="difficultyNote">Easy is made for younger players.</span>
+            </div>
+            <div class="chips difficulty-chips" id="difficultyChips" role="tablist"></div>
+
+            <button class="how-card" id="howBtn">
+              <span class="how-icon" aria-hidden="true">❓</span>
+              <span class="how-copy">
+                <strong id="howCardTitle">How to play</strong>
+                <span id="howCardSub">Three taps and you are playing.</span>
+              </span>
+              <span class="how-arrow" aria-hidden="true">›</span>
+            </button>
+
             <div class="section-head"><h3 id="playTitle">Play</h3></div>
             <div class="mode-grid" id="modeGrid"></div>
 
@@ -2197,6 +2378,7 @@ p {
             </div>
           </div>
 
+          <span class="q-kind" id="qKind">Find on map</span>
           <div class="prompt" id="prompt"></div>
           <div class="q-timer" id="qTimer" hidden><span id="qTimerBar"></span></div>
 
@@ -2362,6 +2544,18 @@ p {
 
         <div class="setting-row">
           <div class="setting-copy">
+            <strong id="diffLabel">Difficulty</strong>
+            <span id="diffValue">Easy</span>
+          </div>
+          <div class="seg" id="diffSeg">
+            <button data-diff="easy" class="active">Easy</button>
+            <button data-diff="normal">Normal</button>
+            <button data-diff="hard">Advanced</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
             <strong id="namesLabel">State names</strong>
             <span id="namesValue">English</span>
           </div>
@@ -2402,6 +2596,38 @@ p {
 
         <div class="sheet-actions">
           <button class="btn btn-quiet" id="resetBtn">Reset all progress</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- how to play -->
+    <div class="sheet-backdrop" id="howBackdrop" hidden>
+      <div class="sheet how-sheet" id="howSheet" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h3 id="howTitle">How to play</h3>
+            <p class="sheet-meta" id="howBody">Three taps and you are playing.</p>
+          </div>
+          <button class="icon-btn" id="howClose" aria-label="Close">✕</button>
+        </div>
+        <ol class="how-steps" id="howSteps">
+          <li>
+            <span class="how-step-icon" aria-hidden="true">🔤</span>
+            <span>A name appears — like “Where is Bihar?”</span>
+          </li>
+          <li>
+            <span class="how-step-icon" aria-hidden="true">👆</span>
+            <span>Tap that state’s shape on the map.</span>
+          </li>
+          <li>
+            <span class="how-step-icon" aria-hidden="true">✅</span>
+            <span>Green means right. Red shows the answer, so you learn it.</span>
+          </li>
+        </ol>
+        <p class="how-tip" id="howTip">Tip: on Easy the state names are printed on the map.</p>
+        <div class="sheet-actions">
+          <button class="btn btn-primary" id="howStart">Got it — let’s play</button>
         </div>
       </div>
     </div>
@@ -2935,6 +3161,8 @@ function defaultProfile() {
   return {
     version: 2,
     stateNames: "en", // "en" | "hi" — only state names/facts switch, the UI stays English
+    difficulty: "easy", // "easy" | "normal" | "hard" — see DIFFICULTIES in quiz.js
+    tutorialDone: false,
     sound: true,
     xp: 0,
     rounds: 0,
@@ -2985,6 +3213,8 @@ function normalize(raw) {
   p.correct = Number(p.correct) || 0;
   p.bestStreak = Number(p.bestStreak) || 0;
   p.stateNames = p.stateNames === "hi" ? "hi" : "en";
+  p.difficulty = ["easy", "normal", "hard"].includes(p.difficulty) ? p.difficulty : "easy";
+  p.tutorialDone = p.tutorialDone === true;
   p.sound = p.sound !== false;
   p.sprintBest = Number.isFinite(p.sprintBest) ? Number(p.sprintBest) : null;
   return p;
@@ -3031,7 +3261,14 @@ function resetProfile(profile) {
   const fresh = defaultProfile();
   fresh.sound = profile.sound;
   fresh.stateNames = profile.stateNames;
+  fresh.difficulty = profile.difficulty;
+  fresh.tutorialDone = true; // do not replay the intro after a reset
   return fresh;
+}
+
+/** How many of `units` the player has already met at least once. */
+function coverage(profile, units) {
+  return units.filter((unit) => unitStat(profile, unit.id).seen > 0).length;
 }
 
 function unitStat(profile, id) {
@@ -3205,8 +3442,52 @@ const MODE_RULES = {
   challenge: { questions: Infinity, timer: 12, lives: 3 },
   daily: { questions: 10, timer: 0, lives: 0 },
   sprint: { questions: Infinity, timer: 0, lives: 0 },
+  tour: { questions: Infinity, timer: 0, lives: 0 }, // one question per state on the map
   weak: { questions: 10, timer: 0, lives: 0 },
 };
+
+/**
+ * Difficulty presets. `easy` is the kid-friendly one: fewer options, names
+ * printed on the map, a free retry and extra thinking time.
+ *   options    — answer buttons for capital / identify / neighbour questions
+ *   mapLabels  — draw state names on the quiz map
+ *   retry      — a wrong first tap does not end the question
+ *   distractors— "far" picks obviously different states, "near" picks neighbours
+ *   timerScale — multiplies every per-question timer
+ */
+const DIFFICULTIES = {
+  easy: {
+    id: "easy",
+    label: "Easy",
+    options: 3,
+    mapLabels: true,
+    retry: true,
+    distractors: "far",
+    timerScale: 1.6,
+  },
+  normal: {
+    id: "normal",
+    label: "Normal",
+    options: 4,
+    mapLabels: false,
+    retry: false,
+    distractors: "near",
+    timerScale: 1,
+  },
+  hard: {
+    id: "hard",
+    label: "Advanced",
+    options: 4,
+    mapLabels: false,
+    retry: false,
+    distractors: "near",
+    timerScale: 0.75,
+  },
+};
+
+function difficultyFor(id) {
+  return DIFFICULTIES[id] || DIFFICULTIES.easy;
+}
 
 function shuffle(list, rng = Math.random) {
   const arr = [...list];
@@ -3243,14 +3524,19 @@ function poolFor(region, typeFilter = "all") {
   });
 }
 
-/** Weighted random pick: weak / unseen units turn up more often. */
+/**
+ * Weighted random pick: unseen units first, then weak ones. States that have
+ * already been drilled many times step back, so a few rounds sweep the whole
+ * map instead of asking the same handful of states over and over.
+ */
 function pickWeighted(pool, profile, rng = Math.random, exclude = []) {
   const candidates = pool.filter((unit) => !exclude.includes(unit.id));
   const list = candidates.length ? candidates : pool;
   const weights = list.map((unit) => {
     const stat = profile ? unitStat(profile, unit.id) : { mastery: 0, seen: 0 };
-    let weight = 1 + (100 - stat.mastery) / 20;
-    if (!stat.seen) weight += 1.5;
+    let weight = 2 + (100 - stat.mastery) / 25;
+    if (!stat.seen) weight *= 2.5;
+    else weight /= 1 + Math.min(6, stat.seen) * 0.4;
     return weight;
   });
   const total = weights.reduce((a, b) => a + b, 0);
@@ -3272,12 +3558,18 @@ function takeUnique(candidates, seen, targetLength, options) {
   }
 }
 
-function capitalOptions(target, pool, rng, count = 4) {
-  const seen = new Set([target.capital.en]);
-  const options = [target.capital];
+/** Order the distractor candidates the way the current difficulty wants them. */
+function distractorOrder(target, pool, rng, strategy) {
   const sameRegion = shuffle(pool.filter((u) => u.region === target.region && u.id !== target.id), rng);
   const others = shuffle(pool.filter((u) => u.region !== target.region && u.id !== target.id), rng);
-  for (const unit of [...sameRegion, ...others]) {
+  // easy: far-away states are easy to tell apart; normal/advanced: same region
+  return strategy === "far" ? [...others, ...sameRegion] : [...sameRegion, ...others];
+}
+
+function capitalOptions(target, pool, rng, count = 4, strategy = "near") {
+  const seen = new Set([target.capital.en]);
+  const options = [target.capital];
+  for (const unit of distractorOrder(target, pool, rng, strategy)) {
     if (options.length >= count) break;
     // several states can share a capital (Chandigarh) — never offer it twice
     if (seen.has(unit.capital.en)) continue;
@@ -3287,16 +3579,14 @@ function capitalOptions(target, pool, rng, count = 4) {
   return shuffle(options, rng);
 }
 
-function nameOptions(target, pool, rng, count = 4) {
+function nameOptions(target, pool, rng, count = 4, strategy = "near") {
   const seen = new Set([target.name.en]);
   const options = [target];
-  const sameRegion = shuffle(pool.filter((u) => u.region === target.region && u.id !== target.id), rng);
-  const others = shuffle(pool.filter((u) => u.region !== target.region && u.id !== target.id), rng);
-  takeUnique([...sameRegion, ...others], seen, count, options);
+  takeUnique(distractorOrder(target, pool, rng, strategy), seen, count, options);
   return shuffle(options, rng);
 }
 
-/** A neighbour plus three states that do not touch the target. */
+/** A neighbour plus the rest of the options, none of which may also touch the target. */
 function neighbourOptions(target, rng, count = 4) {
   const neighbourIds = neighboursOf(target.id);
   const neighbours = shuffle(neighbourIds.map((id) => UNITS[id]).filter(Boolean), rng);
@@ -3333,10 +3623,15 @@ const uniqueCapital = (unit) => CAPITAL_USES[unit.capital.en] === 1;
 
 /**
  * Build one question.
- * mode: locate | identify | capital | capitalReverse | neighbours
+ *
+ * mode:       locate | identify | capital | capitalReverse | neighbours
+ * exclude:    target ids already used in this round — they are skipped so a
+ *             round never asks about the same state twice
+ * difficulty: easy | normal | hard (see DIFFICULTIES)
  */
-function makeQuestion(mode, pool, profile, rng = Math.random, recent = []) {
+function makeQuestion(mode, pool, profile, rng = Math.random, exclude = [], difficulty = "normal") {
   if (!pool.length) throw new Error("empty pool");
+  const diff = difficultyFor(difficulty);
   const wider = pool.length >= 4 ? pool : DISTRACTOR_POOL;
 
   let candidates = pool;
@@ -3350,27 +3645,37 @@ function makeQuestion(mode, pool, profile, rng = Math.random, recent = []) {
           ? STATES.filter(uniqueCapital)
           : pool;
   }
-  const target = pickWeighted(candidates, profile, rng, recent.slice(-6));
 
+  // only skip used targets while there are still fresh ones left
+  const fresh = candidates.filter((unit) => !exclude.includes(unit.id));
+  const target = pickWeighted(fresh.length ? fresh : candidates, profile, rng);
+
+  const count = diff.options;
   if (mode === "identify") {
     return {
       mode,
       targetId: target.id,
-      options: nameOptions(target, wider, rng).map((u) => ({ kind: "unit", id: u.id })),
+      options: nameOptions(target, wider, rng, count, diff.distractors).map((u) => ({
+        kind: "unit",
+        id: u.id,
+      })),
     };
   }
   if (mode === "capital") {
     return {
       mode,
       targetId: target.id,
-      options: capitalOptions(target, wider, rng).map((capital) => ({ kind: "capital", capital })),
+      options: capitalOptions(target, wider, rng, count, diff.distractors).map((capital) => ({
+        kind: "capital",
+        capital,
+      })),
     };
   }
   if (mode === "capitalReverse") {
     const distractors = shuffle(
       STATES.filter((u) => u.id !== target.id && uniqueCapital(u)),
       rng
-    ).slice(0, 3);
+    ).slice(0, count - 1);
     return {
       mode,
       targetId: target.id,
@@ -3381,14 +3686,31 @@ function makeQuestion(mode, pool, profile, rng = Math.random, recent = []) {
     return {
       mode,
       targetId: target.id,
-      options: neighbourOptions(target, rng).map((u) => ({ kind: "unit", id: u.id })),
+      options: neighbourOptions(target, rng, count).map((u) => ({ kind: "unit", id: u.id })),
     };
   }
   return { mode: "locate", targetId: target.id };
 }
 
-/** Mixed sequence for the daily challenge: 3 locate, 2 identify, 3 capitals, 2 neighbours. */
-function dailyQuestionModes() {
+/**
+ * Mixed sequence for the daily challenge. Easy removes the two hardest kinds
+ * (state-from-capital and neighbours) so young players still get a fair set.
+ */
+function dailyQuestionModes(difficulty = "normal") {
+  if (difficulty === "easy") {
+    return [
+      "locate",
+      "identify",
+      "capital",
+      "locate",
+      "identify",
+      "capital",
+      "locate",
+      "identify",
+      "capital",
+      "locate",
+    ];
+  }
   return [
     "locate",
     "identify",
@@ -3401,6 +3723,23 @@ function dailyQuestionModes() {
     "capital",
     "neighbours",
   ];
+}
+
+/** Every state on the map exactly once, grouped by region (north → south). */
+function tourSequence(pool, rng = Math.random) {
+  const order = REGIONS.filter((region) => region.id !== "all").map((region) => region.id);
+  const questions = [];
+  for (const region of order) {
+    const group = shuffle(pool.filter((unit) => unit.region === region), rng);
+    for (const unit of group) questions.push({ mode: "locate", targetId: unit.id });
+  }
+  // anything with an unexpected region still gets a turn
+  for (const unit of shuffle(pool, rng)) {
+    if (!questions.some((question) => question.targetId === unit.id)) {
+      questions.push({ mode: "locate", targetId: unit.id });
+    }
+  }
+  return questions;
 }
 
 function optionKey(option) {
@@ -3436,16 +3775,21 @@ function buildRound(mode, pool, profile, options = {}) {
   const rules = MODE_RULES[mode] || MODE_RULES.locate;
   const seed = options.seed || null;
   const rng = seed ? seededRng(seed) : Math.random;
+  const difficulty = options.difficulty || profile?.difficulty || "normal";
+  const diff = difficultyFor(difficulty);
+  // easy gives young players more time on the clocked modes
+  const timer = rules.timer ? Math.round(rules.timer * diff.timerScale) : 0;
 
   if (mode === "challenge") {
     return {
       mode,
-      questions: [makeQuestion("locate", pool, profile, rng)],
-      timer: rules.timer,
+      questions: [makeQuestion("locate", pool, profile, rng, [], difficulty)],
+      timer,
       lives: rules.lives,
       total: Infinity,
       endless: true,
       seed,
+      difficulty,
     };
   }
 
@@ -3453,38 +3797,57 @@ function buildRound(mode, pool, profile, options = {}) {
     return {
       mode,
       questions: sprintSequence(pool, rng).map((id) => ({ mode: "locate", targetId: id })),
-      timer: rules.timer,
+      timer: 0,
       lives: 0,
       total: pool.length,
       seed,
+      difficulty,
+    };
+  }
+
+  if (mode === "tour") {
+    const questions = tourSequence(pool, rng);
+    return {
+      mode,
+      questions,
+      timer: 0,
+      lives: 0,
+      total: questions.length,
+      seed,
+      difficulty,
     };
   }
 
   if (mode === "daily") {
-    const modes = dailyQuestionModes();
-    const questions = modes.map((questionMode) =>
-      makeQuestion(questionMode, pool, profile, rng)
-    );
-    return { mode, questions, timer: rules.timer, lives: 0, total: questions.length, seed };
+    const questions = [];
+    for (const questionMode of dailyQuestionModes(difficulty)) {
+      const used = questions.map((question) => question.targetId);
+      questions.push(makeQuestion(questionMode, pool, profile, rng, used, difficulty));
+    }
+    return { mode, questions, timer, lives: 0, total: questions.length, seed, difficulty };
   }
 
-  const total = rules.questions;
+  const total = mode === "weak" ? Math.min(rules.questions, pool.length) : rules.questions;
   const questions = [];
+  const used = [];
   for (let i = 0; i < total; i++) {
-    const recent = questions.slice(-6).map((q) => q.targetId);
-    let question = makeQuestion(mode, pool, profile, rng, recent);
+    let question;
     if (i === 0 && options.focusId && UNITS[options.focusId]) {
-      question = makeQuestion(mode, [UNITS[options.focusId]], profile, rng);
+      question = makeQuestion(mode, [UNITS[options.focusId]], profile, rng, [], difficulty);
+    } else {
+      question = makeQuestion(mode, pool, profile, rng, used, difficulty);
     }
+    used.push(question.targetId);
     questions.push(question);
   }
-  return { mode, questions, timer: rules.timer, lives: 0, total, seed };
+  return { mode, questions, timer, lives: 0, total, seed, difficulty };
 }
 
-function nextChallengeQuestion(mode, pool, profile, rng = Math.random) {
+/** Next question for the endless survival round. */
+function nextChallengeQuestion(mode, pool, profile, rng = Math.random, exclude = [], difficulty = "normal") {
   const usable = ["locate", "locate", "identify", "capital", "neighbours"];
   const pick = usable[Math.floor(rng() * usable.length)];
-  return makeQuestion(pick, pool, profile, rng);
+  return makeQuestion(pick, pool, profile, rng, exclude, difficulty);
 }
 
 function starsFor(score, total) {
@@ -3535,6 +3898,26 @@ const STRINGS = {
   dailyPlay: "Play",
   dailyAgain: "See result",
   region: "Region",
+  difficulty: "Difficulty",
+  difficultyTitle: "How hard?",
+  easy: "Easy",
+  normal: "Normal",
+  advanced: "Advanced",
+  easySub: "Names on the map · 3 choices · one free retry",
+  normalSub: "No names · 4 choices · hints available",
+  advancedSub: "No names · 4 choices · faster timers",
+  difficultyHint: "Easy is made for younger players.",
+  pickLevel: "Choose your level",
+  howToPlay: "How to play",
+  howTitle: "How to play",
+  howBody: "Three taps and you are playing.",
+  howStep1: "A name appears — like “Where is Bihar?”",
+  howStep2: "Tap that state’s shape on the map.",
+  howStep3: "Green means right. Red shows the answer, so you learn it.",
+  howTip: "Tip: on Easy the state names are printed on the map.",
+  gotIt: "Got it — let’s play",
+  tour: "Map tour",
+  tourSub: "Every state on the map, one by one",
   modes: "Play",
   extraModes: "Challenge yourself",
   learn: "Learn the map",
@@ -3574,6 +3957,19 @@ const STRINGS = {
   capitalOf: (name) => `What is the capital of ${name}?`,
   stateOfCapital: (name) => `Which state has ${name} as its capital?`,
   whereIs: (name) => `Where is ${name}?`,
+  findState: (name) => `Find ${name}`,
+  tapIt: "Tap its shape on the map 👆",
+  whichStateSub: "Tap the right name below",
+  tryAgain: "Not that one — try again 💪",
+  secondChance: "One try left",
+  showMe: "This is it →",
+  kindLocate: "Find on map",
+  kindIdentify: "Shape",
+  kindCapital: "Capital",
+  kindCapitalReverse: "From capital",
+  kindNeighbours: "Neighbour",
+  coverage: "Map explored",
+  coverageOf: (a, b) => `${a} of ${b} states seen`,
   neighbourOf: (name) => `Which state shares a border with ${name}?`,
   hint: "Hint",
   skip: "Skip",
@@ -3593,6 +3989,7 @@ const STRINGS = {
   perfect: "Perfect round!",
   survivalOver: "Survival over",
   sprintComplete: "Whole map done!",
+  tourComplete: "Map tour complete!",
   correctAnswers: "Correct",
   xpEarned: "XP earned",
   bestStreak: "Best streak",
@@ -3827,6 +4224,20 @@ const ACHIEVEMENTS = [
     title: "Border expert",
     detail: "Get 10 neighbour questions right",
     test: ({ profile }) => modeCorrect(profile, "neighbourCorrect") >= 10,
+  },
+  {
+    id: "map-tour",
+    icon: "🧭",
+    title: "Tour guide",
+    detail: "Finish a map tour with at least 30 correct",
+    test: ({ round }) => round?.mode === "tour" && round.score >= 30,
+  },
+  {
+    id: "map-explorer",
+    icon: "🔎",
+    title: "Every corner",
+    detail: "Have every state and UT come up in a question",
+    test: ({ profile }) => coverage(profile, STATES) >= STATES.length,
   },
   {
     id: "half-map",
@@ -4352,6 +4763,7 @@ function renderHome() {
   }
   $("poolCount").textContent = `${poolFor(ui.region).length} states`;
 
+  renderDifficultyChips();
   renderModeCards();
   renderStatsRow();
   renderWeakCard();
@@ -4407,6 +4819,7 @@ const EXTRA_MODES = [
   { mode: "timed", icon: "⏱️", accent: "#ff6b6b", badge: "10s" },
   { mode: "challenge", icon: "❤️", accent: "#f472b6", badge: "3 lives" },
   { mode: "sprint", icon: "⚡", accent: "#facc15", badge: "36" },
+  { mode: "tour", icon: "🧭", accent: "#4cc3ff", badge: "36" },
 ];
 
 function modeCard({ mode, icon, accent, badge }, wide = false) {
@@ -4427,6 +4840,95 @@ function modeCard({ mode, icon, accent, badge }, wide = false) {
   return card;
 }
 
+/** Kid-friendly difficulty picker: one tap changes options, labels and timers. */
+function renderDifficultyChips() {
+  $("difficultyTitle").textContent = t("difficultyTitle");
+  $("difficultyNote").textContent = t("difficultyHint");
+  $("howCardTitle").textContent = t("howToPlay");
+  $("howCardSub").textContent = t("howBody");
+
+  const wrap = $("difficultyChips");
+  wrap.replaceChildren();
+  const chips = [
+    { id: "easy", icon: "🌱", meta: t("easySub") },
+    { id: "normal", icon: "⚡", meta: t("normalSub") },
+    { id: "hard", icon: "🔥", meta: t("advancedSub") },
+  ];
+  for (const chip of chips) {
+    const button = document.createElement("button");
+    button.className = "diff-chip" + (profile.difficulty === chip.id ? " active" : "");
+    button.dataset.diff = chip.id;
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-selected", String(profile.difficulty === chip.id));
+    const name = document.createElement("span");
+    name.className = "diff-name";
+    name.textContent = `${chip.icon} ${DIFFICULTIES[chip.id].label}`;
+    const meta = document.createElement("span");
+    meta.className = "diff-meta";
+    meta.textContent = chip.meta;
+    button.append(name, meta);
+    button.addEventListener("click", () => setDifficulty(chip.id));
+    wrap.append(button);
+  }
+}
+
+function setDifficulty(id) {
+  if (!DIFFICULTIES[id] || profile.difficulty === id) return;
+  profile.difficulty = id;
+  saveProfile(profile);
+  sound("tap");
+  renderHome();
+  syncDifficultySetting();
+  toast(`${DIFFICULTIES[id].label} · ${id === "easy" ? t("easySub") : id === "normal" ? t("normalSub") : t("advancedSub")}`, 2200);
+}
+
+/** Settings row mirrors the home picker. */
+function syncDifficultySetting() {
+  $("diffLabel").textContent = t("difficulty");
+  $("diffValue").textContent =
+    profile.difficulty === "easy" ? t("easy") : profile.difficulty === "normal" ? t("normal") : t("advanced");
+  for (const button of $("diffSeg").querySelectorAll("button")) {
+    button.classList.toggle("active", button.dataset.diff === profile.difficulty);
+  }
+}
+
+/* ---------------------------------------------------------------- how to play */
+
+const HOW_STEPS = [
+  ["🔤", "howStep1"],
+  ["👆", "howStep2"],
+  ["✅", "howStep3"],
+];
+
+function openHow() {
+  $("howTitle").textContent = t("howTitle");
+  $("howBody").textContent = t("howBody");
+  $("howTip").textContent = t("howTip");
+  $("howStart").textContent = t("gotIt");
+  const list = $("howSteps");
+  list.replaceChildren();
+  for (const [icon, key] of HOW_STEPS) {
+    const item = document.createElement("li");
+    const badge = document.createElement("span");
+    badge.className = "how-step-icon";
+    badge.textContent = icon;
+    badge.setAttribute("aria-hidden", "true");
+    const text = document.createElement("span");
+    text.textContent = t(key);
+    item.append(badge, text);
+    list.append(item);
+  }
+  $("howBackdrop").hidden = false;
+}
+
+function closeHow() {
+  $("howBackdrop").hidden = true;
+  if (!profile.tutorialDone) {
+    profile.tutorialDone = true;
+    saveProfile(profile);
+  }
+}
+
 function renderModeCards() {
   $("playTitle").textContent = t("modes");
   const grid = $("modeGrid");
@@ -4438,6 +4940,7 @@ function renderModeCards() {
   extra.replaceChildren();
   for (const item of EXTRA_MODES.slice(0, 2)) extra.append(modeCard(item));
   extra.append(modeCard({ ...EXTRA_MODES[2], badge: `${poolFor(ui.region).length}` }, true));
+  extra.append(modeCard({ ...EXTRA_MODES[3], badge: `${poolFor(ui.region).length}` }, true));
 
   const learn = document.createElement("button");
   learn.className = "mode-card wide";
@@ -4677,14 +5180,17 @@ function startQuiz(mode, options = {}) {
     return;
   }
 
+  const difficulty = DIFFICULTIES[profile.difficulty] ? profile.difficulty : "easy";
   const round = buildRound(mode, pool, profile, {
     seed: mode === "daily" ? todayKey() : null,
     focusId: options.focusId,
+    difficulty,
   });
 
   clearAllTimers();
   ui.quiz = {
     mode,
+    difficulty,
     region,
     questions: round.questions,
     total: round.total,
@@ -4702,6 +5208,7 @@ function startQuiz(mode, options = {}) {
     unlocked: [],
     answered: false,
     hint: false,
+    tries: 0,
     lastResult: null,
     startedAt: Date.now(),
     elapsed: 0,
@@ -4752,6 +5259,18 @@ function clearAllTimers() {
   }
 }
 
+/** Small chip above the question telling the player what kind of answer is wanted. */
+function kindLabel(question) {
+  const map = {
+    locate: `📍 ${t("kindLocate")}`,
+    identify: `🧭 ${t("kindIdentify")}`,
+    capital: `🏛️ ${t("kindCapital")}`,
+    capitalReverse: `🏛️ ${t("kindCapitalReverse")}`,
+    neighbours: `🧩 ${t("kindNeighbours")}`,
+  };
+  return map[question.mode] || `❓ ${t("question")}`;
+}
+
 function renderQuestion() {
   const quiz = ui.quiz;
   const question = currentQuestion();
@@ -4760,8 +5279,12 @@ function renderQuestion() {
 
   quiz.answered = false;
   quiz.hint = false;
+  quiz.tries = 0;
   quiz.lastResult = null;
   clearQuestionTimer();
+
+  const diff = difficultyFor(quiz.difficulty || profile.difficulty);
+  $("qKind").textContent = kindLabel(question);
 
   updateHud();
 
@@ -4772,7 +5295,7 @@ function renderQuestion() {
   let speakText = "";
   if (question.mode === "identify") {
     headline = t("whichState");
-    sub = "Look at the map and pick the name";
+    sub = t("whichStateSub");
     speakText = headline;
   } else if (question.mode === "capital") {
     headline = t("capitalOf", unitName(unit, profile.stateNames));
@@ -4782,8 +5305,13 @@ function renderQuestion() {
     speakText = headline;
   } else if (question.mode === "neighbours") {
     headline = t("neighbourOf", unitName(unit, profile.stateNames));
-    sub = "Tap the state that shares a border";
+    sub = t("tapState");
     speakText = headline;
+  } else if (diff.id === "easy") {
+    // short, literal wording reads better for young players
+    headline = t("findState", unitName(unit, profile.stateNames));
+    sub = t("tapIt");
+    speakText = t("whereIs", unitName(unit, profile.stateNames));
   } else {
     headline = t("whereIs", unitName(unit, profile.stateNames));
     sub = t("tapState");
@@ -4813,7 +5341,9 @@ function renderQuestion() {
   const interactive = question.mode === "locate";
   if (quiz.map) quiz.map.destroy();
   quiz.map = createMap(wrapper, {
-    labels: false,
+    // easy mode prints the state names (except for "identify the shape",
+    // where the name would give the answer away)
+    labels: Boolean(diff.mapLabels) && question.mode !== "identify",
     markers: true,
     interactive,
     onTap: (id) => onMapTap(id),
@@ -4907,15 +5437,24 @@ function onMapTap(id) {
   const question = currentQuestion();
   if (!quiz || !question || quiz.answered || quiz.finished) return;
   if (question.mode !== "locate") return;
-
-  const isRight = isCorrectTap(question.targetId, id);
-  if (isRight) {
+  if (id === question.targetId) {
     quiz.map.setClass(id, "is-correct", true);
-  } else {
-    quiz.map.setClass(id, "is-wrong", true);
-    quiz.map.setClass(question.targetId, "is-correct", true);
+    resolveAnswer(true, { chosenId: id });
+    return;
   }
-  resolveAnswer(isRight, { chosenId: id });
+
+  const diff = difficultyFor(quiz.difficulty || profile.difficulty);
+  if (diff.retry && quiz.tries === 0) {
+    // easy mode: a wrong tap is a nudge, not a failed question
+    quiz.tries = 1;
+    quiz.map.setClass(id, "is-wrong", true);
+    sound("bad");
+    showRetry();
+    return;
+  }
+  quiz.map.setClass(id, "is-wrong", true);
+  quiz.map.setClass(question.targetId, "is-correct", true);
+  resolveAnswer(false, { chosenId: id, retried: quiz.tries > 0 });
 }
 
 function onOptionPick(option, button) {
@@ -4924,9 +5463,31 @@ function onOptionPick(option, button) {
   if (!quiz || !question || quiz.answered || quiz.finished) return;
 
   const isRight = isCorrectOption(question, option);
+  if (!isRight) {
+    const diff = difficultyFor(quiz.difficulty || profile.difficulty);
+    if (diff.retry && quiz.tries === 0) {
+      quiz.tries = 1;
+      button.classList.add("wrong");
+      button.disabled = true;
+      sound("bad");
+      showRetry();
+      return;
+    }
+  }
   markOptions(question, isRight ? option : null, button);
   if (quiz.map) quiz.map.setClass(question.targetId, isRight ? "is-correct" : "is-wrong", true);
-  resolveAnswer(isRight, { chosen: option });
+  resolveAnswer(isRight, { chosen: option, retried: quiz.tries > 0 });
+}
+
+/** Gentle "try again" state used by easy mode before the answer is revealed. */
+function showRetry() {
+  const feedback = $("feedback");
+  feedback.hidden = false;
+  feedback.classList.remove("bad");
+  feedback.classList.add("retry");
+  $("feedbackTitle").textContent = t("tryAgain");
+  $("feedbackFact").textContent = t("secondChance");
+  $("nextBtn").hidden = true;
 }
 
 function markOptions(question, chosen, chosenButton) {
@@ -4967,7 +5528,7 @@ function resolveAnswer(isRight, details = {}) {
   const result = recordAnswer(profile, question.targetId, isRight, {
     mode,
     answerType: question.mode,
-    hinted: quiz.hint,
+    hinted: quiz.hint || Boolean(details.retried),
     timedOut,
   });
   profile = result.profile;
@@ -5034,7 +5595,9 @@ function showFeedback(isRight, unit, xpGain, timedOut = false) {
   const feedback = $("feedback");
   const quiz = ui.quiz;
   feedback.hidden = false;
+  feedback.classList.remove("retry");
   feedback.classList.toggle("bad", !isRight);
+  $("nextBtn").hidden = false;
   $("feedbackTitle").textContent = isRight
     ? `${t("correct")} +${xpGain} XP`
     : `${timedOut ? t("timesUp") : ""} ${t("notQuite", nameOf(unit.id))}`.trim();
@@ -5057,7 +5620,17 @@ function nextQuestion() {
   const outOfLives = quiz.maxLives > 0 && quiz.lives === 0;
 
   if (quiz.endless && !outOfLives) {
-    quiz.questions.push(nextChallengeQuestion(quiz.mode, poolFor(quiz.region), profile));
+    const used = quiz.questions.map((question) => question.targetId);
+    quiz.questions.push(
+      nextChallengeQuestion(
+        quiz.mode,
+        poolFor(quiz.region),
+        profile,
+        Math.random,
+        used,
+        quiz.difficulty
+      )
+    );
     quiz.index = quiz.questions.length - 1;
     renderQuestion();
     return;
@@ -5158,6 +5731,7 @@ function renderResult() {
   let title = t("roundComplete");
   if (quiz.score === quiz.total && quiz.total >= 5) title = t("perfect");
   if (quiz.mode === "sprint") title = t("sprintComplete");
+  if (quiz.mode === "tour") title = t("tourComplete");
   if (quiz.mode === "challenge") title = t("survivalOver");
   $("resultTitle").textContent = title;
 
@@ -5169,6 +5743,7 @@ function renderResult() {
     quiz.mode === "sprint" ? `${t("time")}: ${formatTime(seconds)}` : `${roundAccuracy}% accuracy`,
     quiz.mode === "daily" ? `Daily streak: ${dailyStatus(profile).streak}` : null,
     newSprintBest ? t("newBest") : null,
+    t("coverageOf", coverage(profile, STATES), MAP_TOTAL),
   ].filter(Boolean);
   $("resultSub").textContent = subParts.join(" · ");
 
@@ -5276,6 +5851,7 @@ function renderStats() {
   const status = dailyStatus(profile);
   const boxes = [
     [`${memorisedCount(profile, STATES)}/${MAP_TOTAL}`, t("memorisedStates")],
+    [`${coverage(profile, STATES)}/${MAP_TOTAL}`, t("coverage")],
     [String(profile.answers), t("totalAnswers")],
     [`${accuracy(profile)}%`, t("accuracy")],
     [String(profile.bestStreak), t("bestStreak")],
@@ -5353,6 +5929,7 @@ function openSettings() {
   $("soundLabel").textContent = t("sound");
   $("soundValue").textContent = profile.sound ? t("on") : t("off");
   $("soundToggle").setAttribute("aria-checked", String(profile.sound));
+  syncDifficultySetting();
   $("namesLabel").textContent = t("stateNames");
   $("namesValue").textContent = profile.stateNames === "hi" ? t("hindi") : t("english");
   for (const button of $("namesSeg").querySelectorAll("button")) {
@@ -5476,6 +6053,16 @@ function wire() {
     $("namesValue").textContent = profile.stateNames === "hi" ? t("hindi") : t("english");
     rerender();
   });
+  $("diffSeg").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-diff]");
+    if (button) setDifficulty(button.dataset.diff);
+  });
+  $("howBtn").addEventListener("click", openHow);
+  $("howClose").addEventListener("click", closeHow);
+  $("howStart").addEventListener("click", closeHow);
+  $("howBackdrop").addEventListener("click", (event) => {
+    if (event.target === $("howBackdrop")) closeHow();
+  });
   $("resetBtn").addEventListener("click", doReset);
   $("statsReset").addEventListener("click", doReset);
 
@@ -5598,6 +6185,8 @@ if (typeof window !== "undefined") {
     getProfile: () => profile,
     startQuiz,
     setScreen,
+    setDifficulty,
+    openHow,
   };
 }
 
@@ -5607,6 +6196,7 @@ function wireNativeBackButton() {
   const nativeApp = typeof window !== "undefined" ? window.Capacitor?.Plugins?.App : null;
   if (!nativeApp?.addListener) return;
   nativeApp.addListener("backButton", () => {
+    if (!$("howBackdrop").hidden) return closeHow();
     if (!$("settingsBackdrop").hidden) return closeSettings();
     if (!$("listBackdrop").hidden) return closeList();
     if (!$("sheetBackdrop").hidden) return closeSheet();
@@ -5625,6 +6215,7 @@ function boot() {
   wireNativeBackButton();
   setScreen("home");
   renderHome();
+  if (!profile.tutorialDone) setTimeout(openHow, 500);
 
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     navigator.serviceWorker.register("sw.js").catch(() => {});

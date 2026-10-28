@@ -16,6 +16,7 @@ import {
   saveProfile,
   recordAnswer,
   unitStat,
+  coverage,
   memorisedCount,
   accuracy,
   weakUnits,
@@ -27,6 +28,8 @@ import {
 } from "./store.js";
 import {
   MODE_RULES,
+  DIFFICULTIES,
+  difficultyFor,
   poolFor,
   buildRound,
   nextChallengeQuestion,
@@ -172,6 +175,7 @@ function renderHome() {
   }
   $("poolCount").textContent = `${poolFor(ui.region).length} states`;
 
+  renderDifficultyChips();
   renderModeCards();
   renderStatsRow();
   renderWeakCard();
@@ -227,6 +231,7 @@ const EXTRA_MODES = [
   { mode: "timed", icon: "⏱️", accent: "#ff6b6b", badge: "10s" },
   { mode: "challenge", icon: "❤️", accent: "#f472b6", badge: "3 lives" },
   { mode: "sprint", icon: "⚡", accent: "#facc15", badge: "36" },
+  { mode: "tour", icon: "🧭", accent: "#4cc3ff", badge: "36" },
 ];
 
 function modeCard({ mode, icon, accent, badge }, wide = false) {
@@ -247,6 +252,95 @@ function modeCard({ mode, icon, accent, badge }, wide = false) {
   return card;
 }
 
+/** Kid-friendly difficulty picker: one tap changes options, labels and timers. */
+function renderDifficultyChips() {
+  $("difficultyTitle").textContent = t("difficultyTitle");
+  $("difficultyNote").textContent = t("difficultyHint");
+  $("howCardTitle").textContent = t("howToPlay");
+  $("howCardSub").textContent = t("howBody");
+
+  const wrap = $("difficultyChips");
+  wrap.replaceChildren();
+  const chips = [
+    { id: "easy", icon: "🌱", meta: t("easySub") },
+    { id: "normal", icon: "⚡", meta: t("normalSub") },
+    { id: "hard", icon: "🔥", meta: t("advancedSub") },
+  ];
+  for (const chip of chips) {
+    const button = document.createElement("button");
+    button.className = "diff-chip" + (profile.difficulty === chip.id ? " active" : "");
+    button.dataset.diff = chip.id;
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-selected", String(profile.difficulty === chip.id));
+    const name = document.createElement("span");
+    name.className = "diff-name";
+    name.textContent = `${chip.icon} ${DIFFICULTIES[chip.id].label}`;
+    const meta = document.createElement("span");
+    meta.className = "diff-meta";
+    meta.textContent = chip.meta;
+    button.append(name, meta);
+    button.addEventListener("click", () => setDifficulty(chip.id));
+    wrap.append(button);
+  }
+}
+
+function setDifficulty(id) {
+  if (!DIFFICULTIES[id] || profile.difficulty === id) return;
+  profile.difficulty = id;
+  saveProfile(profile);
+  sound("tap");
+  renderHome();
+  syncDifficultySetting();
+  toast(`${DIFFICULTIES[id].label} · ${id === "easy" ? t("easySub") : id === "normal" ? t("normalSub") : t("advancedSub")}`, 2200);
+}
+
+/** Settings row mirrors the home picker. */
+function syncDifficultySetting() {
+  $("diffLabel").textContent = t("difficulty");
+  $("diffValue").textContent =
+    profile.difficulty === "easy" ? t("easy") : profile.difficulty === "normal" ? t("normal") : t("advanced");
+  for (const button of $("diffSeg").querySelectorAll("button")) {
+    button.classList.toggle("active", button.dataset.diff === profile.difficulty);
+  }
+}
+
+/* ---------------------------------------------------------------- how to play */
+
+const HOW_STEPS = [
+  ["🔤", "howStep1"],
+  ["👆", "howStep2"],
+  ["✅", "howStep3"],
+];
+
+function openHow() {
+  $("howTitle").textContent = t("howTitle");
+  $("howBody").textContent = t("howBody");
+  $("howTip").textContent = t("howTip");
+  $("howStart").textContent = t("gotIt");
+  const list = $("howSteps");
+  list.replaceChildren();
+  for (const [icon, key] of HOW_STEPS) {
+    const item = document.createElement("li");
+    const badge = document.createElement("span");
+    badge.className = "how-step-icon";
+    badge.textContent = icon;
+    badge.setAttribute("aria-hidden", "true");
+    const text = document.createElement("span");
+    text.textContent = t(key);
+    item.append(badge, text);
+    list.append(item);
+  }
+  $("howBackdrop").hidden = false;
+}
+
+function closeHow() {
+  $("howBackdrop").hidden = true;
+  if (!profile.tutorialDone) {
+    profile.tutorialDone = true;
+    saveProfile(profile);
+  }
+}
+
 function renderModeCards() {
   $("playTitle").textContent = t("modes");
   const grid = $("modeGrid");
@@ -258,6 +352,7 @@ function renderModeCards() {
   extra.replaceChildren();
   for (const item of EXTRA_MODES.slice(0, 2)) extra.append(modeCard(item));
   extra.append(modeCard({ ...EXTRA_MODES[2], badge: `${poolFor(ui.region).length}` }, true));
+  extra.append(modeCard({ ...EXTRA_MODES[3], badge: `${poolFor(ui.region).length}` }, true));
 
   const learn = document.createElement("button");
   learn.className = "mode-card wide";
@@ -497,14 +592,17 @@ function startQuiz(mode, options = {}) {
     return;
   }
 
+  const difficulty = DIFFICULTIES[profile.difficulty] ? profile.difficulty : "easy";
   const round = buildRound(mode, pool, profile, {
     seed: mode === "daily" ? todayKey() : null,
     focusId: options.focusId,
+    difficulty,
   });
 
   clearAllTimers();
   ui.quiz = {
     mode,
+    difficulty,
     region,
     questions: round.questions,
     total: round.total,
@@ -522,6 +620,7 @@ function startQuiz(mode, options = {}) {
     unlocked: [],
     answered: false,
     hint: false,
+    tries: 0,
     lastResult: null,
     startedAt: Date.now(),
     elapsed: 0,
@@ -572,6 +671,18 @@ function clearAllTimers() {
   }
 }
 
+/** Small chip above the question telling the player what kind of answer is wanted. */
+function kindLabel(question) {
+  const map = {
+    locate: `📍 ${t("kindLocate")}`,
+    identify: `🧭 ${t("kindIdentify")}`,
+    capital: `🏛️ ${t("kindCapital")}`,
+    capitalReverse: `🏛️ ${t("kindCapitalReverse")}`,
+    neighbours: `🧩 ${t("kindNeighbours")}`,
+  };
+  return map[question.mode] || `❓ ${t("question")}`;
+}
+
 function renderQuestion() {
   const quiz = ui.quiz;
   const question = currentQuestion();
@@ -580,8 +691,12 @@ function renderQuestion() {
 
   quiz.answered = false;
   quiz.hint = false;
+  quiz.tries = 0;
   quiz.lastResult = null;
   clearQuestionTimer();
+
+  const diff = difficultyFor(quiz.difficulty || profile.difficulty);
+  $("qKind").textContent = kindLabel(question);
 
   updateHud();
 
@@ -592,7 +707,7 @@ function renderQuestion() {
   let speakText = "";
   if (question.mode === "identify") {
     headline = t("whichState");
-    sub = "Look at the map and pick the name";
+    sub = t("whichStateSub");
     speakText = headline;
   } else if (question.mode === "capital") {
     headline = t("capitalOf", unitName(unit, profile.stateNames));
@@ -602,8 +717,13 @@ function renderQuestion() {
     speakText = headline;
   } else if (question.mode === "neighbours") {
     headline = t("neighbourOf", unitName(unit, profile.stateNames));
-    sub = "Tap the state that shares a border";
+    sub = t("tapState");
     speakText = headline;
+  } else if (diff.id === "easy") {
+    // short, literal wording reads better for young players
+    headline = t("findState", unitName(unit, profile.stateNames));
+    sub = t("tapIt");
+    speakText = t("whereIs", unitName(unit, profile.stateNames));
   } else {
     headline = t("whereIs", unitName(unit, profile.stateNames));
     sub = t("tapState");
@@ -633,7 +753,9 @@ function renderQuestion() {
   const interactive = question.mode === "locate";
   if (quiz.map) quiz.map.destroy();
   quiz.map = createMap(wrapper, {
-    labels: false,
+    // easy mode prints the state names (except for "identify the shape",
+    // where the name would give the answer away)
+    labels: Boolean(diff.mapLabels) && question.mode !== "identify",
     markers: true,
     interactive,
     onTap: (id) => onMapTap(id),
@@ -727,15 +849,24 @@ function onMapTap(id) {
   const question = currentQuestion();
   if (!quiz || !question || quiz.answered || quiz.finished) return;
   if (question.mode !== "locate") return;
-
-  const isRight = isCorrectTap(question.targetId, id);
-  if (isRight) {
+  if (id === question.targetId) {
     quiz.map.setClass(id, "is-correct", true);
-  } else {
-    quiz.map.setClass(id, "is-wrong", true);
-    quiz.map.setClass(question.targetId, "is-correct", true);
+    resolveAnswer(true, { chosenId: id });
+    return;
   }
-  resolveAnswer(isRight, { chosenId: id });
+
+  const diff = difficultyFor(quiz.difficulty || profile.difficulty);
+  if (diff.retry && quiz.tries === 0) {
+    // easy mode: a wrong tap is a nudge, not a failed question
+    quiz.tries = 1;
+    quiz.map.setClass(id, "is-wrong", true);
+    sound("bad");
+    showRetry();
+    return;
+  }
+  quiz.map.setClass(id, "is-wrong", true);
+  quiz.map.setClass(question.targetId, "is-correct", true);
+  resolveAnswer(false, { chosenId: id, retried: quiz.tries > 0 });
 }
 
 function onOptionPick(option, button) {
@@ -744,9 +875,31 @@ function onOptionPick(option, button) {
   if (!quiz || !question || quiz.answered || quiz.finished) return;
 
   const isRight = isCorrectOption(question, option);
+  if (!isRight) {
+    const diff = difficultyFor(quiz.difficulty || profile.difficulty);
+    if (diff.retry && quiz.tries === 0) {
+      quiz.tries = 1;
+      button.classList.add("wrong");
+      button.disabled = true;
+      sound("bad");
+      showRetry();
+      return;
+    }
+  }
   markOptions(question, isRight ? option : null, button);
   if (quiz.map) quiz.map.setClass(question.targetId, isRight ? "is-correct" : "is-wrong", true);
-  resolveAnswer(isRight, { chosen: option });
+  resolveAnswer(isRight, { chosen: option, retried: quiz.tries > 0 });
+}
+
+/** Gentle "try again" state used by easy mode before the answer is revealed. */
+function showRetry() {
+  const feedback = $("feedback");
+  feedback.hidden = false;
+  feedback.classList.remove("bad");
+  feedback.classList.add("retry");
+  $("feedbackTitle").textContent = t("tryAgain");
+  $("feedbackFact").textContent = t("secondChance");
+  $("nextBtn").hidden = true;
 }
 
 function markOptions(question, chosen, chosenButton) {
@@ -787,7 +940,7 @@ function resolveAnswer(isRight, details = {}) {
   const result = recordAnswer(profile, question.targetId, isRight, {
     mode,
     answerType: question.mode,
-    hinted: quiz.hint,
+    hinted: quiz.hint || Boolean(details.retried),
     timedOut,
   });
   profile = result.profile;
@@ -854,7 +1007,9 @@ function showFeedback(isRight, unit, xpGain, timedOut = false) {
   const feedback = $("feedback");
   const quiz = ui.quiz;
   feedback.hidden = false;
+  feedback.classList.remove("retry");
   feedback.classList.toggle("bad", !isRight);
+  $("nextBtn").hidden = false;
   $("feedbackTitle").textContent = isRight
     ? `${t("correct")} +${xpGain} XP`
     : `${timedOut ? t("timesUp") : ""} ${t("notQuite", nameOf(unit.id))}`.trim();
@@ -877,7 +1032,17 @@ function nextQuestion() {
   const outOfLives = quiz.maxLives > 0 && quiz.lives === 0;
 
   if (quiz.endless && !outOfLives) {
-    quiz.questions.push(nextChallengeQuestion(quiz.mode, poolFor(quiz.region), profile));
+    const used = quiz.questions.map((question) => question.targetId);
+    quiz.questions.push(
+      nextChallengeQuestion(
+        quiz.mode,
+        poolFor(quiz.region),
+        profile,
+        Math.random,
+        used,
+        quiz.difficulty
+      )
+    );
     quiz.index = quiz.questions.length - 1;
     renderQuestion();
     return;
@@ -978,6 +1143,7 @@ function renderResult() {
   let title = t("roundComplete");
   if (quiz.score === quiz.total && quiz.total >= 5) title = t("perfect");
   if (quiz.mode === "sprint") title = t("sprintComplete");
+  if (quiz.mode === "tour") title = t("tourComplete");
   if (quiz.mode === "challenge") title = t("survivalOver");
   $("resultTitle").textContent = title;
 
@@ -989,6 +1155,7 @@ function renderResult() {
     quiz.mode === "sprint" ? `${t("time")}: ${formatTime(seconds)}` : `${roundAccuracy}% accuracy`,
     quiz.mode === "daily" ? `Daily streak: ${dailyStatus(profile).streak}` : null,
     newSprintBest ? t("newBest") : null,
+    t("coverageOf", coverage(profile, STATES), MAP_TOTAL),
   ].filter(Boolean);
   $("resultSub").textContent = subParts.join(" · ");
 
@@ -1096,6 +1263,7 @@ function renderStats() {
   const status = dailyStatus(profile);
   const boxes = [
     [`${memorisedCount(profile, STATES)}/${MAP_TOTAL}`, t("memorisedStates")],
+    [`${coverage(profile, STATES)}/${MAP_TOTAL}`, t("coverage")],
     [String(profile.answers), t("totalAnswers")],
     [`${accuracy(profile)}%`, t("accuracy")],
     [String(profile.bestStreak), t("bestStreak")],
@@ -1173,6 +1341,7 @@ function openSettings() {
   $("soundLabel").textContent = t("sound");
   $("soundValue").textContent = profile.sound ? t("on") : t("off");
   $("soundToggle").setAttribute("aria-checked", String(profile.sound));
+  syncDifficultySetting();
   $("namesLabel").textContent = t("stateNames");
   $("namesValue").textContent = profile.stateNames === "hi" ? t("hindi") : t("english");
   for (const button of $("namesSeg").querySelectorAll("button")) {
@@ -1296,6 +1465,16 @@ function wire() {
     $("namesValue").textContent = profile.stateNames === "hi" ? t("hindi") : t("english");
     rerender();
   });
+  $("diffSeg").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-diff]");
+    if (button) setDifficulty(button.dataset.diff);
+  });
+  $("howBtn").addEventListener("click", openHow);
+  $("howClose").addEventListener("click", closeHow);
+  $("howStart").addEventListener("click", closeHow);
+  $("howBackdrop").addEventListener("click", (event) => {
+    if (event.target === $("howBackdrop")) closeHow();
+  });
   $("resetBtn").addEventListener("click", doReset);
   $("statsReset").addEventListener("click", doReset);
 
@@ -1418,6 +1597,8 @@ if (typeof window !== "undefined") {
     getProfile: () => profile,
     startQuiz,
     setScreen,
+    setDifficulty,
+    openHow,
   };
 }
 
@@ -1427,6 +1608,7 @@ function wireNativeBackButton() {
   const nativeApp = typeof window !== "undefined" ? window.Capacitor?.Plugins?.App : null;
   if (!nativeApp?.addListener) return;
   nativeApp.addListener("backButton", () => {
+    if (!$("howBackdrop").hidden) return closeHow();
     if (!$("settingsBackdrop").hidden) return closeSettings();
     if (!$("listBackdrop").hidden) return closeList();
     if (!$("sheetBackdrop").hidden) return closeSheet();
@@ -1445,6 +1627,7 @@ function boot() {
   wireNativeBackButton();
   setScreen("home");
   renderHome();
+  if (!profile.tutorialDone) setTimeout(openHow, 500);
 
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     navigator.serviceWorker.register("sw.js").catch(() => {});

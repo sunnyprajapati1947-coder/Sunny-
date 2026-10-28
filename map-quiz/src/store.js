@@ -7,6 +7,8 @@ export function defaultProfile() {
   return {
     version: 2,
     stateNames: "en", // "en" | "hi" — only state names/facts switch, the UI stays English
+    difficulty: "easy", // "easy" | "normal" | "hard" — see DIFFICULTIES in quiz.js
+    tutorialDone: false,
     sound: true,
     xp: 0,
     rounds: 0,
@@ -57,6 +59,8 @@ export function normalize(raw) {
   p.correct = Number(p.correct) || 0;
   p.bestStreak = Number(p.bestStreak) || 0;
   p.stateNames = p.stateNames === "hi" ? "hi" : "en";
+  p.difficulty = ["easy", "normal", "hard"].includes(p.difficulty) ? p.difficulty : "easy";
+  p.tutorialDone = p.tutorialDone === true;
   p.sound = p.sound !== false;
   p.sprintBest = Number.isFinite(p.sprintBest) ? Number(p.sprintBest) : null;
   return p;
@@ -103,7 +107,14 @@ export function resetProfile(profile) {
   const fresh = defaultProfile();
   fresh.sound = profile.sound;
   fresh.stateNames = profile.stateNames;
+  fresh.difficulty = profile.difficulty;
+  fresh.tutorialDone = true; // do not replay the intro after a reset
   return fresh;
+}
+
+/** How many of `units` the player has already met at least once. */
+export function coverage(profile, units) {
+  return units.filter((unit) => unitStat(profile, unit.id).seen > 0).length;
 }
 
 export function unitStat(profile, id) {
