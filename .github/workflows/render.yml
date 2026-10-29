@@ -71,8 +71,10 @@ jobs:
             echo "== apt-get update =="
             sudo apt-get update -qq || echo "APT UPDATE FAILED ($?)"
             echo "== apt-get install =="
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-              ffmpeg fonts-noto-core fonts-noto-devanagari fontconfig || echo "APT INSTALL FAILED ($?)"
+            for pkg in ffmpeg fonts-noto-core fontconfig fonts-noto-extra; do
+              sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$pkg" \
+                || echo "WARN: could not install $pkg (continuing)"
+            done
             echo "== versions =="
             which ffmpeg ffprobe || true
             ffmpeg -version 2>&1 | head -2 || true
