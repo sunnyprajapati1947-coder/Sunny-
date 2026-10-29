@@ -1,0 +1,164 @@
+name: Factomatrix Video Render
+
+# Free, keyless render: edge-tts voiceover + Pollinations/NASA/Wikimedia images + ffmpeg Ken Burns
+# Run it from the Actions tab (Run workflow) — no secrets required.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'test = 1 minute sample, full = all 50 scenes, both = test then full'
+        type: choice
+        default: both
+        options: [both, test, full]
+      scenes:
+        description: 'Optional scene range for a partial render, e.g. 1-10 (empty = all)'
+        required: false
+        default: ''
+        type: string
+      force_images:
+        description: 'Re-generate images even if cached'
+        type: boolean
+        default: false
+  push:
+    branches: [main, 'arena/**']
+    paths:
+      - 'pipeline.py'
+      - 'script.json'
+      - '.github/workflows/render.yml'
+      - 'tools/check_video.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: factomatrix-render-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      PYTHONUNBUFFERED: '1'
+      MODE: ${{ github.event.inputs.mode || 'both' }}
+      SCENES: ${{ github.event.inputs.scenes || '' }}
+      FORCE_IMAGES: ${{ github.event.inputs.force_images || 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system deps (ffmpeg + Devanagari fonts)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-noto-core fonts-noto-devanagari fontconfig
+          ffmpeg -version | head -1
+          fc-list | grep -i devanagari | head -3 || true
+
+      - name: Install python deps
+        run: |
+          python -m pip install --upgrade pip -q
+          pip install -r requirements-render.txt
+
+      # resume support: narration, images and clips survive between runs
+      - name: Restore render cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            assets/audio
+            assets/images
+            assets/video
+          key: factomatrix-assets-${{ hashFiles('script.json') }}-${{ github.run_id }}
+          restore-keys: |
+            factomatrix-assets-${{ hashFiles('script.json') }}-
+            factomatrix-assets-
+
+      - name: Render 1 minute test
+        if: ${{ env.MODE != 'full' }}
+        run: |
+          ARGS="--test"
+          if [ "$FORCE_IMAGES" = "true" ]; then ARGS="$ARGS --force-images"; fi
+          python pipeline.py $ARGS 2>&1 | tee renders/test.log
+
+      - name: Validate test render (audio / 1080p / duration)
+        if: ${{ env.MODE != 'full' }}
+        run: |
+          python tools/check_video.py renders/test_1min.mp4 --min-seconds 45 \
+            --sheet renders/test_contact_sheet.jpg
+
+      - name: Render full video
+        if: ${{ env.MODE != 'test' }}
+        run: |
+          ARGS=""
+          if [ -n "$SCENES" ]; then ARGS="--scenes $SCENES"; fi
+          if [ "$FORCE_IMAGES" = "true" ]; then ARGS="$ARGS --force-images"; fi
+          python pipeline.py $ARGS 2>&1 | tee renders/full.log
+          python tools/check_video.py renders/final.mp4 --min-seconds 300 \
+            --sheet renders/contact_sheet.jpg
+
+      - name: Show image source summary
+        if: always()
+        run: |
+          cat renders/report.md 2>/dev/null | head -40 || true
+          cat renders/summary.json 2>/dev/null || true
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factomatrix-video-${{ github.run_number }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            renders/*.mp4
+            renders/*.jpg
+            renders/report.md
+            renders/summary.json
+            renders/*.log
+
+      - name: Publish GitHub Release
+        if: ${{ env.MODE != 'test' && hashFiles('renders/final.mp4') != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: video-${{ github.run_number }}
+          name: "ब्लैक होल के अंदर क्या होता है — render ${{ github.run_number }}"
+          body_path: renders/report.md
+          files: |
+            renders/final.mp4
+            renders/report.md
+          fail_on_unmatched_files: false
+
+      # Bridge for machines that cannot reach the release CDN: publish the files
+      # on a separate `render-artifacts` branch so they can be fetched over git.
+      - name: Publish render artifacts branch
+        if: always()
+        run: |
+          set -e
+          mkdir -p /tmp/out && cp -f renders/*.mp4 renders/*.jpg renders/report.md renders/summary.json /tmp/out/ 2>/dev/null || true
+          if [ -z "$(ls -A /tmp/out 2>/dev/null)" ]; then echo "nothing to publish"; exit 0; fi
+          cd /tmp/out
+          git init -q -b render-artifacts
+          git config user.name "factomatrix-bot"
+          git config user.email "actions@users.noreply.github.com"
+          for f in *.mp4; do
+            if [ -f "$f" ] && [ $(stat -c%s "$f") -gt 90000000 ]; then
+              echo "splitting $f for transport"
+              split -b 40M "$f" "${f}.part."
+              rm -f "$f"
+            fi
+          done
+          printf "# Factomatrix render artifacts\n\nGenerated by GitHub Actions run %s from %s\n" "${GITHUB_RUN_NUMBER}" "${GITHUB_SHA}" > README.md
+          git add -A
+          git commit -qm "render artifacts: run ${GITHUB_RUN_NUMBER}"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push -f origin render-artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
