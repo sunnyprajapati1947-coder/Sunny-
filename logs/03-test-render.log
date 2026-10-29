@@ -1,0 +1,11 @@
+[11:52:10] ffmpeg: /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2
+[11:52:10] rendering 5 scenes -> /home/runner/work/Sunny-/Sunny-/renders/test_1min.mp4
+[11:52:10] all scenes have a Pollinations still — nothing to retry
+[11:52:10] scene 1/5 (1/5)
+[11:52:10] scene 2/5 (2/5)
+[11:52:10] scene 3/5 (3/5)
+[11:52:10] scene 4/5 (4/5)
+[11:52:10] scene 5/5 (5/5)
+[11:52:10] burning subtitles and muxing final video...
+[11:52:27] done: /home/runner/work/Sunny-/Sunny-/renders/test_1min.mp4  (~1.22 min)
+[11:52:27] image sources: {'pollinations': 4, 'nasa': 1}

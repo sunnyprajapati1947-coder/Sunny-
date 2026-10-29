@@ -1,0 +1,9 @@
+file      : renders/test_1min.mp4
+duration  : 73.4s (1.22 min)
+size      : 5.9 MB
+video     : h264 1920x1080 25/1
+audio     : yes
+mean vol  : -17.3 dB / max -1.4 dB
+sheet     : renders/test_contact_sheet.jpg
+
+ALL CHECKS PASSED

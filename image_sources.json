@@ -1,0 +1,254 @@
+{
+  "scene_001": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/cinematic%20space%20documentary%20still%2C%20a%20lone%20astronaut%20floating%20at%20the%20edge%20of%20a%20colossal%20black%20hole%20with%20a%20blazing%20orange%20accretion%20disk%2C%20perfect%20black%20sphere%20silhouette%2C%20ultra%20detailed%2C%20volumetric%20light%2C%20stars%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=47024&enhance=false",
+    "image_prompt": "cinematic space documentary still, a lone astronaut floating at the edge of a colossal black hole with a blazing orange accretion disk, perfect black sphere silhouette, ultra detailed, volumetric light, stars, 16:9"
+  },
+  "scene_002": {
+    "source": "nasa",
+    "url": "https://images-assets.nasa.gov/image/PIA20697/PIA20697~medium.jpg",
+    "title": "Black Hole with Wobbling Disk Artist Concept",
+    "query": "artist impression hole",
+    "image_prompt": "artist impression of a black hole bending starlight around it, glowing photon ring, distorted starfield, deep black space, cinematic, ultra detailed, 16:9"
+  },
+  "scene_003": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/split%20composition%20of%20an%20astronaut%20falling%20and%20a%20distant%20observer%20watching%20through%20a%20telescope%2C%20black%20hole%20in%20background%2C%20cinematic%20space%20documentary%2C%20dramatic%20rim%20light%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=61147&enhance=false",
+    "image_prompt": "split composition of an astronaut falling and a distant observer watching through a telescope, black hole in background, cinematic space documentary, dramatic rim light, ultra detailed, 16:9"
+  },
+  "scene_004": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/thin%20luminous%20boundary%20line%20around%20a%20black%20sphere%20in%20space%2C%20glowing%20boundary%20of%20no%20return%2C%20abstract%20scientific%20visualization%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=41617&enhance=false",
+    "image_prompt": "thin luminous boundary line around a black sphere in space, glowing boundary of no return, abstract scientific visualization, cinematic, ultra detailed, 16:9"
+  },
+  "scene_005": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/beam%20of%20light%20bending%20and%20curving%20into%20a%20black%20hole%2C%20light%20cone%20visualization%20in%20deep%20space%2C%20elegant%20physics%20illustration%20rendered%20cinematically%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=90704&enhance=false",
+    "image_prompt": "beam of light bending and curving into a black hole, light cone visualization in deep space, elegant physics illustration rendered cinematically, ultra detailed, 16:9"
+  },
+  "scene_006": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20Sun%20sized%20black%20hole%20next%20to%20the%20glowing%20Sun%20for%20scale%20comparison%2C%20scientific%20infographic%20rendered%20as%20cinematic%20space%20art%2C%20no%20text%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=5468&enhance=false",
+    "image_prompt": "a Sun sized black hole next to the glowing Sun for scale comparison, scientific infographic rendered as cinematic space art, no text, ultra detailed, 16:9"
+  },
+  "scene_007": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/the%20planet%20Earth%20compressed%20into%20a%20tiny%20marble%20sized%20black%20hole%2C%20dramatic%20scale%20contrast%2C%20cosmic%20background%2C%20cinematic%20space%20documentary%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=62175&enhance=false",
+    "image_prompt": "the planet Earth compressed into a tiny marble sized black hole, dramatic scale contrast, cosmic background, cinematic space documentary, ultra detailed, 16:9"
+  },
+  "scene_008": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20massive%20star%20exploding%20as%20a%20supernova%2C%20collapsing%20core%2C%20shockwave%20of%20glowing%20gas%2C%20cinematic%20deep%20space%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=68994&enhance=false",
+    "image_prompt": "a massive star exploding as a supernova, collapsing core, shockwave of glowing gas, cinematic deep space, ultra detailed, 16:9"
+  },
+  "scene_009": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/view%20from%20a%20spacecraft%20cockpit%20approaching%20a%20distant%20black%20hole%2C%20HUD%20glow%2C%20cold%20starlight%2C%20cinematic%20space%20documentary%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=15468&enhance=false",
+    "image_prompt": "view from a spacecraft cockpit approaching a distant black hole, HUD glow, cold starlight, cinematic space documentary, ultra detailed, 16:9"
+  },
+  "scene_010": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/close%20up%20of%20a%20glowing%20photon%20ring%20orbiting%20a%20black%20hole%2C%20thin%20bright%20circle%20of%20light%2C%20gravitational%20lensing%2C%20cinematic%20ultra%20realistic%20space%20art%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=50143&enhance=false",
+    "image_prompt": "close up of a glowing photon ring orbiting a black hole, thin bright circle of light, gravitational lensing, cinematic ultra realistic space art, 16:9"
+  },
+  "scene_011": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/orbits%20of%20glowing%20matter%20spiraling%20inward%20around%20a%20black%20hole%2C%20accretion%20disk%20from%20above%2C%20scientific%20cinematic%20visualization%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=77626&enhance=false",
+    "image_prompt": "orbits of glowing matter spiraling inward around a black hole, accretion disk from above, scientific cinematic visualization, ultra detailed, 16:9"
+  },
+  "scene_012": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/entire%20universe%20compressed%20into%20a%20small%20bright%20window%20of%20light%20seen%20from%20inside%20a%20black%20hole%2C%20surreal%20gravitational%20lensing%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=53693&enhance=false",
+    "image_prompt": "entire universe compressed into a small bright window of light seen from inside a black hole, surreal gravitational lensing, cinematic, ultra detailed, 16:9"
+  },
+  "scene_013": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/light%20rays%20curving%20toward%20a%20black%20hole%2C%20extreme%20gravitational%20lensing%20of%20a%20starfield%2C%20elegant%20scientific%20visualization%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=97817&enhance=false",
+    "image_prompt": "light rays curving toward a black hole, extreme gravitational lensing of a starfield, elegant scientific visualization, cinematic, ultra detailed, 16:9"
+  },
+  "scene_014": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20slowly%20ticking%20clock%20floating%20in%20space%20near%20a%20black%20hole%2C%20surreal%20melting%20time%20concept%2C%20cinematic%2C%20cold%20blue%20palette%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=48247&enhance=false",
+    "image_prompt": "a slowly ticking clock floating in space near a black hole, surreal melting time concept, cinematic, cold blue palette, ultra detailed, 16:9"
+  },
+  "scene_015": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20in%20free%20fall%20with%20calm%20expression%2C%20wristwatch%20glowing%2C%20black%20hole%20nearby%2C%20intimate%20cinematic%20space%20portrait%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=81666&enhance=false",
+    "image_prompt": "astronaut in free fall with calm expression, wristwatch glowing, black hole nearby, intimate cinematic space portrait, ultra detailed, 16:9"
+  },
+  "scene_016": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/two%20clocks%20running%20at%20different%20speeds%2C%20one%20near%20a%20black%20hole%20and%20one%20far%20away%20in%20space%2C%20conceptual%20physics%20art%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=43984&enhance=false",
+    "image_prompt": "two clocks running at different speeds, one near a black hole and one far away in space, conceptual physics art, cinematic, ultra detailed, 16:9"
+  },
+  "scene_017": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20frozen%20image%20of%20an%20astronaut%20hanging%20motionless%20at%20a%20black%20hole%20boundary%2C%20seen%20from%20far%20away%20telescope%20view%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=30882&enhance=false",
+    "image_prompt": "a frozen image of an astronaut hanging motionless at a black hole boundary, seen from far away telescope view, cinematic, ultra detailed, 16:9"
+  },
+  "scene_018": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20silhouette%20fading%20from%20white%20to%20deep%20red%20light%20at%20a%20black%20hole%20horizon%2C%20gravitational%20redshift%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=66667&enhance=false",
+    "image_prompt": "astronaut silhouette fading from white to deep red light at a black hole horizon, gravitational redshift, cinematic, ultra detailed, 16:9"
+  },
+  "scene_019": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20hand%20reaching%20toward%20a%20shimmering%20boundary%20of%20light%20in%20deep%20space%2C%20suspenseful%2C%20cinematic%20close%20up%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=92623&enhance=false",
+    "image_prompt": "astronaut hand reaching toward a shimmering boundary of light in deep space, suspenseful, cinematic close up, ultra detailed, 16:9"
+  },
+  "scene_020": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/peaceful%20astronaut%20floating%20silently%20through%20a%20dark%20boundary%20of%20light%2C%20calm%20and%20eerie%2C%20cinematic%20space%20documentary%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=41618&enhance=false",
+    "image_prompt": "peaceful astronaut floating silently through a dark boundary of light, calm and eerie, cinematic space documentary, ultra detailed, 16:9"
+  },
+  "scene_021": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20being%20stretched%20into%20a%20long%20thin%20shape%20by%20gravity%2C%20dramatic%20blur%20of%20stars%2C%20cinematic%20space%20art%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=69292&enhance=false",
+    "image_prompt": "astronaut being stretched into a long thin shape by gravity, dramatic blur of stars, cinematic space art, ultra detailed, 16:9"
+  },
+  "scene_022": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/diagram%20like%20visualization%20of%20gravity%20stronger%20at%20the%20feet%20than%20the%20head%20of%20a%20falling%20astronaut%2C%20clean%20physics%20illustration%2C%20cinematic%20lighting%2C%20no%20text%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=78840&enhance=false",
+    "image_prompt": "diagram like visualization of gravity stronger at the feet than the head of a falling astronaut, clean physics illustration, cinematic lighting, no text, 16:9"
+  },
+  "scene_023": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/abstract%20visualization%20of%20tidal%20forces%20stretching%20an%20object%20near%20a%20black%20hole%2C%20elongation%20and%20squeezing%2C%20cinematic%20scientific%20art%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=36150&enhance=false",
+    "image_prompt": "abstract visualization of tidal forces stretching an object near a black hole, elongation and squeezing, cinematic scientific art, ultra detailed, 16:9"
+  },
+  "scene_024": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/violent%20tearing%20of%20light%20and%20matter%20at%20the%20edge%20of%20a%20small%20black%20hole%2C%20dramatic%20energy%20streaks%2C%20cinematic%20space%20art%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=60533&enhance=false",
+    "image_prompt": "violent tearing of light and matter at the edge of a small black hole, dramatic energy streaks, cinematic space art, ultra detailed, 16:9"
+  },
+  "scene_025": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20floating%20comfortably%20near%20the%20horizon%20of%20a%20gigantic%20supermassive%20black%20hole%2C%20serene%20scale%20contrast%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=62543&enhance=false",
+    "image_prompt": "astronaut floating comfortably near the horizon of a gigantic supermassive black hole, serene scale contrast, cinematic, ultra detailed, 16:9"
+  },
+  "scene_026": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/two%20black%20holes%20of%20different%20sizes%20side%20by%20side%2C%20tiny%20one%20with%20violent%20tidal%20glow%20and%20giant%20one%20with%20calm%20halo%2C%20scale%20comparison%20art%2C%20no%20text%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=12117&enhance=false",
+    "image_prompt": "two black holes of different sizes side by side, tiny one with violent tidal glow and giant one with calm halo, scale comparison art, no text, 16:9"
+  },
+  "scene_027": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20drifting%20inside%20a%20vast%20dark%20space%20with%20a%20faint%20glowing%20shell%20behind%2C%20feeling%20of%20quiet%20dread%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=86895&enhance=false",
+    "image_prompt": "astronaut drifting inside a vast dark space with a faint glowing shell behind, feeling of quiet dread, cinematic, ultra detailed, 16:9"
+  },
+  "scene_028": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20blinding%20point%20of%20infinite%20density%20at%20the%20center%20of%20darkness%2C%20swirling%20distorted%20light%2C%20singularity%20concept%20art%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=67930&enhance=false",
+    "image_prompt": "a blinding point of infinite density at the center of darkness, swirling distorted light, singularity concept art, cinematic, ultra detailed, 16:9"
+  },
+  "scene_029": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/interior%20of%20a%20black%20hole%2C%20absolute%20darkness%20with%20strange%20warped%20light%2C%20surreal%20and%20vast%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=82496&enhance=false",
+    "image_prompt": "interior of a black hole, absolute darkness with strange warped light, surreal and vast, cinematic, ultra detailed, 16:9"
+  },
+  "scene_030": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/space%20and%20time%20woven%20as%20twisted%20grids%20and%20flowing%20ribbons%20falling%20inward%2C%20surreal%20physics%20visualization%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=96965&enhance=false",
+    "image_prompt": "space and time woven as twisted grids and flowing ribbons falling inward, surreal physics visualization, cinematic, ultra detailed, 16:9"
+  },
+  "scene_031": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20one%20way%20corridor%20of%20warped%20starlight%20ending%20at%20a%20glowing%20point%2C%20time%20arrow%20concept%2C%20cinematic%20surreal%20space%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=72507&enhance=false",
+    "image_prompt": "a one way corridor of warped starlight ending at a glowing point, time arrow concept, cinematic surreal space, ultra detailed, 16:9"
+  },
+  "scene_032": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/futuristic%20spacecraft%20cockpit%20with%20all%20paths%20bending%20inward%20on%20the%20navigation%20display%2C%20dramatic%20lighting%2C%20cinematic%20sci%20fi%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=4221&enhance=false",
+    "image_prompt": "futuristic spacecraft cockpit with all paths bending inward on the navigation display, dramatic lighting, cinematic sci fi, ultra detailed, 16:9"
+  },
+  "scene_033": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20tiny%20astronaut%20falling%20into%20a%20compact%20black%20hole%2C%20motion%20blur%2C%20dramatic%20scale%2C%20cinematic%20space%20art%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=9113&enhance=false",
+    "image_prompt": "a tiny astronaut falling into a compact black hole, motion blur, dramatic scale, cinematic space art, ultra detailed, 16:9"
+  },
+  "scene_034": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/the%20glowing%20core%20of%20the%20Milky%20Way%20galaxy%20with%20a%20supermassive%20black%20hole%20at%20its%20center%2C%20milky%20clouds%20of%20stars%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=10434&enhance=false",
+    "image_prompt": "the glowing core of the Milky Way galaxy with a supermassive black hole at its center, milky clouds of stars, cinematic, ultra detailed, 16:9"
+  },
+  "scene_035": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20gigantic%20supermassive%20black%20hole%20with%20a%20jet%20of%20plasma%2C%20galaxy%20M87%20style%2C%20immense%20scale%2C%20cinematic%20deep%20space%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=24836&enhance=false",
+    "image_prompt": "a gigantic supermassive black hole with a jet of plasma, galaxy M87 style, immense scale, cinematic deep space, ultra detailed, 16:9"
+  },
+  "scene_036": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20falling%20in%20slow%20motion%20while%20distant%20galaxies%20age%20and%20drift%20past%2C%20time%20dilation%20concept%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=91023&enhance=false",
+    "image_prompt": "astronaut falling in slow motion while distant galaxies age and drift past, time dilation concept, cinematic, ultra detailed, 16:9"
+  },
+  "scene_037": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/astronaut%20looking%20up%20at%20a%20compressed%20glowing%20disc%20of%20the%20universe%20inside%20a%20black%20hole%2C%20stunning%20surreal%20sky%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=62109&enhance=false",
+    "image_prompt": "astronaut looking up at a compressed glowing disc of the universe inside a black hole, stunning surreal sky, cinematic, ultra detailed, 16:9"
+  },
+  "scene_038": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/radio%20signal%20trying%20to%20escape%20a%20black%20hole%20and%20bending%20back%20down%2C%20failing%20transmission%20visualization%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=39371&enhance=false",
+    "image_prompt": "radio signal trying to escape a black hole and bending back down, failing transmission visualization, cinematic, ultra detailed, 16:9"
+  },
+  "scene_039": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20page%20torn%20out%20of%20a%20glowing%20cosmic%20book%20floating%20in%20space%2C%20symbolic%2C%20cinematic%20surreal%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=69315&enhance=false",
+    "image_prompt": "a page torn out of a glowing cosmic book floating in space, symbolic, cinematic surreal, ultra detailed, 16:9"
+  },
+  "scene_040": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/faint%20glowing%20particles%20escaping%20from%20the%20surface%20of%20a%20black%20hole%2C%20subtle%20purple%20glow%2C%20scientific%20cinematic%20art%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=65733&enhance=false",
+    "image_prompt": "faint glowing particles escaping from the surface of a black hole, subtle purple glow, scientific cinematic art, ultra detailed, 16:9"
+  },
+  "scene_041": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/very%20cold%20black%20hole%20radiating%20faint%20quantum%20particles%20in%20empty%20space%2C%20deep%20blue%20and%20violet%20palette%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=61646&enhance=false",
+    "image_prompt": "very cold black hole radiating faint quantum particles in empty space, deep blue and violet palette, cinematic, ultra detailed, 16:9"
+  },
+  "scene_042": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/cosmic%20microwave%20background%20glow%20warming%20a%20black%20hole%2C%20faint%20orange%20haze%20of%20the%20early%20universe%2C%20cinematic%20deep%20space%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=18263&enhance=false",
+    "image_prompt": "cosmic microwave background glow warming a black hole, faint orange haze of the early universe, cinematic deep space, ultra detailed, 16:9"
+  },
+  "scene_043": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20black%20hole%20evaporating%20over%20eons%2C%20wisps%20of%20particles%20drifting%20into%20a%20dark%20future%20universe%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=17315&enhance=false",
+    "image_prompt": "a black hole evaporating over eons, wisps of particles drifting into a dark future universe, cinematic, ultra detailed, 16:9"
+  },
+  "scene_044": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20glowing%20question%20mark%20formed%20by%20starlight%20next%20to%20a%20fading%20black%20hole%2C%20symbolic%20mystery%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=46620&enhance=false",
+    "image_prompt": "a glowing question mark formed by starlight next to a fading black hole, symbolic mystery, cinematic, ultra detailed, 16:9"
+  },
+  "scene_045": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20holographic%20shimmering%20surface%20holding%20all%20information%20of%20a%20black%20hole%2C%20glowing%20grid%20of%20light%2C%20cinematic%20scientific%20art%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=47800&enhance=false",
+    "image_prompt": "a holographic shimmering surface holding all information of a black hole, glowing grid of light, cinematic scientific art, ultra detailed, 16:9"
+  },
+  "scene_046": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20wall%20of%20fire%20burning%20around%20a%20black%20hole%20horizon%2C%20dramatic%20flames%20in%20space%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=97019&enhance=false",
+    "image_prompt": "a wall of fire burning around a black hole horizon, dramatic flames in space, cinematic, ultra detailed, 16:9"
+  },
+  "scene_047": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/two%20intertwined%20glowing%20strands%20representing%20gravity%20and%20quantum%20physics%20meeting%20at%20a%20black%20hole%2C%20abstract%20elegant%2C%20cinematic%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=92445&enhance=false",
+    "image_prompt": "two intertwined glowing strands representing gravity and quantum physics meeting at a black hole, abstract elegant, cinematic, ultra detailed, 16:9"
+  },
+  "scene_048": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/the%20iconic%20orange%20ring%20image%20of%20a%20black%20hole%20captured%20by%20a%20radio%20telescope%20array%2C%20glowing%20asymmetric%20ring%2C%20black%20background%2C%20high%20detail%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=50912&enhance=false",
+    "image_prompt": "the iconic orange ring image of a black hole captured by a radio telescope array, glowing asymmetric ring, black background, high detail, 16:9"
+  },
+  "scene_049": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/a%20person%20standing%20under%20a%20vast%20starry%20night%20sky%2C%20a%20faint%20black%20hole%20silhouette%20above%20the%20horizon%2C%20cinematic%20epic%20scale%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=19851&enhance=false",
+    "image_prompt": "a person standing under a vast starry night sky, a faint black hole silhouette above the horizon, cinematic epic scale, ultra detailed, 16:9"
+  },
+  "scene_050": {
+    "source": "pollinations",
+    "url": "https://image.pollinations.ai/prompt/cinematic%20outro%20shot%20of%20a%20black%20hole%20with%20the%20accretion%20disk%20glowing%20behind%20a%20calm%20starfield%2C%20elegant%20and%20vast%2C%20space%20documentary%20end%20card%2C%20ultra%20detailed%2C%2016%3A9?width=1920&height=1080&nologo=true&model=flux&seed=52156&enhance=false",
+    "image_prompt": "cinematic outro shot of a black hole with the accretion disk glowing behind a calm starfield, elegant and vast, space documentary end card, ultra detailed, 16:9"
+  }
+}

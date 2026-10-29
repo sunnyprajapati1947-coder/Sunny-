@@ -1,0 +1,9 @@
+{
+  "out": "/home/runner/work/Sunny-/Sunny-/renders/final.mp4",
+  "duration_seconds": 800.868,
+  "scenes": 50,
+  "image_sources": {
+    "pollinations": 49,
+    "nasa": 1
+  }
+}
