@@ -1,6 +1,6 @@
 name: Factomatrix Video Render
 
-# Free, keyless render: edge-tts voiceover + Pollinations/NASA/Wikimedia images + ffmpeg Ken Burns
+# Free, keyless render: edge-tts voiceover + Pollinations/NASA/Wikimedia images + ffmpeg Ken Burns.
 # Run it from the Actions tab (Run workflow) — no secrets required.
 
 on:
@@ -27,12 +27,13 @@ on:
       - 'script.json'
       - '.github/workflows/render.yml'
       - 'tools/check_video.py'
+      - 'requirements-render.txt'
 
 permissions:
   contents: write
 
 concurrency:
-  group: factomatrix-render-${{ github.ref }}
+  group: factomatrix-render
   cancel-in-progress: false
 
 jobs:
@@ -51,6 +52,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Workspace
+        run: |
+          mkdir -p renders/logs
+          echo "mode=$MODE scenes=$SCENES" | tee renders/logs/00-env.log
+          uname -a | tee -a renders/logs/00-env.log
+          python3 -V | tee -a renders/logs/00-env.log
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -58,15 +66,26 @@ jobs:
 
       - name: Install system deps (ffmpeg + Devanagari fonts)
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends ffmpeg fonts-noto-core fonts-noto-devanagari fontconfig
-          ffmpeg -version | head -1
-          fc-list | grep -i devanagari | head -3 || true
+          set -o pipefail
+          {
+            echo "== apt-get update =="
+            sudo apt-get update -qq || echo "APT UPDATE FAILED ($?)"
+            echo "== apt-get install =="
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              ffmpeg fonts-noto-core fonts-noto-devanagari fontconfig || echo "APT INSTALL FAILED ($?)"
+            echo "== versions =="
+            which ffmpeg ffprobe || true
+            ffmpeg -version 2>&1 | head -2 || true
+            fc-list 2>/dev/null | grep -i devanagari | head -3 || echo "no system devanagari font (bundled TTF will be used)"
+          } 2>&1 | tee renders/logs/01-setup.log
+          test -x "$(command -v ffmpeg)" || { echo "FFMPEG MISSING"; exit 1; }
 
       - name: Install python deps
         run: |
+          set -o pipefail
           python -m pip install --upgrade pip -q
-          pip install -r requirements-render.txt
+          pip install -r requirements-render.txt 2>&1 | tee renders/logs/02-pip.log
+          python -c "import edge_tts, PIL, requests; print('libs ok')" 2>&1 | tee -a renders/logs/02-pip.log
 
       # resume support: narration, images and clips survive between runs
       - name: Restore render cache
@@ -84,31 +103,33 @@ jobs:
       - name: Render 1 minute test
         if: ${{ env.MODE != 'full' }}
         run: |
+          set -o pipefail
           ARGS="--test"
           if [ "$FORCE_IMAGES" = "true" ]; then ARGS="$ARGS --force-images"; fi
-          python pipeline.py $ARGS 2>&1 | tee renders/test.log
+          python pipeline.py $ARGS 2>&1 | tee renders/logs/03-test-render.log
 
-      - name: Validate test render (audio / 1080p / duration)
+      - name: Validate test render (1650p / audio / duration)
         if: ${{ env.MODE != 'full' }}
         run: |
+          set -o pipefail
           python tools/check_video.py renders/test_1min.mp4 --min-seconds 45 \
-            --sheet renders/test_contact_sheet.jpg
+            --sheet renders/test_contact_sheet.jpg 2>&1 | tee renders/logs/04-test-check.log
 
       - name: Render full video
         if: ${{ env.MODE != 'test' }}
         run: |
+          set -o pipefail
           ARGS=""
           if [ -n "$SCENES" ]; then ARGS="--scenes $SCENES"; fi
           if [ "$FORCE_IMAGES" = "true" ]; then ARGS="$ARGS --force-images"; fi
-          python pipeline.py $ARGS 2>&1 | tee renders/full.log
+          python pipeline.py $ARGS 2>&1 | tee renders/logs/05-full-render.log
           python tools/check_video.py renders/final.mp4 --min-seconds 300 \
-            --sheet renders/contact_sheet.jpg
+            --sheet renders/contact_sheet.jpg 2>&1 | tee renders/logs/06-full-check.log
 
       - name: Show image source summary
         if: always()
         run: |
-          cat renders/report.md 2>/dev/null | head -40 || true
-          cat renders/summary.json 2>/dev/null || true
+          { cat renders/report.md 2>/dev/null | head -40; echo; cat renders/summary.json 2>/dev/null; } | tee renders/logs/07-sources.log || true
 
       - name: Upload artifacts
         if: always()
@@ -120,9 +141,9 @@ jobs:
           path: |
             renders/*.mp4
             renders/*.jpg
-            renders/report.md
-            renders/summary.json
-            renders/*.log
+            renders/*.md
+            renders/*.json
+            renders/logs/*.log
 
       - name: Publish GitHub Release
         if: ${{ env.MODE != 'test' && hashFiles('renders/final.mp4') != '' }}
@@ -136,27 +157,30 @@ jobs:
             renders/report.md
           fail_on_unmatched_files: false
 
-      # Bridge for machines that cannot reach the release CDN: publish the files
-      # on a separate `render-artifacts` branch so they can be fetched over git.
-      - name: Publish render artifacts branch
+      # Some client machines cannot reach the release CDN. Everything (video + logs) is
+      # therefore also mirrored onto a dedicated `render-artifacts` branch, fetchable over git.
+      - name: Publish render-artifacts branch (videos + logs)
         if: always()
         run: |
-          set -e
-          mkdir -p /tmp/out && cp -f renders/*.mp4 renders/*.jpg renders/report.md renders/summary.json /tmp/out/ 2>/dev/null || true
+          set -x
+          mkdir -p /tmp/out/logs
+          cp -f renders/*.mp4 renders/*.jpg renders/*.md renders/*.json /tmp/out/ 2>/dev/null || true
+          cp -f renders/logs/*.log /tmp/out/logs/ 2>/dev/null || true
+          ls -la /tmp/out /tmp/out/logs
           if [ -z "$(ls -A /tmp/out 2>/dev/null)" ]; then echo "nothing to publish"; exit 0; fi
           cd /tmp/out
           git init -q -b render-artifacts
           git config user.name "factomatrix-bot"
           git config user.email "actions@users.noreply.github.com"
           for f in *.mp4; do
-            if [ -f "$f" ] && [ $(stat -c%s "$f") -gt 90000000 ]; then
+            if [ -f "$f" ] && [ "$(stat -c%s "$f")" -gt 90000000 ]; then
               echo "splitting $f for transport"
               split -b 40M "$f" "${f}.part."
               rm -f "$f"
             fi
           done
-          printf "# Factomatrix render artifacts\n\nGenerated by GitHub Actions run %s from %s\n" "${GITHUB_RUN_NUMBER}" "${GITHUB_SHA}" > README.md
-          git add -A
+          printf "# Factomatrix render artifacts\n\nrun %s from %s\n" "${GITHUB_RUN_NUMBER}" "${GITHUB_SHA}" > README.md
+          git add -A -f
           git commit -qm "render artifacts: run ${GITHUB_RUN_NUMBER}"
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push -f origin render-artifacts
