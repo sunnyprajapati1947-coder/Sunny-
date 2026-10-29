@@ -355,27 +355,34 @@ def s12(pal):
 
 # ================================================================= ACT II
 def s13(pal):
-    """answers pour out — close on the paper"""
-    S.HZ = 0.70 * H
+    """answers pour out — the paper fills with writing"""
+    S.HZ = 0.66 * H
     bg = _c()
     S.classroom(bg, pal, yb=S.HZ, n_desks=1)
     subj = _c()
-    S.boy(subj, W * 0.44, H * 1.02, 0.56 * H, pose="sit", pal=pal, facing=1, shadow_on=False)
-    S.glasses(subj, W * 0.445, H * 0.60, H * 0.038, 1.0)
-    G.gradient_rect(subj, W * 0.34, H * 0.90, W * 0.62, H * 1.02, hx("f4ecd8"),
-                    hx("d8cdb2"), vertical=True)
-    for i in range(7):
-        G.capsule(subj, W * 0.36, H * (0.925 + i * 0.014), W * (0.50 + 0.05 * (i % 3)),
-                  H * (0.925 + i * 0.014), H * 0.0028, H * 0.0028, hx("5a5a6a"))
-    for i in range(18):
-        a = i * 1.27
-        G.soft_blob(subj, W * 0.44 + math.cos(a) * W * 0.09, H * 0.82 + math.sin(a) * H * 0.09,
-                    H * 0.005, H * 0.005, hx("ffe9b0"), 0.75, 2)
-    G.glow(subj, W * 0.44, H * 0.78, W * 0.09, hx("ffd98a"), 0.25, 2.4)
-    fg = _c()
-    G.gradient_rect(fg, 0, H * 0.975, W, H, hx("5a3a20") * 0.55, hx("30200e") * 0.7,
-                    vertical=True)
-    return _box([bg, _c(), subj, fg], "zoom_in", 1.05, vig=0.58,
+    S.boy(subj, W * 0.42, H * 1.00, 0.50 * H, pose="sit", pal=pal, facing=1, shadow_on=False)
+    S.glasses(subj, W * 0.425, H * 0.645, H * 0.019, 1.0)     # spectacles, not orbs
+    # desk edge in front of him
+    G.gradient_rect(subj, W * 0.12, H * 0.885, W * 0.74, H * 1.02,
+                    hx("9a6c3e"), hx("5e3d1e"), vertical=True)
+    # exam paper on the desk
+    px0, py0, px1, py1 = W * 0.22, H * 0.745, W * 0.64, H * 0.955
+    G.gradient_rect(subj, px0, py0, px1, py1, hx("fbf5e6"), hx("ddd2b8"), vertical=True)
+    for i in range(9):
+        yy = py0 + (py1 - py0) * (0.14 + i * 0.092)
+        ln = px1 - px0 - (W * 0.06 if i % 3 == 2 else W * 0.03)
+        G.capsule(subj, px0 + W * 0.02, yy, px0 + W * 0.02 + ln, yy,
+                  H * 0.0032, H * 0.0032, hx("4a5468"))
+    # pencil in his hand
+    G.capsule(subj, W * 0.47, H * 0.80, W * 0.55, H * 0.865, H * 0.006, H * 0.004,
+              hx("d9a53c"))
+    for i in range(20):
+        a = i * 1.24
+        G.soft_blob(subj, W * 0.43 + math.cos(a) * W * 0.10,
+                    H * 0.755 + math.sin(a) * H * 0.075, H * 0.0045, H * 0.0045,
+                    hx("ffe9b0"), 0.8, 2)
+    G.glow(subj, W * 0.43, H * 0.72, W * 0.10, hx("ffd98a"), 0.26, 2.4)
+    return _box([bg, _c(), subj, _c()], "zoom_in", 1.05, vig=0.58,
                 caption="हर सवाल का जवाब — बिजली की तरह")
 
 

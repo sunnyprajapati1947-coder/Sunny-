@@ -16,3 +16,4 @@ movie/tests/*.wav
 video-ai/external/
 __pycache__/
 *.pyc
+output/*.png
