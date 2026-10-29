@@ -12,3 +12,6 @@ renders/
 *.mp4
 
 __pycache__/
+# local render cache / throwaway artifacts
+video_report.html
+crop_zoom.png
