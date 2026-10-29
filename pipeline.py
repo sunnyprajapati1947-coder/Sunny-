@@ -277,6 +277,22 @@ def _nasa_queries(scene):
     return out[:4]
 
 
+COSMIC_TERMS = {
+    "black", "hole", "holes", "horizon", "accretion", "disk", "disc", "singularity", "gravity",
+    "gravitational", "star", "stars", "galaxy", "galaxies", "space", "universe", "cosmic", "light",
+    "spacecraft", "astronaut", "telescope", "nasa", "quasar", "nebula", "supernova", "photon",
+    "radiation", "spacetime", "matter", "energy", "horizon", "ring", "jet", "core", "orbit",
+}
+
+
+def relevance(text, keywords):
+    """How many of the scene's own keywords appear in an asset description."""
+    t = " ".join(re.findall(r"[a-z]+", (text or "").lower()))
+    score = sum(1 for k in keywords if k in t)
+    cosmic = any(c in t for c in COSMIC_TERMS)
+    return score, cosmic
+
+
 def fetch_nasa(scene, dest):
     import requests
     for q in _nasa_queries(scene):
@@ -287,8 +303,18 @@ def fetch_nasa(scene, dest):
             if r.status_code != 200:
                 continue
             items = r.json().get("collection", {}).get("items", [])
-            random.shuffle(items)
-            for it in items[:8]:
+            kws = keywords_for(scene)
+            scored = []
+            for it in items:
+                data = (it.get("data") or [{}])[0]
+                text = f"{data.get('title','')} {data.get('description','')}"
+                score, cosmic = relevance(text, kws)
+                # keep only assets that actually talk about this scene (or at least about space)
+                if score >= 1:
+                    scored.append((score, it))
+            scored.sort(key=lambda x: -x[0])
+            random.shuffle(scored[:6])
+            for score, it in scored[:8]:
                 links = [l["href"] for l in it.get("links", []) if l.get("href")]
                 if not links:
                     continue
@@ -298,8 +324,8 @@ def fetch_nasa(scene, dest):
                 try:
                     raw = _http_get(href, timeout=90, tries=1, backoff=0)
                     _save_1080(raw, dest)
-                    title = it.get("data", [{}])[0].get("title", "")
-                    return {"source": "nasa", "url": href, "title": title, "query": q}
+                    title = (it.get("data") or [{}])[0].get("title", "")
+                    return {"source": "nasa", "url": href, "title": title, "query": q, "relevance": score}
                 except Exception:  # noqa: BLE001
                     continue
         except Exception as e:  # noqa: BLE001
@@ -347,14 +373,19 @@ def fetch_wikimedia(scene, dest):
                     continue
                 if info.get("width", 0) < 1000:
                     continue
-                url = info.get("thumburl") or info["url"]
                 meta = info.get("extmetadata", {})
                 lic = meta.get("LicenseShortName", {}).get("value", "unknown")
+                title = p.get("title", "")
+                desc = re.sub(r"<[^>]+>", " ", meta.get("ImageDescription", {}).get("value", ""))
+                score, cosmic = relevance(f"{title} {desc}", keywords_for(scene))
+                if score < 1:
+                    continue
+                url = info.get("thumburl") or info["url"]
                 try:
                     raw = _http_get(url, timeout=90, tries=1, backoff=0)
                     _save_1080(raw, dest)
-                    return {"source": "wikimedia", "url": url,
-                            "title": p.get("title", ""), "license": lic, "query": q}
+                    return {"source": "wikimedia", "url": url, "title": title,
+                            "license": lic, "query": q, "relevance": score}
                 except Exception:  # noqa: BLE001
                     continue
         except Exception as e:  # noqa: BLE001
@@ -423,6 +454,8 @@ def make_image(scene, force=False):
         info = make_gradient(dest, seed)
         log(f"  image {sid}: dark gradient fallback")
     info["image_prompt"] = scene["image_prompt"]
+    for suffix in (".mp4", ".json"):          # the cached clip no longer matches the still
+        (CLIP_DIR / f"{sid}{suffix}").unlink(missing_ok=True)
     manifest[sid] = info
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
     return info
@@ -461,6 +494,55 @@ def make_clip(scene, duration, idx, force=False):
            str(clip))
     (CLIP_DIR / f"{sid}.json").write_text(json.dumps({"duration": duration, "frames": frames}))
     return clip, duration
+
+
+def retry_fallbacks(scenes, cooldown=45):
+    """Second chance for scenes that fell back to NASA/Wikimedia/gradient: try Pollinations again.
+
+    Keyless services throttle bursts, so a short cool-down usually recovers the missing stills.
+    """
+    manifest_path = IMAGE_DIR / "sources.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    weak = []
+    for s in scenes:
+        info = manifest.get(scene_id(s["scene"]), {})
+        src = info.get("source")
+        if src == "pollinations":
+            continue
+        # a real NASA/Wikimedia photo is fine as long as it is actually about this scene
+        if src in ("nasa", "wikimedia") and info.get("title"):
+            if relevance(info["title"], keywords_for(s))[0] >= 1:
+                continue
+        weak.append(s)
+    if not weak:
+        log("all scenes have a Pollinations still — nothing to retry")
+        return manifest
+    log(f"{len(weak)} scene(s) on fallback art; retrying Pollinations after {cooldown}s: "
+        f"{[s['scene'] for s in weak]}")
+    time.sleep(cooldown)
+    for scene in weak:
+        sid = scene_id(scene["scene"])
+        dest = IMAGE_DIR / f"{sid}.jpg"
+        seed = int(hashlib.sha256(sid.encode()).hexdigest()[:8], 16) % 100000
+        try:
+            info = fetch_pollinations(scene["image_prompt"], dest, seed + 999)
+            info["image_prompt"] = scene["image_prompt"]
+            for suffix in (".mp4", ".json"):
+                (CLIP_DIR / f"{sid}{suffix}").unlink(missing_ok=True)
+            manifest[sid] = info
+            manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+            log(f"  recovered {sid} with Pollinations")
+            time.sleep(3)
+        except Exception as e:  # noqa: BLE001
+            log(f"  {sid} still on fallback: {str(e)[:120]}")
+            old = manifest.get(sid, {})
+            if old.get("title") and relevance(old["title"], keywords_for(scene))[0] == 0:
+                # current fallback art is off-topic: rebuild through the chain with strict filtering
+                log(f"  {sid}: off-topic fallback art, regenerating")
+                dest.unlink(missing_ok=True)
+                manifest[sid] = make_image(scene, force=True)
+    (CLIP_DIR / "scene_000.mp4").unlink(missing_ok=True)
+    return manifest
 
 
 def make_intro_card(out_path, title_hi, title_en):
@@ -706,6 +788,7 @@ def main():
     ap.add_argument("--stage", default="all", choices=["all", "audio", "images", "clips"])
     ap.add_argument("--force-images", action="store_true")
     ap.add_argument("--force-audio", action="store_true")
+    ap.add_argument("--no-retry", action="store_true", help="skip the second Pollinations pass")
     args = ap.parse_args()
 
     FFMPEG = ffmpeg_bin()
@@ -730,6 +813,8 @@ def main():
     if args.stage == "images":
         for s in scenes:
             make_image(s, force=args.force_images)
+        if not args.no_retry:
+            retry_fallbacks(scenes)
         return
     if args.stage == "clips":
         for i, s in enumerate(scenes):
@@ -739,6 +824,9 @@ def main():
 
     title_hi = data.get("title_hi") or "ब्लैक होल के अंदर क्या होता है"
     title_en = data.get("title_en") or "WHAT HAPPENS INSIDE A BLACK HOLE"
+    if not args.no_retry:
+        retry_fallbacks(scenes)
+
     total = build(scenes, out, {"title_hi": title_hi, "title_en": title_en},
                   force_images=args.force_images, force_audio=args.force_audio)
     counts = write_report(out, total, scenes, data)
