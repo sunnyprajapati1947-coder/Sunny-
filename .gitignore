@@ -3,3 +3,16 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# ---- film pipeline (movie/) ----
+# rendered media + intermediate artefacts stay out of git (they are large and
+# reproducible with: python3 movie/audio.py && python3 movie/make_film.py)
+movie/build/
+output/*.mp4
+movie/tests/*.png
+movie/tests/*.jpg
+movie/tests/*.mp4
+movie/tests/*.wav
+video-ai/external/
+__pycache__/
+*.pyc
