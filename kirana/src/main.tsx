@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import App from './App'
+import { installExternalLinkBridge } from './lib/native'
 import './index.css'
 
 /**
@@ -18,6 +19,9 @@ const isNativeShell =
 if (!isNativeShell) {
   registerSW({ immediate: true })
 }
+
+// WhatsApp / SMS / UPI / tel links must leave the WebView, not replace the app.
+installExternalLinkBridge()
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>

@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext'
 import { useT } from '../../i18n/useT'
 import { formatPaise } from '../../lib/money'
 import { downloadPdf, printReceipt, receiptText, receiptWhatsAppLink, sharePdf, whatsappReceiptText } from '../../lib/receipt'
+import { isNativeApp } from '../../lib/native'
 import type { Bill, BillItem, Payment } from '../../types'
 import { Sheet } from '../ui/sheet'
 import { Button } from '../ui/button'
@@ -51,9 +52,12 @@ export function BillSuccessSheet({ open, data, onClose, onNewBill }: BillSuccess
       footer={
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => printReceipt(receipt)}>
-              {t('print')}
-            </Button>
+            {/* A WebView cannot open the system print dialog; the APK shares a PDF instead. */}
+            {!isNativeApp() && (
+              <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => printReceipt(receipt)}>
+                {t('print')}
+              </Button>
+            )}
             <Button
               variant="secondary"
               icon={<Download className="h-4 w-4" />}

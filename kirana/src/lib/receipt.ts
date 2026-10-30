@@ -1,5 +1,6 @@
 import type { jsPDF as JsPdfInstance } from 'jspdf'
 import type { Bill, BillItem, Payment, Shop } from '../types'
+import { savePdfNative, sharePdfNative } from './native'
 import { formatDate, formatTime } from './date'
 import { formatPaise, formatQty, formatQtyNumber } from './money'
 
@@ -367,14 +368,21 @@ export function receiptPdf(data: ReceiptData, JsPDF: JsPdfCtor): JsPdfInstance {
 
 export async function downloadPdf(data: ReceiptData): Promise<void> {
   const JsPDF = await loadPdfCtor()
-  receiptPdf(data, JsPDF).save(`${data.bill.bill_no.replace(/[^\w-]/g, '')}.pdf`)
+  const doc = receiptPdf(data, JsPDF)
+  const filename = `${data.bill.bill_no.replace(/[^\w-]/g, '')}.pdf`
+  // A WebView has no download manager, so the APK writes into Documents.
+  if (await savePdfNative(doc.output('blob'), filename)) return
+  doc.save(filename)
 }
 
 export async function sharePdf(data: ReceiptData): Promise<boolean> {
   const JsPDF = await loadPdfCtor()
   const doc = receiptPdf(data, JsPDF)
   const blob = doc.output('blob')
-  const file = new File([blob], `${data.bill.bill_no.replace(/[^\w-]/g, '')}.pdf`, {
+  const name = `${data.bill.bill_no.replace(/[^\w-]/g, '')}.pdf`
+  // Android: write to the cache dir and open the system share sheet.
+  if (await sharePdfNative(blob, name, `Bill ${data.bill.bill_no}`)) return true
+  const file = new File([blob], name, {
     type: 'application/pdf',
   })
   if (navigator.canShare?.({ files: [file] })) {

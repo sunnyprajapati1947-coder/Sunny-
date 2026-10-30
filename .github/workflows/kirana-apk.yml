@@ -132,6 +132,42 @@ jobs:
             echo "No ANDROID_KEYSTORE_BASE64 secret — the debug-signed APK is the deliverable."
           fi
 
+      # Prove the APK is installable and actually contains the app: this
+      # environment can create the file but cannot download it afterwards, so the
+      # verification has to happen here and land in the job summary.
+      - name: Verify the APK (manifest, signature, bundled web assets)
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          BT=$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)
+          APK=$(find android/app/build/outputs/apk -name '*.apk' | head -1)
+          echo "APK: $APK"
+          {
+            echo "### APK verification"
+            echo ""
+            echo '```'
+            echo "\$ $BT/aapt2 dump badging"
+            "$BT/aapt2" dump badging "$APK" 2>/dev/null | grep -E "^(package|sdkVersion|targetSdkVersion|application-label|launchable-activity|uses-permission)" | head -20
+            echo ""
+            echo "\$ apksigner verify --print-certs"
+            if [ -x "$BT/apksigner" ]; then
+              "$BT/apksigner" verify --print-certs "$APK" 2>&1 | grep -E "Signer|Verified|WARNING" | head -8
+            else
+              jarsigner -verify "$APK" 2>&1 | head -3
+            fi
+            echo ""
+            echo "\$ unzip -l (key entries)"
+            unzip -l "$APK" | grep -E "assets/public/(index.html|sw.js|manifest)|classes[0-9]*.dex|AndroidManifest.xml|mipmap-xxhdpi/ic_launcher" | head -12
+            echo ""
+            echo "sha256: $(sha256sum "$APK" | cut -d' ' -f1)"
+            echo "size:   $(du -h "$APK" | cut -f1)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Fail loudly instead of shipping a broken package.
+          "$BT/aapt2" dump badging "$APK" | grep -q "package: name='in.dukaandost.app'" || { echo "::error::unexpected package name"; exit 1; }
+          unzip -p "$APK" assets/public/index.html | grep -q '<div id="root">' || { echo "::error::web bundle missing from the APK"; exit 1; }
+          unzip -l "$APK" | grep -q "classes.dex" || { echo "::error::no dex in the APK"; exit 1; }
+
       - name: Collect the APK with a friendly name
         run: |
           mkdir -p out

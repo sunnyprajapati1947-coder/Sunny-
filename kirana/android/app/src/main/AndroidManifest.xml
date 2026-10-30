@@ -38,4 +38,14 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Barcode scanning runs in the WebView via getUserMedia; Capacitor asks for
+         the runtime grant when the page calls it. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Hindi voice search uses the Web Speech API where the WebView supports it. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- The app must install on tablets/tills without a camera too. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 </manifest>

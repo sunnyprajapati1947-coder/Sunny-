@@ -8,6 +8,7 @@ import { billDetail, returnBillItems, voidBill } from '../data/billing'
 import { formatDateTime } from '../lib/date'
 import { formatPaise } from '../lib/money'
 import { downloadPdf, printReceipt, receiptText, receiptWhatsAppLink, sharePdf } from '../lib/receipt'
+import { isNativeApp } from '../lib/native'
 import type { Bill, BillItem, Payment } from '../types'
 import { PageHeader } from '../components/layout/AppShell'
 import { Badge, Card, Divider } from '../components/ui/card'
@@ -160,9 +161,11 @@ export default function BillDetailPage() {
       </Card>
 
       <div className="grid grid-cols-2 gap-2">
-        <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => printReceipt(receipt)}>
-          {t('print')}
-        </Button>
+        {!isNativeApp() && (
+          <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => printReceipt(receipt)}>
+            {t('print')}
+          </Button>
+        )}
         <Button variant="secondary" icon={<Download className="h-4 w-4" />} onClick={() => downloadPdf(receipt)}>
           {t('pdf')}
         </Button>

@@ -19,7 +19,10 @@
   },
   "dependencies": {
     "@capacitor/android": "^6.2.3",
+    "@capacitor/app-launcher": "^6.0.4",
     "@capacitor/core": "^6.2.3",
+    "@capacitor/filesystem": "^6.0.4",
+    "@capacitor/share": "^6.0.4",
     "@supabase/supabase-js": "^2.45.4",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
