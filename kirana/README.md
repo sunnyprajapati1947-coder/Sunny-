@@ -15,6 +15,16 @@ React 18 · Vite 5 · TypeScript · Tailwind 3 · Dexie (IndexedDB) · Supabase 
 
 ---
 
+## 0. Install on Android (APK)
+
+[**Download Dukaan Dost 1.0.0 APK**](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/dukaan-dost-v1.0.0/dukaan-dost-release.apk) — 3.8 MB, Android 6.0+
+
+Open the file on the phone, allow *Install unknown apps*, install. Works offline
+immediately. **Update by installing over the app** — never uninstall, that erases the
+local database. Details, signing and local builds: **[docs/APK.md](docs/APK.md)**.
+
+---
+
 ## 1. Quick start (60 seconds, no backend needed)
 
 ```bash
@@ -112,7 +122,8 @@ kirana/
 ├── docs/
 │   ├── SETUP.md                Supabase project walkthrough
 │   ├── DEPLOYMENT.md           Vercel + custom domain + release checklist
-│   └── ARCHITECTURE.md         offline sync, money model, security layers
+│   ├── ARCHITECTURE.md         offline sync, money model, security layers
+│   └── APK.md                  install / update / signing the Android app
 ├── src/
 │   ├── components/
 │   │   ├── billing/            ScanPanel, ProductSearch, CartList, CheckoutSheet,
@@ -135,6 +146,8 @@ kirana/
 │   ├── test/                   fixtures + fake-indexeddb setup
 │   ├── App.tsx                 routes + providers
 │   └── main.tsx                PWA registration
+├── android/                    Capacitor shell (Gradle 8.2.1 / AGP 8.2.1, JDK 17)
+├── scripts/verify-apk.py        CI check: package, dex, assets, signature
 ├── vercel.json                 SPA rewrites + cache headers
 └── vite.config.ts              PWA manifest, workbox, chunking
 ```
