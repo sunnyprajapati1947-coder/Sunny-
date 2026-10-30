@@ -116,6 +116,11 @@ Today’s sales, profit, bills, cash vs UPI split, top sellers, category split, 
 daily/weekly/monthly/custom ranges, **GST rate-wise summary (GSTR-ready)**, **P&L**,
 **day-end cash closing with mismatch**, **Excel + PDF export**.
 
+### Ready-made QR poster
+`public/rishu-kirana-upi-qr.png` is an A4 poster (1240×1754) with the shop's UPI QR already
+drawn — print it and put it on the counter. The same poster can be re-generated inside the app
+(**More → Shop QR**) if the UPI id or address ever changes.
+
 ### Shop QR (`/shop-qr`)
 A printable counter poster built from the shop's own UPI id
 (`sunny-ff-reedem-code@fam`): QR + shop name + address + phone, download/share/print on
