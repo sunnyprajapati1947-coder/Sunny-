@@ -10,6 +10,10 @@ export default defineConfig({
     strictPort: false,
     allowedHosts: true,
     cors: true,
+    watch: {
+      // The native project and build output must not trigger HMR reloads.
+      ignored: ['**/android/**', '**/dist/**', '**/coverage/**'],
+    },
     headers: {
       'X-Frame-Options': '',
     },
