@@ -93,16 +93,17 @@ jobs:
           ./gradlew --no-daemon --stacktrace assembleDebug > /tmp/gradle.log 2>&1
           status=$?
           if [ "$status" -ne 0 ]; then
-            echo "Gradle failed with exit code $status"
-            grep -nE "FAILURE|error:|e: |Execution failed|Could not|Caused by|> Task|What went wrong" -A 3 /tmp/gradle.log | tail -60 > /tmp/gradle-err.log || true
+            {
+              awk '/What went wrong/{flag=1} flag' /tmp/gradle.log | head -8
+              grep -nE "^e: |^error:|error: |Could not (resolve|find|GET|download)|Unsupported class|requires (Java|JDK)|Minimum supported Gradle|AAPT2|Duplicate|not found" /tmp/gradle.log | head -8
+            } > /tmp/gradle-err.log 2>&1
             while IFS= read -r line; do
               clean=$(printf '%s' "$line" | tr -d '\r' | sed 's/%/%25/g')
-              echo "::error title=Gradle::${clean:0:400}"
+              echo "::error title=Gradle::${clean:0:300}"
             done < /tmp/gradle-err.log
-            tail -n 40 /tmp/gradle.log
             exit "$status"
           fi
-          tail -n 15 /tmp/gradle.log
+          tail -n 10 /tmp/gradle.log
 
       - name: Assemble signed release APK (only when signing secrets exist)
         env:
