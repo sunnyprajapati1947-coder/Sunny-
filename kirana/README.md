@@ -39,7 +39,8 @@ shop details (pre-filled with *Rishu Kirana Store, Gaya Road, Nawada, 9608087035
 UPI sunny-ff-reedem-code@fam*) and stores everything in the phone’s IndexedDB.
 
 **There is no demo data.** A fresh install has zero products, zero bills and zero khata
-entries — every row in the app is entered by the shop. Take a backup from
+entries — and if you are upgrading from an older APK that shipped a demo shop, that shop is
+deleted automatically on first boot (local only, nothing in the cloud is touched) — every row in the app is entered by the shop. Take a backup from
 **More → Download backup** and keep it safe.
 
 ### Connect the cloud later (no rebuild)
@@ -200,7 +201,7 @@ npm run typecheck   # strict TypeScript, zero errors
 npm run test:ui     # jsdom screen tests only (routes, dashboard, cart, payment sheet)
 ```
 
-**Test coverage highlights** (`npm test`, 155 tests):
+**Test coverage highlights** (`npm test`, 156 tests):
 
 - money math: inclusive/exclusive GST, proportional discounts, round-off, negative formats
 - offers: BOGO, flat, %, combo, date windows, inactive

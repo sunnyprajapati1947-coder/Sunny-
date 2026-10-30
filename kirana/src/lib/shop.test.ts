@@ -63,3 +63,29 @@ describe('shop setup', () => {
     expect(owner.isDemo).toBe(false)
   })
 })
+
+describe('legacy demo cleanup', () => {
+  it('removes the old demo shop and its rows, keeping the real shop', async () => {
+    const { LEGACY_DEMO_SHOP_ID, purgeLegacyDemoData } = await import('./db')
+    const { makeProduct, makeShop } = await import('../test/fixtures')
+
+    const demoShop = makeShop({ id: LEGACY_DEMO_SHOP_ID, name: 'Sharma Kirana Store' })
+    const demoProduct = makeProduct({ id: 'demo-product-1', shop_id: LEGACY_DEMO_SHOP_ID })
+    await db.shops.put(demoShop)
+    await db.products.put(demoProduct)
+    await db.meta.put({ key: 'demo_active', value: true })
+
+    const real = await createLocalShop({ name: SHOP_INFO.name, owner_name: SHOP_INFO.owner_name })
+    const realProduct = makeProduct({ id: 'real-product-1', shop_id: real.id })
+    await db.products.put(realProduct)
+
+    const removed = await purgeLegacyDemoData()
+
+    expect(removed).toBeGreaterThanOrEqual(3)
+    expect(await db.shops.get(LEGACY_DEMO_SHOP_ID)).toBeUndefined()
+    expect(await db.products.get('demo-product-1')).toBeUndefined()
+    expect(await db.meta.get('demo_active')).toBeUndefined()
+    expect(await db.shops.get(real.id)).toBeTruthy()
+    expect(await db.products.get('real-product-1')).toBeTruthy()
+  })
+})

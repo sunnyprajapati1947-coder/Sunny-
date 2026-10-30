@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { db, getMeta, setMeta, wipeLocalData } from '../lib/db'
+import { db, getMeta, purgeLegacyDemoData, setMeta, wipeLocalData } from '../lib/db'
 import { supabase, supabaseConfigured } from '../lib/supabase'
 import { sync, startAutoSync } from '../lib/sync'
 import { uuid } from '../lib/id'
@@ -134,6 +134,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const storedPrefs = await getMeta<Prefs>('prefs', DEFAULT_PREFS)
         if (!cancelled) applyPrefs(storedPrefs)
+
+        // Demo rows from an older build must never sit next to the real shop's books.
+        await purgeLegacyDemoData()
 
         if (supabaseConfigured && supabase) {
           const { data } = await supabase.auth.getSession()

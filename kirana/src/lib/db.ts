@@ -186,6 +186,41 @@ export async function pruneOtherShops(shopId: string, shopIdsToKeep: string[]): 
   }
 }
 
+/**
+ * Older builds shipped a seeded demo shop ("Sharma Kirana Store", products, 14 days
+ * of bills). Those rows must never sit next to the real shop's books, so the first
+ * boot of this version drops them. Local only — nothing is deleted from the cloud.
+ */
+export const LEGACY_DEMO_SHOP_ID = '00000000-0000-4000-8000-000000000001'
+
+export async function purgeLegacyDemoData(): Promise<number> {
+  let removed = 0
+  for (const name of [...SYNC_TABLE_NAMES, 'meta'] as const) {
+    if (name === 'meta') {
+      const row = await db.meta.get('demo_active')
+      if (row) {
+        await db.meta.delete('demo_active')
+        removed += 1
+      }
+      continue
+    }
+    const store = db.table(name) as Table<{ id: string; shop_id?: string }, string>
+    const rows = await store.toArray()
+    const obsolete = rows.filter((row) => row.shop_id === LEGACY_DEMO_SHOP_ID || row.id === LEGACY_DEMO_SHOP_ID)
+    if (obsolete.length) {
+      await store.bulkDelete(obsolete.map((row) => row.id))
+      removed += obsolete.length
+    }
+  }
+  if (removed) {
+    // Drop queued demo writes so the outbox does not push them later.
+    const outbox = await db.outbox.toArray()
+    const strays = outbox.filter((entry) => entry.record_id === LEGACY_DEMO_SHOP_ID)
+    if (strays.length) await db.outbox.bulkDelete(strays.map((entry) => entry.seq).filter((seq): seq is number => seq != null))
+  }
+  return removed
+}
+
 export async function wipeLocalData(): Promise<void> {
   await db.transaction(
     'rw',
