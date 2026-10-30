@@ -19,7 +19,7 @@ defaults:
 jobs:
   test:
     name: Engine & UI tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -50,7 +50,7 @@ jobs:
 
   apk:
     name: Android APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: test
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +66,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+      # The runner image ships the Android SDK; no third-party setup action needed.
+      - name: Report the Android SDK
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$SDK"
+          ls "$SDK/platforms" || true
+          ls "$SDK/build-tools" || true
 
       - name: Install dependencies
         run: npm ci
@@ -80,9 +86,9 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
+          ./gradlew --no-daemon --stacktrace assembleDebug
 
-      - name: Assemble release APK (unsigned unless signing secrets are provided)
+      - name: Assemble signed release APK (only when signing secrets exist)
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -90,7 +96,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > ludo-royale.keystore
+            echo "$KEYSTORE_BASE64" | base64 -d > ../ludo-royale.keystore
             cd android
             ./gradlew --no-daemon assembleRelease \
               -Pandroid.injected.signing.store.file="$PWD/../ludo-royale.keystore" \
@@ -98,14 +104,21 @@ jobs:
               -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
               -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
           else
-            echo "No ANDROID_KEYSTORE_BASE64 secret set — skipping signed release build."
+            echo "No ANDROID_KEYSTORE_BASE64 secret — skipping the signed release build."
           fi
+
+      - name: Collect APKs with friendly names
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/app-debug.apk "out/ludo-royale-${GITHUB_SHA::7}-debug.apk"
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk "out/ludo-royale-${GITHUB_SHA::7}-release.apk"
+          fi
+          ls -lh out
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
           name: ludo-royale-apk
-          path: |
-            ludo-king/android/app/build/outputs/apk/debug/*.apk
-            ludo-king/android/app/build/outputs/apk/release/*.apk
-          if-no-files-found: warn
+          path: ludo-king/out/*.apk
+          if-no-files-found: error
