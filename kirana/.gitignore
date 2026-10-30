@@ -20,6 +20,8 @@ android/app/src/main/assets/public/
 android/app/src/main/assets/capacitor.config.json
 android/app/src/main/assets/capacitor.plugins.json
 android/app/src/main/res/xml/config.xml
+# Key material: the sideload keystore is intentionally committed (see
+# docs/APK.md) so successive test builds can update each other.
 *.keystore
 *.jks
 android/keystore.properties

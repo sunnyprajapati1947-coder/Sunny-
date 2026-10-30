@@ -113,24 +113,53 @@ jobs:
           fi
           tail -n 8 /tmp/gradle.log
 
-      - name: Assemble a signed release APK (only when signing secrets exist)
+      # A stable signature matters for a shop app: the local database lives in
+      # the app sandbox, so an APK signed with a different key cannot be installed
+      # over the old one — the shopkeeper would have to uninstall and lose bills.
+      # Set ANDROID_KEYSTORE_BASE64 (+ password/alias secrets) to use your own key;
+      # otherwise the repository keystore below keeps builds interchangeable.
+      - name: Assemble a signed release APK
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          set +e
           if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > ../dukaan-dost.keystore
-            cd android
-            ./gradlew --no-daemon assembleRelease \
-              -Pandroid.injected.signing.store.file="$PWD/../dukaan-dost.keystore" \
-              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
-              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
-              -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+            echo "Using the ANDROID_KEYSTORE_* secrets."
+            echo "$KEYSTORE_BASE64" | base64 -d > ../release.keystore
+            STORE="../release.keystore"
+            STORE_PASS="$KEYSTORE_PASSWORD"
+            STORE_ALIAS="$KEY_ALIAS"
+            KEY_PASS="$KEY_PASSWORD"
+            STORE_TYPE="jks"
           else
-            echo "No ANDROID_KEYSTORE_BASE64 secret — the debug-signed APK is the deliverable."
+            echo "Using the checked-in keystore (sideload builds only)."
+            STORE="../keystore/dukaan-dost.p12"
+            STORE_PASS="dukaanDost2026Signing"
+            STORE_ALIAS="dukaan-dost"
+            KEY_PASS="dukaanDost2026Signing"
+            STORE_TYPE="pkcs12"
           fi
+          # Resolve to an absolute path before entering android/
+          STORE_ABS="$(cd "$(dirname "$STORE")" && pwd)/$(basename "$STORE")"
+          test -f "$STORE_ABS" || { echo "::error title=Keystore::missing $STORE_ABS"; exit 1; }
+          echo "keystore: $STORE_ABS (type $STORE_TYPE)"
+          cd android
+          ./gradlew --no-daemon assembleRelease \
+            -Pandroid.injected.signing.store.file="$STORE_ABS" \
+            -Pandroid.injected.signing.store.password="$STORE_PASS" \
+            -Pandroid.injected.signing.key.alias="$STORE_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASS" \
+            -Pandroid.injected.signing.store.type="$STORE_TYPE" > /tmp/release.log 2>&1
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning title=Release signing::signed build failed, falling back to the debug APK"
+            awk '/What went wrong/{flag=1} flag' /tmp/release.log | head -12
+            exit 0
+          fi
+          tail -n 6 /tmp/release.log
 
       # Prove the APK is installable and actually contains the app: this
       # environment can create the file but cannot download it afterwards, so the
@@ -195,7 +224,11 @@ jobs:
 
           **Install:** download the `.apk`, open it on the phone and allow
           "Install unknown apps" for the browser/file manager.
-          Min Android 6.0 (API 23). ~10 MB.
+          Min Android 6.0 (API 23) · ~5 MB · works fully offline after install.
+
+          Already have it? Install the newer file over the old one — the bills,
+          products and khata stored on the phone are kept. Do **not** uninstall
+          first: that erases the local database.
           NOTES
             gh release create "$TAG" --title "Dukaan Dost 1.0.0 — Android APK" --notes-file /tmp/notes.md
           fi
