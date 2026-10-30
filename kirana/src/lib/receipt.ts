@@ -1,4 +1,7 @@
 import type { jsPDF as JsPdfInstance } from 'jspdf'
+import type { Bill, BillItem, Payment, Shop } from '../types'
+import { formatDate, formatTime } from './date'
+import { formatPaise, formatQty, formatQtyNumber } from './money'
 
 type JsPdfOptions = { unit?: string; format?: string | number[]; orientation?: string }
 type JsPdfCtor = new (options?: JsPdfOptions) => JsPdfInstance
@@ -8,15 +11,24 @@ async function loadPdfCtor(): Promise<JsPdfCtor> {
   const mod = await import('jspdf')
   return mod.jsPDF as unknown as JsPdfCtor
 }
-import type { Bill, BillItem, Payment, Shop } from '../types'
-import { formatDate, formatTime } from './date'
-import { formatPaise, formatQty } from './money'
+
+/** Units where the number alone is not enough (0.5 = half a kilo). */
+const WEIGHTED_UNITS = new Set(['kg', 'g', 'litre', 'ml'])
+const COUNTED_UNITS = new Set(['pcs', 'packet', 'box', 'dozen'])
 
 const PAYMENT_LABEL: Record<string, string> = {
   cash: 'Cash',
   upi: 'UPI',
   card: 'Card',
   udhaar: 'Udhaar',
+}
+
+/** "Items: 2" reads better than a 3-decimal sum of kilos + packets. */
+function itemCountLabel(items: BillItem[]): string {
+  const allCounted = items.length > 0 && items.every((item) => COUNTED_UNITS.has(item.unit))
+  return allCounted
+    ? `Items: ${formatQtyNumber(items.reduce((n, item) => n + item.qty, 0))}`
+    : `Items: ${items.length}`
 }
 
 export interface ReceiptData {
@@ -32,7 +44,12 @@ function center(text: string, width: number): string {
 }
 
 function twoCols(left: string, right: string, width: number): string {
-  const space = Math.max(1, width - left.length - right.length)
+  const space = width - left.length - right.length
+  // Never print a line wider than the paper: trim the label, keep the money.
+  if (space < 1) {
+    const room = Math.max(0, width - right.length - 1)
+    return `${left.slice(0, room).trimEnd()}${' '.repeat(Math.max(1, width - Math.min(left.length, room) - right.length))}${right}`
+  }
   return left + ' '.repeat(space) + right
 }
 
@@ -70,29 +87,36 @@ export function receiptText(
   if (shop.phone) add(center(`Ph: ${shop.phone}`, width))
   if (shop.gstin) add(center(`GSTIN: ${shop.gstin}`, width))
   add('-'.repeat(width))
-  add(twoCols(`Bill: ${bill.bill_no}`, formatDate(bill.created_at), width))
-  add(formatTime(bill.created_at) + (bill.cashier_name ? `  by ${bill.cashier_name}` : ''))
+  // The bill number and the timestamp each get their own line: a 58 mm roll is
+  // only 32 characters, and "BILL-260314-001 14 Mar 2026" is already 33.
+  add(`Bill: ${bill.bill_no}`)
+  add(`${formatDate(bill.created_at)} · ${formatTime(bill.created_at)}`)
+  if (bill.cashier_name) wrap(`by ${bill.cashier_name}`, width).forEach((line) => add(line))
   if (bill.customer_name || bill.customer_phone) {
-    add(`Customer: ${[bill.customer_name, bill.customer_phone].filter(Boolean).join(' / ')}`)
+    wrap(`Customer: ${[bill.customer_name, bill.customer_phone].filter(Boolean).join(' / ')}`, width).forEach(
+      (line) => add(line),
+    )
   }
   add('-'.repeat(width))
 
-  const qtyW = 8
-  const rateW = 8
-  const amtW = 9
-  const nameW = width - qtyW - rateW - amtW
-  add(twoCols('Item', 'Qty   Rate    Amount', width))
+  add(twoCols('Item', 'Qty × Rate    Amount', width))
   for (const item of items) {
     const name = hindi ? item.name_hi || item.name_en : item.name_en
-    const nameLines = wrap(name.slice(0, nameW * 2), nameW)
-    add(
-      twoCols(
-        nameLines[0] ?? '',
-        `${String(item.qty).slice(0, 5).padStart(3)}  ${formatPaise(item.unit_price_paise, { symbol: false }).padStart(6)} ${formatPaise(item.line_total_paise, { symbol: false }).padStart(7)}`,
-        width,
-      ),
-    )
-    nameLines.slice(1).forEach((l) => add(l))
+    // Name on its own line(s): a 58 mm roll only fits ~32 characters, and
+    // squeezing qty/rate into the same row chopped every name into pieces.
+    wrap(name, width).forEach((line) => add(line))
+    const qtyText = WEIGHTED_UNITS.has(item.unit)
+      ? `${formatQtyNumber(item.qty)} ${item.unit}`
+      : formatQtyNumber(item.qty)
+    const rate = formatPaise(item.unit_price_paise, { symbol: false })
+    const amount = formatPaise(item.line_total_paise, { symbol: false })
+    const left = `  ${qtyText} × ${rate}`
+    if (left.length + amount.length + 1 <= width) {
+      add(twoCols(left, amount, width))
+    } else {
+      add(left)
+      add(twoCols('', amount, width))
+    }
     if (item.gst_rate > 0 && !shop.prices_include_gst) {
       add(`  GST ${item.gst_rate}%`)
     }
@@ -110,13 +134,12 @@ export function receiptText(
     add(twoCols(PAYMENT_LABEL[p.mode] ?? p.mode, formatPaise(p.amount_paise), width))
   }
   add('-'.repeat(width))
-  add(`Items: ${items.reduce((n, i) => n + (i.unit === 'pcs' ? i.qty : 1), 0)}`)
+  add(itemCountLabel(items))
   if (shop.upi_id) add(`UPI: ${shop.upi_id}`)
   add('')
   add(center(shop.receipt_footer?.slice(0, width) || 'Thank you! Phir aayein 🙏', width))
   add(center(hindi ? 'दुकान दोस्त' : 'Powered by Dukaan Dost', width))
-  const text = lines.join('\n')
-  return opts.forWhatsApp ? text : text
+  return lines.join('\n')
 }
 
 export function receiptWhatsAppLink(phone: string | null, text: string): string {
@@ -130,16 +153,32 @@ export function receiptWhatsAppLink(phone: string | null, text: string): string 
 export function printReceipt(data: ReceiptData): void {
   const { shop, bill, items, payments } = data
   const widthMm = shop.receipt_width === 58 ? 58 : 80
-  const rows = items
-    .map(
-      (i) => `<tr>
-        <td>${escapeHtml(i.name_hi || i.name_en)}${i.name_hi && i.name_hi !== i.name_en ? `<div class="en">${escapeHtml(i.name_en)}</div>` : ''}</td>
+  const narrow = widthMm === 58
+  // 58 mm of paper cannot hold "name | qty | rate | amount" side by side, so the
+  // narrow layout puts the name on its own line (same as the text receipt).
+  const itemName = (i: BillItem) =>
+    `${escapeHtml(i.name_hi || i.name_en)}${
+      i.name_hi && i.name_hi !== i.name_en ? `<div class="en">${escapeHtml(i.name_en)}</div>` : ''
+    }`
+  const itemFigures = (i: BillItem) =>
+    `${formatQty(i.qty, i.unit)} × ${formatPaise(i.unit_price_paise, { symbol: false })}`
+  const rows = narrow
+    ? items
+        .map(
+          (i) => `<tr><td colspan="2">${itemName(i)}</td></tr>
+          <tr class="figs"><td>${itemFigures(i)}</td><td class="r">${formatPaise(i.line_total_paise, { symbol: false })}</td></tr>`,
+        )
+        .join('')
+    : items
+        .map(
+          (i) => `<tr>
+        <td>${itemName(i)}</td>
         <td class="r">${formatQty(i.qty, i.unit)}</td>
         <td class="r">${formatPaise(i.unit_price_paise, { symbol: false })}</td>
         <td class="r">${formatPaise(i.line_total_paise, { symbol: false })}</td>
       </tr>`,
-    )
-    .join('')
+        )
+        .join('')
   const paymentRows = payments
     .map((p) => `<div class="row"><span>${PAYMENT_LABEL[p.mode]}</span><span>${formatPaise(p.amount_paise)}</span></div>`)
     .join('')
@@ -158,6 +197,7 @@ export function printReceipt(data: ReceiptData): void {
   td { padding: 3px 0; vertical-align: top; }
   .r { text-align: right; white-space: nowrap; }
   .en { font-size: 9px; color: #555; }
+  tr.figs td { padding-top: 0; color: #333; }
   .row { display: flex; justify-content: space-between; padding: 1px 0; }
   .total { font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; margin: 5px 0; }
   .center { text-align: center; }
@@ -175,7 +215,7 @@ export function printReceipt(data: ReceiptData): void {
   ${bill.customer_name || bill.customer_phone ? `<div>Customer: ${escapeHtml([bill.customer_name, bill.customer_phone].filter(Boolean).join(' / '))}</div>` : ''}
   <div class="sep"></div>
   <table>
-    <thead><tr><th>Item</th><th class="r">Qty</th><th class="r">Rate</th><th class="r">Amt</th></tr></thead>
+    <thead>${narrow ? '<tr><th>Item</th><th class="r">Amount</th></tr>' : '<tr><th>Item</th><th class="r">Qty</th><th class="r">Rate</th><th class="r">Amt</th></tr>'}</thead>
     <tbody>${rows}</tbody>
   </table>
   <div class="sep"></div>
@@ -187,20 +227,50 @@ export function printReceipt(data: ReceiptData): void {
   <div class="sep"></div>
   ${paymentRows}
   <div class="sep"></div>
-  <div class="center">${shop.upi_id ? `UPI: ${escapeHtml(shop.upi_id)}<br>` : ''}Items: ${items.length}</div>
+  <div class="center">${shop.upi_id ? `UPI: ${escapeHtml(shop.upi_id)}<br>` : ''}${itemCountLabel(items)}</div>
   <div class="thanks">${escapeHtml(shop.receipt_footer || 'Thank you! Phir aayein 🙏')}</div>
   <div class="center muted" style="margin-top:6px">Dukaan Dost</div>
   <script>window.onload = () => { window.focus(); window.print(); };</script>
 </body></html>`
 
   const win = window.open('', '_blank', 'width=420,height=720')
-  if (!win) {
-    alert('Print blocked. Please allow pop-ups for this site.')
+  if (win) {
+    win.document.open()
+    win.document.write(html)
+    win.document.close()
     return
   }
-  win.document.open()
-  win.document.write(html)
-  win.document.close()
+  printViaHiddenFrame(html)
+}
+
+/**
+ * Pop-up blockers (and some in-app browsers) refuse `window.open` on a second
+ * tap, which used to make the Print button do nothing. A hidden iframe prints
+ * without a pop-up at all.
+ */
+function printViaHiddenFrame(html: string): void {
+  const previous = document.getElementById('dd-print-frame')
+  if (previous) previous.remove()
+  const frame = document.createElement('iframe')
+  frame.id = 'dd-print-frame'
+  frame.setAttribute('aria-hidden', 'true')
+  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;'
+  document.body.appendChild(frame)
+  const doc = frame.contentDocument
+  if (!doc) return
+  doc.open()
+  doc.write(html.replace('<script>window.onload = () => { window.focus(); window.print(); };<\/script>', ''))
+  doc.close()
+  const run = () => {
+    try {
+      frame.contentWindow?.focus()
+      frame.contentWindow?.print()
+    } finally {
+      window.setTimeout(() => frame.remove(), 1000)
+    }
+  }
+  if (doc.readyState === 'complete') run()
+  else frame.onload = run
 }
 
 /** A4/80mm PDF invoice (English labels — PDF core fonts don't include Devanagari). */

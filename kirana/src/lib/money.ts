@@ -33,10 +33,15 @@ export function formatPaiseCompact(paise: number): string {
   return formatPaise(paise)
 }
 
+/** 2 → "2", 0.5 → "0.5", 0.125 → "0.125" (max 3 decimals, the DB precision). */
+export function formatQtyNumber(qty: number): string {
+  const rounded = Math.round((Number(qty) || 0) * 1000) / 1000
+  if (Number.isInteger(rounded)) return String(rounded)
+  return rounded.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
+}
+
 export function formatQty(qty: number, unit: string): string {
-  const rounded = Math.round(qty * 1000) / 1000
-  const text = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
-  return `${text} ${unit}`
+  return `${formatQtyNumber(qty)} ${unit}`
 }
 
 export function roundToRupee(paise: number): number {

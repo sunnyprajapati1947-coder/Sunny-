@@ -1,33 +1,40 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { AppProvider, useApp } from './context/AppContext'
-import { CartProvider } from './context/CartContext'
-import { ConfirmProvider } from './components/ui/feedback'
-import { ToastHost } from './components/ui/feedback'
-import { AppShell } from './components/layout/AppShell'
-import { Spinner } from './components/ui/button'
+import { lazy, Suspense, type ReactNode } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
+import { AppProvider, useApp } from "./context/AppContext";
+import { CartProvider } from "./context/CartContext";
+import { ConfirmProvider } from "./components/ui/feedback";
+import { ToastHost } from "./components/ui/feedback";
+import { AppShell } from "./components/layout/AppShell";
+import { Spinner } from "./components/ui/button";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
-const HomePage = lazy(() => import('./pages/HomePage'))
-const BillingPage = lazy(() => import('./pages/BillingPage'))
-const ProductsPage = lazy(() => import('./pages/ProductsPage'))
-const ProductFormPage = lazy(() => import('./pages/ProductFormPage'))
-const KhataPage = lazy(() => import('./pages/KhataPage'))
-const CustomerDetailPage = lazy(() => import('./pages/CustomerDetailPage'))
-const ReportsPage = lazy(() => import('./pages/ReportsPage'))
-const GstReportPage = lazy(() => import('./pages/GstReportPage'))
-const PnlPage = lazy(() => import('./pages/PnlPage'))
-const DayClosePage = lazy(() => import('./pages/DayClosePage'))
-const InventoryPage = lazy(() => import('./pages/InventoryPage'))
-const StockAuditPage = lazy(() => import('./pages/StockAuditPage'))
-const OrderListPage = lazy(() => import('./pages/OrderListPage'))
-const PurchasesPage = lazy(() => import('./pages/PurchasesPage'))
-const PurchaseFormPage = lazy(() => import('./pages/PurchaseFormPage'))
-const BillsPage = lazy(() => import('./pages/BillsPage'))
-const BillDetailPage = lazy(() => import('./pages/BillDetailPage'))
-const SettingsPage = lazy(() => import('./pages/ShopSettingsPage'))
-const AuditLogPage = lazy(() => import('./pages/AuditLogPage'))
-const MorePage = lazy(() => import('./pages/MorePage'))
-const LoginPage = lazy(() => import('./pages/LoginPage'))
+const HomePage = lazy(() => import("./pages/HomePage"));
+const BillingPage = lazy(() => import("./pages/BillingPage"));
+const ProductsPage = lazy(() => import("./pages/ProductsPage"));
+const ProductFormPage = lazy(() => import("./pages/ProductFormPage"));
+const KhataPage = lazy(() => import("./pages/KhataPage"));
+const CustomerDetailPage = lazy(() => import("./pages/CustomerDetailPage"));
+const ReportsPage = lazy(() => import("./pages/ReportsPage"));
+const GstReportPage = lazy(() => import("./pages/GstReportPage"));
+const PnlPage = lazy(() => import("./pages/PnlPage"));
+const DayClosePage = lazy(() => import("./pages/DayClosePage"));
+const InventoryPage = lazy(() => import("./pages/InventoryPage"));
+const StockAuditPage = lazy(() => import("./pages/StockAuditPage"));
+const OrderListPage = lazy(() => import("./pages/OrderListPage"));
+const PurchasesPage = lazy(() => import("./pages/PurchasesPage"));
+const PurchaseFormPage = lazy(() => import("./pages/PurchaseFormPage"));
+const BillsPage = lazy(() => import("./pages/BillsPage"));
+const BillDetailPage = lazy(() => import("./pages/BillDetailPage"));
+const SettingsPage = lazy(() => import("./pages/ShopSettingsPage"));
+const AuditLogPage = lazy(() => import("./pages/AuditLogPage"));
+const MorePage = lazy(() => import("./pages/MorePage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
 
 export default function App() {
   return (
@@ -41,12 +48,12 @@ export default function App() {
         </CartProvider>
       </ConfirmProvider>
     </AppProvider>
-  )
+  );
 }
 
 function AppRoutes() {
-  const { ready, needsAuth, bootError } = useApp()
-  const location = useLocation()
+  const { ready, needsAuth, bootError } = useApp();
+  const location = useLocation();
 
   if (!ready) {
     return (
@@ -56,14 +63,16 @@ function AppRoutes() {
             दो
           </div>
           <Spinner className="text-brand-700" />
-          <p className="text-sm font-semibold text-ink-500">Dukaan khul rahi hai…</p>
+          <p className="text-sm font-semibold text-ink-500">
+            Dukaan khul rahi hai…
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
-  if (needsAuth && location.pathname !== '/login') {
-    return <Navigate to="/login" replace />
+  if (needsAuth && location.pathname !== "/login") {
+    return <Navigate to="/login" replace />;
   }
 
   if (bootError) {
@@ -79,7 +88,7 @@ function AppRoutes() {
           Retry
         </button>
       </div>
-    )
+    );
   }
 
   return (
@@ -91,39 +100,61 @@ function AppRoutes() {
       }
     >
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/login"
+          element={
+            <ErrorBoundary context="Login">
+              <LoginPage />
+            </ErrorBoundary>
+          }
+        />
         <Route
           path="/*"
           element={
             <AppShell>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/billing" element={<BillingPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/products/new" element={<ProductFormPage />} />
-                <Route path="/products/:id" element={<ProductFormPage />} />
-                <Route path="/khata" element={<KhataPage />} />
-                <Route path="/khata/:id" element={<CustomerDetailPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/reports/gst" element={<GstReportPage />} />
-                <Route path="/reports/pnl" element={<PnlPage />} />
-                <Route path="/reports/day-close" element={<DayClosePage />} />
-                <Route path="/inventory" element={<InventoryPage />} />
-                <Route path="/inventory/audit" element={<StockAuditPage />} />
-                <Route path="/order-list" element={<OrderListPage />} />
-                <Route path="/purchases" element={<PurchasesPage />} />
-                <Route path="/purchases/new" element={<PurchaseFormPage />} />
-                <Route path="/bills" element={<BillsPage />} />
-                <Route path="/bills/:id" element={<BillDetailPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/settings/audit" element={<AuditLogPage />} />
-                <Route path="/more" element={<MorePage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+              <ScreenBoundary>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/billing" element={<BillingPage />} />
+                  <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/products/new" element={<ProductFormPage />} />
+                  <Route path="/products/:id" element={<ProductFormPage />} />
+                  <Route path="/khata" element={<KhataPage />} />
+                  <Route path="/khata/:id" element={<CustomerDetailPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="/reports/gst" element={<GstReportPage />} />
+                  <Route path="/reports/pnl" element={<PnlPage />} />
+                  <Route path="/reports/day-close" element={<DayClosePage />} />
+                  <Route path="/inventory" element={<InventoryPage />} />
+                  <Route path="/inventory/audit" element={<StockAuditPage />} />
+                  <Route path="/order-list" element={<OrderListPage />} />
+                  <Route path="/purchases" element={<PurchasesPage />} />
+                  <Route path="/purchases/new" element={<PurchaseFormPage />} />
+                  <Route path="/bills" element={<BillsPage />} />
+                  <Route path="/bills/:id" element={<BillDetailPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/settings/audit" element={<AuditLogPage />} />
+                  <Route path="/more" element={<MorePage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </ScreenBoundary>
             </AppShell>
           }
         />
       </Routes>
     </Suspense>
-  )
+  );
+}
+
+/**
+ * Resets the error boundary when the shopkeeper navigates away, so a broken
+ * report does not trap them on the crash screen.
+ */
+function ScreenBoundary({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  return (
+    <ErrorBoundary key={location.pathname} context={location.pathname}>
+      {children}
+    </ErrorBoundary>
+  );
 }

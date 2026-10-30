@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../lib/db'
 import { toPaise } from '../lib/money'
 import { cartLineFromProduct, finalizeBill, holdBill, listHeldBills, returnBillItems, voidBill } from './billing'
-import { cashier, makeCustomer, makeProduct, manager, owner, resetDb, seedBasics } from '../test/fixtures'
+import { addDays, billDateStamp, istDateKey } from '../lib/date'
+import { cashier, makeCustomer, makeProduct, manager, owner, resetDb, seedBasics, SHOP_ID as SHOP_ID_FOR_NUMBERING } from '../test/fixtures'
 import type { OwnerApproval } from '../types'
 
 const discountApproval: OwnerApproval = {
@@ -367,5 +368,91 @@ describe('sync queue — cloud replay', () => {
     const billRow = pending.find((row) => row.table_name === 'bills')
     expect(billRow?.payload).toMatchObject({ shop_id: shop.id, status: 'paid' })
     expect(pending.every((row) => row.attempts === 0 && row.last_error === null)).toBe(true)
+  })
+})
+
+describe('bill numbering', () => {
+  function bill(overrides: Record<string, unknown>) {
+    const now = new Date().toISOString()
+    return {
+      id: `b-${Math.random()}`,
+      shop_id: SHOP_ID_FOR_NUMBERING,
+      bill_no: 'TST-000000-001',
+      customer_id: null,
+      customer_name: null,
+      customer_phone: null,
+      cashier_id: null,
+      cashier_name: null,
+      subtotal_paise: 0,
+      discount_paise: 0,
+      manual_discount_paise: 0,
+      offer_discount_paise: 0,
+      taxable_paise: 0,
+      tax_paise: 0,
+      round_off_paise: 0,
+      total_paise: 0,
+      status: 'paid' as const,
+      payment_status: 'paid' as const,
+      note: null,
+      created_at: now,
+      finalized_at: now,
+      updated_at: now,
+      ...overrides,
+    }
+  }
+
+  it('continues from the highest bill number already stored for today', async () => {
+    const { shop, product } = await seedBasics()
+    const { db } = await import('../lib/db')
+    const stamp = billDateStamp()
+    // A shop that already has bills today (demo data, or another phone).
+    await db.bills.bulkPut([
+      bill({ shop_id: shop.id, bill_no: `TST-${stamp}-001` }),
+      bill({ shop_id: shop.id, bill_no: `TST-${stamp}-007` }),
+      bill({ shop_id: shop.id, bill_no: `TST-${stamp}-003` }),
+      // yesterday's bill must not influence today's sequence
+      bill({
+        shop_id: shop.id,
+        bill_no: `TST-${addDays(stamp, -1)}-099`,
+        created_at: new Date(Date.now() - 86_400_000).toISOString(),
+      }),
+    ])
+
+    const result = await finalizeBill({
+      shop,
+      actor: owner,
+      lines: [cartLineFromProduct(product, 1)],
+      taxMode: 'inclusive',
+      manualDiscountPaise: 0,
+      customer: { id: null, name: null, phone: null },
+      payments: [{ mode: 'cash', amount_paise: toPaise(28), reference: null }],
+    })
+
+    expect(result.bill.bill_no).toBe(`TST-${stamp}-008`)
+  })
+
+  it('starts at 001 on a clean day and increments for each bill', async () => {
+    const { shop, product } = await seedBasics()
+    const first = await finalizeBill({
+      shop,
+      actor: owner,
+      lines: [cartLineFromProduct(product, 1)],
+      taxMode: 'inclusive',
+      manualDiscountPaise: 0,
+      customer: { id: null, name: null, phone: null },
+      payments: [{ mode: 'cash', amount_paise: toPaise(28), reference: null }],
+    })
+    const second = await finalizeBill({
+      shop,
+      actor: owner,
+      lines: [cartLineFromProduct(product, 1)],
+      taxMode: 'inclusive',
+      manualDiscountPaise: 0,
+      customer: { id: null, name: null, phone: null },
+      payments: [{ mode: 'cash', amount_paise: toPaise(28), reference: null }],
+    })
+
+    expect(first.bill.bill_no).toBe(`TST-${billDateStamp()}-001`)
+    expect(second.bill.bill_no).toBe(`TST-${billDateStamp()}-002`)
   })
 })

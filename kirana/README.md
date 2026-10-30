@@ -164,9 +164,10 @@ npm run build       # tsc -b && vite build → dist/ (+ service worker)
 npm run preview     # serve the production build
 npm test            # vitest: money, offers, billing, products, khata, reports, sync
 npm run typecheck   # strict TypeScript, zero errors
+npm run test:ui     # jsdom screen tests only (routes, dashboard, cart, payment sheet)
 ```
 
-**Test coverage highlights** (`npm test`, 107 tests):
+**Test coverage highlights** (`npm test`, 147 tests):
 
 - money math: inclusive/exclusive GST, proportional discounts, round-off, negative formats
 - offers: BOGO, flat, %, combo, date windows, inactive
@@ -181,6 +182,10 @@ npm run typecheck   # strict TypeScript, zero errors
 - sync: outbox ordering, offline no-op, and **every** write queued for upload
   (bills, lines, payments, stock, khata, purchases, supplier payments)
 - security: role matrix, PBKDF2 PIN hashing (salted, legacy upgrade), PIN reset
+- receipts: 58 mm line-width guarantee, 80 mm layout, WhatsApp/Hindi text, HTML escaping
+- UI smoke (jsdom): every route paints, dashboard/products/khata/bills show real data,
+  quick-add fills the cart, the payment sheet opens with all four modes
+- formatting: IST day rollover, UPI deep links, CSV quoting, quantity/rupee formats
 
 ---
 

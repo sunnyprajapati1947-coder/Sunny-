@@ -1,7 +1,7 @@
 import { db, getMeta, localUpsert, localUpsertMany, setMeta } from '../lib/db'
 import { uuid } from '../lib/id'
 import { sync } from '../lib/sync'
-import { billDateStamp, istDateKey } from '../lib/date'
+import { billDateStamp, istDateKey, istDayRange } from '../lib/date'
 import { clamp, computeTotals, percentOf, type TaxMode } from '../lib/money'
 import type {
   Bill,
@@ -46,13 +46,27 @@ export interface FinalizeBillResult {
   changePaise: number
 }
 
+/**
+ * Bill numbers are `PREFIX-yymmdd-NNN` and must be unique per shop (the server
+ * has a unique index). The sequence is derived from the bills already stored for
+ * today rather than from a device-local counter: a counter resets on a new phone
+ * and would collide with numbers that already exist in the cloud.
+ */
 async function nextBillNo(shop: Shop): Promise<string> {
-  const dateKey = istDateKey()
-  const key = `bill_counter:${shop.id}:${dateKey}`
-  const current = await getMeta<number>(key, 0)
-  const next = current + 1
-  await setMeta(key, next)
-  return `${shop.bill_prefix || 'BILL'}-${billDateStamp()}-${String(next).padStart(3, '0')}`
+  const stamp = billDateStamp()
+  const prefix = shop.bill_prefix || 'BILL'
+  const { start, end } = istDayRange(istDateKey())
+  const todays = await db.bills
+    .where('shop_id')
+    .equals(shop.id)
+    .filter((bill) => bill.created_at >= start && bill.created_at < end)
+    .toArray()
+  const pattern = new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-${stamp}-(\\d+)$`)
+  const highest = todays.reduce((max, bill) => {
+    const match = pattern.exec(bill.bill_no)
+    return match ? Math.max(max, Number(match[1])) : max
+  }, 0)
+  return `${prefix}-${stamp}-${String(highest + 1).padStart(3, '0')}`
 }
 
 /**

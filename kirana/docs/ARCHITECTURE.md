@@ -94,7 +94,15 @@ cart (Billing screen).
 
 ## 7. Testing
 
-`npm test` (Vitest + fake-indexeddb) covers the risky parts rather than the pixels:
+`npm test` (Vitest) covers the risky parts rather than the pixels. Repository tests run in
+Node against fake-indexeddb; `src/test/*.smoke.test.tsx` run the whole app in jsdom
+(real providers, router, lazy pages, demo seed) to prove every screen paints and that
+quick-add → cart → payment sheet works:
+
+```bash
+npm test          # everything (147 tests)
+npm run test:ui   # jsdom screens only
+```
 
 - money rounding/GST/discount maths
 - role matrix and PIN hashing (no plain PIN on disk, legacy hashes upgraded)
@@ -105,6 +113,13 @@ cart (Billing screen).
 - credit limit enforcement and khata ledger
 - reports: dashboard, GST split, P&L, day close, dead stock, shop isolation
 - outbox ordering and graceful no-op without Supabase
+- print receipts: no line wider than 58 mm, HTML escaping, 80 mm table variant
+- bill numbering continues from the highest number already stored for today (a
+  device-local counter collided after a reinstall or on a second phone)
+
+Note: completing a bill inside jsdom deadlocks fake-indexeddb when React flushes effects
+mid-transaction, so the checkout test stops at the payment sheet; the money path is covered
+by `src/data/billing.test.ts`.
 
 ## 8. Extending
 
