@@ -1,0 +1,6 @@
+# podcast build artefacts (regenerable)
+build/
+work/
+*.48k.wav
+scripts/__pycache__/
+__pycache__/
