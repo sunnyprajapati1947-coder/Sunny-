@@ -163,7 +163,7 @@ export default function BillingPage() {
                 <span className="text-lg">{product.is_loose ? '⚖️' : '📦'}</span>
                 <span>
                   <span className="block max-w-[9rem] truncate text-xs font-bold text-ink-900 dark:text-ink-50">
-                    {product.name_hi}
+                    {product.name_hi || product.name_en}
                   </span>
                   <span className="block text-[11px] font-semibold text-brand-700 dark:text-brand-300">
                     {formatPaise(product.selling_price_paise)}
@@ -236,29 +236,35 @@ export default function BillingPage() {
       {/* Sticky checkout bar above the bottom nav */}
       <div className="safe-bottom fixed inset-x-0 bottom-[4.25rem] z-20 border-t border-ink-100 bg-white/95 px-3 pb-2 pt-2 backdrop-blur dark:border-ink-800 dark:bg-ink-950/95">
         <div className="mx-auto w-full max-w-3xl">
-          <div className="mb-1.5 grid grid-cols-3 gap-2 text-[11px] font-semibold text-ink-500 dark:text-ink-400">
-            <span>
-              {t('subtotal')}
-              <span className="block text-sm font-bold text-ink-800 dark:text-ink-100">
-                {formatPaise(cart.totals.subtotal_paise)}
+          {cart.lines.length > 0 && (
+            <div className="mb-1.5 grid grid-cols-3 gap-2 text-[11px] font-semibold text-ink-500 dark:text-ink-400">
+              <span>
+                {t('subtotal')}
+                <span className="block text-sm font-bold text-ink-800 dark:text-ink-100">
+                  {formatPaise(cart.totals.subtotal_paise)}
+                </span>
               </span>
-            </span>
-            <span>
-              {t('gst')}
-              <span className="block text-sm font-bold text-ink-800 dark:text-ink-100">{formatPaise(cart.totals.tax_paise)}</span>
-            </span>
-            <span>
-              {t('discount')}
-              <span
-                className={clsx(
-                  'block text-sm font-bold',
-                  cart.totals.discount_paise > 0 ? 'text-saffron-700 dark:text-saffron-300' : 'text-ink-800 dark:text-ink-100',
-                )}
-              >
-                {formatPaise(cart.totals.discount_paise)}
+              <span>
+                {t('gst')}
+                <span className="block text-sm font-bold text-ink-800 dark:text-ink-100">
+                  {formatPaise(cart.totals.tax_paise)}
+                </span>
               </span>
-            </span>
-          </div>
+              <span>
+                {t('discount')}
+                <span
+                  className={clsx(
+                    'block text-sm font-bold',
+                    cart.totals.discount_paise > 0
+                      ? 'text-saffron-700 dark:text-saffron-300'
+                      : 'text-ink-800 dark:text-ink-100',
+                  )}
+                >
+                  {formatPaise(cart.totals.discount_paise)}
+                </span>
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-bold uppercase tracking-wide text-ink-500 dark:text-ink-400">{t('grandTotal')}</p>

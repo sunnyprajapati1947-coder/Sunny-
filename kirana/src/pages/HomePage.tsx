@@ -1,19 +1,14 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  AlarmClock,
   ArrowRight,
   BarChart3,
-  BookOpenCheck,
-  CalendarCheck,
-  ClipboardList,
-  PackageSearch,
-  PlusCircle,
+  Boxes,
+  PackagePlus,
+  Plus,
+  QrCode,
   ReceiptText,
   ShoppingCart,
-  TrendingDown,
-  TrendingUp,
-  Truck,
   Users,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
@@ -22,18 +17,23 @@ import { getDashboard, type DashboardData } from '../data/reports'
 import { useLive } from '../hooks/useLive'
 import { formatPaise, formatPaiseCompact } from '../lib/money'
 import { formatTime } from '../lib/date'
-import { ROLE_LABELS } from '../lib/permissions'
-import { Badge, Card, SectionTitle, StatCard } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import { useCart } from '../context/CartContext'
+import { Badge, Card, SectionTitle } from '../components/ui/card'
 
+/**
+ * Home screen: one clear action (new bill), three shortcuts, today's money and
+ * the last few bills. Everything else lives behind "More" so the counter screen
+ * never looks like a control panel.
+ */
 export default function HomePage() {
-  const { shop, user, demoMode, language } = useApp()
+  const { shop, user, language } = useApp()
   const t = useT()
   const navigate = useNavigate()
-  const cart = useCart()
 
-  const data = useLive<DashboardData | null>(() => (shop ? getDashboard(shop.id) : Promise.resolve(null)), [shop?.id], null)
+  const data = useLive<DashboardData | null>(
+    () => (shop ? getDashboard(shop.id) : Promise.resolve(null)),
+    [shop?.id],
+    null,
+  )
 
   const greeting = useMemo(() => {
     const hour = Number(
@@ -44,160 +44,144 @@ export default function HomePage() {
     return language === 'hi' ? 'शुभ संध्या' : 'Shubh sandhya'
   }, [language])
 
-  const growth = useMemo(() => {
-    if (!data || data.yesterday.sales_paise === 0) return null
-    return Math.round(((data.today.sales_paise - data.yesterday.sales_paise) / data.yesterday.sales_paise) * 100)
-  }, [data])
-
   if (!data) {
     return <div className="py-10 text-center text-sm text-ink-500">{t('loading')}</div>
   }
 
   const isOwner = user?.role === 'owner'
+  const firstRun = data.today.bills === 0 && data.recentBills.length === 0
+  const lowStock = data.lowStock
 
   return (
     <div className="space-y-4">
       <div>
         <p className="text-sm font-semibold text-ink-500 dark:text-ink-400">
-          {greeting}, {user?.name?.split(' ')[0] ?? 'ji'} 🙏
+          {greeting}, {(user?.name || shop?.owner_name || 'ji').split(' ')[0]} 🙏
         </p>
         <h1 className="font-display text-2xl font-extrabold leading-tight text-ink-900 dark:text-ink-50">
-          {t('salesToday')}
+          {shop?.name ?? t('appName')}
         </h1>
-        <p className="text-xs font-medium text-ink-500 dark:text-ink-400">
-          {user && `${ROLE_LABELS[user.role][language === 'hi' ? 'hi' : 'en']} · `}
-          {new Intl.DateTimeFormat('en-IN', { weekday: 'long', day: '2-digit', month: 'short', timeZone: 'Asia/Kolkata' }).format(
-            new Date(),
-          )}
-        </p>
       </div>
 
-      <StatCard
-        label={t('salesToday')}
-        value={formatPaise(data.today.sales_paise)}
-        hint={
-          growth === null
-            ? `${data.today.bills} ${t('bills')}`
-            : `${growth >= 0 ? '▲' : '▼'} ${Math.abs(growth)}% ${t('vsYesterday')}`
-        }
-        tone="brand"
-        icon={growth !== null && growth < 0 ? <TrendingDown className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
-        onClick={() => navigate('/reports')}
-      />
+      {/* Today's money — the number a shopkeeper checks first. */}
+      <Card className="bg-brand-700 p-4 text-white dark:bg-brand-800">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-100">{t('salesToday')}</p>
+            <p className="font-display text-4xl font-extrabold leading-tight">{formatPaise(data.today.sales_paise)}</p>
+            <p className="mt-0.5 text-xs font-semibold text-brand-100">
+              {data.today.bills} {t('bills')} · {t('cash')} {formatPaiseCompact(data.paymentSplit.cash_paise)} ·{' '}
+              {t('upi')} {formatPaiseCompact(data.paymentSplit.upi_paise)}
+            </p>
+          </div>
+          {isOwner && (
+            <div className="shrink-0 text-right">
+              <p className="text-[10px] font-bold uppercase text-brand-200">{t('profitToday')}</p>
+              <p className="font-display text-lg font-extrabold">{formatPaise(data.today.profit_paise)}</p>
+            </div>
+          )}
+        </div>
+      </Card>
 
-      <div className="grid grid-cols-2 gap-2">
-        <StatCard label={t('billsToday')} value={String(data.today.bills)} hint={formatPaiseCompact(data.today.sales_paise / Math.max(1, data.today.bills)) + ' avg'} />
-        {isOwner ? (
-          <StatCard
-            label={t('profitToday')}
-            value={formatPaise(data.today.profit_paise)}
-            hint={`${t('monthSales')}: ${formatPaiseCompact(data.month.sales_paise)}`}
-            onClick={() => navigate('/reports/pnl')}
-          />
-        ) : (
-          <StatCard label={t('items')} value={String(data.today.items_sold)} hint={t('today')} />
-        )}
-        <StatCard
-          label={t('cash')}
-          value={formatPaise(data.paymentSplit.cash_paise)}
-          hint={`${t('upi')}: ${formatPaise(data.paymentSplit.upi_paise)}`}
-          onClick={() => navigate('/reports/day-close')}
+      {/* One big action. */}
+      <button
+        type="button"
+        onClick={() => navigate('/billing')}
+        className="flex w-full items-center justify-between rounded-3xl bg-brand-700 px-5 py-5 text-left text-white shadow-lift transition active:scale-[0.99] dark:bg-brand-600"
+      >
+        <span className="flex items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+            <ShoppingCart className="h-6 w-6" />
+          </span>
+          <span>
+            <span className="block font-display text-xl font-extrabold leading-tight">{t('newBill')}</span>
+            <span className="block text-xs font-semibold text-brand-100">{t('newBillHint')}</span>
+          </span>
+        </span>
+        <ArrowRight className="h-6 w-6" />
+      </button>
+
+      <div className="grid grid-cols-3 gap-2">
+        <BigTile
+          icon={<PackagePlus className="h-5 w-5" />}
+          label={t('addProduct')}
+          onClick={() => navigate('/products/new')}
         />
-        <StatCard
-          label={t('pendingUdhaar')}
-          value={formatPaiseCompact(data.pendingUdhaarPaise)}
-          hint={`${data.customersWithDue} customers`}
-          tone={data.pendingUdhaarPaise > 0 ? 'warning' : 'default'}
+        <BigTile
+          icon={<Users className="h-5 w-5" />}
+          label={t('khata')}
+          hint={data.pendingUdhaarPaise > 0 ? formatPaiseCompact(data.pendingUdhaarPaise) : undefined}
           onClick={() => navigate('/khata')}
         />
+        <BigTile icon={<BarChart3 className="h-5 w-5" />} label={t('reports')} onClick={() => navigate('/reports')} />
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
-        <QuickAction icon={<ShoppingCart className="h-5 w-5" />} label={t('newBill')} onClick={() => navigate('/billing')} primary />
-        <QuickAction icon={<PlusCircle className="h-5 w-5" />} label={t('addProduct')} onClick={() => navigate('/products/new')} />
-        <QuickAction icon={<Truck className="h-5 w-5" />} label={t('purchaseEntry')} onClick={() => navigate('/purchases/new')} />
-        <QuickAction icon={<ClipboardList className="h-5 w-5" />} label={t('orderList')} onClick={() => navigate('/order-list')} />
-      </div>
+      {firstRun && (
+        <Card className="space-y-2 border-brand-200 bg-brand-50/70 dark:border-brand-900 dark:bg-brand-950/30">
+          <p className="font-display text-base font-bold text-brand-900 dark:text-brand-100">{t('startHereTitle')}</p>
+          <p className="text-sm text-brand-800/80 dark:text-brand-200/80">{t('startHereBody')}</p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => navigate('/products/new')}
+              className="inline-flex h-11 items-center gap-1.5 rounded-2xl bg-brand-700 px-4 text-sm font-bold text-white"
+            >
+              <Plus className="h-4 w-4" /> {t('firstProduct')}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/settings')}
+              className="inline-flex h-11 items-center gap-1.5 rounded-2xl bg-white px-4 text-sm font-bold text-brand-800 shadow-sm dark:bg-ink-900 dark:text-brand-200"
+            >
+              <QrCode className="h-4 w-4" /> {t('shopQr')}
+            </button>
+          </div>
+        </Card>
+      )}
 
-      <div className="grid grid-cols-4 gap-2">
-        <QuickAction icon={<Users className="h-5 w-5" />} label={t('khata')} onClick={() => navigate('/khata')} />
-        <QuickAction icon={<BarChart3 className="h-5 w-5" />} label={t('reports')} onClick={() => navigate('/reports')} />
-        <QuickAction icon={<CalendarCheck className="h-5 w-5" />} label={t('dayClose')} onClick={() => navigate('/reports/day-close')} />
-        <QuickAction icon={<BookOpenCheck className="h-5 w-5" />} label={t('stockAudit')} onClick={() => navigate('/inventory/audit')} />
-      </div>
-
-      {(data.lowStock.length > 0 || data.expiring.length > 0) && (
-        <Card className="space-y-2 border-saffron-200 bg-saffron-50/60 dark:border-saffron-900 dark:bg-saffron-950/20">
+      {lowStock.length > 0 && (
+        <Card className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="font-display text-base font-bold text-saffron-900 dark:text-saffron-100">{t('lowStock')}</p>
-            <Badge tone="warning">{data.lowStock.length}</Badge>
+            <p className="flex items-center gap-1.5 font-display text-base font-bold text-ink-900 dark:text-ink-50">
+              <Boxes className="h-4 w-4 text-saffron-600" /> {t('lowStock')}
+            </p>
+            <Badge tone="warning">{lowStock.length}</Badge>
           </div>
           <div className="space-y-1">
-            {data.lowStock.slice(0, 4).map((product) => (
+            {lowStock.slice(0, 3).map((product) => (
               <div key={product.id} className="flex items-center justify-between text-sm">
-                <span className="truncate text-saffron-900 dark:text-saffron-100">{product.name_hi}</span>
-                <span className="shrink-0 font-bold text-saffron-800 dark:text-saffron-200">
+                <span className="truncate text-ink-700 dark:text-ink-200">{product.name_hi || product.name_en}</span>
+                <span className="shrink-0 font-bold tabular-nums text-saffron-700 dark:text-saffron-300">
                   {product.stock_qty} {product.unit}
                 </span>
               </div>
             ))}
           </div>
-          <div className="flex gap-2">
-            <Button size="sm" variant="secondary" icon={<PackageSearch className="h-4 w-4" />} onClick={() => navigate('/inventory')}>
-              {t('inventory')}
-            </Button>
-            <Button size="sm" onClick={() => navigate('/order-list')} icon={<ClipboardList className="h-4 w-4" />}>
-              {t('orderList')}
-            </Button>
-          </div>
-          {data.expiring.length > 0 && (
-            <p className="flex items-center gap-1 text-xs font-semibold text-saffron-800 dark:text-saffron-200">
-              <AlarmClock className="h-3.5 w-3.5" /> {data.expiring.length} items {t('expiryAlert')} —{' '}
-              {data.expiring[0]?.name_hi}
-            </p>
-          )}
+          <button
+            type="button"
+            onClick={() => navigate('/inventory')}
+            className="flex h-10 w-full items-center justify-center gap-1 rounded-xl bg-ink-100 text-sm font-bold text-ink-700 dark:bg-ink-800 dark:text-ink-100"
+          >
+            {t('inventory')} <ArrowRight className="h-3.5 w-3.5" />
+          </button>
         </Card>
       )}
 
       <div>
         <SectionTitle
-          title={t('topSelling')}
+          title={t('recentBills')}
           action={
-            <button type="button" onClick={() => navigate('/reports')} className="flex items-center gap-1 text-xs font-bold text-brand-700 dark:text-brand-300">
+            <button
+              type="button"
+              onClick={() => navigate('/bills')}
+              className="flex items-center gap-1 text-xs font-bold text-brand-700 dark:text-brand-300"
+            >
               {t('seeAll')} <ArrowRight className="h-3 w-3" />
             </button>
           }
         />
         <Card className="divide-y divide-ink-100 p-0 dark:divide-ink-800">
-          {data.topItems.slice(0, 5).map((item, index) => (
-            <div key={`${item.product_id}-${index}`} className="flex items-center gap-3 p-3">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-100 text-xs font-extrabold text-brand-800 dark:bg-brand-900 dark:text-brand-100">
-                {index + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-ink-900 dark:text-ink-50">{item.name_hi}</p>
-                <p className="text-xs text-ink-500 dark:text-ink-400">
-                  {item.qty} {item.unit} {t('items')}
-                </p>
-              </div>
-              <p className="font-bold tabular-nums text-ink-900 dark:text-ink-50">{formatPaiseCompact(item.revenue_paise)}</p>
-            </div>
-          ))}
-          {!data.topItems.length && <p className="p-4 text-center text-sm text-ink-500">{t('noProducts')}</p>}
-        </Card>
-      </div>
-
-      <div>
-        <SectionTitle
-          title={t('bills')}
-          action={
-            <button type="button" onClick={() => navigate('/bills')} className="flex items-center gap-1 text-xs font-bold text-brand-700 dark:text-brand-300">
-              {t('seeAll')} <ArrowRight className="h-3 w-3" />
-            </button>
-          }
-        />
-        <Card className="divide-y divide-ink-100 p-0 dark:divide-ink-800">
-          {data.recentBills.slice(0, 6).map((bill) => (
+          {data.recentBills.slice(0, 5).map((bill) => (
             <button
               key={bill.id}
               type="button"
@@ -217,7 +201,7 @@ export default function HomePage() {
                 <p className="font-bold tabular-nums text-ink-900 dark:text-ink-50">{formatPaise(bill.total_paise)}</p>
                 {bill.status === 'void' ? (
                   <Badge tone="danger">{t('voided')}</Badge>
-                ) : bill.payment_status === 'pending' ? (
+                ) : bill.payment_status === 'pending' || bill.payment_status === 'partial' ? (
                   <Badge tone="warning">{t('udhaar')}</Badge>
                 ) : (
                   <Badge tone="success">PAID</Badge>
@@ -225,42 +209,37 @@ export default function HomePage() {
               </div>
             </button>
           ))}
-          {!data.recentBills.length && <p className="p-4 text-center text-sm text-ink-500">{t('noProductsHint')}</p>}
+          {!data.recentBills.length && (
+            <p className="p-5 text-center text-sm text-ink-500 dark:text-ink-400">{t('noBillsYet')}</p>
+          )}
         </Card>
       </div>
-
-      {demoMode && (
-        <p className="rounded-2xl bg-ink-100 p-3 text-center text-xs text-ink-500 dark:bg-ink-900 dark:text-ink-400">
-          {t('demoBanner')} · {cart.lines.length > 0 ? `${cart.lines.length} ${t('items')} in cart` : ''}
-        </p>
-      )}
     </div>
   )
 }
 
-function QuickAction({
+function BigTile({
   icon,
   label,
+  hint,
   onClick,
-  primary,
 }: {
   icon: React.ReactNode
   label: string
+  hint?: string
   onClick: () => void
-  primary?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center gap-1.5 rounded-2xl p-2.5 text-center transition active:scale-[0.97] ${
-        primary
-          ? 'bg-brand-700 text-white shadow-sm'
-          : 'bg-white text-ink-700 shadow-card dark:bg-ink-900 dark:text-ink-100'
-      }`}
+      className="flex min-h-[86px] flex-col items-start justify-between rounded-2xl bg-white p-3 text-left shadow-card transition active:scale-[0.97] dark:bg-ink-900"
     >
-      <span className={primary ? 'text-white' : 'text-brand-700 dark:text-brand-300'}>{icon}</span>
-      <span className="text-[11px] font-bold leading-tight">{label}</span>
+      <span className="text-brand-700 dark:text-brand-300">{icon}</span>
+      <span>
+        <span className="block text-sm font-bold leading-tight text-ink-900 dark:text-ink-50">{label}</span>
+        {hint && <span className="block text-[11px] font-semibold text-saffron-700 dark:text-saffron-300">{hint}</span>}
+      </span>
     </button>
   )
 }

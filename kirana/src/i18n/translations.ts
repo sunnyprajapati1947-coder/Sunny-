@@ -65,13 +65,6 @@ export const translations = {
   fullName: { hi: 'पूरा नाम', en: 'Full name', hg: 'Pura naam' },
   shopName: { hi: 'दुकान का नाम', en: 'Shop name', hg: 'Dukaan ka naam' },
   createShop: { hi: 'दुकान बनाएं', en: 'Create shop', hg: 'Dukaan banayein' },
-  useDemo: { hi: 'डेमो दुकान से शुरू करें', en: 'Try the demo shop', hg: 'Demo dukaan try karein' },
-  demoMode: { hi: 'डेमो मोड', en: 'Demo mode', hg: 'Demo mode' },
-  demoBanner: {
-    hi: 'डेमो मोड — सारा डेटा सिर्फ इस फोन में है',
-    en: 'Demo mode — data lives only on this phone',
-    hg: 'Demo mode — data sirf isi phone mein hai',
-  },
   loginError: { hi: 'लॉगिन नहीं हुआ', en: 'Could not sign in', hg: 'Login nahi hua' },
   emailPlaceholder: { hi: 'aapka@email.com', en: 'you@email.com', hg: 'aapka@email.com' },
   cloudNotConfigured: {
@@ -395,13 +388,6 @@ export const translations = {
   online: { hi: 'इंटरनेट है', en: 'Online', hg: 'Internet hai' },
   syncError: { hi: 'सिंक में गड़बड़', en: 'Sync failed', hg: 'Sync fail' },
   retry: { hi: 'फिर कोशिश करें', en: 'Retry', hg: 'Phir try karein' },
-  demoData: { hi: 'डेमो डेटा', en: 'Demo data', hg: 'Demo data' },
-  resetDemo: { hi: 'डेमो डेटा रीसेट करें', en: 'Reset demo data', hg: 'Demo data reset karein' },
-  resetDemoConfirm: {
-    hi: 'सारा लोकल डेटा मिट जाएगा। पक्का?',
-    en: 'All local data will be erased. Are you sure?',
-    hg: 'Sara local data mit jayega. Pakka?',
-  },
   about: { hi: 'जानकारी', en: 'About', hg: 'About' },
   role: { hi: 'भूमिका', en: 'Role', hg: 'Role' },
   installApp: { hi: 'ऐप इंस्टॉल करें', en: 'Install app', hg: 'App install karein' },
@@ -411,6 +397,59 @@ export const translations = {
     hg: 'Home screen par jodhein — internet ke bina bhi chalega',
   },
   version: { hi: 'वर्ज़न', en: 'Version', hg: 'Version' },
+
+
+  // Setup (first run)
+  setupTitle: { hi: 'अपनी दुकान शुरू करें', en: 'Set up your shop', hg: 'Apni dukaan shuru karein' },
+  setupBody: {
+    hi: 'एक बार नाम और नंबर भरें। बाकी सब बाद में — पहला बिल आज ही बन जाएगा।',
+    en: 'Fill your shop name and number once. That is all you need to start billing today.',
+    hg: 'Ek baar naam aur number bharein. Bas, aaj hi pehla bill ban jayega.',
+  },
+  shopNameLabel: { hi: 'दुकान का नाम', en: 'Shop name', hg: 'Dukaan ka naam' },
+  ownerNameLabel: { hi: 'आपका नाम', en: 'Your name', hg: 'Aapka naam' },
+  addressLabel: { hi: 'पता', en: 'Address', hg: 'Pata' },
+  upiIdLabel: { hi: 'UPI ID (QR के लिए)', en: 'UPI ID (for the QR)', hg: 'UPI ID (QR ke liye)' },
+  startShop: { hi: 'दुकान शुरू करें', en: 'Start my shop', hg: 'Dukaan shuru karein' },
+  setupSaved: { hi: 'दुकान तैयार है!', en: 'Your shop is ready!', hg: 'Dukaan taiyaar hai!' },
+
+  // Home
+  newBillHint: { hi: 'स्कैन करें या नाम से खोजें', en: 'Scan a barcode or search a name', hg: 'Scan karein ya naam se dhoondein' },
+  recentBills: { hi: 'पिछले बिल', en: 'Recent bills', hg: 'Pichhle bill' },
+  noBillsYet: { hi: 'अभी कोई बिल नहीं — पहला बिल बनाएं', en: 'No bills yet — create the first one', hg: 'Abhi koi bill nahi — pehla bill banayein' },
+  startHereTitle: { hi: 'यहाँ से शुरू करें', en: 'Start here', hg: 'Yahan se shuru karein' },
+  startHereBody: {
+    hi: 'पहले 5-10 सामान जोड़ें, फिर बिलिंग शुरू करें। नाम, बारकोड और दाम — बस इतना ही ज़रूरी है।',
+    en: 'Add your first 5–10 products, then start billing. Name, barcode and price are all you need.',
+    hg: 'Pehle 5-10 saaman jodein, phir billing shuru karein. Naam, barcode aur daam — bas itna hi zaroori hai.',
+  },
+  firstProduct: { hi: 'पहला प्रोडक्ट जोड़ें', en: 'Add first product', hg: 'Pehla product jodein' },
+
+  // Shop QR
+  shopQr: { hi: 'दुकान का QR', en: 'Shop QR', hg: 'Dukaan ka QR' },
+  shopQrHint: {
+    hi: 'ग्राहक QR स्कैन करके सीधे आपके UPI पर पैसे भेज सकते हैं।',
+    en: 'Customers scan this to pay you directly on UPI.',
+    hg: 'Customer QR scan karke seedha aapke UPI par paise bhej sakta hai.',
+  },
+  downloadQr: { hi: 'QR डाउनलोड करें', en: 'Download QR', hg: 'QR download karein' },
+  printQr: { hi: 'QR प्रिंट करें', en: 'Print QR', hg: 'QR print karein' },
+  qrNoUpi: {
+    hi: 'पहले सेटिंग में UPI ID डालें, फिर QR बनेगा।',
+    en: 'Add your UPI ID in settings to generate the QR.',
+    hg: 'Pehle settings mein UPI ID daalein, phir QR banega.',
+  },
+
+  // Data / cloud
+  connectCloud: { hi: 'क्लाउड से जोड़ें', en: 'Connect cloud', hg: 'Cloud se jodein' },
+  cloudNotConnected: { hi: 'डेटा सिर्फ इस फोन में', en: 'Data is on this phone only', hg: 'Data sirf is phone mein' },
+  cloudConnected: { hi: 'क्लाउड से जुड़ा है', en: 'Connected to cloud', hg: 'Cloud se juda hai' },
+  dataReset: { hi: 'फोन का पूरा डेटा मिटाएं', en: 'Erase all data on this phone', hg: 'Phone ka poora data mitayein' },
+  dataResetBody: {
+    hi: 'सारे प्रोडक्ट, बिल और खाते हमेशा के लिए चले जाएंगे। पहले बैकअप ले लें।',
+    en: 'Every product, bill and khata entry is deleted permanently. Take a backup first.',
+    hg: 'Saare product, bill aur khate hamesha ke liye chale jayenge. Pehle backup le lein.',
+  },
 
   // Errors / toasts
   somethingWrong: { hi: 'कुछ गड़बड़ हो गई', en: 'Something went wrong', hg: 'Kuch gadbad ho gayi' },

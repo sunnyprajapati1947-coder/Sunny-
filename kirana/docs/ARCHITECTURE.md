@@ -96,7 +96,7 @@ cart (Billing screen).
 
 `npm test` (Vitest) covers the risky parts rather than the pixels. Repository tests run in
 Node against fake-indexeddb; `src/test/*.smoke.test.tsx` run the whole app in jsdom
-(real providers, router, lazy pages, demo seed) to prove every screen paints and that
+(real providers, router, lazy pages, test-only fixtures) to prove every screen paints and that
 quick-add → cart → payment sheet works:
 
 ```bash

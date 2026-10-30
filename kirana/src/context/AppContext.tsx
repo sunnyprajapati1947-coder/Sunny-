@@ -8,9 +8,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { db, getMeta, setMeta } from '../lib/db'
+import { db, getMeta, setMeta, wipeLocalData } from '../lib/db'
 import { supabase, supabaseConfigured } from '../lib/supabase'
-import { seedDemoShop, DEMO_SHOP_ID, resetDemoData } from '../lib/seed'
 import { sync, startAutoSync } from '../lib/sync'
 import { uuid } from '../lib/id'
 import { hasPinSet, setPin as persistPin, verifyPin } from '../lib/pin'
@@ -18,6 +17,7 @@ import { biometricSupported, registerBiometric, verifyBiometric } from '../lib/b
 import { writeAudit } from '../data/audit'
 import type { AppLanguage, OwnerApproval, Role, SessionUser, Shop, SyncState } from '../types'
 import { OwnerGate, type GateRequest } from '../components/security/OwnerGate'
+import { createLocalShop, loadLocalShop, localOwner, type ShopSetupInput } from '../lib/shop'
 
 export interface Prefs {
   language: AppLanguage
@@ -34,8 +34,9 @@ export interface AppContextValue {
   language: AppLanguage
   dark: boolean
   largeText: boolean
-  demoMode: boolean
   cloudConfigured: boolean
+  /** Nothing set up yet on this device: show the setup screen. */
+  needsSetup: boolean
   needsAuth: boolean
   needsShop: boolean
   syncState: SyncState
@@ -52,8 +53,10 @@ export interface AppContextValue {
   signUp: (input: { email: string; password: string; name: string; shopName: string; phone: string }) => Promise<void>
   createShopForUser: (input: { shopName: string; ownerName?: string; phone?: string }) => Promise<void>
   signOut: () => Promise<void>
-  startDemo: () => Promise<void>
-  resetDemo: () => Promise<void>
+  /** First-run: writes the real shop row and the owner session. */
+  completeSetup: (input: ShopSetupInput) => Promise<void>
+  /** Danger: wipes every local row and returns to the setup screen. */
+  resetLocalData: () => Promise<void>
   refresh: () => Promise<void>
   pinConfigured: boolean
   saveOwnerPin: (pin: string) => Promise<void>
@@ -86,7 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [shop, setShop] = useState<Shop | null>(null)
   const [user, setUser] = useState<SessionUser | null>(null)
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
-  const [demoMode, setDemoMode] = useState(false)
+  const [needsSetup, setNeedsSetup] = useState(false)
   const [needsAuth, setNeedsAuth] = useState(false)
   const [needsShop, setNeedsShop] = useState(false)
   const [syncState, setSyncState] = useState<SyncState>('idle')
@@ -124,7 +127,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return shopRow ?? null
   }, [])
 
-  /** Boot sequence: prefs → (cloud session | demo) → shop. */
+  /** Boot sequence: prefs → (cloud session | device shop) → ready. */
   useEffect(() => {
     let cancelled = false
     async function boot() {
@@ -175,20 +178,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // No cloud project → offline demo shop so the app is usable instantly.
-        const demoActive = await getMeta<boolean>('demo_active', true)
-        if (!demoActive) {
-          if (!cancelled) {
-            setNeedsAuth(true)
-            setReady(true)
-          }
+        // No cloud project: use the real shop already stored on this device,
+        // or ask for the shop details once. Nothing is ever pre-filled with
+        // sample products, bills or customers.
+        const localShop = await loadLocalShop()
+        if (cancelled) return
+        if (!localShop) {
+          setNeedsSetup(true)
+          setReady(true)
           return
         }
-        await seedDemoShop()
-        if (cancelled) return
-        await loadShopAndUser(DEMO_SHOP_ID)
-        setUser({ id: 'demo-owner', shopId: DEMO_SHOP_ID, name: 'Rakesh Sharma', role: 'owner', isDemo: true })
-        setDemoMode(true)
+        setShop(localShop)
+        setUser(localOwner(localShop))
         setPinConfigured(await hasPinSet())
         setReady(true)
       } catch (error) {
@@ -320,12 +321,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const afterAuth = useCallback(
     async (userId: string, email: string | null, profile: { shop_id: string; full_name: string; role: Role }) => {
       setUser({ id: userId, shopId: profile.shop_id, name: profile.full_name, role: profile.role, email, isDemo: false })
-      setDemoMode(false)
+      setNeedsSetup(false)
       setNeedsAuth(false)
       setNeedsShop(false)
       const localShop = await db.shops.get(profile.shop_id)
       setShop(localShop ?? (await pullShop(profile.shop_id)))
-      await setMeta('demo_active', false)
       setPinConfigured(await hasPinSet())
       setReady(true)
     },
@@ -386,30 +386,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [afterAuth],
   )
 
-  const startDemo = useCallback(async () => {
-    await seedDemoShop()
-    await setMeta('demo_active', true)
-    await loadShopAndUser(DEMO_SHOP_ID)
-    setUser({ id: 'demo-owner', shopId: DEMO_SHOP_ID, name: 'Rakesh Sharma', role: 'owner', isDemo: true })
-    setDemoMode(true)
-    setNeedsAuth(false)
-    setNeedsShop(false)
-    setReady(true)
-  }, [loadShopAndUser])
+  const completeSetup = useCallback(
+    async (input: ShopSetupInput) => {
+      const shopRow = await createLocalShop(input)
+      setShop(shopRow)
+      setUser(localOwner(shopRow))
+      setNeedsSetup(false)
+      setNeedsAuth(false)
+      setNeedsShop(false)
+      setPinConfigured(await hasPinSet())
+      setReady(true)
+    },
+    [],
+  )
 
-  const resetDemo = useCallback(async () => {
-    await resetDemoData()
-    await loadShopAndUser(DEMO_SHOP_ID)
-    toast('Demo data reset ho gaya', 'success')
-  }, [loadShopAndUser, toast])
+  const resetLocalData = useCallback(async () => {
+    await wipeLocalData()
+    setShop(null)
+    setUser(null)
+    setNeedsSetup(!supabaseConfigured)
+    setNeedsAuth(supabaseConfigured)
+  }, [])
 
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut()
-    await setMeta('demo_active', false)
     setShop(null)
     setUser(null)
+    // Local (no cloud) shops keep their data: there is no account to sign into.
     setNeedsAuth(supabaseConfigured)
-    if (!supabaseConfigured) setNeedsAuth(true)
+    if (!supabaseConfigured) setNeedsSetup(true)
   }, [])
 
   const saveOwnerPin = useCallback(
@@ -477,8 +482,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       language: prefs.language,
       dark: prefs.dark,
       largeText: prefs.largeText,
-      demoMode,
       cloudConfigured: supabaseConfigured,
+      needsSetup,
       needsAuth,
       needsShop,
       syncState,
@@ -495,8 +500,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       signUp,
       createShopForUser,
       signOut,
-      startDemo,
-      resetDemo,
+      completeSetup,
+      resetLocalData,
       refresh,
       pinConfigured,
       saveOwnerPin,
@@ -511,7 +516,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       shop,
       user,
       prefs,
-      demoMode,
+      needsSetup,
       needsAuth,
       needsShop,
       syncState,
@@ -528,8 +533,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       signUp,
       createShopForUser,
       signOut,
-      startDemo,
-      resetDemo,
+      completeSetup,
+      resetLocalData,
       refresh,
       pinConfigured,
       saveOwnerPin,

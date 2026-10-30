@@ -3,10 +3,12 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import App from '../App'
 import { db } from '../lib/db'
+import { SHOP_INFO } from '../lib/shop'
+import { stageShop } from './stage'
 
 /**
  * Full-app render smoke test. There is no browser in CI, so this mounts the real
- * app (providers, router, lazy pages, Dexie demo seed) in jsdom and checks every
+ * app (providers, router, lazy pages, IndexedDB) in jsdom and checks every
  * screen paints without throwing. It is the closest thing to opening the app.
  */
 
@@ -54,8 +56,8 @@ beforeAll(() => {
 })
 
 beforeEach(async () => {
-  // Start each screen from the same seeded demo shop.
-  if (!db.isOpen()) await db.open()
+  // Start each screen from the same small, test-only shop row.
+  await stageShop()
 })
 
 afterEach(() => {
@@ -64,8 +66,9 @@ afterEach(() => {
 })
 
 /**
- * Waits until the shell is painted. The boot sequence seeds the demo shop and
- * lazy-loads the route chunk, so this can take a couple of seconds in jsdom.
+ * Waits until the shell is painted. The boot sequence reads the shop from
+ * IndexedDB and lazy-loads the route chunk, so this can take a couple of seconds
+ * in jsdom.
  */
 async function waitForBoot() {
   await waitFor(() => {
@@ -75,11 +78,32 @@ async function waitForBoot() {
 }
 
 describe('app shell', () => {
-  it('boots into the seeded demo shop', async () => {
+  it('boots straight into the shop already saved on this device', async () => {
     visit('/')
     await waitForBoot()
-    expect(await screen.findByText(/Sharma Kirana/i)).toBeTruthy()
+    expect((await screen.findAllByText(/Test Kirana/i)).length).toBeGreaterThan(0)
   }, 30_000)
+
+  it('asks for the real shop details on a brand-new install (no sample data)', async () => {
+    await db.transaction('rw', db.tables, async () => {
+      await Promise.all(db.tables.map((table) => table.clear()))
+    })
+    visit('/')
+    await waitFor(
+      () => {
+        expect(screen.queryByText(/Dukaan khul rahi hai/i)).toBeNull()
+      },
+      { timeout: 25_000 },
+    )
+    // The setup screen is pre-filled with this shop's real details.
+    expect(window.location.pathname).toBe('/setup')
+    expect(await screen.findByDisplayValue(SHOP_INFO.name)).toBeTruthy()
+    expect(await screen.findByDisplayValue(SHOP_INFO.phone)).toBeTruthy()
+    expect(await screen.findByDisplayValue(SHOP_INFO.upi_id)).toBeTruthy()
+    // Nothing was created just by opening the app.
+    expect(await db.products.count()).toBe(0)
+    expect(await db.bills.count()).toBe(0)
+  }, 40_000)
 
   it('renders every route without crashing', async () => {
     const routes = [

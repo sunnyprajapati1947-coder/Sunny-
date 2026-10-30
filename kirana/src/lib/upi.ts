@@ -4,7 +4,8 @@ import { toRupees } from './money'
 export interface UpiPaymentRequest {
   vpa: string
   payeeName: string
-  amountPaise: number
+  /** Omit for a "scan and pay" counter poster where the customer types the amount. */
+  amountPaise?: number
   note?: string
   txnRef?: string
 }
@@ -25,9 +26,9 @@ export function buildUpiUri({ vpa, payeeName, amountPaise, note, txnRef }: UpiPa
   const parts = [
     `pa=${encodeURIComponent(vpa.trim())}`,
     `pn=${encodeURIComponent((payeeName || 'Shop').trim())}`,
-    `am=${toRupees(amountPaise).toFixed(2)}`,
-    'cu=INR',
   ]
+  if (typeof amountPaise === 'number' && amountPaise > 0) parts.push(`am=${toRupees(amountPaise).toFixed(2)}`)
+  parts.push('cu=INR')
   if (note) parts.push(`tn=${encodeURIComponent(note.slice(0, 50)).replace(/%20/g, '%20')}`)
   if (txnRef) parts.push(`tr=${encodeURIComponent(txnRef.slice(0, 35))}`)
   return `upi://pay?${parts.join('&')}`

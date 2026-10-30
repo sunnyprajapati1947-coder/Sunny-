@@ -1,6 +1,7 @@
 # 🛒 Dukaan Dost — Kirana Billing & Inventory PWA
 
-A production-ready, **mobile-first** billing + inventory app for Indian kirana / general stores.
+A production-ready, **mobile-first** billing + inventory app built for a real shop:
+**Rishu Kirana Store, Gaya Road, Nawada · 9608087035**.
 
 - **Hindi + English + Hinglish** UI toggle (Hinglish is the default, like shopkeepers talk)
 - **Offline-first** — IndexedDB is the source of truth, Supabase syncs automatically when the internet returns
@@ -33,12 +34,23 @@ npm install
 npm run dev          # http://localhost:5173
 ```
 
-With **no `.env` file** the app boots into a fully seeded demo shop
-(“Sharma Kirana Store” — 33 products, 14 days of bills, customers with udhaar, offers).
-Everything works offline: billing, scanning, receipts, khata, reports.
+With **no `.env` file** the app still works completely: the first screen asks for the
+shop details (pre-filled with *Rishu Kirana Store, Gaya Road, Nawada, 9608087035,
+UPI sunny-ff-reedem-code@fam*) and stores everything in the phone’s IndexedDB.
 
-> Tip: the demo shop’s owner can be unlocked with any PIN you set on first use.
-> Open **More → Demo data → Reset demo data** to start over.
+**There is no demo data.** A fresh install has zero products, zero bills and zero khata
+entries — every row in the app is entered by the shop. Take a backup from
+**More → Download backup** and keep it safe.
+
+### Connect the cloud later (no rebuild)
+**More → Connect cloud** takes your Supabase project URL + anon key and switches on
+auth + multi-device sync right inside the installed app/APK. Your local rows stay put and
+upload on the next sync. The anon key is public by design — RLS protects the data.
+
+### Why no demo shop?
+Demo rows mix sample products and bills with the shop’s real books, and that makes the
+reports and the khata untrustworthy. So the app starts empty, and the only pre-filled
+values are the shop’s own name, address, phone and UPI id — which the owner can edit.
 
 ### Add Supabase (cloud, auth, multi-device)
 
@@ -103,6 +115,12 @@ Today’s sales, profit, bills, cash vs UPI split, top sellers, category split, 
 daily/weekly/monthly/custom ranges, **GST rate-wise summary (GSTR-ready)**, **P&L**,
 **day-end cash closing with mismatch**, **Excel + PDF export**.
 
+### Shop QR (`/shop-qr`)
+A printable counter poster built from the shop's own UPI id
+(`sunny-ff-reedem-code@fam`): QR + shop name + address + phone, download/share/print on
+A4. The billing screen shows a second QR that already carries the exact bill amount, so
+the customer cannot type a different figure. Edit the UPI id any time in **Settings**.
+
 ### Extras
 Dark mode, large-text mode, Hindi voice search, loyalty points, owner-created offers
 (BOGO / combo / % / flat, auto-applied), cloud backup, multi-device sync, multi-shop-ready
@@ -137,13 +155,15 @@ kirana/
 │   │                           purchases, reports  (+ tests)
 │   ├── hooks/                  useBarcodeScanner, useKeyboardScanner, useOnline, useLive
 │   ├── i18n/                   translations (hinglish/hi/en) + useT()
-│   ├── lib/                    db (Dexie), sync engine, money, offers, receipt, pdf,
-│   │                           spreadsheet, upi, barcode, voice, permissions, seed…
+│   ├── lib/                    db (Dexie), shop setup, sync engine, money, offers,
+│   │                           receipt, pdf, spreadsheet, upi, barcode, voice…
 │   ├── pages/                  Home, Billing, Products, ProductForm, Khata,
 │   │                           CustomerDetail, Reports, GST, P&L, DayClose, Inventory,
 │   │                           StockAudit, OrderList, Purchases, PurchaseForm, Bills,
-│   │                           BillDetail, ShopSettings, AuditLog, More, Login
+│   │                           BillDetail, ShopSettings, AuditLog, More, Login,
+│   │                           Setup (first run), ShopQr (counter poster)
 │   ├── test/                   fixtures + fake-indexeddb setup
+│   │                           (test-only data; the app itself ships empty)
 │   ├── App.tsx                 routes + providers
 │   └── main.tsx                PWA registration
 ├── android/                    Capacitor shell (Gradle 8.2.1 / AGP 8.2.1, JDK 17)
@@ -180,7 +200,7 @@ npm run typecheck   # strict TypeScript, zero errors
 npm run test:ui     # jsdom screen tests only (routes, dashboard, cart, payment sheet)
 ```
 
-**Test coverage highlights** (`npm test`, 147 tests):
+**Test coverage highlights** (`npm test`, 155 tests):
 
 - money math: inclusive/exclusive GST, proportional discounts, round-off, negative formats
 - offers: BOGO, flat, %, combo, date windows, inactive

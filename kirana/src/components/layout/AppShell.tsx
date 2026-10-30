@@ -7,7 +7,6 @@ import {
   Home,
   Moon,
   MoreHorizontal,
-  Package,
   RefreshCw,
   ScanLine,
   Sun,
@@ -20,16 +19,19 @@ import { useOnline } from '../../hooks/useOnline'
 import { useT } from '../../i18n/useT'
 import { formatDateTime } from '../../lib/date'
 
+/**
+ * Four destinations, nothing else. Products and reports both live behind "More"
+ * so the counter screen stays calm; billing is the big centre button.
+ */
 const NAV = [
   { to: '/', labelKey: 'navHome', icon: Home, end: true },
-  { to: '/products', labelKey: 'navProducts', icon: Package },
   { to: '/billing', labelKey: 'navBilling', icon: ScanLine, primary: true },
   { to: '/khata', labelKey: 'navKhata', icon: Users },
   { to: '/more', labelKey: 'navMore', icon: MoreHorizontal },
 ] as const
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { shop, syncState, pendingSync, dark, setDark, demoMode } = useApp()
+  const { shop, syncState, pendingSync, dark, setDark } = useApp()
   const online = useOnline()
   const t = useT()
   const location = useLocation()
@@ -39,8 +41,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-full flex-col bg-[#f6f4ee] dark:bg-ink-950">
       <header className="safe-top sticky top-0 z-30 border-b border-ink-100/80 bg-[#f6f4ee]/95 backdrop-blur dark:border-ink-800 dark:bg-ink-950/95">
         <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 py-2.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-700 font-display text-lg font-extrabold text-white shadow-sm">
-            दो
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-700 font-display text-sm font-extrabold text-white shadow-sm">
+            {(shop?.name ?? 'DD')
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((word) => word[0]?.toUpperCase())
+              .join('')}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate font-display text-base font-bold leading-tight text-ink-900 dark:text-ink-50">
@@ -50,12 +57,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span>{online ? t('online') : t('offline')}</span>
               <span className="text-ink-300">·</span>
               <SyncLabel state={syncState} pending={pendingSync} online={online} />
-              {demoMode && (
-                <>
-                  <span className="text-ink-300">·</span>
-                  <span className="font-semibold text-saffron-700 dark:text-saffron-300">{t('demoMode')}</span>
-                </>
-              )}
             </p>
           </div>
           <button
@@ -79,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-ink-100 bg-white/95 backdrop-blur dark:border-ink-800 dark:bg-ink-950/95">
-        <div className="mx-auto grid w-full max-w-3xl grid-cols-5">
+        <div className="mx-auto grid w-full max-w-3xl grid-cols-4">
           {NAV.map((item) => {
             const Icon = item.icon
             if ('primary' in item && item.primary) {

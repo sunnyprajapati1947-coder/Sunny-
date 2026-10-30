@@ -86,6 +86,16 @@ describe('UPI deep links', () => {
     expect(uri).not.toContain('+')
   })
 
+  it('builds a counter QR for the real shop without an amount', () => {
+    const uri = buildUpiUri({ vpa: 'sunny-ff-reedem-code@fam', payeeName: 'Rishu Kirana Store' })
+    expect(uri).toBe('upi://pay?pa=sunny-ff-reedem-code%40fam&pn=Rishu%20Kirana%20Store&cu=INR')
+    expect(uri).not.toContain('am=')
+  })
+
+  it('leaves the amount out when it is zero', () => {
+    expect(buildUpiUri({ vpa: 'a@b', payeeName: 'C', amountPaise: 0 })).not.toContain('am=')
+  })
+
   it('encodes an ampersand in the shop name instead of breaking the query', () => {
     const uri = buildUpiUri({ vpa: 'a@b', payeeName: 'Gupta & Sons', amountPaise: 100 })
     expect(uri).toContain('pn=Gupta%20%26%20Sons')

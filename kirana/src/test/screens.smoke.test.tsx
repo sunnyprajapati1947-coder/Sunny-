@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import App from '../App'
+import { stageShop } from './stage'
 
 /**
- * Screen-content smoke tests against the seeded demo shop. They assert that the
- * demo data actually reaches the UI (not just that a component mounted) and that
- * the main till interaction — quick-add → cart total — works end to end.
+ * Screen-content smoke tests against a small test-only shop row. They assert
+ * that real data reaches the UI (not just that a component mounted) and that the
+ * main till interaction — quick-add → cart total — works end to end.
  */
 
 function polyfills() {
@@ -52,35 +53,38 @@ async function open(path: string) {
 
 beforeAll(() => polyfills())
 
+beforeEach(async () => {
+  await stageShop()
+})
+
 afterEach(() => {
   cleanup()
   vi.clearAllMocks()
 })
 
-describe('demo shop screens', () => {
-  it('lists the seeded products on the products screen', async () => {
+describe('shop screens', () => {
+  it('lists the products saved in the database', async () => {
     await open('/products')
-    expect(await screen.findByText(/Tata Salt 1kg/i)).toBeTruthy()
-    expect(await screen.findByText(/Aashirvaad/i)).toBeTruthy()
+    expect(await screen.findByText(/Test Salt 1kg/i)).toBeTruthy()
+    expect(await screen.findByText(/Test Atta 5kg/i)).toBeTruthy()
   }, 40_000)
 
   it('shows udhaar balances on the khata screen', async () => {
     await open('/khata')
-    expect(await screen.findByText(/Ramesh Kumar/i)).toBeTruthy()
-    expect(await screen.findByText(/Sunita Devi/i)).toBeTruthy()
+    expect(await screen.findByText(/Test Customer/i)).toBeTruthy()
   }, 40_000)
 
   it('shows today’s numbers on the home dashboard', async () => {
     await open('/')
-    expect(await screen.findByText(/Sharma Kirana Store/i)).toBeTruthy()
+    expect((await screen.findAllByText(/Test Kirana/i)).length).toBeGreaterThan(0)
     // The dashboard numbers arrive from IndexedDB after the shell paints.
     await waitFor(() => expect(document.body.textContent ?? '').toMatch(/₹/), { timeout: 15_000 })
   }, 40_000)
 
   it('lists bills with their bill numbers', async () => {
     await open('/bills')
-    // Bill numbers use the shop's own prefix (SKS-261030-004 in the demo shop).
-    expect((await screen.findAllByText(/SKS-\d{6}-\d{3}/i)).length).toBeGreaterThan(0)
+    // Bill numbers use the shop's own prefix (TST here).
+    expect((await screen.findAllByText(/TST-\d{6}-\d{3}/i)).length).toBeGreaterThan(0)
   }, 40_000)
 
   it('renders the reports screen with revenue figures', async () => {

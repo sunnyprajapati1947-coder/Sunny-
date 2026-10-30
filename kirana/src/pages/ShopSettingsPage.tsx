@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Lock, Save } from 'lucide-react'
+import { Lock, QrCode, Save } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useT } from '../i18n/useT'
 import { isValidVpa } from '../lib/upi'
@@ -110,8 +110,26 @@ export default function ShopSettingsPage() {
           <Input value={form.address} onChange={(event) => setForm((c) => ({ ...c, address: event.target.value }))} />
         </Field>
         <Field label={t('upiId')} hint="UPI QR isi ID par amount generate karega">
-          <Input value={form.upi_id} onChange={(event) => setForm((c) => ({ ...c, upi_id: event.target.value.trim() }))} placeholder="shop@okaxis" />
+          <Input
+            value={form.upi_id}
+            onChange={(event) => setForm((c) => ({ ...c, upi_id: event.target.value.trim() }))}
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            placeholder="shop@okaxis"
+          />
         </Field>
+        <button
+          type="button"
+          onClick={() => navigate('/shop-qr')}
+          className="flex w-full items-center justify-between rounded-2xl bg-brand-50 px-4 py-3 text-left dark:bg-brand-950/40"
+        >
+          <span>
+            <span className="block text-sm font-bold text-brand-900 dark:text-brand-100">{t('shopQr')}</span>
+            <span className="block text-[11px] text-brand-800/70 dark:text-brand-200/70">{t('shopQrHint')}</span>
+          </span>
+          <QrCode className="h-5 w-5 text-brand-700 dark:text-brand-300" />
+        </button>
       </Card>
 
       <Card className="space-y-3">

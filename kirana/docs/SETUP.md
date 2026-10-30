@@ -1,7 +1,8 @@
 # Setup — Supabase + local development
 
-The app runs fully offline with the demo shop and **no backend**. Follow this guide to turn
-on cloud sync, real auth and multi-device login.
+The app runs fully offline on the device database (**no backend, no demo data**). Follow
+this guide to turn on cloud sync, real auth and multi-device login for
+**Rishu Kirana Store**.
 
 Estimated time: 10–15 minutes.
 
@@ -9,7 +10,12 @@ Estimated time: 10–15 minutes.
 
 ## 1. Create the Supabase project
 
-1. Go to <https://supabase.com/dashboard> → **New project**.
+> The Supabase organisation currently has both free projects in use
+> (`mens-saloon-bookings`, `nawada-shop-auth`), so either pause/delete one, upgrade the
+> plan, or reuse one of them for these migrations. The app itself needs nothing until this
+> step is done — it runs on the phone database in the meantime.
+
+1. Go to <https://supabase.com/dashboard> → **New project** (name it `rishu-kirana-store`).
 2. Pick the region closest to your shop (for India: `ap-south-1` Mumbai or `ap-southeast-1`).
 3. Save the database password somewhere safe (you rarely need it, but keep it).
 
@@ -90,7 +96,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 Both values are under **Project Settings → API**. The `anon` key is safe in the browser —
 RLS is what protects the data. **Never** put the `service_role` key in the frontend.
 
-Restart `npm run dev`. The login screen now appears instead of the demo shop.
+Restart `npm run dev`. The login screen now appears instead of the on-device shop setup.
 
 ## 6. Verify cloud sync
 
@@ -102,11 +108,15 @@ Restart `npm run dev`. The login screen now appears instead of the demo shop.
 6. Turn on airplane mode, create a bill — it saves locally, shows `offline · 1 pending`.
    Turn the network back on: it syncs by itself (also every 30 s and on tab focus).
 
-## 7. Optional: seed a demo shop in the cloud
+## 7. The shop record
 
-The demo data lives in the client (`src/lib/seed.ts`) so it works offline. To give a
-salesperson a cloud sandbox, create a separate Supabase project and simply use the app’s
-“Try the demo shop” button there — nothing is written to the cloud in demo mode.
+There is no seed script and no demo data. The first person to sign up runs
+`create_shop_for_current_user('Rishu Kirana Store', 'Rishu', '9608087035')` and gets an
+owner profile; the address and UPI id are then filled in **Settings → Shop**. Every other
+row (products, bills, khata, purchases) is written by the shop itself.
+
+To point a second device at the same shop, sign in with the same email — the phone
+downloads the shop, products and bills on first sync.
 
 ---
 

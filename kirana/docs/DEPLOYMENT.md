@@ -39,7 +39,7 @@ vercel --prod
 
 ## 2. Post-deploy checklist
 
-- [ ] `https://<app>.vercel.app` loads the login screen (or demo shop without env vars)
+- [ ] `https://<app>.vercel.app` loads the shop setup screen (empty app) without env vars
 - [ ] Camera scanning works (HTTPS is required by the browser)
 - [ ] Add `https://<app>.vercel.app/**` to Supabase **Auth → URL configuration**
 - [ ] Sign up → shop created → product saved → visible in Supabase table editor
