@@ -119,8 +119,8 @@ export default function SetupPage() {
             <Store className="h-3.5 w-3.5" /> {form.address || SHOP_INFO.address}
           </p>
           <p className="mt-1">
-            Data is stored on this phone. A backup file (More → Backup) keeps it safe, and a cloud account can be
-            connected later from Settings.
+            Sab kuch is phone mein save hota hai. Backup: More → Download backup. Cloud sync baad mein
+            More → Connect cloud se on kar sakte hain.
           </p>
         </div>
 

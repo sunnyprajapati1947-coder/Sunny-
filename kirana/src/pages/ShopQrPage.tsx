@@ -4,7 +4,6 @@ import { Download, Printer, QrCode, Share2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { useT } from '../i18n/useT'
 import { buildUpiUri, isValidVpa, makeQrDataUrl } from '../lib/upi'
-import { formatPaise } from '../lib/money'
 import { Button } from '../components/ui/button'
 import { Card } from '../components/ui/card'
 import { PageHeader } from '../components/layout/AppShell'
@@ -173,8 +172,8 @@ export default function ShopQrPage() {
           <Card className="space-y-1 bg-ink-50 text-xs text-ink-600 dark:bg-ink-900 dark:text-ink-300">
             <p className="font-bold text-ink-800 dark:text-ink-100">Print tip</p>
             <p>
-              Poster A4 par print karein aur counter par chipka dein. Bill ke waqt app khud exact amount ka QR dikhata
-              hai, isliye yahan amount khali hai — {formatPaise(0)} se shuru.
+              Poster A4 par print karein aur counter par chipka dein. Yahan amount khali hai (customer jo dena hai
+              daal dega). Bill ke waqt app khud exact amount wala QR dikhata hai.
             </p>
           </Card>
         </>
