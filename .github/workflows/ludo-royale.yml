@@ -130,10 +130,21 @@ jobs:
       - name: Collect APKs with friendly names
         run: |
           mkdir -p out
-          cp android/app/build/outputs/apk/debug/app-debug.apk "out/ludo-royale-${GITHUB_SHA::7}-debug.apk"
+          # Stable names keep the release asset list to one entry per variant
+          # (the upload step clobbers them).
+          cp android/app/build/outputs/apk/debug/app-debug.apk "out/ludo-royale-debug.apk"
           if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk "out/ludo-royale-${GITHUB_SHA::7}-release.apk"
+            cp android/app/build/outputs/apk/release/app-release.apk "out/ludo-royale-release.apk"
           fi
+          {
+            echo "### Ludo Royale APK"
+            echo ""
+            echo "| variant | size | sha256 |"
+            echo "| --- | --- | --- |"
+            for f in out/*.apk; do
+              echo "| $(basename "$f") | $(du -h "$f" | cut -f1) | $(sha256sum "$f" | cut -d' ' -f1) |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
           ls -lh out
 
       - name: Upload APKs

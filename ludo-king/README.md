@@ -11,6 +11,17 @@ wrapper.
 
 ![Board preview](docs/board-preview.svg)
 
+## Download the Android APK
+
+**[⬇ ludo-royale-debug.apk (4.4 MB)](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/download/ludo-royale-v1.0.0/ludo-royale-debug.apk)** ·
+[release page](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/ludo-royale-v1.0.0) ·
+[all CI artifacts](https://github.com/sunnyprajapati1947-coder/Sunny-/actions/workflows/ludo-royale.yml)
+
+Built by GitHub Actions from this folder after the full test suite passes; re-published on every
+successful build of `.github/workflows/ludo-royale.yml`. Install on an Android 6.0+ phone (allow
+“install unknown apps” when prompted). Debug-signed — suitable for testing and sideloading, not for
+Play Store upload.
+
 ## Play it
 
 ```bash
@@ -100,8 +111,8 @@ ludo-king/
 ## Android APK
 
 A native Android project already exists in `android/` (Capacitor 7, `tools.ludoroyale.game`). It is
-fully offline — **the manifest requests no permissions at all**, and all assets are bundled inside the
-APK.
+fully offline: all assets are bundled inside the APK and the only permission is `INTERNET`, which the
+embedded Android WebView requires — the game itself makes no network request.
 
 ### Option A — build it on GitHub (no local setup)
 
@@ -116,7 +127,8 @@ assembles `app-debug.apk`, optionally signs a release build if you add these sec
 | `ANDROID_KEY_ALIAS` | key alias |
 | `ANDROID_KEY_PASSWORD` | key password |
 
-Download the APK from the workflow run's **Artifacts** section.
+The workflow publishes the result to the [`ludo-royale-v1.0.0` release](https://github.com/sunnyprajapati1947-coder/Sunny-/releases/tag/ludo-royale-v1.0.0)
+(plain download link, no sign-in needed) and also keeps it in the run's **Artifacts** section.
 
 ### Option B — build locally
 
