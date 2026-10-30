@@ -1,0 +1,236 @@
+name: Dukaan Dost — test, build & package APK
+
+on:
+  push:
+    branches:
+      - arena/dd7f7a39-sunny
+    paths:
+      - 'kirana/**'
+      - '.github/workflows/kirana-apk.yml'
+  pull_request:
+    paths:
+      - 'kirana/**'
+      - '.github/workflows/kirana-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: kirana
+
+concurrency:
+  group: kirana-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Typecheck, test & web build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kirana/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests (services, money, security, screens)
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload the web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dukaan-dost-web
+          path: kirana/dist
+          if-no-files-found: error
+
+  apk:
+    name: Android APK
+    runs-on: ubuntu-24.04
+    needs: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kirana/package-lock.json
+
+      # The project pins Gradle 8.2.1 / AGP 8.2.1, which run on JDK 17.
+      # (JDK 21 needs Gradle 8.5+, so do not bump this without bumping Gradle.)
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Report the Android SDK
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$SDK"
+          ls "$SDK/platforms" || true
+          ls "$SDK/build-tools" || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the web bundle and sync it into the native project
+        run: |
+          npm run build
+          npx cap sync android
+
+      # Build failures are re-emitted as workflow annotations because raw job
+      # logs are not always downloadable in this environment.
+      - name: Assemble the debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          set +e
+          ./gradlew --no-daemon --stacktrace assembleDebug > /tmp/gradle.log 2>&1
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            {
+              awk '/What went wrong/{flag=1} flag' /tmp/gradle.log | head -10
+              grep -nE "^e: |^error:|error: |Could not (resolve|find|GET|download)|Unsupported class|requires (Java|JDK)|Minimum supported Gradle|AAPT2|Duplicate|not found" /tmp/gradle.log | head -10
+            } > /tmp/gradle-err.log 2>&1
+            while IFS= read -r line; do
+              clean=$(printf '%s' "$line" | tr -d '\r' | sed 's/%/%25/g')
+              echo "::error title=Gradle::${clean:0:300}"
+            done < /tmp/gradle-err.log
+            exit "$status"
+          fi
+          tail -n 8 /tmp/gradle.log
+
+      # A stable signature matters for a shop app: the local database lives in
+      # the app sandbox, so an APK signed with a different key cannot be installed
+      # over the old one — the shopkeeper would have to uninstall and lose bills.
+      # Set ANDROID_KEYSTORE_BASE64 (+ password/alias secrets) to use your own key;
+      # otherwise the repository keystore below keeps builds interchangeable.
+      - name: Assemble a signed release APK
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set +e
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using the ANDROID_KEYSTORE_* secrets."
+            echo "$KEYSTORE_BASE64" | base64 -d > ../release.keystore
+            STORE="../release.keystore"
+            STORE_PASS="$KEYSTORE_PASSWORD"
+            STORE_ALIAS="$KEY_ALIAS"
+            KEY_PASS="$KEY_PASSWORD"
+            STORE_TYPE="jks"
+          else
+            echo "Using the checked-in keystore (sideload builds only)."
+            STORE="android/keystore/dukaan-dost.p12"
+            STORE_PASS="dukaanDost2026Signing"
+            STORE_ALIAS="dukaan-dost"
+            KEY_PASS="dukaanDost2026Signing"
+            STORE_TYPE="pkcs12"
+          fi
+          # Resolve to an absolute path before entering android/
+          STORE_ABS="$(cd "$(dirname "$STORE")" && pwd)/$(basename "$STORE")"
+          test -f "$STORE_ABS" || { echo "::error title=Keystore::missing $STORE_ABS"; exit 1; }
+          echo "keystore: $STORE_ABS (type $STORE_TYPE)"
+          cd android
+          ./gradlew --no-daemon assembleRelease \
+            -Pandroid.injected.signing.store.file="$STORE_ABS" \
+            -Pandroid.injected.signing.store.password="$STORE_PASS" \
+            -Pandroid.injected.signing.key.alias="$STORE_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASS" \
+            -Pandroid.injected.signing.store.type="$STORE_TYPE" > /tmp/release.log 2>&1
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning title=Release signing::signed build failed, falling back to the debug APK"
+            awk '/What went wrong/{flag=1} flag' /tmp/release.log | head -12
+            exit 0
+          fi
+          tail -n 6 /tmp/release.log
+
+      # Prove the APK is installable and actually contains the app: this
+      # environment can create the file but cannot download it afterwards, so the
+      # verification has to happen here and land in the job summary.
+      - name: Verify the APK (manifest, signature, bundled web assets)
+        run: python3 scripts/verify-apk.py
+
+      - name: Collect the APK with a friendly name
+        run: |
+          mkdir -p out
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk out/dukaan-dost-release.apk
+            VARIANT="release"
+          else
+            cp android/app/build/outputs/apk/debug/app-debug.apk out/dukaan-dost-debug.apk
+            VARIANT="debug"
+          fi
+          SIZE=$(du -h out/*.apk | cut -f1)
+          SHA=$(sha256sum out/*.apk | cut -d' ' -f1)
+          echo "APK_VARIANT=$VARIANT" >> "$GITHUB_ENV"
+          {
+            echo "### Dukaan Dost APK ($VARIANT)"
+            echo ""
+            echo "| file | size | sha256 |"
+            echo "| --- | --- | --- |"
+            for f in out/*.apk; do
+              echo "| $(basename "$f") | $(du -h "$f" | cut -f1) | $(sha256sum "$f" | cut -d' ' -f1) |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "$SIZE $SHA"
+          ls -lh out
+
+      - name: Upload the APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dukaan-dost-apk
+          path: kirana/out/*.apk
+          if-no-files-found: error
+
+      # A release asset is a plain download link that works in any browser.
+      - name: Publish the APK as a GitHub release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="dukaan-dost-v1.0.0"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            cat > /tmp/notes.md <<'NOTES'
+          ## Dukaan Dost 1.0.0 — Android APK
+
+          Kirana / general-store billing, inventory, khata (udhaar) and reports.
+          Offline-first: everything works without the internet and syncs to Supabase
+          when a connection returns.
+
+          - Barcode billing from the camera (plus USB/Bluetooth scanners), UPI QR with the
+            exact amount, split payments, cash change calculator
+          - Prices always come from the database; discounts, voids and price edits need the
+            owner PIN and land in an audit log
+          - Thermal 58/80 mm print, PDF, WhatsApp receipts
+          - Stock ledger, purchases, stock audit, low-stock/expiry alerts, WhatsApp order list
+          - GST report, P&L, day-end cash closing, Excel/PDF export
+          - Hindi · English · Hinglish UI, dark mode, large-text mode
+
+          **Install:** download the `.apk`, open it on the phone and allow
+          "Install unknown apps" for the browser/file manager.
+          Min Android 6.0 (API 23) · ~5 MB · works fully offline after install.
+
+          Already have it? Install the newer file over the old one — the bills,
+          products and khata stored on the phone are kept. Do **not** uninstall
+          first: that erases the local database.
+          NOTES
+            gh release create "$TAG" --title "Dukaan Dost 1.0.0 — Android APK" --notes-file /tmp/notes.md
+          fi
+          gh release upload "$TAG" out/*.apk --clobber
+          echo "release: $(gh release view "$TAG" --json url --jq .url)"
