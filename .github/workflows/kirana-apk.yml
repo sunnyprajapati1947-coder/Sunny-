@@ -136,7 +136,7 @@ jobs:
             STORE_TYPE="jks"
           else
             echo "Using the checked-in keystore (sideload builds only)."
-            STORE="../keystore/dukaan-dost.p12"
+            STORE="android/keystore/dukaan-dost.p12"
             STORE_PASS="dukaanDost2026Signing"
             STORE_ALIAS="dukaan-dost"
             KEY_PASS="dukaanDost2026Signing"
