@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-[#f6f4ee] font-sans text-ink-900 antialiased dark:bg-ink-950 dark:text-ink-50;
+    overscroll-behavior-y: none;
+  }
+
+  /* Big-text mode: scales everything ~12% without breaking layouts */
+  html.text-lg-mode {
+    font-size: 17.5px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-family: inherit;
+  }
+
+  /* iOS zooms inputs below 16px — keep every field at 16px+ */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-ink-300 dark:bg-ink-700;
+  }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: calc(var(--safe-top));
+  }
+  .safe-bottom {
+    padding-bottom: calc(var(--safe-bottom));
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Print: only the thermal receipt window is printed */
+@media print {
+  body {
+    background: #fff;
+  }
+}
+
+/* Reduce motion for users who ask for it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
