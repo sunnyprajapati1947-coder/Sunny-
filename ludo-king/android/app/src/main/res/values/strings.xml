@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ludo Royale</string>
+    <string name="title_activity_main">Ludo Royale</string>
+    <string name="package_name">tools.ludoroyale.game</string>
+    <string name="custom_url_scheme">tools.ludoroyale.game</string>
+</resources>

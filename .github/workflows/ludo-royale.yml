@@ -1,0 +1,180 @@
+name: Ludo Royale — test, build & package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ludo-king/**'
+      - '.github/workflows/ludo-royale.yml'
+  pull_request:
+    paths:
+      - 'ludo-king/**'
+      - '.github/workflows/ludo-royale.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: ludo-king
+
+jobs:
+  test:
+    name: Engine & UI tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ludo-king/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit, rules, AI and UI tests
+        run: npm test
+
+      - name: Production web build
+        run: npm run build
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ludo-royale-web
+          path: ludo-king/dist
+          if-no-files-found: error
+
+  apk:
+    name: Android APK
+    runs-on: ubuntu-24.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ludo-king/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # The runner image ships the Android SDK; no third-party setup action needed.
+      - name: Report the Android SDK
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$SDK"
+          ls "$SDK/platforms" || true
+          ls "$SDK/build-tools" || true
+          ls "$SDK/licenses" || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web bundle and sync into the native project
+        run: |
+          npm run build
+          npx cap sync android
+
+      # Build errors are re-emitted as workflow annotations because this
+      # environment cannot download raw job logs.
+      - name: Assemble debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          set +e
+          ./gradlew --no-daemon --stacktrace assembleDebug > /tmp/gradle.log 2>&1
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            {
+              awk '/What went wrong/{flag=1} flag' /tmp/gradle.log | head -8
+              grep -nE "^e: |^error:|error: |Could not (resolve|find|GET|download)|Unsupported class|requires (Java|JDK)|Minimum supported Gradle|AAPT2|Duplicate|not found" /tmp/gradle.log | head -8
+            } > /tmp/gradle-err.log 2>&1
+            while IFS= read -r line; do
+              clean=$(printf '%s' "$line" | tr -d '\r' | sed 's/%/%25/g')
+              echo "::error title=Gradle::${clean:0:300}"
+            done < /tmp/gradle-err.log
+            exit "$status"
+          fi
+          tail -n 10 /tmp/gradle.log
+
+      - name: Assemble signed release APK (only when signing secrets exist)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > ../ludo-royale.keystore
+            cd android
+            ./gradlew --no-daemon assembleRelease \
+              -Pandroid.injected.signing.store.file="$PWD/../ludo-royale.keystore" \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret — skipping the signed release build."
+          fi
+
+      - name: Collect APKs with friendly names
+        run: |
+          mkdir -p out
+          # Stable names keep the release asset list to one entry per variant
+          # (the upload step clobbers them).
+          cp android/app/build/outputs/apk/debug/app-debug.apk "out/ludo-royale-debug.apk"
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk "out/ludo-royale-release.apk"
+          fi
+          {
+            echo "### Ludo Royale APK"
+            echo ""
+            echo "| variant | size | sha256 |"
+            echo "| --- | --- | --- |"
+            for f in out/*.apk; do
+              echo "| $(basename "$f") | $(du -h "$f" | cut -f1) | $(sha256sum "$f" | cut -d' ' -f1) |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          ls -lh out
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ludo-royale-apk
+          path: ludo-king/out/*.apk
+          if-no-files-found: error
+
+      # A release asset is a plain download link that works in any browser.
+      - name: Publish the APK as a GitHub release asset
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG="ludo-royale-v1.0.0"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            cat > /tmp/notes.md <<'NOTES'
+          **Ludo Royale 1.0.0 — Android build**
+
+          Original, offline Ludo game: 2-player duel and 4-player classic, pass & play or three
+          CPU difficulties, autosave, pause/resume, procedural audio.
+
+          - `ludo-royale-*-debug.apk` — debug-signed, installs directly (allow "install unknown apps")
+          - Size: ~4 MB · Min Android 6.0 (API 23) · No network access needed to play
+          - Built automatically from the `ludo-king/` sources by the *Ludo Royale — test, build &
+            package* workflow after the full test suite passed.
+          NOTES
+            gh release create "$TAG" --title "Ludo Royale 1.0.0 — Android APK" --notes-file /tmp/notes.md
+          fi
+          gh release upload "$TAG" out/*.apk --clobber
+          echo "release: $(gh release view "$TAG" --json url --jq .url)"
