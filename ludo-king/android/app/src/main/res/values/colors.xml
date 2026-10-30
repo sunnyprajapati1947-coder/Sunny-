@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ludo Royale brand palette (generated artwork uses the same values). -->
+    <color name="brandNight">#120B06</color>
+    <color name="brandBrown">#2B1C0E</color>
+    <color name="brandGold">#F2B705</color>
+    <color name="brandGoldDeep">#A97B00</color>
+    <color name="brandInk">#F8EFE0</color>
+    <color name="ic_launcher_background">#120B06</color>
+</resources>

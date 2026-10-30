@@ -1,0 +1,111 @@
+name: Ludo Royale — test, build & package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ludo-king/**'
+      - '.github/workflows/ludo-royale.yml'
+  pull_request:
+    paths:
+      - 'ludo-king/**'
+      - '.github/workflows/ludo-royale.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ludo-king
+
+jobs:
+  test:
+    name: Engine & UI tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ludo-king/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit, rules, AI and UI tests
+        run: npm test
+
+      - name: Production web build
+        run: npm run build
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ludo-royale-web
+          path: ludo-king/dist
+          if-no-files-found: error
+
+  apk:
+    name: Android APK
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ludo-king/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web bundle and sync into the native project
+        run: |
+          npm run build
+          npx cap sync android
+
+      - name: Assemble debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Assemble release APK (unsigned unless signing secrets are provided)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > ludo-royale.keystore
+            cd android
+            ./gradlew --no-daemon assembleRelease \
+              -Pandroid.injected.signing.store.file="$PWD/../ludo-royale.keystore" \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret set — skipping signed release build."
+          fi
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ludo-royale-apk
+          path: |
+            ludo-king/android/app/build/outputs/apk/debug/*.apk
+            ludo-king/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
