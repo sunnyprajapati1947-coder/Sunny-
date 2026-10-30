@@ -12,6 +12,9 @@ on:
       - '.github/workflows/ludo-royale.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 defaults:
   run:
     working-directory: ludo-king
@@ -139,3 +142,28 @@ jobs:
           name: ludo-royale-apk
           path: ludo-king/out/*.apk
           if-no-files-found: error
+
+      # A release asset is a plain download link that works in any browser.
+      - name: Publish the APK as a GitHub release asset
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG="ludo-royale-v1.0.0"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            cat > /tmp/notes.md <<'NOTES'
+          **Ludo Royale 1.0.0 — Android build**
+
+          Original, offline Ludo game: 2-player duel and 4-player classic, pass & play or three
+          CPU difficulties, autosave, pause/resume, procedural audio.
+
+          - `ludo-royale-*-debug.apk` — debug-signed, installs directly (allow "install unknown apps")
+          - Size: ~4 MB · Min Android 6.0 (API 23) · No network access needed to play
+          - Built automatically from the `ludo-king/` sources by the *Ludo Royale — test, build &
+            package* workflow after the full test suite passed.
+          NOTES
+            gh release create "$TAG" --title "Ludo Royale 1.0.0 — Android APK" --notes-file /tmp/notes.md
+          fi
+          gh release upload "$TAG" out/*.apk --clobber
+          echo "release: $(gh release view "$TAG" --json url --jq .url)"
