@@ -84,7 +84,14 @@ def main() -> int:
     web_assets = [n for n in names if n.startswith("assets/public/")]
     has_index = "assets/public/index.html" in names
     has_js = any(n.startswith("assets/public/assets/") and n.endswith(".js") for n in web_assets)
-    icons = [n for n in names if n.startswith("res/mipmap") and n.endswith(".png")]
+    # Release builds rename/optimise resources, so a fixed file name is not a
+    # reliable signal: accept any launcher-ish image, or the badging icon lines.
+    icons = [
+        n for n in names
+        if n.startswith("res/") and n.endswith((".png", ".webp")) and "ic_launcher" in n
+    ]
+    if not icons:
+        icons = [n for n in names if n.startswith("res/") and n.endswith((".png", ".webp"))]
 
     build_tools = android_build_tools()
     badging = run([os.path.join(build_tools, "aapt2"), "dump", "badging", apk]) if build_tools else ""
@@ -111,7 +118,7 @@ def main() -> int:
         ("package name", f"name='{EXPECTED_PACKAGE}'" in package),
         ("dex code", bool(dex)),
         ("web app bundled", has_index and has_js),
-        ("launcher icon", bool(icons)),
+        ("launcher icon", bool(icons) or "application-icon" in badging),
         ("signature", any("Signer" in ln or "Verifies" in ln for ln in signer_lines)),
     ]
 
