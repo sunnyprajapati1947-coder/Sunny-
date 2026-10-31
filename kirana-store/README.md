@@ -36,6 +36,18 @@ Open http://localhost:5173
 
 ---
 
+## 🤖 APK download link (one-click, bina PC)
+1. Kholein: **https://github.com/sunnyprajapati1947-coder/Sunny-/actions/workflows/apk.yml**
+2. **"Run workflow"** button dabaiye (chaho to backend URL bhariye, varna app me login screen par "Server" se set hota hai).
+3. ~8 minute me build complete → **https://github.com/sunnyprajapati1947-coder/Sunny-/releases** par `rishu-kirana-store.apk` ka **download link** aa jayega.
+4. APK phone par download karke install karein (Settings → "Install unknown apps" allow karein).
+
+> PC available ho to: `MOBILE_APP.md` follow karein (Capacitor + Android Studio se local APK).
+
+##  Data policy
+- **Koi fake/demo data nahi:** pehli baar chalane par sirf store profile (Rishu Kirana Store, Gaya Road Nawada, 9608087035) + 3 login accounts bante hain. Products/customers/bills sab **khali** shuru hote hain — aap apna asli data daalte hain.
+- UPI QR aapka asli hai (`sunny-ff-reedem-code@fam`, payee name "Rishu Kirana Store") — `frontend/public/upi-qr.png`.
+
 ## 📱 Mobile app (phone par chalao)
 - **PWA install (30 sec):** hosted/preview URL phone ke Chrome/Safari me kholo → Android: `⋮ → Install app`, iPhone: `Share → Add to Home Screen`. Home-screen icon, full-screen UI, offline cache. App ke top-bar me 📲 install button bhi hai.
 - **Asli APK (Capacitor):** see [`MOBILE_APP.md`](./MOBILE_APP.md) — `npm run build && npx cap add android && npx cap sync && cd android && ./gradlew assembleDebug` → `app-debug.apk`.
