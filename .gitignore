@@ -3,3 +3,9 @@ youtube/client_secret.json
 youtube/token.json
 youtube/projects/
 youtube/*.json
+
+# Kirana store app
+kirana-store/**/node_modules/
+kirana-store/frontend/dist/
+kirana-store/backend/data/
+kirana-store/backend/.env

@@ -1,0 +1,76 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'Backend API base URL baked into the APK (blank = configurable in-app at login)'
+        required: false
+        default: ''
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install frontend deps
+        working-directory: kirana-store/frontend
+        run: npm install --no-audit --no-fund
+
+      - name: Configure server URL (optional)
+        if: inputs.api_url != ''
+        working-directory: kirana-store/frontend
+        run: echo "VITE_API_URL=${{ inputs.api_url }}" > .env
+
+      - name: Build web app
+        working-directory: kirana-store/frontend
+        run: npm run build
+
+      - name: Add Android platform (Capacitor)
+        working-directory: kirana-store/frontend
+        run: npx cap add android
+
+      - name: Sync native project
+        working-directory: kirana-store/frontend
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: kirana-store/frontend/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Prepare APK file
+        run: |
+          mkdir -p release
+          cp kirana-store/frontend/android/app/build/outputs/apk/debug/app-debug.apk release/rishu-kirana-store.apk
+          ls -la release/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rishu-kirana-apk
+          path: release/rishu-kirana-store.apk
+
+      - name: Publish GitHub Release with APK download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: 'Rishu Kirana Store APK (build ${{ github.run_number }})'
+          body: |
+            📱 **Rishu Kirana Store — Android APK**
+            Download `rishu-kirana-store.apk` below, phone par bhejein aur install karein
+            (Settings → "Install unknown apps" allow karein).
+            Server URL app ke login screen par "Server" button se set hota hai.
+          files: release/rishu-kirana-store.apk

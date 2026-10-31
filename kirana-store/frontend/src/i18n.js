@@ -1,0 +1,36 @@
+// Bilingual UI (Hindi + English)
+const dict = {
+  en: {
+    dashboard: 'Dashboard', pos: 'Billing / POS', products: 'Products', inventory: 'Inventory', priceEditor: 'Price Editor',
+    customers: 'Customers', credit: 'Udhar / Credit', suppliers: 'Suppliers & Purchases', reports: 'Reports', offers: 'Offers & Coupons',
+    labels: 'Barcode Labels', admin: 'Users & Shifts', settings: 'Settings', notifications: 'Notifications', orders: 'Online Orders',
+    stores: 'Stores & Transfer', logout: 'Logout', login: 'Login', username: 'Username', password: 'Password',
+    more: 'More / और',
+    todaySales: "Today's Sales", bills: 'Bills', profit: 'Profit', stockValue: 'Stock Value', lowStock: 'Low Stock',
+    search: 'Search', addProduct: 'Add Product', name: 'Name', category: 'Category', brand: 'Brand', price: 'Price',
+    qty: 'Qty', total: 'Total', discount: 'Discount', tax: 'GST', grandTotal: 'Grand Total', pay: 'Payment',
+    cash: 'Cash', upi: 'UPI', card: 'Card', credit: 'Credit (Udhar)', split: 'Split', print: 'Print Bill',
+    newBill: 'New Bill', holdBill: 'Hold Bill', heldBills: 'Held Bills', customer: 'Customer', walkIn: 'Walk-in Customer',
+    scanHint: 'Scan barcode or type & press Enter', cameraScan: 'Camera Scan', amount: 'Amount', change: 'Change',
+    save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', close: 'Close', export: 'Export',
+    from: 'From', to: 'To', welcome: 'Welcome', expiry: 'Expiry', supplier: 'Supplier', stock: 'Stock',
+    actions: 'Actions', status: 'Status', phone: 'Phone', address: 'Address', role: 'Role', active: 'Active',
+  },
+  hi: {
+    dashboard: 'डैशबोर्ड', pos: 'बिलिंग / POS', products: 'प्रोडक्ट', inventory: 'स्टॉक / इन्वेंटरी', priceEditor: 'प्राइस एडिटर',
+    customers: 'कस्टमर', credit: 'उधार / खता', suppliers: 'सप्लायर और खरीद', reports: 'रिपोर्ट', offers: 'ऑफर और कूपन',
+    labels: 'बारकोड लेबल', admin: 'यूज़र और शिफ्ट', settings: 'सेटिंग्स', notifications: 'सूचनाएं', orders: 'ऑनलाइन ऑर्डर',
+    stores: 'स्टोर और ट्रांसफर', logout: 'लॉगआउट', login: 'लॉगिन', username: 'यूज़रनेम', password: 'पासवर्ड',
+    more: 'और विकल्प',
+    todaySales: 'आज की बिक्री', bills: 'बिल', profit: 'मुनाफा', stockValue: 'स्टॉक मूल्य', lowStock: 'कम स्टॉक',
+    search: 'खोजें', addProduct: 'प्रोडक्ट जोड़ें', name: 'नाम', category: 'श्रेणी', brand: 'ब्रांड', price: 'कीमत',
+    qty: 'मात्रा', total: 'कुल', discount: 'छूट', tax: 'GST', grandTotal: 'कुल योग', pay: 'भुगतान',
+    cash: 'नकद', upi: 'UPI', card: 'कार्ड', credit: 'उधार (खता)', split: 'स्प्लिट', print: 'बिल प्रिंट',
+    newBill: 'नया बिल', holdBill: 'बिल होल्ड', heldBills: 'होल्ड बिल', customer: 'कस्टमर', walkIn: 'सामान्य ग्राहक',
+    scanHint: 'बारकोड स्कैन करें या टाइप कर Enter दबाएं', cameraScan: 'कैमरा स्कैन', amount: 'राशि', change: 'वापसी',
+    save: 'सेव', cancel: 'रद्द', delete: 'हटाएं', edit: 'एडिट', close: 'बंद करें', export: 'एक्सपोर्ट',
+    from: 'से', to: 'तक', welcome: 'स्वागत', expiry: 'एक्सपायरी', supplier: 'सप्लायर', stock: 'स्टॉक',
+    actions: 'क्रिया', status: 'स्थिति', phone: 'मोबाइल', address: 'पता', role: 'भूमिका', active: 'सक्रिय',
+  },
+};
+export const makeT = (lang) => (key) => dict[lang]?.[key] || dict.en[key] || key;
