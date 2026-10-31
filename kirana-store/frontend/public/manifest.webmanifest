@@ -1,0 +1,26 @@
+{
+  "name": "Rishu Kirana Store POS",
+  "short_name": "Rishu Kirana",
+  "description": "Advanced Kirana Store POS, Billing & Inventory Management — Rishu Kirana Store, Gaya Road Nawada",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#0b1220",
+  "theme_color": "#ea580c",
+  "lang": "en-IN",
+  "categories": ["business", "productivity", "shopping"],
+  "shortcuts": [
+    { "name": "New Bill (POS)", "short_name": "Billing", "url": "/pos", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Reports", "short_name": "Reports", "url": "/reports", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Online Shop", "short_name": "Shop", "url": "/shop", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

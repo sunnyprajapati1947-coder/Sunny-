@@ -1,0 +1,27 @@
+name: Kirana Store CI
+
+on:
+  push:
+    paths: ['kirana-store/**']
+  pull_request:
+    paths: ['kirana-store/**']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Backend install & syntax check
+        working-directory: kirana-store/backend
+        run: |
+          npm install --no-audit --no-fund
+          node --check src/server.js
+      - name: Frontend install & build
+        working-directory: kirana-store/frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build

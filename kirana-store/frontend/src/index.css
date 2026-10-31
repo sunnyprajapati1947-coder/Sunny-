@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body { @apply bg-slate-100 text-slate-800 dark:bg-ink-900 dark:text-slate-100 antialiased; }
+  input, select, textarea { @apply outline-none; }
+}
+@layer components {
+  .card { @apply bg-white dark:bg-ink-800 rounded-xl shadow-card border border-slate-200/70 dark:border-slate-700/60; }
+  .inp { @apply w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-ink-700 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 placeholder:text-slate-400; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition active:scale-[.97] disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700 shadow-sm; }
+  .btn-ghost { @apply btn bg-slate-200/70 dark:bg-slate-700/60 text-slate-700 dark:text-slate-100 hover:bg-slate-300/70 dark:hover:bg-slate-600/60; }
+  .btn-danger { @apply btn bg-rose-600 text-white hover:bg-rose-700; }
+  .btn-success { @apply btn bg-emerald-600 text-white hover:bg-emerald-700; }
+  .btn-lg { @apply px-5 py-3 text-base rounded-xl; }
+  .lbl { @apply block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1; }
+  .th { @apply px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap; }
+  .td { @apply px-3 py-2 text-sm whitespace-nowrap; }
+  .badge { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold; }
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-600 rounded-full; }
+
+/* ---------- Thermal receipt printing (58mm / 80mm) ---------- */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: fixed; left: 0; top: 0; width: 100%; }
+  @page { margin: 4mm; }
+}
+.receipt { font-family: 'Courier New', monospace; color: #000; background: #fff; width: 76mm; padding: 3mm; font-size: 11px; line-height: 1.35; }
+.receipt.w58 { width: 54mm; font-size: 10px; }
+.receipt .center { text-align: center; }
+.receipt .bold { font-weight: 700; }
+.receipt .row { display: flex; justify-content: space-between; gap: 6px; }
+.receipt hr { border: none; border-top: 1px dashed #000; margin: 2mm 0; }
+.label-sheet { display: flex; flex-wrap: wrap; gap: 4mm; }
+.label-cell { width: 50mm; height: 30mm; border: 1px dashed #999; padding: 2mm; display: flex; flex-direction: column; align-items: center; justify-content: space-between; font-size: 10px; color: #000; background: #fff; }

@@ -1,0 +1,9 @@
+{
+  "appId": "com.rishukirana.pos",
+  "appName": "Rishu Kirana Store",
+  "webDir": "dist",
+  "android": { "allowMixedContent": false },
+  "server": {
+    "androidScheme": "https"
+  }
+}
