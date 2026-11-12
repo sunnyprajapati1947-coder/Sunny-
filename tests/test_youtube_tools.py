@@ -48,7 +48,7 @@ class YouTubeToolsTest(unittest.TestCase):
             args = run.call_args.args[0]
             graph = args[args.index("-vf") + 1]
             self.assertIn("expansion=none", graph)
-            for marker in (r"\\:", r"\\,", r"\\;", r"\\[", r"\\]", r"\\'"):
+            for marker in (r"\:", r"\,", r"\;", r"\[", r"\]", r"\'"):
                 self.assertIn(marker, graph)
 
     def test_upload_rejects_missing_video_before_oauth(self):
