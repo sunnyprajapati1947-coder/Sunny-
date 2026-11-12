@@ -21,9 +21,23 @@ class AutomationToolsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             with patch.object(automation_tools, "ROOT", root / "youtube"), patch.object(automation_tools, "PROJECTS", root / "youtube" / "projects"), patch.object(automation_tools, "_qwen", return_value=None):
-                result = automation_tools.create_project("Test topic")
+                evidence = {
+                    "success": True,
+                    "enabled": True,
+                    "sources": [{
+                        "title": "Verified source",
+                        "url": "https://example.com/source",
+                        "snippet": (
+                            "The source reports several concrete developments, explains the timeline, "
+                            "identifies the organizations involved, and describes the publicly documented impact."
+                        ),
+                    }],
+                    "documents": [],
+                }
+                result = automation_tools.create_project("Test topic", research=evidence)
                 self.assertTrue(result["success"])
                 self.assertFalse(result["metadata"]["qwen_used"])
+                self.assertGreaterEqual(len(result["metadata"]["script"].split()), 45)
                 self.assertTrue((Path(result["project"]) / "metadata.json").is_file())
 
     def test_research_evidence_reaches_qwen_prompt(self):
@@ -45,6 +59,29 @@ class AutomationToolsTests(unittest.TestCase):
         self.assertIn("current fact", captured[0])
         self.assertIn("Detailed evidence", captured[0])
         self.assertIn("HOOK:", captured[0])
+
+    def test_ffmpeg_text_escaping(self):
+        escaped = automation_tools._ffmpeg_text("A:B, C; [D] 'E' \\ F")
+        for marker in (r"\\:", r"\\,", r"\\;", r"\\[", r"\\]", r"\\'", r"\\\\"):
+            self.assertIn(marker, escaped)
+
+    def test_quality_gate_rejects_missing_sources_and_short_script(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            project.mkdir()
+            metadata = {
+                "title": "Test title",
+                "hook": "A sufficiently clear hook",
+                "description": "A test description",
+                "tags": ["test"],
+                "script": "This is far too short.",
+                "research": {"enabled": True, "sources": []},
+            }
+            (project / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            result = automation_tools.validate_project(str(project))
+            self.assertFalse(result["success"])
+            self.assertIn("script_too_short", result["issues"])
+            self.assertIn("no_research_sources", result["issues"])
 
     def test_audio_skips_without_tts(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -73,6 +110,8 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertIn("w=iw:h=ih", filter_graph)
                 self.assertIn("mod(t*120,iw)", filter_graph)
                 self.assertIn("ih*0.84", filter_graph)
+                self.assertIn("expansion=none", filter_graph)
+                self.assertIn(r"\\:", filter_graph)
                 self.assertNotIn("w=w:h=h", filter_graph)
                 self.assertIn("-i", args)
                 self.assertIn(str(root / "voiceover.wav"), args)
@@ -90,9 +129,9 @@ class AutomationToolsTests(unittest.TestCase):
             project = root / "project"
             project.mkdir()
             metadata = {
-                "title": "FFmpeg render smoke test",
-                "hook": "A short render validation",
-                "script": "This is a short deterministic script used to validate a local FFmpeg render.",
+                "title": "FFmpeg: render, smoke [test] 50%",
+                "hook": "A short render's validation",
+                "script": "This script checks colon: comma, brackets [x] and a literal 50% marker in an actual FFmpeg render.",
                 "aspect": "9:16",
                 "duration_seconds": 5,
                 "visual_style": "cinematic",
@@ -122,9 +161,20 @@ class AutomationToolsTests(unittest.TestCase):
             "sources": [{"title": "Trend", "url": "https://example.com", "snippet": "fresh signal"}],
             "documents": [],
         }
-        with patch.object(automation_tools, "research_topic", return_value=fake_research), \
-             patch.object(automation_tools, "_qwen", return_value="NICHE: AI\nREASON: fresh\nTOPIC: New AI breakthrough"):
+        captured_queries = []
+
+        def fake_research_call(query):
+            captured_queries.append(query)
+            return fake_research
+
+        with patch.object(automation_tools, "research_topic", side_effect=fake_research_call), \
+             patch.object(automation_tools, "fast_router_ask", return_value={"success": False}), \
+             patch.object(automation_tools.time, "strftime", return_value="November 2026"), \
+             patch.object(automation_tools, "_qwen", return_value="NICHE: AI\\nREASON: fresh\\nTOPIC: New AI breakthrough"):
             result = automation_tools.discover_niche()
+        self.assertEqual(len(captured_queries), 7)
+        self.assertTrue(all("November 2026" in query for query in captured_queries))
+        self.assertTrue(all("September 2026" not in query for query in captured_queries))
         self.assertTrue(result["success"])
         self.assertEqual(result["niche"], "AI")
         self.assertEqual(result["topic"], "New AI breakthrough")
