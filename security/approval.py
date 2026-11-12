@@ -32,13 +32,18 @@ class NovaApproval:
         self._pending[token] = request
         return request
 
-    def approve(self, token: str, tool: str) -> bool:
-        request = self._pending.pop(token, None)
+    def approve(self, token: str, tool: str, arguments: dict) -> bool:
+        """Consume a token only for the exact tool and argument payload."""
+        request = self._pending.get(token)
 
         if request is None:
             return False
 
-        return request.tool == tool
+        if request.tool != tool or request.arguments != dict(arguments):
+            return False
+
+        self._pending.pop(token, None)
+        return True
 
     def pending(self) -> list[ApprovalRequest]:
         return list(self._pending.values())
