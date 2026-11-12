@@ -192,6 +192,11 @@ def repair_project_content(project_path: str, validation: dict[str, Any]) -> dic
     if not metadata_path.is_file():
         return {"success": False, "reason": "metadata.json missing"}
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if not metadata.get("research", {}).get("sources"):
+        return {
+            "success": False,
+            "reason": "research evidence missing; refusing to invent sources",
+        }
     prompt = (
         "Repair this YouTube package for quality. Keep factual claims grounded in the supplied research. "
         "Return exactly five labeled lines: TITLE:, HOOK:, DESCRIPTION:, TAGS:, SCRIPT:. "
@@ -468,15 +473,32 @@ def autonomous_run(aspect: str = "9:16", duration_seconds: int = 30) -> dict[str
 
 def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -> dict[str, Any]:
     research = research_topic(topic)
+    sources = research.get("sources") or []
+    if not sources:
+        research_error = research.get("error") or "no current sources returned"
+        raise RuntimeError(
+            "content quality gate blocked: no research sources; "
+            f"source_count=0; research_error={research_error}"
+        )
     planned = create_project(topic, aspect, duration_seconds, research=research)
     project = planned["project"]
     validation = validate_project(project)
+    initial_validation = validation
     repair_result = None
     if not validation["success"]:
         repair_result = repair_project_content(project, validation)
         validation = repair_result
     if not validation["success"]:
-        raise RuntimeError(f"content quality gate failed: {validation.get('issues', validation.get('reason', 'unknown'))}")
+        diagnostics = {
+            "initial_issues": initial_validation.get("issues", []),
+            "script_words": initial_validation.get("script_words"),
+            "research_sources": len(sources),
+            "repair_reason": (repair_result or {}).get("reason"),
+        }
+        raise RuntimeError(
+            "content quality gate failed: "
+            + json.dumps(diagnostics, ensure_ascii=False)
+        )
     audio = render_audio(project)
     rendered = render_project(project)
     thumbnail = render_thumbnail(project)
