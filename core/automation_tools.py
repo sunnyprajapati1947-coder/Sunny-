@@ -248,16 +248,16 @@ def repair_project_content(project_path: str, validation: dict[str, Any]) -> dic
         f"TOPIC: {metadata.get('topic','')}\nTITLE: {metadata.get('title','')}\nHOOK: {metadata.get('hook','')}\n"
         f"DESCRIPTION: {metadata.get('description','')}\nTAGS: {', '.join(metadata.get('tags',[]))}\n"
         f"SCRIPT: {metadata.get('script','')}\nISSUES: {', '.join(validation.get('issues',[]))}\n"
-        f"EVIDENCE: {json.dumps({{
+        f"EVIDENCE: {json.dumps({
             'sources': metadata.get('research', {}).get('sources', [])[:5],
             'documents': [
-                {{
+                {
                     'title': item.get('title', ''),
                     'content': str(item.get('content', ''))[:1200],
-                }}
+                }
                 for item in metadata.get('research', {}).get('documents', [])[:3]
             ],
-        }}, ensure_ascii=False)}"
+        }, ensure_ascii=False)}"
     )
     generated = _qwen(prompt, timeout=45.0)
     if not generated:
