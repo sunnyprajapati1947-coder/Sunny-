@@ -2,7 +2,7 @@ name: SunnyAI Automation Hub
 
 on:
   push:
-    branches: [main]
+    branches: [main, audit/sunnyai-e2e-20261112]
   schedule:
     - cron: '30 12 * * *'
   workflow_dispatch:
@@ -53,7 +53,7 @@ jobs:
     timeout-minutes: 30
     env:
       TOPIC: ${{ inputs.topic || github.event.client_payload.topic || '' }}
-      MODE: ${{ inputs.mode || github.event.client_payload.mode || (github.event_name == 'schedule' && 'auto' || 'prepare') }}
+      MODE: ${{ inputs.mode || github.event.client_payload.mode || ((github.event_name == 'schedule' || github.ref == 'refs/heads/audit/sunnyai-e2e-20261112') && 'auto' || 'prepare') }}
       PRIVACY: ${{ inputs.privacy || github.event.client_payload.privacy || 'private' }}
       UPLOAD: ${{ inputs.upload || github.event.client_payload.upload || 'false' }}
     steps:
@@ -98,7 +98,7 @@ jobs:
       - name: Run SunnyAI pipeline when present
         run: |
           set -e
-          if [ "${GITHUB_EVENT_NAME:-}" = "push" ]; then
+          if [ "${GITHUB_EVENT_NAME:-}" = "push" ] && [ "${GITHUB_REF:-}" != "refs/heads/audit/sunnyai-e2e-20261112" ]; then
             echo "Push validation only; pipeline generation remains schedule/manual-dispatch only."
             exit 0
           fi
