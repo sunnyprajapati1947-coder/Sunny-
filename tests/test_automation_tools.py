@@ -60,11 +60,6 @@ class AutomationToolsTests(unittest.TestCase):
         self.assertIn("Detailed evidence", captured[0])
         self.assertIn("HOOK:", captured[0])
 
-    def test_ffmpeg_text_escaping(self):
-        escaped = automation_tools._ffmpeg_text("A:B, C; [D] 'E' \\ F")
-        for marker in (r"\:", r"\,", r"\;", r"\[", r"\]", r"\'", r"\\"):
-            self.assertIn(marker, escaped)
-
     def test_quality_gate_rejects_missing_sources_and_short_script(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "project"
@@ -111,7 +106,10 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertIn("mod(t*120,iw)", filter_graph)
                 self.assertIn("ih*0.84", filter_graph)
                 self.assertIn("expansion=none", filter_graph)
-                self.assertIn(r"\\:", filter_graph)
+                self.assertIn("textfile='render_title.txt'", filter_graph)
+                self.assertIn("textfile='render_hook.txt'", filter_graph)
+                self.assertIn("textfile='render_scene_0.txt'", filter_graph)
+                self.assertEqual((root / "render_title.txt").read_text(encoding="utf-8"), "Test")
                 self.assertNotIn("w=w:h=h", filter_graph)
                 self.assertIn("-i", args)
                 self.assertIn(str(root / "voiceover.wav"), args)
@@ -167,10 +165,11 @@ class AutomationToolsTests(unittest.TestCase):
             captured_queries.append(query)
             return fake_research
 
+        generated = "NICHE: AI\nREASON: fresh\nTOPIC: New AI breakthrough"
         with patch.object(automation_tools, "research_topic", side_effect=fake_research_call), \
              patch.object(automation_tools, "fast_router_ask", return_value={"success": False}), \
              patch.object(automation_tools.time, "strftime", return_value="November 2026"), \
-             patch.object(automation_tools, "_qwen", return_value="NICHE: AI\\nREASON: fresh\\nTOPIC: New AI breakthrough"):
+             patch.object(automation_tools, "_qwen", return_value=generated):
             result = automation_tools.discover_niche()
         self.assertEqual(len(captured_queries), 7)
         self.assertTrue(all("November 2026" in query for query in captured_queries))
