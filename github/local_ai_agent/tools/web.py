@@ -174,7 +174,7 @@ def _search_html(query: str, max_results: int, timeout: float) -> list[SearchRes
 def _topic_query(query: str) -> str:
     """Remove discovery boilerplate before querying news indexes."""
     cleaned = re.sub(
-        r"\\b(?:trending|youtube|topics|latest|news|India|January|February|March|April|May|June|July|August|September|October|November|December|20\\d{2})\\b",
+        r"\b(?:trending|youtube|topics|latest|news|India|January|February|March|April|May|June|July|August|September|October|November|December|20\d{2})\b",
         " ",
         query,
         flags=re.IGNORECASE,
