@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from secrets import token_urlsafe
+from copy import deepcopy
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,7 @@ class NovaApproval:
         request = ApprovalRequest(
             token=token,
             tool=tool,
-            arguments=dict(arguments),
+            arguments=deepcopy(arguments),
             created_at=datetime.now(timezone.utc).isoformat(),
         )
 
@@ -39,7 +40,7 @@ class NovaApproval:
         if request is None:
             return False
 
-        if request.tool != tool or request.arguments != dict(arguments):
+        if request.tool != tool or request.arguments != deepcopy(arguments):
             return False
 
         self._pending.pop(token, None)
