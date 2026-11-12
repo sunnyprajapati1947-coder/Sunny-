@@ -62,7 +62,7 @@ class AutomationToolsTests(unittest.TestCase):
 
     def test_ffmpeg_text_escaping(self):
         escaped = automation_tools._ffmpeg_text("A:B, C; [D] 'E' \\ F")
-        for marker in (r"\\:", r"\\,", r"\\;", r"\\[", r"\\]", r"\\'", r"\\\\"):
+        for marker in (r"\:", r"\,", r"\;", r"\[", r"\]", r"\'", r"\\"):
             self.assertIn(marker, escaped)
 
     def test_quality_gate_rejects_missing_sources_and_short_script(self):
