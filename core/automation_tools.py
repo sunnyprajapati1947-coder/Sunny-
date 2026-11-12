@@ -537,7 +537,7 @@ def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -
         for item in research.get("documents", [])[:3]:
             content = str(item.get("content") or "")
             if content.startswith("HTTP "):
-                document_status.append(content.partition("\\n")[0][:120])
+            document_status.append(content.partition("\n")[0][:120])
             elif content.startswith("FETCH_ERROR:"):
                 document_status.append(content[:120])
             else:
