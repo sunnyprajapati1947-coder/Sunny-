@@ -31,6 +31,7 @@ RESEARCH_MAX_TEXT_CHARS = 12_000
 DEFAULT_RESULTS = 5
 MAX_RESULTS = 8
 SEARCH_URL = "https://html.duckduckgo.com/html/"
+BING_NEWS_RSS_URL = "https://www.bing.com/news/search"
 GOOGLE_NEWS_RSS_URL = "https://news.google.com/rss/search"
 SEARCH_CACHE_TTL = 8.0
 _SEARCH_CACHE: dict[tuple[str, int], tuple[float, tuple[SearchResult, ...]]] = {}
@@ -169,6 +170,38 @@ def _search_html(query: str, max_results: int, timeout: float) -> list[SearchRes
 
 
 
+def _search_bing_news(query: str, max_results: int, timeout: float) -> list[SearchResult]:
+    """Fallback to Bing News RSS; its item links usually point directly to publishers."""
+    response = requests.get(
+        BING_NEWS_RSS_URL,
+        params={"q": query.strip(), "format": "rss", "setlang": "en-IN"},
+        headers={"User-Agent": "Nova/1.0 (Android; local assistant)"},
+        timeout=timeout,
+        allow_redirects=True,
+    )
+    response.raise_for_status()
+    try:
+        root = ET.fromstring(response.content)
+    except ET.ParseError:
+        raise WebToolError("Bing News returned invalid RSS XML.") from None
+
+    results: list[SearchResult] = []
+    for item in root.findall(".//item"):
+        if len(results) >= max_results:
+            break
+        title = _clean_text(item.findtext("title", ""))
+        raw_url = (item.findtext("link", "") or "").strip()
+        snippet = _clean_text(item.findtext("description", ""))
+        if not raw_url:
+            continue
+        try:
+            url = _validate_public_url(raw_url)
+        except WebToolError:
+            continue
+        results.append(SearchResult(title or "Untitled news result", url, snippet))
+    return results
+
+
 def _search_google_news(query: str, max_results: int, timeout: float) -> list[SearchResult]:
     """Fallback to public Google News RSS when DuckDuckGo has no usable results."""
     response = requests.get(
@@ -229,12 +262,15 @@ def search(query: str, *, max_results: int = DEFAULT_RESULTS, timeout_seconds: f
 
     if not fresh:
         try:
-            fresh = _search_google_news(query, bounded_results, timeout_seconds)
+            fresh = _search_bing_news(query, bounded_results, timeout_seconds)
         except Exception as exc:
-            fallback_error = f"Google News RSS fallback failed ({type(exc).__name__})"
-            if provider_error:
-                raise WebToolError(f"{provider_error}; {fallback_error}") from None
-            raise WebToolError(fallback_error) from None
+            bing_error = f"Bing News RSS fallback failed ({type(exc).__name__})"
+            try:
+                fresh = _search_google_news(query, bounded_results, timeout_seconds)
+            except Exception as google_exc:
+                google_error = f"Google News RSS fallback failed ({type(google_exc).__name__})"
+                errors = "; ".join(x for x in (provider_error, bing_error, google_error) if x)
+                raise WebToolError(errors) from None
 
     with _SEARCH_CACHE_LOCK:
         _SEARCH_CACHE[key] = (time.monotonic(), tuple(fresh))
