@@ -75,4 +75,17 @@ with TemporaryDirectory() as tmp:
     assert reused["success"] is False
     assert reused["approval_required"] is True
 
+    # Tool failures must remain failures at the outer registry boundary.
+    registry.register(
+        NovaTool(
+            name="failing_tool_test",
+            category="test",
+            description="failure propagation test",
+            run=lambda: {"success": False, "error": "expected failure"},
+        )
+    )
+    failed = registry.execute("failing_tool_test")
+    assert failed["success"] is False
+    assert failed["result"]["content"]["success"] is False
+
 print("NOVA APPROVAL GATE: PASS")
