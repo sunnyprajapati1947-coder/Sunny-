@@ -2,7 +2,7 @@ name: SunnyAI Automation Hub
 
 on:
   push:
-    branches: [main]
+    branches: [main, audit/sunnyai-e2e-gdelt-normalized-20261112]
   schedule:
     - cron: '30 12 * * *'
   workflow_dispatch:
@@ -53,7 +53,7 @@ jobs:
     timeout-minutes: 30
     env:
       TOPIC: ${{ inputs.topic || github.event.client_payload.topic || '' }}
-      MODE: ${{ inputs.mode || github.event.client_payload.mode || (github.event_name == 'schedule' && 'auto' || 'prepare') }}
+      MODE: ${{ inputs.mode || github.event.client_payload.mode || ((github.event_name == 'schedule' || github.ref == 'refs/heads/audit/sunnyai-e2e-gdelt-normalized-20261112') && 'auto' || 'prepare') }}
       PRIVACY: ${{ inputs.privacy || github.event.client_payload.privacy || 'private' }}
       UPLOAD: ${{ inputs.upload || github.event.client_payload.upload || 'false' }}
     steps:
@@ -99,7 +99,7 @@ jobs:
       - name: Run SunnyAI pipeline when present
         run: |
           set -e
-          if [ "${GITHUB_EVENT_NAME:-}" = "push" ]; then
+          if [ "${GITHUB_EVENT_NAME:-}" = "push" ] && [ "${GITHUB_REF:-}" != "refs/heads/audit/sunnyai-e2e-gdelt-normalized-20261112" ]; then
             echo "Push validation only; pipeline generation remains schedule/manual-dispatch only."
             exit 0
           fi
@@ -109,6 +109,31 @@ jobs:
           else
             echo "No automation/run.sh yet; hub is initialized and waiting for the pipeline." | tee workspace/logs/pipeline.txt
           fi
+
+
+      - name: Report Nova project diagnostics
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path.home() / "Nova" / "youtube" / "projects"
+          metadata_files = list(root.glob("*/metadata.json")) if root.is_dir() else []
+          if not metadata_files:
+              print("NOVA_DIAGNOSTICS: no project metadata created")
+          else:
+              latest = max(metadata_files, key=lambda p: p.stat().st_mtime)
+              data = json.loads(latest.read_text(encoding="utf-8"))
+              research = data.get("research") or {}
+              print(json.dumps({
+                  "project": latest.parent.name,
+                  "research_sources": len(research.get("sources") or []),
+                  "research_documents": len(research.get("documents") or []),
+                  "script_words": len(str(data.get("script", "")).split()),
+                  "qwen_used": bool(data.get("qwen_used")),
+                  "status": data.get("status"),
+              }))
+          PY
 
       - name: Upload generated output
         if: always()
