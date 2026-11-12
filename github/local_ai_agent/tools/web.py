@@ -299,6 +299,37 @@ def fetch_page(
     return f"HTTP {response.status_code} {response.url}\\n{body}"
 
 
+
+def _fetch_research_page(
+    url: str,
+    *,
+    timeout_seconds: float = DEFAULT_TIMEOUT,
+    max_bytes: int = DEFAULT_MAX_BYTES,
+    max_redirects: int = 4,
+) -> str:
+    """Fetch research pages while validating every redirect hop."""
+    current = _validate_public_url(url)
+    visited: set[str] = set()
+    for _ in range(max(0, min(int(max_redirects), 6)) + 1):
+        if current in visited:
+            return "FETCH_ERROR: redirect loop detected"
+        visited.add(current)
+        content = fetch_page(
+            current,
+            timeout_seconds=timeout_seconds,
+            max_bytes=max_bytes,
+        )
+        match = re.match(
+            r"^HTTP \\d{3} redirect to (https?://.+?)\\. Redirects are not followed",
+            content,
+        )
+        if not match:
+            return content
+        current = _validate_public_url(match.group(1))
+    return "FETCH_ERROR: redirect limit exceeded"
+
+
+
 def research(
     query: str,
     *,
@@ -329,7 +360,7 @@ def research(
 
     def fetch_one(item: SearchResult) -> dict:
         try:
-            content = fetch_page(
+            content = _fetch_research_page(
                 item.url,
                 timeout_seconds=timeout_seconds,
                 max_bytes=max_bytes,
