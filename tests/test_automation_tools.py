@@ -114,7 +114,7 @@ class AutomationToolsTests(unittest.TestCase):
              patch.object(automation_tools, "create_project") as create:
             with self.assertRaises(RuntimeError) as raised:
                 automation_tools.run_pipeline("Test topic")
-        self.assertIn("headline-only script", str(raised.exception))
+        self.assertIn("research article text unavailable", str(raised.exception))
         create.assert_not_called()
 
     def test_audio_skips_without_tts(self):
