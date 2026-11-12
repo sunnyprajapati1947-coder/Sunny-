@@ -320,7 +320,7 @@ def _fetch_research_page(
             max_bytes=max_bytes,
         )
         match = re.match(
-            r"^HTTP \\d{3} redirect to (https?://.+?)\\. Redirects are not followed",
+            r"^HTTP \d{3} redirect to (https?://.+?)\. Redirects are not followed",
             content,
         )
         if not match:
