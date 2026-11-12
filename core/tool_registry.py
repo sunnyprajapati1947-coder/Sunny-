@@ -40,7 +40,9 @@ class NovaTool:
             annotation = param.annotation
             json_type = "string"
 
-            if annotation in (int, float):
+            if annotation is int:
+                json_type = "integer"
+            elif annotation is float:
                 json_type = "number"
             elif annotation is bool:
                 json_type = "boolean"
@@ -143,6 +145,7 @@ class NovaToolRegistry:
         type_map = {
             "string": str,
             "number": (int, float),
+            "integer": int,
             "boolean": bool,
             "object": dict,
             "array": list,
@@ -155,7 +158,7 @@ class NovaToolRegistry:
             if expected_type is None:
                 continue
 
-            if expected == "number" and isinstance(value, bool):
+            if expected in {"number", "integer"} and isinstance(value, bool):
                 return False, f"Invalid type for argument: {key}"
 
             if not isinstance(value, expected_type):
@@ -163,6 +166,15 @@ class NovaToolRegistry:
                     f"Invalid type for argument: {key}; "
                     f"expected {expected}"
                 )
+
+            rule = properties.get(key, {})
+            if "enum" in rule and value not in rule["enum"]:
+                return False, f"Invalid value for argument: {key}"
+            if expected in {"number", "integer"}:
+                if "minimum" in rule and value < rule["minimum"]:
+                    return False, f"Argument below minimum: {key}"
+                if "maximum" in rule and value > rule["maximum"]:
+                    return False, f"Argument above maximum: {key}"
 
         return True, "Arguments valid."
 
