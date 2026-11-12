@@ -110,7 +110,7 @@ class AutomationToolsTests(unittest.TestCase):
                 "content": "HTTP 302 redirect to https://news.google.com/story. Redirects are not followed automatically",
             }],
         }
-        with patch.object(automation_tools, "research_topic", return_value=evidence), \\
+        with patch.object(automation_tools, "research_topic", return_value=evidence), \
              patch.object(automation_tools, "create_project") as create:
             with self.assertRaises(RuntimeError) as raised:
                 automation_tools.run_pipeline("Test topic")
