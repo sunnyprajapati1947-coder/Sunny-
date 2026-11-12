@@ -25,6 +25,15 @@ DEFAULT_CLIENT_SECRET = DEFAULT_PROJECT_ROOT / "client_secret.json"
 DEFAULT_TOKEN = DEFAULT_PROJECT_ROOT / "token.json"
 
 
+def _escape_drawtext(value: Any) -> str:
+    """Escape dynamic text before inserting it into an FFmpeg filtergraph."""
+    text = str(value).replace("\r", " ").replace("\n", " ")
+    text = text.replace("\\", "\\\\")
+    for char in ("'", ":", ",", ";", "[", "]"):
+        text = text.replace(char, "\\" + char)
+    return text
+
+
 def _paths() -> tuple[Path, Path, Path]:
     root = Path(os.getenv("NOVA_YOUTUBE_ROOT", str(DEFAULT_PROJECT_ROOT))).expanduser()
     client = Path(os.getenv("NOVA_YOUTUBE_CLIENT_SECRET", str(root / "client_secret.json"))).expanduser()
@@ -91,11 +100,11 @@ def prepare_video(
     # A lightweight render proves the end-to-end phone pipeline without
     # requiring a cloud media generator or API key.
     draw = (
-        "drawtext=text='Nova':x=(w-text_w)/2:y=h*0.28:"
+        "drawtext=text='Nova':expansion=none:x=(w-text_w)/2:y=h*0.28:"
         "fontsize=64:fontcolor=white,"
         "drawtext=text='"
-        + topic.strip().replace("\\", " ").replace("'", r"\'")
-        + "':x=(w-text_w)/2:y=h*0.48:fontsize=36:fontcolor=white:"
+        + _escape_drawtext(topic.strip())
+        + "':expansion=none:x=(w-text_w)/2:y=h*0.48:fontsize=36:fontcolor=white:"
         "enable='between(t,0,60)'"
     )
     subprocess.run(
