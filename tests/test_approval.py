@@ -46,6 +46,16 @@ with TemporaryDirectory() as tmp:
 
     token = blocked["approval_token"]
 
+    # A token cannot authorize a changed payload, and a failed attempt
+    # must not consume the original approval request.
+    mismatch = registry.execute(
+        "high_impact_test",
+        {"value": "Different action"},
+        approval_token=token,
+    )
+    assert mismatch["success"] is False
+    assert mismatch["approval_required"] is True
+
     approved = registry.execute(
         "high_impact_test",
         {"value": "Nova"},
