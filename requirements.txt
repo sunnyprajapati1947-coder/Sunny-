@@ -1,0 +1,2 @@
+# Core Nova web-research dependency
+requests>=2.32,<3
