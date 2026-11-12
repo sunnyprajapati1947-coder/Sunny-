@@ -1,6 +1,8 @@
 name: SunnyAI Automation Hub
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '30 12 * * *'
   workflow_dispatch:
@@ -91,6 +93,10 @@ jobs:
       - name: Run SunnyAI pipeline when present
         run: |
           set -e
+          if [ "${GITHUB_EVENT_NAME:-}" = "push" ]; then
+            echo "Push validation only; pipeline generation remains schedule/manual-dispatch only."
+            exit 0
+          fi
           if [ -f automation/run.sh ]; then
             chmod +x automation/run.sh
             TOPIC="$TOPIC" MODE="$MODE" PRIVACY="$PRIVACY" UPLOAD="$UPLOAD" ./automation/run.sh
