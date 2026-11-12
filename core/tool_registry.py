@@ -308,15 +308,16 @@ class NovaToolRegistry:
             safe_result = redact_secrets(result)
             boundary = mark_untrusted(safe_result)
 
+            operation_success = result.get("success", True) is True
             self.audit.record(
-                "tool_executed",
+                "tool_executed" if operation_success else "tool_failed",
                 tool=name,
                 arguments=arguments,
                 result=boundary,
             )
 
             return {
-                "success": True,
+                "success": operation_success,
                 "tool": name,
                 "result": boundary,
             }
