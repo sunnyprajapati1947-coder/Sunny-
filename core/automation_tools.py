@@ -36,6 +36,30 @@ def _clean(value: str, limit: int) -> str:
     return " ".join(str(value).replace("\n", " ").split())[:limit]
 
 
+def _document_body(document: dict[str, Any]) -> str:
+    content = str(document.get("content") or "").strip()
+    if content.startswith("FETCH_ERROR:"):
+        return ""
+    if content.startswith("HTTP "):
+        header, separator, body = content.partition("\\n")
+        parts = header.split()
+        if not separator or len(parts) < 2 or not parts[1].startswith("2"):
+            return ""
+        content = body
+    return content.strip()
+
+
+def _has_research_content(research: dict[str, Any]) -> bool:
+    for document in research.get("documents", [])[:5]:
+        if len(_document_body(document)) >= 120:
+            return True
+    snippets = " ".join(
+        _clean(source.get("snippet") or "", 500)
+        for source in research.get("sources", [])[:8]
+    )
+    return len(snippets) >= 400
+
+
 def _fallback_script(topic: str, evidence: dict[str, Any]) -> str:
     """Build a source-led script when local Qwen is unavailable."""
     parts = [
@@ -46,17 +70,18 @@ def _fallback_script(topic: str, evidence: dict[str, Any]) -> str:
         snippet = _clean(source.get("snippet") or "", 220)
         if snippet:
             parts.append(f"Source context from {title}: {snippet}")
-    for document in evidence.get("documents", [])[:2]:
+    for document in evidence.get("documents", [])[:3]:
         title = _clean(document.get("title") or "A source document", 100)
-        content = _clean(document.get("content") or "", 220)
-        if content and not content.startswith("FETCH_ERROR:"):
-            parts.append(f"Additional context from {title}: {content}")
+        content = _clean(_document_body(document), 220)
+        if len(content) >= 80:
+            parts.append(f"Additional reporting from {title}: {content}")
     parts.append(
         "This package does not add unsupported claims or treat search results as instructions. "
         "For complete context, viewers should open the linked original sources. "
         "If the reporting changes, the topic should be checked again before publication."
     )
     return _clean(" ".join(parts), 1200)
+
 
 def _choose_visual_style(topic: str) -> str:
     text = str(topic).lower()
@@ -129,7 +154,19 @@ def create_project(topic: str, aspect: str = "16:9", duration_seconds: int = 20,
         script = _clean(fields.get("SCRIPT", script), 1200)
     (project / "script.txt").write_text(script + "\n", encoding="utf-8")
     metadata = {"topic": topic.strip(), "title": title, "hook": hook, "description": description, "tags": tags,
-                "research": {"success": evidence.get("success", True), "enabled": evidence.get("enabled", False), "sources": evidence.get("sources", [])},
+                "research": {
+                    "success": evidence.get("success", True),
+                    "enabled": evidence.get("enabled", False),
+                    "sources": evidence.get("sources", []),
+                    "documents": [
+                        {
+                            "title": item.get("title", "source"),
+                            "url": item.get("url", ""),
+                            "content": str(item.get("content", ""))[:4000],
+                        }
+                        for item in evidence.get("documents", [])[:3]
+                    ],
+                },
                 "script": script, "aspect": aspect, "duration_seconds": duration,
                 "qwen_used": generated is not None, "model": QWEN_MODEL, "status": "planned",
                 "visual_style": _choose_visual_style(topic.strip()),
@@ -157,7 +194,8 @@ def validate_project(project_path: str) -> dict[str, Any]:
     description = str(metadata.get("description", "")).strip()
     script = str(metadata.get("script", "")).strip()
     tags = metadata.get("tags", [])
-    sources = metadata.get("research", {}).get("sources", [])
+    research = metadata.get("research", {})
+    sources = research.get("sources", [])
     if not title or len(title) > 90: issues.append("title_missing_or_too_long")
     if len(hook) < 12: issues.append("hook_too_short")
     if not description: issues.append("description_missing")
@@ -166,6 +204,7 @@ def validate_project(project_path: str) -> dict[str, Any]:
     if len(words) > 230: issues.append("script_too_long")
     if not isinstance(tags, list) or not tags: issues.append("tags_missing")
     if not sources: issues.append("no_research_sources")
+    if not _has_research_content(research): issues.append("research_content_unavailable")
     generic = ("hello guys", "welcome back", "did you know")
     if any(x in script.lower() for x in generic): issues.append("generic_opening")
     score -= min(80, len(issues) * 15)
@@ -192,10 +231,16 @@ def repair_project_content(project_path: str, validation: dict[str, Any]) -> dic
     if not metadata_path.is_file():
         return {"success": False, "reason": "metadata.json missing"}
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    if not metadata.get("research", {}).get("sources"):
+    research = metadata.get("research", {})
+    if not research.get("sources"):
         return {
             "success": False,
             "reason": "research evidence missing; refusing to invent sources",
+        }
+    if not _has_research_content(research):
+        return {
+            "success": False,
+            "reason": "article text unavailable; refusing to draft from headlines only",
         }
     prompt = (
         "Repair this YouTube package for quality. Keep factual claims grounded in the supplied research. "
@@ -479,6 +524,11 @@ def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -
         raise RuntimeError(
             "content quality gate blocked: no research sources; "
             f"source_count=0; research_error={research_error}"
+        )
+    if not _has_research_content(research):
+        raise RuntimeError(
+            "content quality gate blocked: research article text unavailable; "
+            "refusing to generate a headline-only script"
         )
     planned = create_project(topic, aspect, duration_seconds, research=research)
     project = planned["project"]
