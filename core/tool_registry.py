@@ -171,7 +171,6 @@ class NovaToolRegistry:
         name: str,
         arguments: dict[str, Any] | None = None,
         *,
-        approved: bool = False,
         approval_token: str | None = None,
     ) -> dict[str, Any]:
 
@@ -207,13 +206,14 @@ class NovaToolRegistry:
             )
             return result
 
-        approved_now = approved
+        approved_now = False
 
         if tool.high_impact:
             if approval_token:
                 approved_now = self.approval.approve(
                     approval_token,
                     name,
+                    arguments,
                 )
 
             if not approved_now:
