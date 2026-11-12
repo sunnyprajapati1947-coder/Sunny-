@@ -69,6 +69,11 @@ class AutomationToolsTests(unittest.TestCase):
             with patch.object(automation_tools.shutil, "which", return_value="/usr/bin/ffmpeg"), patch.object(automation_tools.subprocess, "run", fake):
                 result = automation_tools.render_project(str(root))
                 args = fake.call_args.args[0]
+                filter_graph = args[args.index("-vf") + 1]
+                self.assertIn("w=iw:h=ih", filter_graph)
+                self.assertIn("mod(t*120,iw)", filter_graph)
+                self.assertIn("ih*0.84", filter_graph)
+                self.assertNotIn("w=w:h=h", filter_graph)
                 self.assertIn("-i", args)
                 self.assertIn(str(root / "voiceover.wav"), args)
                 self.assertIn("-shortest", args)
