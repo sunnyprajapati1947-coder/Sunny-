@@ -38,6 +38,19 @@ class YouTubeToolsTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             prepare_video("test", aspect="4:3")
 
+    def test_prepare_escapes_topic_for_ffmpeg(self):
+        with tempfile.TemporaryDirectory() as td:
+            with patch.dict(os.environ, {"NOVA_YOUTUBE_ROOT": td}), \
+                 patch("core.youtube_tools.shutil.which", return_value="/usr/bin/ffmpeg"), \
+                 patch("core.youtube_tools.subprocess.run") as run:
+                result = prepare_video("topic: [x], 'quoted';")
+            self.assertTrue(result["success"])
+            args = run.call_args.args[0]
+            graph = args[args.index("-vf") + 1]
+            self.assertIn("expansion=none", graph)
+            for marker in (r"\\:", r"\\,", r"\\;", r"\\[", r"\\]", r"\\'"):
+                self.assertIn(marker, graph)
+
     def test_upload_rejects_missing_video_before_oauth(self):
         with self.assertRaises(FileNotFoundError):
             upload_video("/definitely/missing/video.mp4", "Test")
