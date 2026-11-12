@@ -533,9 +533,19 @@ def run_pipeline(topic: str, aspect: str = "16:9", duration_seconds: int = 20) -
             f"source_count=0; research_error={research_error}"
         )
     if not _has_research_content(research):
+        document_status = []
+        for item in research.get("documents", [])[:3]:
+            content = str(item.get("content") or "")
+            if content.startswith("HTTP "):
+                document_status.append(content.partition("\\n")[0][:120])
+            elif content.startswith("FETCH_ERROR:"):
+                document_status.append(content[:120])
+            else:
+                document_status.append(f"TEXT:{len(content)}")
         raise RuntimeError(
             "content quality gate blocked: research article text unavailable; "
-            "refusing to generate a headline-only script"
+            f"source_count={len(sources)}; documents={json.dumps(document_status)}; "
+            f"research_error={research.get('error') or 'none'}"
         )
     planned = create_project(topic, aspect, duration_seconds, research=research)
     project = planned["project"]
