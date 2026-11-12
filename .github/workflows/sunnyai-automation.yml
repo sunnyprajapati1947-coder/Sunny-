@@ -90,6 +90,11 @@ jobs:
         run: |
           python3 -m unittest tests/test_youtube_tools.py
 
+      - name: Nova security and schema regression tests
+        run: |
+          python3 tests/test_approval.py
+          python3 tests/test_tool_schemas.py
+
       - name: Run SunnyAI pipeline when present
         run: |
           set -e
