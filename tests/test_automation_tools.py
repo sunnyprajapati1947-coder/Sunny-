@@ -82,6 +82,31 @@ class AutomationToolsTests(unittest.TestCase):
                 self.assertTrue(result["metadata"]["packaging"]["hook_first"])
                 self.assertGreaterEqual(result["metadata"]["scene_count"], 1)
 
+    def test_render_project_ffmpeg_smoke(self):
+        if not automation_tools.shutil.which("ffmpeg"):
+            self.skipTest("ffmpeg is not installed")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "project"
+            project.mkdir()
+            metadata = {
+                "title": "FFmpeg render smoke test",
+                "hook": "A short render validation",
+                "script": "This is a short deterministic script used to validate a local FFmpeg render.",
+                "aspect": "9:16",
+                "duration_seconds": 5,
+                "visual_style": "cinematic",
+            }
+            (project / "metadata.json").write_text(
+                json.dumps(metadata), encoding="utf-8"
+            )
+            with patch.object(automation_tools, "ROOT", root / "state"):
+                result = automation_tools.render_project(str(project))
+            self.assertTrue(result["success"])
+            video = Path(result["video"])
+            self.assertTrue(video.is_file())
+            self.assertGreater(video.stat().st_size, 1000)
+
     def test_research_topic(self):
         fake = {"results": [{"title": "Source", "url": "https://example.com", "snippet": "fact"}],
                 "documents": [{"title": "Source", "url": "https://example.com", "content": "fact"}]}
