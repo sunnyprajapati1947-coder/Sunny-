@@ -261,10 +261,14 @@ def search(query: str, *, max_results: int = DEFAULT_RESULTS, timeout_seconds: f
         fresh = []
 
     if not fresh:
+        bing_error = None
         try:
             fresh = _search_bing_news(query, bounded_results, timeout_seconds)
         except Exception as exc:
             bing_error = f"Bing News RSS fallback failed ({type(exc).__name__})"
+            fresh = []
+
+        if not fresh:
             try:
                 fresh = _search_google_news(query, bounded_results, timeout_seconds)
             except Exception as google_exc:
