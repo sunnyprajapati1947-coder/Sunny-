@@ -36,15 +36,6 @@ def _clean(value: str, limit: int) -> str:
     return " ".join(str(value).replace("\n", " ").split())[:limit]
 
 
-def _ffmpeg_text(value: Any) -> str:
-    """Escape user/model text for a quoted FFmpeg filtergraph value."""
-    text = str(value).replace("\r", " ").replace("\n", " ")
-    text = text.replace("\\", "\\\\")
-    for char in ("'", ":", ",", ";", "[", "]"):
-        text = text.replace(char, "\\" + char)
-    return text
-
-
 def _fallback_script(topic: str, evidence: dict[str, Any]) -> str:
     """Build a source-led script when local Qwen is unavailable."""
     parts = [
@@ -271,8 +262,10 @@ def render_thumbnail(project_path: str) -> dict[str, Any]:
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg is required")
-    title = _ffmpeg_text(_clean(metadata.get("title", "Nova"), 55))
-    hook = _ffmpeg_text(_clean(metadata.get("hook", ""), 42))
+    title = _clean(metadata.get("title", "Nova"), 55)
+    hook = _clean(metadata.get("hook", ""), 42)
+    (project / "thumbnail_title.txt").write_text(title, encoding="utf-8")
+    (project / "thumbnail_hook.txt").write_text(hook, encoding="utf-8")
     thumbnail = project / "thumbnail.jpg"
     draw = ",".join([
         "drawbox=x=0:y=0:w=1280:h=720:color=black:t=fill",
@@ -280,10 +273,10 @@ def render_thumbnail(project_path: str) -> dict[str, Any]:
         "drawbox=x=70:y=70:w=18:h=580:color=white@0.85:t=fill",
         "drawbox=x=110:y=485:w=1060:h=5:color=white@0.45:t=fill",
         "drawbox=x=110:y=525:w=760:h=72:color=black@0.65:t=fill",
-        "drawtext=text='" + title + "':expansion=none:x=110:y=170:fontsize=62:fontcolor=white:borderw=2:bordercolor=black@0.7",
-        "drawtext=text='" + hook + "':expansion=none:x=140:y=548:fontsize=27:fontcolor=white:borderw=1:bordercolor=black@0.8",
+        "drawtext=textfile='thumbnail_title.txt':expansion=none:x=110:y=170:fontsize=62:fontcolor=white:borderw=2:bordercolor=black@0.7",
+        "drawtext=textfile='thumbnail_hook.txt':expansion=none:x=140:y=548:fontsize=27:fontcolor=white:borderw=1:bordercolor=black@0.8",
     ])
-    subprocess.run([ffmpeg, "-y", "-f", "lavfi", "-i", "color=c=black:s=1280x720", "-frames:v", "1", "-vf", draw, "-q:v", "3", str(thumbnail)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    subprocess.run([ffmpeg, "-y", "-f", "lavfi", "-i", "color=c=black:s=1280x720", "-frames:v", "1", "-vf", draw, "-q:v", "3", str(thumbnail)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, cwd=str(project))
     metadata["thumbnail"] = str(thumbnail)
     metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
     _record({"event": "thumbnail_rendered", "project": str(project), "thumbnail": str(thumbnail)})
@@ -322,8 +315,13 @@ def render_project(project_path: str) -> dict[str, Any]:
     duration = int(metadata.get("duration_seconds", 20))
     duration = max(5, min(duration, 60))
     video = project / "video.mp4"
-    title = _ffmpeg_text(_clean(metadata.get("title", "Nova"), 70))
+    title = _clean(metadata.get("title", "Nova"), 70)
+    hook = _clean(metadata.get("hook", ""), 70)
     scenes = _scene_chunks(metadata.get("script", ""), 3, 92)
+    (project / "render_title.txt").write_text(title, encoding="utf-8")
+    (project / "render_hook.txt").write_text(hook, encoding="utf-8")
+    for scene_index, scene_text in enumerate(scenes):
+        (project / f"render_scene_{scene_index}.txt").write_text(scene_text, encoding="utf-8")
     scene_count = max(1, len(scenes))
     scene_len = duration / scene_count
 
@@ -341,18 +339,18 @@ def render_project(project_path: str) -> dict[str, Any]:
         "drawbox=x='mod(t*120,iw)':y='ih*0.08':w=260:h='ih*0.84':color=white@0.08:t=fill",
         "drawbox=x='mod(iw-t*85,iw)':y='ih*0.78':w=420:h=6:color=white@0.45:t=fill",
         "drawbox=x='mod(t*55,iw)':y='ih*0.34':w=180:h='ih*0.32':color=white@0.035:t=fill",
-        "drawtext=text='" + title + "':expansion=none:x=(w-text_w)/2:y=h*0.15:fontsize=44:fontcolor=white:"
+        "drawtext=textfile='render_title.txt':expansion=none:x=(w-text_w)/2:y=h*0.15:fontsize=44:fontcolor=white:"
         "enable='between(t,0," + str(scene_len) + ")'",
-        "drawtext=text='" + _ffmpeg_text(_clean(metadata.get("hook", ""), 70)) + "':"
+        "drawtext=textfile='render_hook.txt':"
         "expansion=none:x=(w-text_w)/2:y=h*0.29:fontsize=30:fontcolor=white:"
         "enable='between(t,0," + str(min(scene_len, 3.5)) + ")'",
     ]
     for index, scene in enumerate(scenes):
-        safe = _ffmpeg_text(scene)
+        scene_file = f"render_scene_{index}.txt"
         begin = round(index * scene_len, 3)
         finish = round(duration if index == scene_count - 1 else (index + 1) * scene_len, 3)
         filters.append(
-            "drawtext=text='" + safe + "':expansion=none:x=(w-text_w)/2:y=h*0.48:fontsize=26:fontcolor=white:"
+            "drawtext=textfile='" + scene_file + "':expansion=none:x=(w-text_w)/2:y=h*0.48:fontsize=26:fontcolor=white:"
             "line_spacing=8:enable='between(t," + str(begin) + "," + str(finish) + ")'"
         )
     draw = ",".join(filters)
@@ -376,7 +374,7 @@ def render_project(project_path: str) -> dict[str, Any]:
         "-pix_fmt", "yuv420p", str(video),
     ]
     try:
-        subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, cwd=str(project))
     except subprocess.CalledProcessError as exc:
         detail = (exc.stderr or exc.stdout or "").strip()
         raise RuntimeError(
