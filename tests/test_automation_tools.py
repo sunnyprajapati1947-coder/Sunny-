@@ -179,8 +179,39 @@ class AutomationToolsTests(unittest.TestCase):
         self.assertEqual(result["topic"], "New AI breakthrough")
         self.assertTrue(result["model_used"])
 
+    def test_repair_refuses_to_invent_missing_sources(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            project.mkdir()
+            (project / "metadata.json").write_text(json.dumps({
+                "topic": "Test",
+                "title": "Test title",
+                "hook": "A sufficiently clear hook",
+                "description": "Description",
+                "tags": ["test"],
+                "script": "Short script",
+                "research": {"sources": []},
+            }), encoding="utf-8")
+            with patch.object(automation_tools, "_qwen") as qwen:
+                result = automation_tools.repair_project_content(
+                    str(project), {"issues": ["no_research_sources"]}
+                )
+            self.assertFalse(result["success"])
+            self.assertIn("refusing to invent sources", result["reason"])
+            qwen.assert_not_called()
+
+    def test_run_pipeline_reports_missing_research_sources(self):
+        with patch.object(automation_tools, "research_topic", return_value={
+            "success": False, "error": "network unavailable", "sources": [], "documents": []
+        }), patch.object(automation_tools, "create_project") as create:
+            with self.assertRaises(RuntimeError) as raised:
+                automation_tools.run_pipeline("Test topic")
+        self.assertIn("source_count=0", str(raised.exception))
+        self.assertIn("network unavailable", str(raised.exception))
+        create.assert_not_called()
+
     def test_pipeline_uses_existing_stages(self):
-        with patch.object(automation_tools, "research_topic", return_value={"success": True, "sources": [], "documents": []}), patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "validate_project", return_value={"success": True, "score": 100, "issues": []}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}), patch.object(automation_tools, "queue_project", return_value={"success": True, "queue": {"id": "q1", "status": "queued"}}):
+        with patch.object(automation_tools, "research_topic", return_value={"success": True, "sources": [{"title": "Source", "url": "https://example.com", "snippet": "Evidence"}], "documents": []}), patch.object(automation_tools, "create_project", return_value={"project": "/tmp/nova-project"}), patch.object(automation_tools, "render_audio", return_value={"success": True}), patch.object(automation_tools, "validate_project", return_value={"success": True, "score": 100, "issues": []}), patch.object(automation_tools, "render_project", return_value={"video": "/tmp/video.mp4", "metadata": {}}), patch.object(automation_tools, "render_thumbnail", return_value={"success": True}), patch.object(automation_tools, "queue_project", return_value={"success": True, "queue": {"id": "q1", "status": "queued"}}):
             result = automation_tools.run_pipeline("Test topic")
             self.assertTrue(result["success"])
             self.assertEqual(result["video"], "/tmp/video.mp4")
