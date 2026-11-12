@@ -171,12 +171,28 @@ def _search_html(query: str, max_results: int, timeout: float) -> list[SearchRes
 
 
 
+def _topic_query(query: str) -> str:
+    """Remove discovery boilerplate before querying news indexes."""
+    cleaned = re.sub(
+        r"\\b(?:trending|youtube|topics|latest|news|India|January|February|March|April|May|June|July|August|September|October|November|December|20\\d{2})\\b",
+        " ",
+        query,
+        flags=re.IGNORECASE,
+    )
+    stop_words = {"in", "and", "for", "with", "the", "of", "on", "to", "a", "an"}
+    words = [
+        word for word in re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", cleaned)
+        if word.lower() not in stop_words
+    ]
+    return " ".join(words[:6]) or query.strip()
+
+
 def _search_gdelt(query: str, max_results: int, timeout: float) -> list[SearchResult]:
     """Query GDELT's public news index for direct publisher article URLs."""
     response = requests.get(
         GDELT_DOC_API_URL,
         params={
-            "query": query.strip(),
+            "query": _topic_query(query) + " sourcecountry:India",
             "mode": "ArtList",
             "format": "json",
             "maxrecords": max_results,
@@ -216,7 +232,7 @@ def _search_bing_news(query: str, max_results: int, timeout: float) -> list[Sear
     """Fallback to Bing News RSS; its item links usually point directly to publishers."""
     response = requests.get(
         BING_NEWS_RSS_URL,
-        params={"q": query.strip(), "format": "rss", "setlang": "en-IN"},
+        params={"q": _topic_query(query), "format": "rss", "setlang": "en-IN"},
         headers={"User-Agent": "Nova/1.0 (Android; local assistant)"},
         timeout=timeout,
         allow_redirects=True,
