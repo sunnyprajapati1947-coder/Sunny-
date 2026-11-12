@@ -94,6 +94,7 @@ jobs:
         run: |
           PYTHONPATH=. python3 tests/test_approval.py
           PYTHONPATH=. python3 tests/test_tool_schemas.py
+          PYTHONPATH=. python3 tests/test_web_search_fallback.py
 
       - name: Run SunnyAI pipeline when present
         run: |
