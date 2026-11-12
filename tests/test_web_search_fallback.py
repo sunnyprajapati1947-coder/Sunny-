@@ -9,6 +9,39 @@ from github.local_ai_agent.tools import web
 
 
 class WebSearchFallbackTests(unittest.TestCase):
+    def test_gdelt_article_parser_returns_direct_publisher_urls(self):
+        class Response:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {
+                    "articles": [{
+                        "title": "Direct publisher article",
+                        "url": "https://publisher.example/report",
+                        "domain": "publisher.example",
+                        "seendate": "20261112T040000Z",
+                    }]
+                }
+
+        with patch.object(web.requests, "get", return_value=Response()), \
+             patch.object(web, "_validate_public_url", side_effect=lambda value: value):
+            results = web._search_gdelt("current topic", 3, 5.0)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].url, "https://publisher.example/report")
+        self.assertEqual(results[0].title, "Direct publisher article")
+
+    def test_gdelt_is_tried_before_rss_wrappers(self):
+        direct = [web.SearchResult("Direct article", "https://publisher.example/article", "publisher.example")]
+        with patch.object(web, "_search_html", return_value=[]), \
+             patch.object(web, "_search_gdelt", return_value=direct), \
+             patch.object(web, "_search_bing_news") as bing, \
+             patch.object(web, "_search_google_news") as google:
+            results = web.search("unique gdelt first query 2026")
+        self.assertEqual(results, direct)
+        bing.assert_not_called()
+        google.assert_not_called()
+
     def test_bing_news_rss_parser(self):
         class Response:
             content = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -62,6 +95,7 @@ class WebSearchFallbackTests(unittest.TestCase):
     def test_empty_duckduckgo_results_try_bing_then_google(self):
         fallback = [web.SearchResult("News result", "https://example.com/news", "Current detail")]
         with patch.object(web, "_search_html", return_value=[]), \
+             patch.object(web, "_search_gdelt", return_value=[]), \
              patch.object(web, "_search_bing_news", return_value=[]), \
              patch.object(web, "_search_google_news", return_value=fallback) as google:
             results = web.search("unique nova fallback query 2026")
@@ -71,6 +105,7 @@ class WebSearchFallbackTests(unittest.TestCase):
     def test_duckduckgo_timeout_uses_news_fallback(self):
         fallback = [web.SearchResult("News result", "https://example.com/news", "Current detail")]
         with patch.object(web, "_search_html", side_effect=requests.Timeout()), \
+             patch.object(web, "_search_gdelt", return_value=[]), \
              patch.object(web, "_search_bing_news", return_value=[]), \
              patch.object(web, "_search_google_news", return_value=fallback):
             results = web.search("unique nova timeout fallback query 2026")
