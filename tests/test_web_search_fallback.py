@@ -9,6 +9,12 @@ from github.local_ai_agent.tools import web
 
 
 class WebSearchFallbackTests(unittest.TestCase):
+    def test_topic_query_removes_discovery_boilerplate(self):
+        self.assertEqual(
+            web._topic_query("trending YouTube topics India AI latest news November 2026"),
+            "AI",
+        )
+
     def test_gdelt_article_parser_returns_direct_publisher_urls(self):
         class Response:
             def raise_for_status(self):
