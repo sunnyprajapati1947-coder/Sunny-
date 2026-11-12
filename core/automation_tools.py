@@ -41,7 +41,7 @@ def _document_body(document: dict[str, Any]) -> str:
     if content.startswith("FETCH_ERROR:"):
         return ""
     if content.startswith("HTTP "):
-        header, separator, body = content.partition("\\n")
+        header, separator, body = content.partition("\n")
         parts = header.split()
         if not separator or len(parts) < 2 or not parts[1].startswith("2"):
             return ""
