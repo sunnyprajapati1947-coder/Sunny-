@@ -65,7 +65,6 @@ class NovaGitHubToolBridge:
                 self.nova_registry.execute(
                     name,
                     current_args,
-                    approved=False,
                 ),
             arguments=arguments,
         )
