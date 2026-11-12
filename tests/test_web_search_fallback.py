@@ -34,7 +34,7 @@ class WebSearchFallbackTests(unittest.TestCase):
             "HTTP 302 redirect to https://news.google.com/next. Redirects are not followed automatically; fetch that URL directly.",
             "HTTP 200 https://publisher.example/story\n" + ("Verified article text. " * 20),
         ]
-        with patch.object(web, "_validate_public_url", side_effect=lambda value: value), \\
+        with patch.object(web, "_validate_public_url", side_effect=lambda value: value), \
              patch.object(web, "fetch_page", side_effect=responses) as fetch:
             content = web._fetch_research_page("https://news.google.com/start")
         self.assertTrue(content.startswith("HTTP 200"))
