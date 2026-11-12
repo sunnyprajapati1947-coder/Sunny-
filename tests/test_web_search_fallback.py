@@ -9,6 +9,24 @@ from github.local_ai_agent.tools import web
 
 
 class WebSearchFallbackTests(unittest.TestCase):
+    def test_bing_news_rss_parser(self):
+        class Response:
+            content = b"""<?xml version="1.0" encoding="UTF-8"?>
+            <rss><channel><item>
+              <title>Publisher article</title>
+              <link>https://publisher.example/story</link>
+              <description>Substantive article summary text.</description>
+            </item></channel></rss>"""
+
+            def raise_for_status(self):
+                return None
+
+        with patch.object(web.requests, "get", return_value=Response()), \
+             patch.object(web, "_validate_public_url", side_effect=lambda value: value):
+            results = web._search_bing_news("AI research", 3, 5.0)
+        self.assertEqual(results[0].url, "https://publisher.example/story")
+        self.assertEqual(results[0].title, "Publisher article")
+
     def test_google_news_rss_parser(self):
         class Response:
             content = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -41,16 +59,19 @@ class WebSearchFallbackTests(unittest.TestCase):
         self.assertEqual(fetch.call_count, 2)
         self.assertEqual(fetch.call_args_list[1].args[0], "https://news.google.com/next")
 
-    def test_empty_duckduckgo_results_use_news_fallback(self):
+    def test_empty_duckduckgo_results_try_bing_then_google(self):
         fallback = [web.SearchResult("News result", "https://example.com/news", "Current detail")]
         with patch.object(web, "_search_html", return_value=[]), \
-             patch.object(web, "_search_google_news", return_value=fallback):
+             patch.object(web, "_search_bing_news", return_value=[]), \
+             patch.object(web, "_search_google_news", return_value=fallback) as google:
             results = web.search("unique nova fallback query 2026")
         self.assertEqual(results, fallback)
+        google.assert_called_once()
 
     def test_duckduckgo_timeout_uses_news_fallback(self):
         fallback = [web.SearchResult("News result", "https://example.com/news", "Current detail")]
         with patch.object(web, "_search_html", side_effect=requests.Timeout()), \
+             patch.object(web, "_search_bing_news", return_value=[]), \
              patch.object(web, "_search_google_news", return_value=fallback):
             results = web.search("unique nova timeout fallback query 2026")
         self.assertEqual(results, fallback)
