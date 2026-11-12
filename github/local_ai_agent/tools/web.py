@@ -31,6 +31,7 @@ RESEARCH_MAX_TEXT_CHARS = 12_000
 DEFAULT_RESULTS = 5
 MAX_RESULTS = 8
 SEARCH_URL = "https://html.duckduckgo.com/html/"
+GDELT_DOC_API_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
 BING_NEWS_RSS_URL = "https://www.bing.com/news/search"
 GOOGLE_NEWS_RSS_URL = "https://news.google.com/rss/search"
 SEARCH_CACHE_TTL = 8.0
@@ -170,6 +171,47 @@ def _search_html(query: str, max_results: int, timeout: float) -> list[SearchRes
 
 
 
+def _search_gdelt(query: str, max_results: int, timeout: float) -> list[SearchResult]:
+    """Query GDELT's public news index for direct publisher article URLs."""
+    response = requests.get(
+        GDELT_DOC_API_URL,
+        params={
+            "query": query.strip(),
+            "mode": "ArtList",
+            "format": "json",
+            "maxrecords": max_results,
+            "sort": "HybridRel",
+            "timespan": "7d",
+        },
+        headers={"User-Agent": "Nova/1.0 (Android; local assistant)"},
+        timeout=timeout,
+        allow_redirects=True,
+    )
+    response.raise_for_status()
+    try:
+        payload = response.json()
+    except ValueError:
+        raise WebToolError("GDELT returned invalid JSON.") from None
+
+    results: list[SearchResult] = []
+    for article in payload.get("articles", []):
+        if len(results) >= max_results:
+            break
+        title = _clean_text(article.get("title") or "")
+        raw_url = str(article.get("url") or "").strip()
+        domain = _clean_text(article.get("domain") or "")
+        seen = _clean_text(article.get("seendate") or "")
+        if not raw_url:
+            continue
+        try:
+            url = _validate_public_url(raw_url)
+        except WebToolError:
+            continue
+        snippet = " | ".join(part for part in (domain, seen) if part)
+        results.append(SearchResult(title or "Untitled news article", url, snippet))
+    return results
+
+
 def _search_bing_news(query: str, max_results: int, timeout: float) -> list[SearchResult]:
     """Fallback to Bing News RSS; its item links usually point directly to publishers."""
     response = requests.get(
@@ -261,20 +303,28 @@ def search(query: str, *, max_results: int = DEFAULT_RESULTS, timeout_seconds: f
         fresh = []
 
     if not fresh:
-        bing_error = None
+        gdelt_error = None
         try:
-            fresh = _search_bing_news(query, bounded_results, timeout_seconds)
+            fresh = _search_gdelt(query, bounded_results, timeout_seconds)
         except Exception as exc:
-            bing_error = f"Bing News RSS fallback failed ({type(exc).__name__})"
+            gdelt_error = f"GDELT search failed ({type(exc).__name__})"
             fresh = []
 
         if not fresh:
+            bing_error = None
             try:
-                fresh = _search_google_news(query, bounded_results, timeout_seconds)
-            except Exception as google_exc:
-                google_error = f"Google News RSS fallback failed ({type(google_exc).__name__})"
-                errors = "; ".join(x for x in (provider_error, bing_error, google_error) if x)
-                raise WebToolError(errors) from None
+                fresh = _search_bing_news(query, bounded_results, timeout_seconds)
+            except Exception as exc:
+                bing_error = f"Bing News RSS fallback failed ({type(exc).__name__})"
+                fresh = []
+
+            if not fresh:
+                try:
+                    fresh = _search_google_news(query, bounded_results, timeout_seconds)
+                except Exception as google_exc:
+                    google_error = f"Google News RSS fallback failed ({type(google_exc).__name__})"
+                    errors = "; ".join(x for x in (provider_error, gdelt_error, bing_error, google_error) if x)
+                    raise WebToolError(errors) from None
 
     with _SEARCH_CACHE_LOCK:
         _SEARCH_CACHE[key] = (time.monotonic(), tuple(fresh))
