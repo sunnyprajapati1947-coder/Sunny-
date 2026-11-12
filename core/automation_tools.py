@@ -214,6 +214,7 @@ def validate_project(project_path: str) -> dict[str, Any]:
         "script_too_long",
         "tags_missing",
         "no_research_sources",
+        "research_content_unavailable",
         "generic_opening",
     }
     success = score >= 70 and not any(issue in critical_issues for issue in issues)
@@ -247,7 +248,16 @@ def repair_project_content(project_path: str, validation: dict[str, Any]) -> dic
         f"TOPIC: {metadata.get('topic','')}\nTITLE: {metadata.get('title','')}\nHOOK: {metadata.get('hook','')}\n"
         f"DESCRIPTION: {metadata.get('description','')}\nTAGS: {', '.join(metadata.get('tags',[]))}\n"
         f"SCRIPT: {metadata.get('script','')}\nISSUES: {', '.join(validation.get('issues',[]))}\n"
-        f"EVIDENCE: {json.dumps(metadata.get('research',{}).get('sources',[])[:5], ensure_ascii=False)}"
+        f"EVIDENCE: {json.dumps({{
+            'sources': metadata.get('research', {}).get('sources', [])[:5],
+            'documents': [
+                {{
+                    'title': item.get('title', ''),
+                    'content': str(item.get('content', ''))[:1200],
+                }}
+                for item in metadata.get('research', {}).get('documents', [])[:3]
+            ],
+        }}, ensure_ascii=False)}"
     )
     generated = _qwen(prompt, timeout=45.0)
     if not generated:
