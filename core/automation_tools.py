@@ -50,14 +50,11 @@ def _document_body(document: dict[str, Any]) -> str:
 
 
 def _has_research_content(research: dict[str, Any]) -> bool:
-    for document in research.get("documents", [])[:5]:
-        if len(_document_body(document)) >= 120:
-            return True
-    snippets = " ".join(
-        _clean(source.get("snippet") or "", 500)
-        for source in research.get("sources", [])[:8]
+    # Headlines and RSS snippets are discovery signals, not article evidence.
+    return any(
+        len(_document_body(document)) >= 120
+        for document in research.get("documents", [])[:5]
     )
-    return len(snippets) >= 400
 
 
 def _fallback_script(topic: str, evidence: dict[str, Any]) -> str:
