@@ -92,8 +92,8 @@ jobs:
 
       - name: Nova security and schema regression tests
         run: |
-          python3 tests/test_approval.py
-          python3 tests/test_tool_schemas.py
+          PYTHONPATH=. python3 tests/test_approval.py
+          PYTHONPATH=. python3 tests/test_tool_schemas.py
 
       - name: Run SunnyAI pipeline when present
         run: |
