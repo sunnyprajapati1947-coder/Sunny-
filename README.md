@@ -25,7 +25,7 @@ Nova's local automation pipeline is separate from the Google model registry abov
 python3 -m pip install -r requirements.txt
 ```
 
-The core research tools use public web search without an API key (DuckDuckGo, with Google News RSS fallback). Web results are treated as untrusted evidence, not instructions. If current sources are unavailable, the content quality gate blocks generation rather than inventing citations.
+The core research tools use public web search without an API key (DuckDuckGo, GDELT direct-article search, Bing News RSS, and Google News RSS fallbacks). Research fetches validate each redirect hop and require readable article text; headlines or RSS wrappers alone do not pass the content gate. Web results are treated as untrusted evidence, not instructions. If current article text is unavailable, generation is blocked rather than inventing citations.
 
 A local OpenAI-compatible Qwen endpoint is optional for content planning and one repair pass. The default endpoint is `http://127.0.0.1:8080/v1/chat/completions`; override it with `NOVA_QWEN_URL` when needed.
 
