@@ -293,10 +293,10 @@ def render_project(project_path: str) -> dict[str, Any]:
     }
     bg = backgrounds.get(style, backgrounds["cinematic"])
     filters = [
-        "drawbox=x=0:y=0:w=w:h=h:color=" + bg + ":t=fill",
-        "drawbox=x='mod(t*120,w)':y='h*0.08':w=260:h='h*0.84':color=white@0.08:t=fill",
-        "drawbox=x='mod(w-t*85,w)':y='h*0.78':w=420:h=6:color=white@0.45:t=fill",
-        "drawbox=x='mod(t*55,w)':y='h*0.34':w=180:h='h*0.32':color=white@0.035:t=fill",
+        "drawbox=x=0:y=0:w=iw:h=ih:color=" + bg + ":t=fill",
+        "drawbox=x='mod(t*120,iw)':y='ih*0.08':w=260:h='ih*0.84':color=white@0.08:t=fill",
+        "drawbox=x='mod(iw-t*85,iw)':y='ih*0.78':w=420:h=6:color=white@0.45:t=fill",
+        "drawbox=x='mod(t*55,iw)':y='ih*0.34':w=180:h='ih*0.32':color=white@0.035:t=fill",
         "drawtext=text='" + title + "':x=(w-text_w)/2:y=h*0.15:fontsize=44:fontcolor=white:"
         "enable='between(t,0," + str(scene_len) + ")'",
         "drawtext=text='" + _clean(metadata.get("hook", ""), 70).replace("\\", " ").replace("'", r"\'") + "':"
@@ -331,7 +331,13 @@ def render_project(project_path: str) -> dict[str, Any]:
         "-vf", draw, "-r", "30", "-c:v", "libx264",
         "-pix_fmt", "yuv420p", str(video),
     ]
-    subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    try:
+        subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or exc.stdout or "").strip()
+        raise RuntimeError(
+            f"ffmpeg video render failed (exit {exc.returncode}): {detail[-1200:]}"
+        ) from exc
     metadata["status"], metadata["video"] = "rendered", str(video)
     metadata["visual_mode"] = "cinematic_motion_cards"
     metadata["visual_style"] = style
