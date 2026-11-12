@@ -12,6 +12,7 @@ import re
 import socket
 import threading
 import time
+import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from urllib.parse import parse_qs, unquote, urljoin, urlparse
@@ -30,6 +31,7 @@ RESEARCH_MAX_TEXT_CHARS = 12_000
 DEFAULT_RESULTS = 5
 MAX_RESULTS = 8
 SEARCH_URL = "https://html.duckduckgo.com/html/"
+GOOGLE_NEWS_RSS_URL = "https://news.google.com/rss/search"
 SEARCH_CACHE_TTL = 8.0
 _SEARCH_CACHE: dict[tuple[str, int], tuple[float, tuple[SearchResult, ...]]] = {}
 _SEARCH_CACHE_LOCK = threading.Lock()
@@ -166,6 +168,40 @@ def _search_html(query: str, max_results: int, timeout: float) -> list[SearchRes
     return results
 
 
+
+def _search_google_news(query: str, max_results: int, timeout: float) -> list[SearchResult]:
+    """Fallback to public Google News RSS when DuckDuckGo has no usable results."""
+    response = requests.get(
+        GOOGLE_NEWS_RSS_URL,
+        params={"q": query.strip(), "hl": "en-IN", "gl": "IN", "ceid": "IN:en"},
+        headers={"User-Agent": "Nova/1.0 (Android; local assistant)"},
+        timeout=timeout,
+        allow_redirects=False,
+    )
+    response.raise_for_status()
+    try:
+        root = ET.fromstring(response.content)
+    except ET.ParseError:
+        raise WebToolError("Google News returned invalid RSS XML.") from None
+
+    results: list[SearchResult] = []
+    for item in root.findall(".//item"):
+        if len(results) >= max_results:
+            break
+        title = _clean_text(item.findtext("title", ""))
+        raw_url = (item.findtext("link", "") or "").strip()
+        snippet = _clean_text(item.findtext("description", ""))
+        if not raw_url:
+            continue
+        try:
+            url = _validate_public_url(raw_url)
+        except WebToolError:
+            continue
+        results.append(SearchResult(title or "Untitled news result", url, snippet))
+    return results
+
+
+
 def search(query: str, *, max_results: int = DEFAULT_RESULTS, timeout_seconds: float = DEFAULT_TIMEOUT) -> list[SearchResult]:
     """Search the public web without an API key.
 
@@ -184,18 +220,28 @@ def search(query: str, *, max_results: int = DEFAULT_RESULTS, timeout_seconds: f
         if cached and now - cached[0] < SEARCH_CACHE_TTL:
             return list(cached[1])
 
+    provider_error = None
     try:
         fresh = _search_html(query, bounded_results, timeout_seconds)
-        with _SEARCH_CACHE_LOCK:
-            _SEARCH_CACHE[key] = (time.monotonic(), tuple(fresh))
-            if len(_SEARCH_CACHE) > 32:
-                oldest = min(_SEARCH_CACHE.items(), key=lambda item: item[1][0])[0]
-                _SEARCH_CACHE.pop(oldest, None)
-        return fresh
-    except requests.Timeout:
-        raise WebToolError(f"Search timed out after {timeout_seconds:g}s.") from None
     except requests.RequestException as exc:
-        raise WebToolError(f"Search request failed: {exc}") from None
+        provider_error = f"DuckDuckGo search failed ({type(exc).__name__})"
+        fresh = []
+
+    if not fresh:
+        try:
+            fresh = _search_google_news(query, bounded_results, timeout_seconds)
+        except Exception as exc:
+            fallback_error = f"Google News RSS fallback failed ({type(exc).__name__})"
+            if provider_error:
+                raise WebToolError(f"{provider_error}; {fallback_error}") from None
+            raise WebToolError(fallback_error) from None
+
+    with _SEARCH_CACHE_LOCK:
+        _SEARCH_CACHE[key] = (time.monotonic(), tuple(fresh))
+        if len(_SEARCH_CACHE) > 32:
+            oldest = min(_SEARCH_CACHE.items(), key=lambda item: item[1][0])[0]
+            _SEARCH_CACHE.pop(oldest, None)
+    return fresh
 
 
 def fetch_page(
