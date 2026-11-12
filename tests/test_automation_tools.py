@@ -78,6 +78,45 @@ class AutomationToolsTests(unittest.TestCase):
             self.assertIn("script_too_short", result["issues"])
             self.assertIn("no_research_sources", result["issues"])
 
+    def test_quality_gate_rejects_headlines_without_article_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            project.mkdir()
+            metadata = {
+                "title": "Test title",
+                "hook": "A sufficiently clear hook",
+                "description": "A test description",
+                "tags": ["test"],
+                "script": "This is a sufficiently long script that only repeats the headlines and contains no article evidence. " * 2,
+                "research": {
+                    "sources": [{"title": "Headline", "snippet": "Headline only"}],
+                    "documents": [{
+                        "title": "Redirect",
+                        "content": "HTTP 302 redirect to https://news.google.com/story. Redirects are not followed automatically",
+                    }],
+                },
+            }
+            (project / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            result = automation_tools.validate_project(str(project))
+            self.assertFalse(result["success"])
+            self.assertIn("research_content_unavailable", result["issues"])
+
+    def test_run_pipeline_blocks_headlines_only(self):
+        evidence = {
+            "success": True,
+            "sources": [{"title": "Headline", "snippet": "Headline only"}],
+            "documents": [{
+                "title": "Redirect",
+                "content": "HTTP 302 redirect to https://news.google.com/story. Redirects are not followed automatically",
+            }],
+        }
+        with patch.object(automation_tools, "research_topic", return_value=evidence), \\
+             patch.object(automation_tools, "create_project") as create:
+            with self.assertRaises(RuntimeError) as raised:
+                automation_tools.run_pipeline("Test topic")
+        self.assertIn("headline-only script", str(raised.exception))
+        create.assert_not_called()
+
     def test_audio_skips_without_tts(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "project"
